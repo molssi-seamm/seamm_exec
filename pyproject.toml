@@ -20,20 +20,33 @@ classifiers = [
 ]
 requires-python = ">=3.8"
 # Declare any run-time dependencies that should be installed with the package.
-#dependencies = [
-#    "importlib-resources;python_version<'3.10'",
-#]
+dependencies = [
+   "docker",
+   "humanize",
+   "psutil",
+   "py-cpuinfo",
+   "pyuca",
+   "molsystem",
+   "reference_handler",
+   "seamm",
+   "seamm_datastore",
+   "seamm_util",
+]
 
 # Update the urls once the hosting is set up.
-#[project.urls]
-#"Source" = "https://github.com/<username>/seamm_exec/"
-#"Documentation" = "https://seamm_exec.readthedocs.io/"
+[project.urls]
+"Source" = "https://github.com/molssi-seamm/seamm_exec/"
+"Documentation" = "https://molssi-seamm.github.io/"
 
 [project.optional-dependencies]
 test = [
   "pytest>=6.1.2",
   "pytest-runner"
 ]
+
+[project.scripts]
+run_flowchart = "seamm_exec:run"
+run_from_jobserver = "seamm_exec:run_from_jobserver"
 
 [tool.setuptools]
 # This subkey is a beta stage development and keys may change in the future, see https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html for more details

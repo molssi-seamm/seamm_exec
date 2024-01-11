@@ -5,9 +5,9 @@ Unit and regression test for the seamm_exec package.
 # Import package, test suite, and other packages as needed
 import sys
 
-import pytest
+import pytest  # noqa: F401
 
-import seamm_exec
+# import seamm_exec
 
 
 def test_seamm_exec_imported():
