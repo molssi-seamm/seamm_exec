@@ -7,7 +7,7 @@ dependencies:
   # Base depends
   - python
   - pip
-  - docker
+  - docker-py
   - humanize
   - psutil
   - pyuca
