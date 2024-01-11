@@ -24,13 +24,7 @@ dependencies = [
    "docker",
    "humanize",
    "psutil",
-   "py-cpuinfo",
    "pyuca",
-   "molsystem",
-   "reference_handler",
-   "seamm",
-   "seamm_datastore",
-   "seamm_util",
 ]
 
 # Update the urls once the hosting is set up.
