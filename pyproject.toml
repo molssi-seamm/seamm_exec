@@ -21,10 +21,16 @@ classifiers = [
 requires-python = ">=3.8"
 # Declare any run-time dependencies that should be installed with the package.
 dependencies = [
-   "docker",
+   "fasteners",
    "humanize",
+   "molsystem",
    "psutil",
+   "py-cpuinfo",
    "pyuca",
+   "reference-handler",
+   "seamm",
+   "seamm-datastore",
+   "seamm-util",
 ]
 
 # Update the urls once the hosting is set up.

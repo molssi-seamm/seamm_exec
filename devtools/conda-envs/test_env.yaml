@@ -8,9 +8,16 @@ dependencies:
   - python
   - pip
   - docker-py
+  - fasteners
   - humanize
+  - molsystem
   - psutil
+  - py-cpuinfo
   - pyuca
+  - seamm
+  - seamm-datastore
+  - seamm-util
+  
 
   # Testing
   - black
@@ -25,6 +32,7 @@ dependencies:
 
   # Pip-only installs
   - pip:
+      - reference-handler
       # Documentation
       - sphinx-copybutton
 

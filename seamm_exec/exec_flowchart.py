@@ -14,7 +14,6 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import calendar
 import configparser
-import fasteners
 import json
 import locale
 import logging
@@ -31,6 +30,7 @@ import time
 import traceback
 import uuid
 
+import fasteners
 import cpuinfo
 
 from molsystem import SystemDB
