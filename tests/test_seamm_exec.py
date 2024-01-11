@@ -7,7 +7,7 @@ import sys
 
 import pytest  # noqa: F401
 
-# import seamm_exec
+import seamm_exec  # noqa: F401
 
 
 def test_seamm_exec_imported():
