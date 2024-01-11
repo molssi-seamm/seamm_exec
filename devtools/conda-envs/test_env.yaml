@@ -1,18 +1,30 @@
 name: test
-channels:
 
-  - defaults
+channels:
+  - conda-forge
+
 dependencies:
-    # Base depends
+  # Base depends
   - python
   - pip
+  - docker
+  - humanize
+  - psutil
+  - pyuca
 
-    # Testing
+  # Testing
+  - black
+  - codecov
+  - flake8
   - pytest
   - pytest-cov
-  - codecov
 
-    # Pip-only installs
-  #- pip:
-  #  - codecov
+  # Documentation
+  - pydata-sphinx-theme
+  - sphinx-design
+
+  # Pip-only installs
+  - pip:
+      # Documentation
+      - sphinx-copybutton
 
