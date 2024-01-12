@@ -5,6 +5,7 @@ runs, an executable locally."""
 
 import logging
 import os
+from pathlib import Path
 import pprint
 import subprocess
 
@@ -68,7 +69,15 @@ class Local(Base):
         # Sift through the way we can find the executables.
         # 1. Conda
         if "conda-environment" in config and config["conda-environment"] != "":
-            command = "conda run -n {conda-environment} " + command
+            # May be the name of the environment or the path to the environment
+            environment = config["conda-environment"]
+            if environment[0] == "~":
+                environment = str(Path(environment).expanduser())
+                command = f"conda run -p '{environment}' " + command
+            elif Path(environment).is_absolute():
+                command = f"conda run -p '{environment}' " + command
+            else:
+                command = "conda run -n {conda-environment} " + command
 
         # 2. modules
         modules = ""
