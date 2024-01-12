@@ -6,16 +6,7 @@ from .exec_flowchart import run  # noqa: F401
 from .exec_flowchart import run_from_jobserver  # noqa: F401
 from .local import Local  # noqa: F401
 from .docker import Docker  # noqa: F401
-
-# Handle versioneer
-from ._version import get_versions
-
-__author__ = """Paul Saxe"""
-__email__ = "psaxe@molssi.org"
-versions = get_versions()
-__version__ = versions["version"]
-__git_revision__ = versions["full-revisionid"]
-del get_versions, versions
+from ._version import __version__  # noqa: F401
 
 # List of executors corresponding to imports above.
 executors = ["local", "docker"]
