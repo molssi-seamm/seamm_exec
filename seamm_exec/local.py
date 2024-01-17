@@ -73,11 +73,11 @@ class Local(Base):
             environment = config["conda-environment"]
             if environment[0] == "~":
                 environment = str(Path(environment).expanduser())
-                command = f"conda run -p '{environment}' " + command
+                command = f"conda run --live-stream -p '{environment}' " + command
             elif Path(environment).is_absolute():
-                command = f"conda run -p '{environment}' " + command
+                command = f"conda run --live-stream -p '{environment}' " + command
             else:
-                command = "conda run -n {conda-environment} " + command
+                command = "conda run --live-stream -n {conda-environment} " + command
 
         # 2. modules
         modules = ""
