@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.local &#8212; SEAMM seamm-exec Plug-in 2024.1.17 documentation</title>
+    <title>seamm_exec.local &#8212; SEAMM seamm-exec Plug-in 2024.2.15 documentation</title>
   
   
   
@@ -17,12 +17,12 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=bd9e20870c6007c4c509" rel="stylesheet" />
-<link href="../../_static/styles/bootstrap.css?digest=bd9e20870c6007c4c509" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=bd9e20870c6007c4c509" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
 
   
-  <link href="../../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=bd9e20870c6007c4c509" rel="stylesheet" />
+  <link href="../../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
@@ -33,11 +33,11 @@
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=bd9e20870c6007c4c509" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=bd9e20870c6007c4c509" />
-  <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=bd9e20870c6007c4c509"></script>
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
+  <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../_static/documentation_options.js?v=d7566d30"></script>
+    <script src="../../_static/documentation_options.js?v=739c276d"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,6 @@
   <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
   
   <div id="pst-scroll-pixel-helper"></div>
-
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>
@@ -98,10 +97,8 @@
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
 </form></div>
   </div>
-
-  <header>
   
-    <div class="bd-header navbar navbar-expand-lg bd-navbar">
+    <header class="bd-header navbar navbar-expand-lg bd-navbar">
 <div class="bd-header__inner bd-page-width">
   <label class="sidebar-toggle primary-toggle" for="__primary">
     <span class="fa-solid fa-bars"></span>
@@ -253,15 +250,10 @@ document.write(`
   
 
   
-    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
-      <span class="fa-solid fa-outdent"></span>
-    </label>
-  
 </div>
 
-    </div>
+    </header>
   
-  </header>
 
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
@@ -440,6 +432,7 @@ document.write(`
 <span class="k">class</span> <span class="nc">Local</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
+        <span class="c1"># logger.setLevel(logging.DEBUG)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -492,8 +485,9 @@ document.write(`
         <span class="n">command</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
 
         <span class="c1"># Sift through the way we can find the executables.</span>
-        <span class="c1"># 1. Conda</span>
+        <span class="n">use_docker</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="s2">&quot;conda-environment&quot;</span> <span class="ow">in</span> <span class="n">config</span> <span class="ow">and</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;conda-environment&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="c1"># 1. Conda</span>
             <span class="c1"># May be the name of the environment or the path to the environment</span>
             <span class="n">environment</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;conda-environment&quot;</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">environment</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;~&quot;</span><span class="p">:</span>
@@ -503,18 +497,24 @@ document.write(`
                 <span class="n">command</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;conda run --live-stream -p &#39;</span><span class="si">{</span><span class="n">environment</span><span class="si">}</span><span class="s2">&#39; &quot;</span> <span class="o">+</span> <span class="n">command</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">command</span> <span class="o">=</span> <span class="s2">&quot;conda run --live-stream -n {conda-environment} &quot;</span> <span class="o">+</span> <span class="n">command</span>
-
-        <span class="c1"># 2. modules</span>
-        <span class="n">modules</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-        <span class="k">if</span> <span class="s2">&quot;GPUS&quot;</span> <span class="ow">in</span> <span class="n">ce</span><span class="p">:</span>
-            <span class="k">if</span> <span class="s2">&quot;gpu_modules&quot;</span> <span class="ow">in</span> <span class="n">config</span> <span class="ow">and</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;gpu_modules&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-                <span class="n">modules</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;gpu_modules&quot;</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="s2">&quot;modules&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
-                <span class="n">modules</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;modules&quot;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">modules</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="c1"># Use modules to get the executables</span>
-            <span class="n">command</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;module load </span><span class="si">{</span><span class="n">modules</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">command</span>
+        <span class="k">elif</span> <span class="s2">&quot;installation&quot;</span> <span class="ow">in</span> <span class="n">config</span> <span class="ow">and</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;installation&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;local&quot;</span><span class="p">:</span>
+            <span class="c1"># 2. local installation</span>
+            <span class="k">pass</span>
+        <span class="k">elif</span> <span class="s2">&quot;installation&quot;</span> <span class="ow">in</span> <span class="n">config</span> <span class="ow">and</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;installation&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;docker&quot;</span><span class="p">:</span>
+            <span class="c1"># 3. Docker</span>
+            <span class="n">use_docker</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="s2">&quot;installation&quot;</span> <span class="ow">in</span> <span class="n">config</span> <span class="ow">and</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;installation&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;modules&quot;</span><span class="p">:</span>
+            <span class="c1"># 4. modules</span>
+            <span class="n">modules</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">if</span> <span class="s2">&quot;GPUS&quot;</span> <span class="ow">in</span> <span class="n">ce</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;gpu_modules&quot;</span> <span class="ow">in</span> <span class="n">config</span> <span class="ow">and</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;gpu_modules&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                    <span class="n">modules</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;gpu_modules&quot;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;modules&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+                    <span class="n">modules</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;modules&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">modules</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># Use modules to get the executables</span>
+                <span class="n">command</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;module load </span><span class="si">{</span><span class="n">modules</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">command</span>
 
         <span class="c1"># Replace any variables in the command with values from the config file</span>
         <span class="c1"># and computational environment. Maybe nested.</span>
@@ -527,32 +527,125 @@ document.write(`
 
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;command=</span><span class="se">\n</span><span class="si">{</span><span class="n">command</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-        <span class="n">tmp_env</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">}</span>
-        <span class="n">tmp_env</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Environment:</span><span class="se">\n</span><span class="s2">Custom:</span><span class="se">\n</span><span class="si">{</span><span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">env</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;Full:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">tmp_env</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">use_docker</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">docker</span>
 
-        <span class="n">p</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
-            <span class="n">command</span><span class="p">,</span>
-            <span class="nb">input</span><span class="o">=</span><span class="n">input_data</span><span class="p">,</span>
-            <span class="n">env</span><span class="o">=</span><span class="n">tmp_env</span><span class="p">,</span>
-            <span class="n">cwd</span><span class="o">=</span><span class="n">directory</span><span class="p">,</span>
-            <span class="n">universal_newlines</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
-            <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
-            <span class="n">shell</span><span class="o">=</span><span class="n">shell</span><span class="p">,</span>
-        <span class="p">)</span>
+            <span class="n">client</span> <span class="o">=</span> <span class="n">docker</span><span class="o">.</span><span class="n">from_env</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Result from subprocess</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">p</span><span class="p">))</span>
+            <span class="c1"># See if this is running in Docker and adjust the path accordingly</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="s2">&quot;SEAMM_ENVIRONMENT&quot;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span>
+                <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;SEAMM_ENVIRONMENT&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;docker&quot;</span>
+            <span class="p">):</span>
+                <span class="n">hostname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;HOSTNAME&quot;</span><span class="p">]</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">this_container</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">containers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">hostname</span><span class="p">)</span>
+                    <span class="n">mounts</span> <span class="o">=</span> <span class="n">this_container</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;Mounts&quot;</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">mount</span> <span class="ow">in</span> <span class="n">mounts</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">mount</span><span class="p">[</span><span class="s2">&quot;Destination&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;/home&quot;</span><span class="p">:</span>
+                            <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">mount</span><span class="p">[</span><span class="s2">&quot;Source&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="o">*</span><span class="n">directory</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
+                            <span class="k">break</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
 
-        <span class="c1"># capture the return code and output</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;returncode&quot;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span>
-            <span class="s2">&quot;stdout&quot;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span>
-            <span class="s2">&quot;stderr&quot;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span>
-        <span class="p">}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+            <span class="c1"># Replace any variables in the container name</span>
+            <span class="n">container</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;container&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">config</span><span class="p">,</span> <span class="o">**</span><span class="n">ce</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># Replace any variables in the command with values from the config file</span>
+                <span class="c1"># and computational environment. Maybe nested.</span>
+                <span class="n">command</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+                <span class="n">tmp</span> <span class="o">=</span> <span class="n">command</span>
+                <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">command</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">config</span><span class="p">,</span> <span class="o">**</span><span class="n">ce</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">tmp</span> <span class="o">==</span> <span class="n">command</span><span class="p">:</span>
+                        <span class="k">break</span>
+                    <span class="n">tmp</span> <span class="o">=</span> <span class="n">command</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                    result = client.containers.run(</span>
+<span class="s2">                        command=</span><span class="si">{</span><span class="n">command</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">                        environment=</span><span class="si">{</span><span class="n">env</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">                        image=</span><span class="si">{</span><span class="n">container</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">                        remove=True,</span>
+<span class="s2">                        stderr=True,</span>
+<span class="s2">                        stdout=True,</span>
+<span class="s2">                        volumes=[f&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">:/home&quot;],</span>
+<span class="s2">                        working_dir=&quot;/home&quot;,</span>
+<span class="s2">                    )</span>
+<span class="s2">                    &quot;&quot;&quot;</span>
+                <span class="p">)</span>
+
+                <span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">containers</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                    <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">,</span>
+                    <span class="n">environment</span><span class="o">=</span><span class="n">env</span><span class="p">,</span>
+                    <span class="n">image</span><span class="o">=</span><span class="n">container</span><span class="p">,</span>
+                    <span class="n">remove</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">stderr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">stdout</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">volumes</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">:/home&quot;</span><span class="p">],</span>
+                    <span class="n">working_dir</span><span class="o">=</span><span class="s2">&quot;/home&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                    result = client.containers.run(</span>
+<span class="s2">                        environment=</span><span class="si">{</span><span class="n">env</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">                        image=</span><span class="si">{</span><span class="n">container</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">                        remove=True,</span>
+<span class="s2">                        stderr=True,</span>
+<span class="s2">                        stdout=True,</span>
+<span class="s2">                        volumes=[f&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">:/home&quot;],</span>
+<span class="s2">                        working_dir=&quot;/home&quot;,</span>
+<span class="s2">                    )</span>
+<span class="s2">                    &quot;&quot;&quot;</span>
+                <span class="p">)</span>
+
+                <span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">containers</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                    <span class="n">environment</span><span class="o">=</span><span class="n">env</span><span class="p">,</span>
+                    <span class="n">image</span><span class="o">=</span><span class="n">container</span><span class="p">,</span>
+                    <span class="n">remove</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">stderr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">stdout</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">volumes</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">:/home&quot;</span><span class="p">],</span>
+                    <span class="n">working_dir</span><span class="o">=</span><span class="s2">&quot;/home&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">result</span><span class="p">))</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tmp_env</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">}</span>
+            <span class="n">tmp_env</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Environment:</span><span class="se">\n</span><span class="s2">Custom:</span><span class="se">\n</span><span class="si">{</span><span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">env</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Full:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">tmp_env</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+            <span class="n">p</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                <span class="n">command</span><span class="p">,</span>
+                <span class="nb">input</span><span class="o">=</span><span class="n">input_data</span><span class="p">,</span>
+                <span class="n">env</span><span class="o">=</span><span class="n">tmp_env</span><span class="p">,</span>
+                <span class="n">cwd</span><span class="o">=</span><span class="n">directory</span><span class="p">,</span>
+                <span class="n">universal_newlines</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+                <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+                <span class="n">shell</span><span class="o">=</span><span class="n">shell</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Result from subprocess</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">p</span><span class="p">))</span>
+
+            <span class="c1"># capture the return code and output</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;returncode&quot;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span>
+                <span class="s2">&quot;stdout&quot;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span>
+                <span class="s2">&quot;stderr&quot;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span>
+            <span class="p">}</span>
 
         <span class="k">return</span> <span class="n">result</span></div>
 </div>
@@ -588,8 +681,8 @@ document.write(`
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../_static/scripts/bootstrap.js?digest=bd9e20870c6007c4c509"></script>
-<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=bd9e20870c6007c4c509"></script>
+  <script src="../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -641,7 +734,7 @@ document.write(`
       
         <div class="footer-item">
 <p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.2.
 </p></div>
       
     </div>
