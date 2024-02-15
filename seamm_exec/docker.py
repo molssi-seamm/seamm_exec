@@ -74,24 +74,63 @@ class Docker(Base):
         For this container the input filename defaults to "mopac.dat" so we do not need
         to add it.
         """
-        if "SEAMM_HOME" not in os.environ:
-            raise RuntimeError(
-                "The environment variable 'SEAMM_HOME' must be set to the home "
-                "directory on the host."
-            )
-        path = Path(os.environ["SEAMM_HOME"]).joinpath(*directory.parts[2:])
+        # logger.setLevel(logging.DEBUG)
 
         client = docker.from_env()
+
+        # See if this is running in Docker and adjust the path accordingly
+        if (
+            "SEAMM_ENVIRONMENT" in os.environ
+            and os.environ["SEAMM_ENVIRONMENT"] == "docker"
+        ):
+            hostname = os.environ["HOSTNAME"]
+            try:
+                this_container = client.containers.get(hostname)
+                mounts = this_container.attrs["Mounts"]
+                for mount in mounts:
+                    if mount["Destination"] == "/home":
+                        path = Path(mount["Source"]).joinpath(*directory.parts[2:])
+                        break
+            except Exception:
+                path = Path(directory)
+        else:
+            path = Path(directory)
+
+        self.logger.debug(pprint.pformat(config, compact=True))
+
+        # Replace any variables in the container name
+        container = config["container"].format(**config, **ce)
+
         if len(cmd) > 0:
-            # Replace any strings in the cmd with those in the configuration
-            self.logger.debug(pprint.pformat(config, compact=True))
+            # Replace any variables in the command with values from the config file
+            # and computational environment. Maybe nested.
             command = " ".join(cmd)
-            command = command.format(**config, **ce)
+            tmp = command
+            while True:
+                command = tmp.format(**config, **ce)
+                if tmp == command:
+                    break
+                tmp = command
+
+            self.logger.debug(
+                f"""
+                result = client.containers.run(
+                    command={command},
+                    environment={env},
+                    image={container},
+                    remove=True,
+                    stderr=True,
+                    stdout=True,
+                    volumes=[f"{path}:/home"],
+                    working_dir="/home",
+                )
+                """
+            )
 
             result = client.containers.run(
                 command=command,
                 environment=env,
-                image=config["container"],
+                image=container,
                 remove=True,
                 stderr=True,
                 stdout=True,
@@ -99,12 +138,26 @@ class Docker(Base):
                 working_dir="/home",
             )
         else:
+            self.logger.debug(
+                f"""
+                result = client.containers.run(
+                    environment={env},
+                    image={container},
+                    remove=True,
+                    stderr=True,
+                    stdout=True,
+                    volumes=[f"{path}:/home"],
+                    working_dir="/home",
+                )
+                """
+            )
+
             result = client.containers.run(
                 environment=env,
-                image=config["docker"]["container"],
+                image=container,
                 remove=True,
-                stderr=False,
-                stdout=False,
+                stderr=True,
+                stdout=True,
                 volumes=[f"{path}:/home"],
                 working_dir="/home",
             )

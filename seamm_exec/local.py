@@ -17,6 +17,7 @@ logger = logging.getLogger("seamm-exec")
 class Local(Base):
     def __init__(self, logger=logger):
         super().__init__(logger=logger)
+        # logger.setLevel(logging.DEBUG)
 
     @property
     def name(self):
@@ -67,8 +68,9 @@ class Local(Base):
         command = " ".join(cmd)
 
         # Sift through the way we can find the executables.
-        # 1. Conda
+        use_docker = False
         if "conda-environment" in config and config["conda-environment"] != "":
+            # 1. Conda
             # May be the name of the environment or the path to the environment
             environment = config["conda-environment"]
             if environment[0] == "~":
@@ -78,18 +80,24 @@ class Local(Base):
                 command = f"conda run --live-stream -p '{environment}' " + command
             else:
                 command = "conda run --live-stream -n {conda-environment} " + command
-
-        # 2. modules
-        modules = ""
-        if "GPUS" in ce:
-            if "gpu_modules" in config and config["gpu_modules"] != "":
-                modules = config["gpu_modules"]
-        else:
-            if "modules" in config:
-                modules = config["modules"]
-        if len(modules) > 0:
-            # Use modules to get the executables
-            command = f"module load {modules}\n" + command
+        elif "installation" in config and config["installation"] == "local":
+            # 2. local installation
+            pass
+        elif "installation" in config and config["installation"] == "docker":
+            # 3. Docker
+            use_docker = True
+        elif "installation" in config and config["installation"] == "modules":
+            # 4. modules
+            modules = ""
+            if "GPUS" in ce:
+                if "gpu_modules" in config and config["gpu_modules"] != "":
+                    modules = config["gpu_modules"]
+            else:
+                if "modules" in config:
+                    modules = config["modules"]
+            if len(modules) > 0:
+                # Use modules to get the executables
+                command = f"module load {modules}\n" + command
 
         # Replace any variables in the command with values from the config file
         # and computational environment. Maybe nested.
@@ -102,31 +110,124 @@ class Local(Base):
 
         self.logger.debug(f"command=\n{command}")
 
-        tmp_env = {**os.environ}
-        tmp_env.update(env)
-        self.logger.debug(
-            f"Environment:\nCustom:\n{pprint.pformat(env)}\n"
-            f"Full:\n {pprint.pformat(tmp_env)}"
-        )
+        if use_docker:
+            import docker
 
-        p = subprocess.run(
-            command,
-            input=input_data,
-            env=tmp_env,
-            cwd=directory,
-            universal_newlines=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=shell,
-        )
+            client = docker.from_env()
 
-        self.logger.debug("Result from subprocess\n" + pprint.pformat(p))
+            # See if this is running in Docker and adjust the path accordingly
+            if (
+                "SEAMM_ENVIRONMENT" in os.environ
+                and os.environ["SEAMM_ENVIRONMENT"] == "docker"
+            ):
+                hostname = os.environ["HOSTNAME"]
+                try:
+                    this_container = client.containers.get(hostname)
+                    mounts = this_container.attrs["Mounts"]
+                    for mount in mounts:
+                        if mount["Destination"] == "/home":
+                            path = Path(mount["Source"]).joinpath(*directory.parts[2:])
+                            break
+                except Exception:
+                    path = Path(directory)
+            else:
+                path = Path(directory)
 
-        # capture the return code and output
-        result = {
-            "returncode": p.returncode,
-            "stdout": p.stdout,
-            "stderr": p.stderr,
-        }
+            self.logger.debug(pprint.pformat(config, compact=True))
+
+            # Replace any variables in the container name
+            container = config["container"].format(**config, **ce)
+
+            if len(cmd) > 0:
+                # Replace any variables in the command with values from the config file
+                # and computational environment. Maybe nested.
+                command = " ".join(cmd)
+                tmp = command
+                while True:
+                    command = tmp.format(**config, **ce)
+                    if tmp == command:
+                        break
+                    tmp = command
+
+                self.logger.debug(
+                    f"""
+                    result = client.containers.run(
+                        command={command},
+                        environment={env},
+                        image={container},
+                        remove=True,
+                        stderr=True,
+                        stdout=True,
+                        volumes=[f"{path}:/home"],
+                        working_dir="/home",
+                    )
+                    """
+                )
+
+                result = client.containers.run(
+                    command=command,
+                    environment=env,
+                    image=container,
+                    remove=True,
+                    stderr=True,
+                    stdout=True,
+                    volumes=[f"{path}:/home"],
+                    working_dir="/home",
+                )
+            else:
+                self.logger.debug(
+                    f"""
+                    result = client.containers.run(
+                        environment={env},
+                        image={container},
+                        remove=True,
+                        stderr=True,
+                        stdout=True,
+                        volumes=[f"{path}:/home"],
+                        working_dir="/home",
+                    )
+                    """
+                )
+
+                result = client.containers.run(
+                    environment=env,
+                    image=container,
+                    remove=True,
+                    stderr=True,
+                    stdout=True,
+                    volumes=[f"{path}:/home"],
+                    working_dir="/home",
+                )
+
+            self.logger.debug("\n" + pprint.pformat(result))
+
+            result = {}
+        else:
+            tmp_env = {**os.environ}
+            tmp_env.update(env)
+            self.logger.debug(
+                f"Environment:\nCustom:\n{pprint.pformat(env)}\n"
+                f"Full:\n {pprint.pformat(tmp_env)}"
+            )
+
+            p = subprocess.run(
+                command,
+                input=input_data,
+                env=tmp_env,
+                cwd=directory,
+                universal_newlines=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                shell=shell,
+            )
+
+            self.logger.debug("Result from subprocess\n" + pprint.pformat(p))
+
+            # capture the return code and output
+            result = {
+                "returncode": p.returncode,
+                "stdout": p.stdout,
+                "stderr": p.stderr,
+            }
 
         return result
