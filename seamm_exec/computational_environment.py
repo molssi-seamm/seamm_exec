@@ -27,7 +27,7 @@ def computational_environment(limits={}):
     else:
         ce = _local()
 
-    for key, value in limits:
+    for key, value in limits.items():
         if key in ce:
             if ce[key] > value:
                 ce[key] = value
