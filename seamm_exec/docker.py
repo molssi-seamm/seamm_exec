@@ -97,17 +97,27 @@ class Docker(Base):
             path = Path(directory)
 
         self.logger.debug(pprint.pformat(config, compact=True))
+
+        # Replace any variables in the container name
+        container = config["container"].format(**config, **ce)
+
         if len(cmd) > 0:
-            # Replace any strings in the cmd with those in the configuration
+            # Replace any variables in the command with values from the config file
+            # and computational environment. Maybe nested.
             command = " ".join(cmd)
-            command = command.format(**config, **ce)
+            tmp = command
+            while True:
+                command = tmp.format(**config, **ce)
+                if tmp == command:
+                    break
+                tmp = command
 
             self.logger.debug(
                 f"""
                 result = client.containers.run(
                     command={command},
                     environment={env},
-                    image={config["container"]},
+                    image={container},
                     remove=True,
                     stderr=True,
                     stdout=True,
@@ -120,7 +130,7 @@ class Docker(Base):
             result = client.containers.run(
                 command=command,
                 environment=env,
-                image=config["container"],
+                image=container,
                 remove=True,
                 stderr=True,
                 stdout=True,
@@ -132,7 +142,7 @@ class Docker(Base):
                 f"""
                 result = client.containers.run(
                     environment={env},
-                    image={config["container"]},
+                    image={container},
                     remove=True,
                     stderr=True,
                     stdout=True,
@@ -144,7 +154,7 @@ class Docker(Base):
 
             result = client.containers.run(
                 environment=env,
-                image=config["container"],
+                image=container,
                 remove=True,
                 stderr=True,
                 stdout=True,
