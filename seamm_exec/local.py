@@ -138,6 +138,9 @@ class Local(Base):
             # Replace any variables in the container name
             container = config["container"].format(**config, **ce)
 
+            # See if there is a required platform
+            platform = config.get("platform", None)
+
             if len(cmd) > 0:
                 # Replace any variables in the command with values from the config file
                 # and computational environment. Maybe nested.
@@ -155,6 +158,7 @@ class Local(Base):
                         command={command},
                         environment={env},
                         image={container},
+                        platform={platform},
                         remove=True,
                         stderr=True,
                         stdout=True,
@@ -168,6 +172,7 @@ class Local(Base):
                     command=command,
                     environment=env,
                     image=container,
+                    platform=platform,
                     remove=True,
                     stderr=True,
                     stdout=True,
@@ -180,6 +185,7 @@ class Local(Base):
                     result = client.containers.run(
                         environment={env},
                         image={container},
+                        platform={platform},
                         remove=True,
                         stderr=True,
                         stdout=True,
@@ -192,6 +198,7 @@ class Local(Base):
                 result = client.containers.run(
                     environment=env,
                     image=container,
+                    platform=platform,
                     remove=True,
                     stderr=True,
                     stdout=True,
