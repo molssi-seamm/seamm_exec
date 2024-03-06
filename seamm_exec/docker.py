@@ -74,7 +74,7 @@ class Docker(Base):
         For this container the input filename defaults to "mopac.dat" so we do not need
         to add it.
         """
-        # logger.setLevel(logging.DEBUG)
+        self.logger.setLevel(logging.DEBUG)
 
         client = docker.from_env()
 
@@ -88,13 +88,20 @@ class Docker(Base):
                 this_container = client.containers.get(hostname)
                 mounts = this_container.attrs["Mounts"]
                 for mount in mounts:
-                    if mount["Destination"] == "/home":
+                    self.logger.debug(f"{mount=}")
+                    if mount["Destination"] == "/root/SEAMM":
                         path = Path(mount["Source"]).joinpath(*directory.parts[2:])
                         break
+                else:
+                    raise RuntimeError(
+                        "/root/SEAMM was not in the mounts for the container!\n"
+                        f"{mounts=}"
+                    )
             except Exception:
                 path = Path(directory)
         else:
             path = Path(directory)
+        self.logger.debug(f"path = {path}\n")
 
         self.logger.debug(pprint.pformat(config, compact=True))
 
