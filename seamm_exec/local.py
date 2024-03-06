@@ -38,6 +38,8 @@ class Local(Base):
 
         Parameters
         ----------
+        config : dict(str: any)
+            The configuration for the code to run
         cmd : [str]
             The command as a list of words.
         directory : str or Path
