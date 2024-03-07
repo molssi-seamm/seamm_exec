@@ -89,7 +89,7 @@ class Docker(Base):
                 mounts = this_container.attrs["Mounts"]
                 for mount in mounts:
                     self.logger.debug(f"{mount=}")
-                    if mount["Destination"] == "/root/SEAMM":
+                    if mount["Destination"] == "/home/SEAMM":
                         path = Path(mount["Source"]).joinpath(*directory.parts[2:])
                         break
                 else:
