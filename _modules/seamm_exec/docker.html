@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.docker &#8212; SEAMM seamm-exec Plug-in 2024.3.6 documentation</title>
+    <title>seamm_exec.docker &#8212; SEAMM seamm-exec Plug-in 2024.3.7 documentation</title>
   
   
   
@@ -37,7 +37,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../_static/documentation_options.js?v=14dc68e4"></script>
+    <script src="../../_static/documentation_options.js?v=b0a4ecfd"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -506,7 +506,7 @@ document.write(`
                 <span class="n">mounts</span> <span class="o">=</span> <span class="n">this_container</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;Mounts&quot;</span><span class="p">]</span>
                 <span class="k">for</span> <span class="n">mount</span> <span class="ow">in</span> <span class="n">mounts</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mount</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">mount</span><span class="p">[</span><span class="s2">&quot;Destination&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;/root/SEAMM&quot;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">mount</span><span class="p">[</span><span class="s2">&quot;Destination&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;/home/SEAMM&quot;</span><span class="p">:</span>
                         <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">mount</span><span class="p">[</span><span class="s2">&quot;Source&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="o">*</span><span class="n">directory</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
                         <span class="k">break</span>
                 <span class="k">else</span><span class="p">:</span>
