@@ -87,18 +87,21 @@ class Docker(Base):
             try:
                 this_container = client.containers.get(hostname)
                 mounts = this_container.attrs["Mounts"]
-                for mount in mounts:
-                    self.logger.debug(f"{mount=}")
-                    if mount["Destination"] == "/home/SEAMM":
-                        path = Path(mount["Source"]).joinpath(*directory.parts[2:])
-                        break
-                else:
-                    raise RuntimeError(
-                        "/root/SEAMM was not in the mounts for the container!\n"
-                        f"{mounts=}"
-                    )
-            except Exception:
-                path = Path(directory)
+            except Exception as e:
+                self.logger.error(
+                    f"An error occurred in docker.py finding the mounts: {str(e)}"
+                )
+                raise
+
+            for mount in mounts:
+                self.logger.debug(f"{mount=}")
+                if mount["Destination"] == "/home":
+                    path = Path(mount["Source"]).joinpath(*directory.parts[2:])
+                    break
+            else:
+                raise RuntimeError(
+                    f"/home was not in the mounts for the container!\n{mounts=}"
+                )
         else:
             path = Path(directory)
         self.logger.debug(f"path = {path}\n")
