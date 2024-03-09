@@ -98,12 +98,18 @@ class Docker(Base):
                 if mount["Destination"] == "/home":
                     path = Path(mount["Source"]).joinpath(*directory.parts[2:])
                     break
+                elif mount["Destination"] == "/root/SEAMM":
+                    path = Path(mount["Source"]).joinpath(*directory.parts[3:])
+                    break
             else:
                 raise RuntimeError(
-                    f"/home was not in the mounts for the container!\n{mounts=}"
+                    "Neither /home or /root/SEAMM were in the mounts for the container!"
+                    "\n{mounts=}"
                 )
         else:
+            # Not in a Docker container, so use the path as is
             path = Path(directory)
+
         self.logger.debug(f"path = {path}\n")
 
         self.logger.debug(pprint.pformat(config, compact=True))
