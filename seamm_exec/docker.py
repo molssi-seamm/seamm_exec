@@ -74,7 +74,7 @@ class Docker(Base):
         For this container the input filename defaults to "mopac.dat" so we do not need
         to add it.
         """
-        self.logger.setLevel(logging.DEBUG)
+        # self.logger.setLevel(logging.DEBUG)
 
         client = docker.from_env()
 
