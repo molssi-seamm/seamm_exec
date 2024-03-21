@@ -58,8 +58,6 @@ class Local(Base):
         {str: str}
             Dictionary with stdout, stderr, returncode, etc.
         """
-        # logger.setLevel(logging.DEBUG)
-
         # Replace any strings in the cmd with those in the configuration
         self.logger.debug(
             "Config:\n"
@@ -74,14 +72,22 @@ class Local(Base):
         if "conda-environment" in config and config["conda-environment"] != "":
             # 1. Conda
             # May be the name of the environment or the path to the environment
+
+            if "CONDA_EXE" in os.environ:
+                conda = os.environ["CONDA_EXE"]
+            elif "conda" in config:
+                conda = config["conda"]
+            else:
+                conda = "conda"
+
             environment = config["conda-environment"]
             if environment[0] == "~":
                 environment = str(Path(environment).expanduser())
-                command = f"conda run --live-stream -p '{environment}' " + command
+                command = f"'{conda}' run --live-stream -p '{environment}' " + command
             elif Path(environment).is_absolute():
-                command = f"conda run --live-stream -p '{environment}' " + command
+                command = f"'{conda}' run --live-stream -p '{environment}' " + command
             else:
-                command = "conda run --live-stream -n {conda-environment} " + command
+                command = f"'{conda}' run --live-stream -n '{environment}' " + command
         elif "installation" in config and config["installation"] == "local":
             # 2. local installation
             pass
@@ -221,13 +227,13 @@ class Local(Base):
 
             p = subprocess.run(
                 command,
-                input=input_data,
-                env=tmp_env,
                 cwd=directory,
-                universal_newlines=True,
+                env=tmp_env,
+                input=input_data,
+                shell=shell,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                shell=shell,
+                universal_newlines=True,
             )
 
             self.logger.debug("Result from subprocess\n" + pprint.pformat(p))
