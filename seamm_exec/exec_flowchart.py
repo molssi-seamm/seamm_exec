@@ -13,7 +13,6 @@ contains."""
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import calendar
-import configparser
 import json
 import locale
 import logging
@@ -309,15 +308,7 @@ class cd:
 def open_datastore(root, datastore):
     """Open the database via the datastore"""
     # Get the user information for the datastore
-    path = Path("~/.seammrc").expanduser()
-    if not path.exists:
-        raise RuntimeError(
-            "You need a '~/.seammrc' file to run jobs from the commandline. "
-            "See the documentation for more details."
-        )
-
-    config = configparser.ConfigParser()
-    config.read(path)
+    rc = seamm.SEAMMrc()
 
     user = None
     password = None
@@ -329,15 +320,15 @@ def open_datastore(root, datastore):
     sections.append(platform.node())
     for section in sections:
         section = "Dashboard: " + section
-        if section in config:
-            if user is None and "user" in config[section]:
-                user = config[section]["user"]
-            if password is None and "password" in config[section]:
-                password = config[section]["password"]
+        if section in rc:
+            if user is None and rc.has_option(section, "user"):
+                user = rc.get(section, "user")
+            if password is None and rc.has_option(section, "password"):
+                password = rc.get(section, "password")
 
     if user is None or password is None:
         raise RuntimeError(
-            "You need credentials in '~/.seammrc' file to run jobs from the "
+            "You need credentials in '~/.seamm.d/seammrc' to run jobs from the "
             "commandline. See the documentation for more details."
         )
 
