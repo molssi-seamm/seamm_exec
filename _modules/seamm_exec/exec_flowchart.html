@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.exec_flowchart &#8212; SEAMM seamm-exec Plug-in 2024.3.21 documentation</title>
+    <title>seamm_exec.exec_flowchart &#8212; SEAMM seamm-exec Plug-in 2024.4.22 documentation</title>
   
   
   
@@ -37,8 +37,8 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../_static/documentation_options.js?v=307b711c"></script>
-    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/documentation_options.js?v=7bd14f30"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
@@ -426,7 +426,6 @@ document.write(`
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">timezone</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">import</span> <span class="nn">calendar</span>
-<span class="kn">import</span> <span class="nn">configparser</span>
 <span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">locale</span>
 <span class="kn">import</span> <span class="nn">logging</span>
@@ -733,15 +732,7 @@ document.write(`
 <span class="k">def</span> <span class="nf">open_datastore</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">datastore</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Open the database via the datastore&quot;&quot;&quot;</span>
     <span class="c1"># Get the user information for the datastore</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;~/.seammrc&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-            <span class="s2">&quot;You need a &#39;~/.seammrc&#39; file to run jobs from the commandline. &quot;</span>
-            <span class="s2">&quot;See the documentation for more details.&quot;</span>
-        <span class="p">)</span>
-
-    <span class="n">config</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">ConfigParser</span><span class="p">()</span>
-    <span class="n">config</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">rc</span> <span class="o">=</span> <span class="n">seamm</span><span class="o">.</span><span class="n">SEAMMrc</span><span class="p">()</span>
 
     <span class="n">user</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">password</span> <span class="o">=</span> <span class="kc">None</span>
@@ -753,15 +744,15 @@ document.write(`
     <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">platform</span><span class="o">.</span><span class="n">node</span><span class="p">())</span>
     <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">sections</span><span class="p">:</span>
         <span class="n">section</span> <span class="o">=</span> <span class="s2">&quot;Dashboard: &quot;</span> <span class="o">+</span> <span class="n">section</span>
-        <span class="k">if</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;user&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="n">section</span><span class="p">]:</span>
-                <span class="n">user</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="s2">&quot;user&quot;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">password</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;password&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="n">section</span><span class="p">]:</span>
-                <span class="n">password</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="s2">&quot;password&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">rc</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">rc</span><span class="o">.</span><span class="n">has_option</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="s2">&quot;user&quot;</span><span class="p">):</span>
+                <span class="n">user</span> <span class="o">=</span> <span class="n">rc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="s2">&quot;user&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">password</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">rc</span><span class="o">.</span><span class="n">has_option</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="s2">&quot;password&quot;</span><span class="p">):</span>
+                <span class="n">password</span> <span class="o">=</span> <span class="n">rc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="s2">&quot;password&quot;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">password</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-            <span class="s2">&quot;You need credentials in &#39;~/.seammrc&#39; file to run jobs from the &quot;</span>
+            <span class="s2">&quot;You need credentials in &#39;~/.seamm.d/seammrc&#39; to run jobs from the &quot;</span>
             <span class="s2">&quot;commandline. See the documentation for more details.&quot;</span>
         <span class="p">)</span>
 
