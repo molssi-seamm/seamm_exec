@@ -160,6 +160,10 @@ class Local(Base):
                         break
                     tmp = command
 
+                # If running using Docker, we have to munge any paths in the command
+                prefix = str(directory)
+                command = command.replace(prefix, "/home")
+
                 self.logger.debug(
                     f"""
                     result = client.containers.run(
