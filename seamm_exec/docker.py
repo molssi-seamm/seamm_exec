@@ -74,7 +74,9 @@ class Docker(Base):
         For this container the input filename defaults to "mopac.dat" so we do not need
         to add it.
         """
-        # self.logger.setLevel(logging.DEBUG)
+        if "SEAMM_DEBUG_DOCKER" in os.environ:
+            log_level = self.logger.level
+            self.logger.setLevel(logging.DEBUG)
 
         client = docker.from_env()
 
@@ -187,5 +189,8 @@ class Docker(Base):
             )
 
         self.logger.debug("\n" + pprint.pformat(result))
+
+        if "SEAMM_DEBUG_DOCKER" in os.environ:
+            self.logger.setLevel(log_level)
 
         return {}
