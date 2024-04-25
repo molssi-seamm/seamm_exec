@@ -93,22 +93,23 @@ class Docker(Base):
                 )
                 raise
 
+            paths = []
             for mount in mounts:
                 self.logger.debug(f"{mount=}")
                 if mount["Destination"] == "/home":
                     path = Path(mount["Source"]).joinpath(*directory.parts[2:])
-                    break
+                    paths.append(f"{path}:/home")
                 elif mount["Destination"] == "/root/SEAMM":
                     path = Path(mount["Source"]).joinpath(*directory.parts[3:])
-                    break
-            else:
+                    paths.append(f"{path}:/root/SEAMM")
+            if len(paths) == 0:
                 raise RuntimeError(
                     "Neither /home or /root/SEAMM were in the mounts for the container!"
                     "\n{mounts=}"
                 )
         else:
             # Not in a Docker container, so use the path as is
-            path = Path(directory)
+            paths = [f"{Path(directory)}:/home"]
 
         self.logger.debug(f"path = {path}\n")
 
@@ -141,7 +142,7 @@ class Docker(Base):
                     remove=True,
                     stderr=True,
                     stdout=True,
-                    volumes=[f"{path}:/home"],
+                    volumes=paths,
                     working_dir="/home",
                 )
                 """
@@ -155,7 +156,7 @@ class Docker(Base):
                 remove=True,
                 stderr=True,
                 stdout=True,
-                volumes=[f"{path}:/home"],
+                volumes=paths,
                 working_dir="/home",
             )
         else:
@@ -168,7 +169,7 @@ class Docker(Base):
                     remove=True,
                     stderr=True,
                     stdout=True,
-                    volumes=[f"{path}:/home"],
+                    volumes=paths,
                     working_dir="/home",
                 )
                 """
@@ -181,7 +182,7 @@ class Docker(Base):
                 remove=True,
                 stderr=True,
                 stdout=True,
-                volumes=[f"{path}:/home"],
+                volumes=paths,
                 working_dir="/home",
             )
 
