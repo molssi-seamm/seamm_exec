@@ -74,9 +74,7 @@ class Docker(Base):
         For this container the input filename defaults to "mopac.dat" so we do not need
         to add it.
         """
-        if "SEAMM_DEBUG_DOCKER" in os.environ:
-            log_level = self.logger.level
-            self.logger.setLevel(logging.DEBUG)
+        # self.logger.setLevel(logging.DEBUG)
 
         client = docker.from_env()
 
@@ -134,6 +132,25 @@ class Docker(Base):
                     break
                 tmp = command
 
+            if "SEAMM_DEBUG_DOCKER" in os.environ:
+                with open(directory / "docker.txt", "a") as fd:
+                    print(
+                        f"""
+                        result = client.containers.run(
+                            command={command},
+                            environment={env},
+                            image={container},
+                            platform={platform},
+                            remove=True,
+                            stderr=True,
+                            stdout=True,
+                            volumes={paths},
+                            working_dir="/home",
+                        )
+                        """,
+                        file=fd,
+                        flush=True,
+                    )
             self.logger.debug(
                 f"""
                 result = client.containers.run(
@@ -144,7 +161,7 @@ class Docker(Base):
                     remove=True,
                     stderr=True,
                     stdout=True,
-                    volumes=paths,
+                    volumes={paths},
                     working_dir="/home",
                 )
                 """
@@ -171,7 +188,7 @@ class Docker(Base):
                     remove=True,
                     stderr=True,
                     stdout=True,
-                    volumes=paths,
+                    volumes={paths},
                     working_dir="/home",
                 )
                 """
@@ -189,8 +206,5 @@ class Docker(Base):
             )
 
         self.logger.debug("\n" + pprint.pformat(result))
-
-        if "SEAMM_DEBUG_DOCKER" in os.environ:
-            self.logger.setLevel(log_level)
 
         return {}
