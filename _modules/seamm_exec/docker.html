@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.docker &#8212; SEAMM seamm-exec Plug-in 2024.4.24 documentation</title>
+    <title>seamm_exec.docker &#8212; SEAMM seamm-exec Plug-in 2024.4.25 documentation</title>
   
   
   
@@ -37,7 +37,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../_static/documentation_options.js?v=14205be4"></script>
+    <script src="../../_static/documentation_options.js?v=b058dffd"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -510,22 +510,23 @@ document.write(`
                 <span class="p">)</span>
                 <span class="k">raise</span>
 
+            <span class="n">paths</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">mount</span> <span class="ow">in</span> <span class="n">mounts</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mount</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">mount</span><span class="p">[</span><span class="s2">&quot;Destination&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;/home&quot;</span><span class="p">:</span>
                     <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">mount</span><span class="p">[</span><span class="s2">&quot;Source&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="o">*</span><span class="n">directory</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
-                    <span class="k">break</span>
+                    <span class="n">paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">:/home&quot;</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="n">mount</span><span class="p">[</span><span class="s2">&quot;Destination&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;/root/SEAMM&quot;</span><span class="p">:</span>
                     <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">mount</span><span class="p">[</span><span class="s2">&quot;Source&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="o">*</span><span class="n">directory</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">3</span><span class="p">:])</span>
-                    <span class="k">break</span>
-            <span class="k">else</span><span class="p">:</span>
+                    <span class="n">paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">:/root/SEAMM&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                     <span class="s2">&quot;Neither /home or /root/SEAMM were in the mounts for the container!&quot;</span>
                     <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">{mounts=}&quot;</span>
                 <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Not in a Docker container, so use the path as is</span>
-            <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span><span class="si">}</span><span class="s2">:/home&quot;</span><span class="p">]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;path = </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -558,7 +559,7 @@ document.write(`
 <span class="s2">                    remove=True,</span>
 <span class="s2">                    stderr=True,</span>
 <span class="s2">                    stdout=True,</span>
-<span class="s2">                    volumes=[f&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">:/home&quot;],</span>
+<span class="s2">                    volumes=paths,</span>
 <span class="s2">                    working_dir=&quot;/home&quot;,</span>
 <span class="s2">                )</span>
 <span class="s2">                &quot;&quot;&quot;</span>
@@ -572,7 +573,7 @@ document.write(`
                 <span class="n">remove</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">stderr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">stdout</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="n">volumes</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">:/home&quot;</span><span class="p">],</span>
+                <span class="n">volumes</span><span class="o">=</span><span class="n">paths</span><span class="p">,</span>
                 <span class="n">working_dir</span><span class="o">=</span><span class="s2">&quot;/home&quot;</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -585,7 +586,7 @@ document.write(`
 <span class="s2">                    remove=True,</span>
 <span class="s2">                    stderr=True,</span>
 <span class="s2">                    stdout=True,</span>
-<span class="s2">                    volumes=[f&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">:/home&quot;],</span>
+<span class="s2">                    volumes=paths,</span>
 <span class="s2">                    working_dir=&quot;/home&quot;,</span>
 <span class="s2">                )</span>
 <span class="s2">                &quot;&quot;&quot;</span>
@@ -598,7 +599,7 @@ document.write(`
                 <span class="n">remove</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">stderr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">stdout</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="n">volumes</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">:/home&quot;</span><span class="p">],</span>
+                <span class="n">volumes</span><span class="o">=</span><span class="n">paths</span><span class="p">,</span>
                 <span class="n">working_dir</span><span class="o">=</span><span class="s2">&quot;/home&quot;</span><span class="p">,</span>
             <span class="p">)</span>
 
