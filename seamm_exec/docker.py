@@ -94,19 +94,24 @@ class Docker(Base):
                 raise
 
             paths = []
+            no_home = True
             for mount in mounts:
                 self.logger.debug(f"{mount=}")
                 if mount["Destination"] == "/home":
+                    no_home = False
                     path = Path(mount["Source"]).joinpath(*directory.parts[2:])
                     paths.append(f"{path}:/home")
                 elif mount["Destination"] == "/root/SEAMM":
-                    path = Path(mount["Source"]).joinpath(*directory.parts[3:])
-                    paths.append(f"{path}:/root/SEAMM")
+                    seamm_path = Path(mount["Source"])
+                    paths.append(f"{seamm_path}:/root/SEAMM")
             if len(paths) == 0:
                 raise RuntimeError(
                     "Neither /home or /root/SEAMM were in the mounts for the container!"
                     "\n{mounts=}"
                 )
+            if no_home:
+                path = seamm_path.joinpath(*directory.parts[3:])
+                paths.append(f"{path}:/home")
         else:
             # Not in a Docker container, so use the path as is
             paths = [f"{Path(directory)}:/home"]
