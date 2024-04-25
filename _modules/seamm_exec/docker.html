@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.docker &#8212; SEAMM seamm-exec Plug-in 2024.4.25.1 documentation</title>
+    <title>seamm_exec.docker &#8212; SEAMM seamm-exec Plug-in 2024.4.25.2 documentation</title>
   
   
   
@@ -37,7 +37,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../_static/documentation_options.js?v=969c4dd6"></script>
+    <script src="../../_static/documentation_options.js?v=a164c7bc"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -491,9 +491,7 @@ document.write(`
 <span class="sd">        For this container the input filename defaults to &quot;mopac.dat&quot; so we do not need</span>
 <span class="sd">        to add it.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="s2">&quot;SEAMM_DEBUG_DOCKER&quot;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
-            <span class="n">log_level</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">level</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+        <span class="c1"># self.logger.setLevel(logging.DEBUG)</span>
 
         <span class="n">client</span> <span class="o">=</span> <span class="n">docker</span><span class="o">.</span><span class="n">from_env</span><span class="p">()</span>
 
@@ -551,6 +549,25 @@ document.write(`
                     <span class="k">break</span>
                 <span class="n">tmp</span> <span class="o">=</span> <span class="n">command</span>
 
+            <span class="k">if</span> <span class="s2">&quot;SEAMM_DEBUG_DOCKER&quot;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">directory</span> <span class="o">/</span> <span class="s2">&quot;docker.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                        result = client.containers.run(</span>
+<span class="s2">                            command=</span><span class="si">{</span><span class="n">command</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">                            environment=</span><span class="si">{</span><span class="n">env</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">                            image=</span><span class="si">{</span><span class="n">container</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">                            platform=</span><span class="si">{</span><span class="n">platform</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">                            remove=True,</span>
+<span class="s2">                            stderr=True,</span>
+<span class="s2">                            stdout=True,</span>
+<span class="s2">                            volumes=</span><span class="si">{</span><span class="n">paths</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">                            working_dir=&quot;/home&quot;,</span>
+<span class="s2">                        )</span>
+<span class="s2">                        &quot;&quot;&quot;</span><span class="p">,</span>
+                        <span class="n">file</span><span class="o">=</span><span class="n">fd</span><span class="p">,</span>
+                        <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">                result = client.containers.run(</span>
@@ -561,7 +578,7 @@ document.write(`
 <span class="s2">                    remove=True,</span>
 <span class="s2">                    stderr=True,</span>
 <span class="s2">                    stdout=True,</span>
-<span class="s2">                    volumes=paths,</span>
+<span class="s2">                    volumes=</span><span class="si">{</span><span class="n">paths</span><span class="si">}</span><span class="s2">,</span>
 <span class="s2">                    working_dir=&quot;/home&quot;,</span>
 <span class="s2">                )</span>
 <span class="s2">                &quot;&quot;&quot;</span>
@@ -588,7 +605,7 @@ document.write(`
 <span class="s2">                    remove=True,</span>
 <span class="s2">                    stderr=True,</span>
 <span class="s2">                    stdout=True,</span>
-<span class="s2">                    volumes=paths,</span>
+<span class="s2">                    volumes=</span><span class="si">{</span><span class="n">paths</span><span class="si">}</span><span class="s2">,</span>
 <span class="s2">                    working_dir=&quot;/home&quot;,</span>
 <span class="s2">                )</span>
 <span class="s2">                &quot;&quot;&quot;</span>
@@ -606,9 +623,6 @@ document.write(`
             <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">result</span><span class="p">))</span>
-
-        <span class="k">if</span> <span class="s2">&quot;SEAMM_DEBUG_DOCKER&quot;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">log_level</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{}</span></div>
 </div>
