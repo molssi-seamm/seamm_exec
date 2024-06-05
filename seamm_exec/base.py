@@ -126,7 +126,7 @@ class Base(object):
             # Ensure the file is read/write by the creator only
             saved_umask = os.umask(0o077)
 
-        self.logger.info(f"Running in {tmpdir}")
+        self.logger.debug(f"Running in {tmpdir}\n")
 
         if files is not None:
             # Write locally if directory is given
