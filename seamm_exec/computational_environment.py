@@ -68,7 +68,7 @@ def _slurm():
     if "NTASKS_PER_NODE" not in ce:
         ce["NTASKS_PER_NODE"] = int(ce["NTASKS"]) // int(ce["NNODES"])
 
-    # Expand `[i-k]` naming in nodelist
+    # Expand `[i-k]` naming in nodelist, eg. SLURM_NODELIST=tc[053,059,183,200]
     nodes = ce["NODELIST"].split(",")
     nodelist = []
     npernode = ce["NTASKS_PER_NODE"]

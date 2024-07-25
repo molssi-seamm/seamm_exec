@@ -60,7 +60,7 @@ class ExecFlowchart(object):
 
         self.flowchart = flowchart
 
-    def run(self, root=None):
+    def run(self, root=None, job_id=None):
         logger.info("In ExecFlowchart.run()")
         if not self.flowchart:
             raise RuntimeError("There is no flowchart to run!")
@@ -76,6 +76,10 @@ class ExecFlowchart(object):
         # Create the global context
         logger.info("Creating global variables space")
         seamm.flowchart_variables = seamm.Variables()
+
+        # Put the current time as a variable
+        seamm.flowchart_variables.set_variable("_start_time", time.time())
+        seamm.flowchart_variables.set_variable("_job_id", job_id)
 
         # And add the printer
         seamm.flowchart_variables.set_variable("printer", printer)
@@ -657,7 +661,7 @@ def run(
         logger.info("Executing the flowchart")
         try:
             exec = ExecFlowchart(flowchart)
-            exec.run(root=wdir)
+            exec.run(root=wdir, job_id=job_id)
             data["state"] = "finished"
         except Exception as e:
             data["state"] = "error"
