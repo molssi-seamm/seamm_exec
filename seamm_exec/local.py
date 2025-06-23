@@ -97,7 +97,7 @@ class Local(Base):
         elif "installation" in config and config["installation"] == "modules":
             # 4. modules
             modules = ""
-            if "GPUS" in ce:
+            if "NGPUS" in ce:
                 if "gpu_modules" in config and config["gpu_modules"] != "":
                     modules = config["gpu_modules"]
             else:
