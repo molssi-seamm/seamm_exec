@@ -397,8 +397,6 @@ def run(
     cmdline=None,
 ):
     """The standalone flowchart app"""
-    global print
-
     if not in_jobserver and len(sys.argv) > 1:
         if sys.argv[1] == "--help" or sys.argv[1] == "-h":
             # Running run_flowchart by hand ...
