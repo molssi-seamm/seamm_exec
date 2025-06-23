@@ -37,7 +37,6 @@ from seamm_util import getParser
 from seamm_util.printing import FormattedText as __
 import reference_handler
 import seamm
-import seamm_datastore
 import seamm_exec
 import seamm_util
 import seamm_util.printing as printing
@@ -311,6 +310,8 @@ class cd:
 
 def open_datastore(root, datastore):
     """Open the database via the datastore"""
+    import seamm_datastore
+
     # Get the user information for the datastore
     rc = seamm.SEAMMrc()
 
@@ -622,6 +623,8 @@ def run(
             }
         )
         if not in_jobserver and not standalone:
+            import seamm_datastore
+
             if "projects" not in data:
                 data["projects"] = projects
             data["datastore"] = datastore
@@ -707,6 +710,8 @@ def run(
                 except Exception as e:
                     printer.job(e)
             elif not standalone:
+                import seamm_datastore
+
                 # Let the datastore know that the job finished.
                 # current_time = datetime.now(timezone.utc)
 

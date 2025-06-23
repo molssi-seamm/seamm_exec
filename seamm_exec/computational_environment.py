@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-"""Helper routines for determining the computational environment from queueuing systems.
-"""
+"""Helper routines for determining the computational environment from queueuing
+systems."""
 
 import os
 
