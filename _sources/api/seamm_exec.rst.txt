@@ -9,53 +9,53 @@ seamm\_exec.base module
 
 .. automodule:: seamm_exec.base
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 seamm\_exec.computational\_environment module
 ---------------------------------------------
 
 .. automodule:: seamm_exec.computational_environment
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 seamm\_exec.docker module
 -------------------------
 
 .. automodule:: seamm_exec.docker
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 seamm\_exec.exec\_flowchart module
 ----------------------------------
 
 .. automodule:: seamm_exec.exec_flowchart
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 seamm\_exec.local module
 ------------------------
 
 .. automodule:: seamm_exec.local
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 seamm\_exec.seamm\_exec module
 ------------------------------
 
 .. automodule:: seamm_exec.seamm_exec
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: seamm_exec
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
