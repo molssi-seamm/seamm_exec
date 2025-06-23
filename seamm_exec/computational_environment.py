@@ -84,6 +84,9 @@ def _slurm():
     ce["NODELIST"] = nodelist
 
     if "JOB_GPUS" in ce:
-        ce["NGPUS"] = len(ce["JOB_GPUS"].split(","))
+        if isinstance(ce["JOB_GPUS"], str):
+            ce["NGPUS"] = len(ce["JOB_GPUS"].split(","))
+        else:
+            ce["NGPUS"] = 1
 
     return ce
