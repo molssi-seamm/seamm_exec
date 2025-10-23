@@ -69,6 +69,7 @@ class Local(Base):
 
         # Sift through the way we can find the executables.
         use_docker = False
+        shell_exe = None
         if "conda-environment" in config and config["conda-environment"] != "":
             # 1. Conda
             # May be the name of the environment or the path to the environment
@@ -106,6 +107,12 @@ class Local(Base):
             if len(modules) > 0:
                 # Use modules to get the executables
                 command = f"module load {modules}\n" + command
+
+            # Sort out the shell ... dash does not work with modules
+            if "shell" in config:
+                shell_exe = config["shell"]
+            else:
+                shell_exe = "/bin/bash"
 
         # Replace any variables in the command with values from the config file
         # and computational environment. Maybe nested.
@@ -235,6 +242,7 @@ class Local(Base):
                 env=tmp_env,
                 input=input_data,
                 shell=shell,
+                executable=shell_exe,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 universal_newlines=True,
