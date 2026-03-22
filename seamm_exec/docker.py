@@ -156,8 +156,7 @@ class Docker(Base):
                         file=fd,
                         flush=True,
                     )
-            self.logger.debug(
-                f"""
+            self.logger.debug(f"""
                 result = client.containers.run(
                     command={command},
                     environment={env},
@@ -169,8 +168,7 @@ class Docker(Base):
                     volumes={paths},
                     working_dir="/home",
                 )
-                """
-            )
+                """)
 
             result = client.containers.run(
                 command=command,
@@ -184,8 +182,7 @@ class Docker(Base):
                 working_dir="/home",
             )
         else:
-            self.logger.debug(
-                f"""
+            self.logger.debug(f"""
                 result = client.containers.run(
                     environment={env},
                     image={container},
@@ -196,8 +193,7 @@ class Docker(Base):
                     volumes={paths},
                     working_dir="/home",
                 )
-                """
-            )
+                """)
 
             result = client.containers.run(
                 environment=env,

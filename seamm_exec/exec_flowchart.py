@@ -94,8 +94,7 @@ class ExecFlowchart(object):
             printer.job(e)
 
         if references is not None:
-            template = string.Template(
-                """\
+            template = string.Template("""\
                 @misc{seamm,
                   address      = {Virginia Tech, Blacksburg, VA, USA},
                   author       = {Jessica Nash and
@@ -112,8 +111,7 @@ class ExecFlowchart(object):
                   url          = {https://doi.org/10.5281/zenodo.5153984},
                   version      = {$version},
                   year         = $year
-                }"""
-            )
+                }""")
 
             try:
                 version = __version__
@@ -422,8 +420,7 @@ def run(
     # Set up the argument parser for this node.
     parser = seamm_util.seamm_parser()
 
-    parser.epilog = textwrap.dedent(
-        """
+    parser.epilog = textwrap.dedent("""
         The plug-ins in this flowchart are listed above.
         Options, if any, for plug-ins are placed after
         the name of the plug-in, e.g.:
@@ -434,8 +431,7 @@ def run(
         plug-in name. E.g.
 
            test.flow lammps-step --help
-        """
-    )
+        """)
     parser.usage = "%(prog)s [options] plug-in [options] plug-in [options] ..."
 
     # How steps will execute simulation engines

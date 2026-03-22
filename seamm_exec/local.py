@@ -171,8 +171,7 @@ class Local(Base):
                 prefix = str(directory)
                 command = command.replace(prefix, "/home")
 
-                self.logger.debug(
-                    f"""
+                self.logger.debug(f"""
                     result = client.containers.run(
                         command={command},
                         environment={env},
@@ -184,8 +183,7 @@ class Local(Base):
                         volumes=[f"{path}:/home"],
                         working_dir="/home",
                     )
-                    """
-                )
+                    """)
 
                 result = client.containers.run(
                     command=command,
@@ -199,8 +197,7 @@ class Local(Base):
                     working_dir="/home",
                 )
             else:
-                self.logger.debug(
-                    f"""
+                self.logger.debug(f"""
                     result = client.containers.run(
                         environment={env},
                         image={container},
@@ -211,8 +208,7 @@ class Local(Base):
                         volumes=[f"{path}:/home"],
                         working_dir="/home",
                     )
-                    """
-                )
+                    """)
 
                 result = client.containers.run(
                     environment=env,
