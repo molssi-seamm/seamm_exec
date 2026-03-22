@@ -70,7 +70,7 @@ class Local(Base):
         # Sift through the way we can find the executables.
         use_docker = False
         shell_exe = None
-        if "conda-environment" in config and config["conda-environment"] != "":
+        if "installation" in config and config["installation"] == "conda":
             # 1. Conda
             # May be the name of the environment or the path to the environment
 

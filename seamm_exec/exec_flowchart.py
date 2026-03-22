@@ -627,6 +627,7 @@ def run(
                 data["projects"] = projects
             data["datastore"] = datastore
             data["job id"] = job_id
+            os.environ["SEAMM_JOB_ID"] = str(job_id)
 
             db = open_datastore(options["root"], datastore)
 
