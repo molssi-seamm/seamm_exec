@@ -70,7 +70,7 @@ class Local(Base):
         # Sift through the way we can find the executables.
         use_docker = False
         shell_exe = None
-        if "conda-environment" in config and config["conda-environment"] != "":
+        if "installation" in config and config["installation"] == "conda":
             # 1. Conda
             # May be the name of the environment or the path to the environment
 
@@ -171,8 +171,7 @@ class Local(Base):
                 prefix = str(directory)
                 command = command.replace(prefix, "/home")
 
-                self.logger.debug(
-                    f"""
+                self.logger.debug(f"""
                     result = client.containers.run(
                         command={command},
                         environment={env},
@@ -184,8 +183,7 @@ class Local(Base):
                         volumes=[f"{path}:/home"],
                         working_dir="/home",
                     )
-                    """
-                )
+                    """)
 
                 result = client.containers.run(
                     command=command,
@@ -199,8 +197,7 @@ class Local(Base):
                     working_dir="/home",
                 )
             else:
-                self.logger.debug(
-                    f"""
+                self.logger.debug(f"""
                     result = client.containers.run(
                         environment={env},
                         image={container},
@@ -211,8 +208,7 @@ class Local(Base):
                         volumes=[f"{path}:/home"],
                         working_dir="/home",
                     )
-                    """
-                )
+                    """)
 
                 result = client.containers.run(
                     environment=env,
