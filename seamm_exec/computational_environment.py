@@ -89,4 +89,37 @@ def _slurm():
         else:
             ce["NGPUS"] = 1
 
+    _slurm_normalize_memory(ce)
+
+    return ce
+
+
+def _slurm_normalize_memory(ce):
+    """Put ``MEM_PER_NODE`` and ``MEM_PER_CPU`` into **bytes**, matching
+    ``_local()`` so every consumer sees the same units.
+
+    SLURM reports ``SLURM_MEM_PER_CPU`` / ``SLURM_MEM_PER_NODE`` in **MiB**, and
+    normally sets only the one matching how memory was requested (``--mem-per-cpu``
+    vs ``--mem`` / ``--mem-per-node``); the other is absent. Here we convert
+    whichever is present to bytes and derive the missing one from the cores
+    allocated per node (``NTASKS_PER_NODE * CPUS_PER_TASK``). If neither is set
+    (no memory limit requested), fall back to the node's available memory.
+    """
+    MiB = 1024 * 1024
+    cpus_per_task = int(ce.get("CPUS_PER_TASK", 1) or 1)
+    ntasks_per_node = int(ce.get("NTASKS_PER_NODE", 1) or 1)
+    cores_per_node = max(1, ntasks_per_node * cpus_per_task)
+
+    mem_node = int(ce.get("MEM_PER_NODE", 0) or 0)  # MiB (from SLURM)
+    mem_cpu = int(ce.get("MEM_PER_CPU", 0) or 0)  # MiB (from SLURM)
+    if mem_node > 0:
+        ce["MEM_PER_NODE"] = mem_node * MiB
+        ce["MEM_PER_CPU"] = ce["MEM_PER_NODE"] // cores_per_node
+    elif mem_cpu > 0:
+        ce["MEM_PER_CPU"] = mem_cpu * MiB
+        ce["MEM_PER_NODE"] = ce["MEM_PER_CPU"] * cores_per_node
+    else:
+        available = psutil.virtual_memory().available
+        ce["MEM_PER_NODE"] = available
+        ce["MEM_PER_CPU"] = available // cores_per_node
     return ce
