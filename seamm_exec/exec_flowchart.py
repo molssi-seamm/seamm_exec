@@ -306,7 +306,7 @@ class cd:
         os.chdir(self.savedPath)
 
 
-def open_datastore(root, datastore):
+def open_datastore(root, datastore, timeout=20.0):
     """Open the database via the datastore"""
     import seamm_datastore
 
@@ -343,6 +343,7 @@ def open_datastore(root, datastore):
         datastore_location=datastore,
         username=user,
         password=password,
+        timeout=timeout,
     )
 
     return db
@@ -625,11 +626,17 @@ def run(
             data["job id"] = job_id
             os.environ["SEAMM_JOB_ID"] = str(job_id)
 
-            db = open_datastore(options["root"], datastore)
+            db = open_datastore(
+                options["root"],
+                datastore,
+                timeout=options.get("database_timeout", 20.0),
+            )
 
             pid = os.getpid()
             current_time = datetime.now(timezone.utc)
-            with seamm_datastore.session_scope(db.Session) as session:
+            with seamm_datastore.session_scope(
+                db.Session, timeout=options.get("database_timeout", 20.0)
+            ) as session:
                 job = db.Job.create(
                     job_id,
                     str(flowchart_path),
@@ -691,7 +698,9 @@ def run(
                     # Open the database directly, relying on file permissions
                     if db_path is None:
                         db_path = Path(datastore).expanduser().resolve() / "seamm.db"
-                    db = sqlite3.connect(db_path)
+                    db = sqlite3.connect(
+                        db_path, timeout=options.get("database_timeout", 20.0)
+                    )
                     cursor = db.cursor()
                     cursor.execute(
                         "UPDATE jobs"
@@ -717,8 +726,14 @@ def run(
 
                 # Add to the database
                 # N.B. Don't know how to remove 'pid' from the JSON properties column
-                db = open_datastore(options["root"], datastore)
-                with seamm_datastore.session_scope(db.Session) as session:
+                db = open_datastore(
+                    options["root"],
+                    datastore,
+                    timeout=options.get("database_timeout", 20.0),
+                )
+                with seamm_datastore.session_scope(
+                    db.Session, timeout=options.get("database_timeout", 20.0)
+                ) as session:
                     job = db.Job.update(
                         job_id, finished=current_time, status=data["state"]
                     )
