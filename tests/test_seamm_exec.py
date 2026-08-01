@@ -3,14 +3,44 @@ Unit and regression test for the seamm_exec package.
 """
 
 # Import package, test suite, and other packages as needed
+import logging
+from pathlib import Path
 import sys
 
 import pytest  # noqa: F401
 
 import seamm_exec  # noqa: F401
+from seamm_exec.base import Base, _running_under_scheduler
 from seamm_exec.computational_environment import _slurm_normalize_memory
 
 MiB = 1024 * 1024
+
+
+class _FakeExecutor(Base):
+    """A minimal Base subclass that records the directory it was asked to
+    run in, instead of actually launching anything."""
+
+    def __init__(self):
+        super().__init__(logging.getLogger("test-fake-executor"))
+        self.ran_in = None
+
+    @property
+    def name(self):
+        return "fake"
+
+    def exec(
+        self,
+        config,
+        cmd=[],
+        directory=None,
+        input_data=None,
+        env={},
+        shell=False,
+        ce={},
+    ):
+        self.ran_in = Path(directory)
+        (self.ran_in / "out.txt").write_text("hello")
+        return {"returncode": 0, "stdout": "", "stderr": ""}
 
 
 def test_seamm_exec_imported():
@@ -49,3 +79,58 @@ def test_slurm_memory_fallback_when_unset():
     _slurm_normalize_memory(ce)
     assert ce["MEM_PER_NODE"] > 0
     assert ce["MEM_PER_CPU"] == ce["MEM_PER_NODE"] // 4
+
+
+def test_running_under_scheduler(monkeypatch):
+    monkeypatch.delenv("SLURM_JOB_ID", raising=False)
+    assert not _running_under_scheduler()
+    monkeypatch.setenv("SLURM_JOB_ID", "12345")
+    assert _running_under_scheduler()
+
+
+def test_auto_in_situ_runs_in_scratch_under_slurm(monkeypatch, tmp_path):
+    """molssi-seamm/orca_step#20: with in_situ=None (the new default for
+    steps), a SLURM allocation must run in a temp dir (node-local scratch,
+    honoring $TMPDIR), not the given (NFS) job directory -- and the
+    requested result files must still land back in the job directory."""
+    monkeypatch.setenv("SLURM_JOB_ID", "12345")
+    executor = _FakeExecutor()
+    result = executor.run(
+        config={}, cmd=["true"], directory=tmp_path, return_files=["out.txt"]
+    )
+    assert result is not None
+    assert executor.ran_in != tmp_path
+    assert not executor.ran_in.exists()  # cleaned up afterwards
+    assert (tmp_path / "out.txt").read_text() == "hello"
+    # A caller (e.g. orca_step) needs this to report where it actually ran.
+    assert result["in_situ"] is False
+    assert result["directory"] == str(executor.ran_in)
+
+
+def test_auto_in_situ_runs_in_place_off_scheduler(monkeypatch, tmp_path):
+    """Off a scheduler (e.g. an interactive/local run), in_situ=None must
+    keep running directly in the given job directory, as before."""
+    monkeypatch.delenv("SLURM_JOB_ID", raising=False)
+    executor = _FakeExecutor()
+    result = executor.run(
+        config={}, cmd=["true"], directory=tmp_path, return_files=["out.txt"]
+    )
+    assert result is not None
+    assert executor.ran_in == tmp_path
+    assert (tmp_path / "out.txt").read_text() == "hello"
+    assert result["in_situ"] is True
+    assert result["directory"] == str(tmp_path)
+
+
+def test_explicit_in_situ_overrides_auto_detection(monkeypatch, tmp_path):
+    """An explicit True/False must still win over the scheduler auto-detect."""
+    monkeypatch.setenv("SLURM_JOB_ID", "12345")
+    executor = _FakeExecutor()
+    executor.run(
+        config={},
+        cmd=["true"],
+        directory=tmp_path,
+        return_files=["out.txt"],
+        in_situ=True,
+    )
+    assert executor.ran_in == tmp_path

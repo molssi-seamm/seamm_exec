@@ -19,6 +19,17 @@ if platform.system() != "Windows":
     import grp
     import pwd
 
+# Environment variables that indicate we are running inside a batch-scheduler
+# allocation, where the job/step directory is commonly NFS-mounted shared
+# storage rather than node-local disk. Mirrors the SLURM check in
+# computational_environment.computational_environment.
+_SCHEDULER_ENV_VARS = ("SLURM_JOB_ID",)
+
+
+def _running_under_scheduler():
+    """Whether we appear to be running inside a batch-scheduler allocation."""
+    return any(var in os.environ for var in _SCHEDULER_ENV_VARS)
+
 
 class Base(object):
     def __init__(self, logger):
@@ -80,7 +91,7 @@ class Base(object):
         env={},
         return_files=[],
         shell=False,
-        in_situ=False,
+        in_situ=None,
         ce={},
     ):
         """Execute a command directly on the current machine.
@@ -103,12 +114,21 @@ class Base(object):
             List of files to return/keep from the calculation
         shell : bool = False
             Whether to use the shell when launching task
-        in_situ : bool = False
-            Whether to run in the given directory. Otherwise run in a temp directory and
+        in_situ : bool or None = None
+            Whether to run in the given directory, versus a temp directory,
+            copying back only ``return_files`` afterwards. ``None`` (the
+            default) auto-detects: run in a temp directory -- which honors
+            ``$TMPDIR``, so it lands on node-local scratch under a scheduler
+            that sets it -- when running under a batch scheduler (currently
+            SLURM), since the job directory there is typically NFS-mounted
+            and unsafe for an MPI code's scratch I/O (molssi-seamm/orca_step#20);
+            otherwise run in place, as before.
         ce : dict(str, str or int)
             Description of the computational enviroment
-            return the requested files.
         """
+
+        if in_situ is None:
+            in_situ = not _running_under_scheduler()
 
         # Create temporary directory and write the files, being
         # careful about both errors and security.
@@ -182,6 +202,11 @@ class Base(object):
             shell=shell,
             ce=ce,
         )
+
+        # Record where the code actually ran, so callers can report it (e.g. to
+        # job.out/step.out) -- important for diagnosing NFS-vs-scratch issues.
+        result["in_situ"] = in_situ
+        result["directory"] = str(tmpdir)
 
         if not in_situ:
             os.umask(saved_umask)
