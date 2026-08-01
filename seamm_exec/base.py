@@ -203,6 +203,11 @@ class Base(object):
             ce=ce,
         )
 
+        # Record where the code actually ran, so callers can report it (e.g. to
+        # job.out/step.out) -- important for diagnosing NFS-vs-scratch issues.
+        result["in_situ"] = in_situ
+        result["directory"] = str(tmpdir)
+
         if not in_situ:
             os.umask(saved_umask)
 

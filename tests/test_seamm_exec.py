@@ -102,6 +102,9 @@ def test_auto_in_situ_runs_in_scratch_under_slurm(monkeypatch, tmp_path):
     assert executor.ran_in != tmp_path
     assert not executor.ran_in.exists()  # cleaned up afterwards
     assert (tmp_path / "out.txt").read_text() == "hello"
+    # A caller (e.g. orca_step) needs this to report where it actually ran.
+    assert result["in_situ"] is False
+    assert result["directory"] == str(executor.ran_in)
 
 
 def test_auto_in_situ_runs_in_place_off_scheduler(monkeypatch, tmp_path):
@@ -115,6 +118,8 @@ def test_auto_in_situ_runs_in_place_off_scheduler(monkeypatch, tmp_path):
     assert result is not None
     assert executor.ran_in == tmp_path
     assert (tmp_path / "out.txt").read_text() == "hello"
+    assert result["in_situ"] is True
+    assert result["directory"] == str(tmp_path)
 
 
 def test_explicit_in_situ_overrides_auto_detection(monkeypatch, tmp_path):

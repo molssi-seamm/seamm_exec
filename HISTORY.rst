@@ -11,6 +11,10 @@ History
       scratch I/O (see molssi-seamm/orca_step#20). Outside a scheduler, or when a
       step explicitly requests one or the other, behavior is unchanged. Steps opt
       in by passing ``in_situ=None`` instead of ``in_situ=True``.
+    * ``Base.run`` now reports where a code actually ran: the returned result
+      dictionary includes ``in_situ`` (bool) and ``directory`` (the run
+      directory actually used), so a step can tell the user in job.out/step.out
+      whether it ran in place or in scratch, and where.
 2026.7.15 -- Bugfix: avoid "database is locked" errors when jobs start together
     * When registering and finishing jobs, SEAMM now waits a short, configurable
       time (the "database-timeout" option, default 20 seconds) for the job
