@@ -381,7 +381,7 @@ def run_from_jobserver():
             data["error type"] = type(e).__name__
             data["error message"] = traceback.format_exc()
             with path.open("w") as fd:
-                fd.write("!MolSSI job_data 1.0")
+                fd.write(header_line)
                 json.dump(data, fd, indent=3, sort_keys=True)
                 fd.write("\n")
             raise
