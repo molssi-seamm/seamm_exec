@@ -1,6 +1,15 @@
 =======
 History
 =======
+2026.8.6 -- Bugfix: job_data.json header missing its newline on the error path
+    * ``run_from_jobserver()``'s exception handler wrote the ``!MolSSI job_data
+      1.0`` header without the trailing newline every other writer of this file
+      uses, so the header text and the JSON blob landed on the same first line.
+      Any reader that does ``readline()`` then ``json.load()`` -- including
+      ``seamm_datastore.Job.parse_job_data`` -- silently failed to parse the
+      file and treated it as absent whenever a job failed via this exact path.
+      Now uses the same ``header_line`` constant as every other writer.
+
 2026.8.1 -- Bugfix: avoid NFS-unsafe scratch I/O for MPI codes under a scheduler
     * ``Base.run``'s ``in_situ`` option now defaults to auto-detecting whether to
       run a code directly in the job directory or in a private temporary
