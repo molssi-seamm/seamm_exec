@@ -21,7 +21,6 @@ import os.path
 import platform
 import re
 import shutil
-import sqlite3
 import string
 import sys
 import textwrap
@@ -390,6 +389,10 @@ def run_from_jobserver():
 def run(
     job_id=None,
     wdir=None,
+    # db_path is no longer used here (the JobServer now owns every terminal
+    # status write -- see the finally block below), but stays accepted
+    # since seamm_jobserver's _build_cmd() still passes it positionally on
+    # the run_from_jobserver command line.
     db_path=None,
     setup_logging=True,
     in_jobserver=False,
@@ -691,29 +694,15 @@ def run(
             printer.job(f"\nProcess time: {timedelta(seconds=pt)} ({pt:.3f} s)")
             printer.job(f"Elapsed time: {timedelta(seconds=t)} ({t:.3f} s)")
 
-            if in_jobserver:
-                datastore = os.path.expanduser(options["datastore"])
-                try:
-                    current_time = datetime.now(timezone.utc)
-                    # Open the database directly, relying on file permissions
-                    if db_path is None:
-                        db_path = Path(datastore).expanduser().resolve() / "seamm.db"
-                    db = sqlite3.connect(
-                        db_path, timeout=options.get("database_timeout", 20.0)
-                    )
-                    cursor = db.cursor()
-                    cursor.execute(
-                        "UPDATE jobs"
-                        "   SET status = ?, finished = ?,"
-                        "       parameters=json_remove(jobs.parameters, '$.pid')"
-                        " WHERE id = ?",
-                        (data["state"], current_time, job_id),
-                    )
-                    db.commit()
-                    db.close()
-                except Exception as e:
-                    printer.job(e)
-            elif not standalone:
+            # Under a JobServer (in_jobserver=True), nothing more to do here:
+            # job_data.json above is the JobServer's sole source for this
+            # job's terminal status -- it reads it back and writes the
+            # datastore itself (see seamm_jobserver.jobserver's
+            # _read_job_data_state/_finalize_job_status), rather than this
+            # process writing to a datastore it may not even be able to
+            # reach (true for a JobServer dispatching to a remote SLURM
+            # cluster with no shared filesystem).
+            if not in_jobserver and not standalone:
                 import seamm_datastore
 
                 # Let the datastore know that the job finished.
