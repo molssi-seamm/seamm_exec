@@ -1,6 +1,16 @@
 =======
 History
 =======
+2026.8.8 -- Internal: stop writing job status directly to the datastore under a JobServer
+    * When run under a JobServer, a flowchart no longer writes its own
+      terminal status directly to the datastore -- the JobServer now reads
+      ``job_data.json`` (already written unconditionally beforehand) and
+      writes the datastore itself. This removes a duplicate/racy write, and
+      is required for a JobServer that dispatches to a remote SLURM cluster
+      with no shared filesystem, where the running job cannot reach the
+      datastore file at all. No effect on running a flowchart by hand
+      against a Dashboard-connected datastore.
+
 2026.8.6 -- Bugfix: job_data.json header missing its newline on the error path
     * ``run_from_jobserver()``'s exception handler wrote the ``!MolSSI job_data
       1.0`` header without the trailing newline every other writer of this file
