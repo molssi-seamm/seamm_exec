@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.exec_flowchart &#8212; SEAMM seamm-exec Plug-in 2026.8.6 documentation</title>
+    <title>seamm_exec.exec_flowchart &#8212; SEAMM seamm-exec Plug-in 2026.8.8 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
-    <script src="../../_static/documentation_options.js?v=9f7a9088"></script>
+    <script src="../../_static/documentation_options.js?v=d318b753"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.8.6" />
+  <meta name="docsearch:version" content="2026.8.8" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -437,7 +437,6 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">platform</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">sqlite3</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">string</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">textwrap</span>
@@ -823,6 +822,10 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span>
     <span class="n">job_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">wdir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># db_path is no longer used here (the JobServer now owns every terminal</span>
+    <span class="c1"># status write -- see the finally block below), but stays accepted</span>
+    <span class="c1"># since seamm_jobserver&#39;s _build_cmd() still passes it positionally on</span>
+    <span class="c1"># the run_from_jobserver command line.</span>
     <span class="n">db_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">setup_logging</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">in_jobserver</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -1124,29 +1127,15 @@
             <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Process time: </span><span class="si">{</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">pt</span><span class="p">)</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">pt</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> s)&quot;</span><span class="p">)</span>
             <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Elapsed time: </span><span class="si">{</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">t</span><span class="p">)</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">t</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> s)&quot;</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">in_jobserver</span><span class="p">:</span>
-                <span class="n">datastore</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;datastore&quot;</span><span class="p">])</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">current_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
-                    <span class="c1"># Open the database directly, relying on file permissions</span>
-                    <span class="k">if</span> <span class="n">db_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="n">db_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">datastore</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;seamm.db&quot;</span>
-                    <span class="n">db</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span>
-                        <span class="n">db_path</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;database_timeout&quot;</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">)</span>
-                    <span class="p">)</span>
-                    <span class="n">cursor</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-                    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-                        <span class="s2">&quot;UPDATE jobs&quot;</span>
-                        <span class="s2">&quot;   SET status = ?, finished = ?,&quot;</span>
-                        <span class="s2">&quot;       parameters=json_remove(jobs.parameters, &#39;$.pid&#39;)&quot;</span>
-                        <span class="s2">&quot; WHERE id = ?&quot;</span><span class="p">,</span>
-                        <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;state&quot;</span><span class="p">],</span> <span class="n">current_time</span><span class="p">,</span> <span class="n">job_id</span><span class="p">),</span>
-                    <span class="p">)</span>
-                    <span class="n">db</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
-                    <span class="n">db</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="ow">not</span> <span class="n">standalone</span><span class="p">:</span>
+            <span class="c1"># Under a JobServer (in_jobserver=True), nothing more to do here:</span>
+            <span class="c1"># job_data.json above is the JobServer&#39;s sole source for this</span>
+            <span class="c1"># job&#39;s terminal status -- it reads it back and writes the</span>
+            <span class="c1"># datastore itself (see seamm_jobserver.jobserver&#39;s</span>
+            <span class="c1"># _read_job_data_state/_finalize_job_status), rather than this</span>
+            <span class="c1"># process writing to a datastore it may not even be able to</span>
+            <span class="c1"># reach (true for a JobServer dispatching to a remote SLURM</span>
+            <span class="c1"># cluster with no shared filesystem).</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">in_jobserver</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">standalone</span><span class="p">:</span>
                 <span class="kn">import</span><span class="w"> </span><span class="nn">seamm_datastore</span>
 
                 <span class="c1"># Let the datastore know that the job finished.</span>
