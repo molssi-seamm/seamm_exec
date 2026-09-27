@@ -1,6 +1,14 @@
 =======
 History
 =======
+2026.9.27 -- Datastore credentials by installation
+    * A flowchart run straight into a datastore looked for its credentials in
+      ``~/.seamm.d/seammrc`` under ``[Dashboard: dev]`` when the root's path contained
+      "dev", and ``[Dashboard: localhost]`` otherwise. It now first tries a section
+      named after the installation's root directory (``[Dashboard: SEAMM_DEV]``,
+      ``[Dashboard: SEAMM_NEW]``, ...), so each of several installations can have its
+      own, then falls back to the old sections and the host name as before.
+
 2026.8.8 -- Internal: stop writing job status directly to the datastore under a JobServer
     * When run under a JobServer, a flowchart no longer writes its own
       terminal status directly to the datastore -- the JobServer now reads

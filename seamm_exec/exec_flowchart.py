@@ -305,6 +305,22 @@ class cd:
         os.chdir(self.savedPath)
 
 
+def credential_sections(root):
+    """The seammrc sections to look in for datastore credentials, in order.
+
+    ``[Dashboard: <name>]`` where name is the installation's root directory name
+    (``SEAMM_DEV``, ``SEAMM_NEW``, ...), then, as before, ``dev`` for a root whose
+    path contains "dev" or ``localhost`` otherwise, then this host's name.
+    """
+    name = Path(root).expanduser().name
+    legacy = "dev" if "dev" in str(root).lower() else "localhost"
+    sections = []
+    for section in (name, legacy, platform.node()):
+        if section and section not in sections:
+            sections.append(section)
+    return sections
+
+
 def open_datastore(root, datastore, timeout=20.0):
     """Open the database via the datastore"""
     import seamm_datastore
@@ -315,12 +331,7 @@ def open_datastore(root, datastore, timeout=20.0):
     user = None
     password = None
 
-    if "dev" in root.lower():
-        sections = ["dev"]
-    else:
-        sections = ["localhost"]
-    sections.append(platform.node())
-    for section in sections:
+    for section in credential_sections(root):
         section = "Dashboard: " + section
         if section in rc:
             if user is None and rc.has_option(section, "user"):
