@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 
@@ -7,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.exec_flowchart &#8212; SEAMM seamm-exec Plug-in 2026.8.8 documentation</title>
+    <title>seamm_exec.exec_flowchart &#8212; SEAMM seamm-exec Plug-in 2026.9.27 documentation</title>
   
   
   
@@ -26,8 +25,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -35,12 +34,12 @@
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <script defer src="../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=d318b753"></script>
+    <script src="../../_static/documentation_options.js?v=09c3d259"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.8.8" />
+  <meta name="docsearch:version" content="2026.9.27" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -100,7 +99,7 @@
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
   </button>
   
@@ -180,7 +179,7 @@
         <div class="navbar-item navbar-persistent--container">
           
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
  <i class="fa-solid fa-magnifying-glass"></i>
  <span class="search-button__default-text">Search</span>
  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -191,15 +190,15 @@
         <div class="navbar-item">
 
 <div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
-  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
     <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
     <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
     <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
   </button>
   <ul class="dropdown-menu dropdown-menu-end">
-    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
-    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
-    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
   </ul>
 </div></div>
       
@@ -236,7 +235,7 @@
   
     <div class="navbar-persistent--mobile">
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
  <i class="fa-solid fa-magnifying-glass"></i>
  <span class="search-button__default-text">Search</span>
  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -313,15 +312,15 @@
           <div class="navbar-item">
 
 <div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
-  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
     <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
     <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
     <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
   </button>
   <ul class="dropdown-menu dropdown-menu-end">
-    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
-    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
-    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
   </ul>
 </div></div>
         
@@ -416,7 +415,7 @@
   <h1>Source code for seamm_exec.exec_flowchart</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 
-<span class="sd">&quot;&quot;&quot;The ExecWorkflow object does what it name implies: it executes, or</span>
+<span class="sd">"""The ExecWorkflow object does what it name implies: it executes, or</span>
 <span class="sd">runs, a given flowchart.</span>
 
 <span class="sd">It provides the environment for running the computational tasks</span>
@@ -424,7 +423,7 @@
 <span class="sd">system (WMS).  The WMS concept, as used here, means tools that run</span>
 <span class="sd">given tasks without knowing anything about chemistry. The chemistry</span>
 <span class="sd">specialization is contained in the Flowchart and the nodes that it</span>
-<span class="sd">contains.&quot;&quot;&quot;</span>
+<span class="sd">contains."""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">timezone</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -457,34 +456,34 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">seamm_util.printing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">printing</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._version</span><span class="w"> </span><span class="kn">import</span> <span class="n">__version__</span>
 
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;seamm-exec&quot;</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"seamm-exec"</span><span class="p">)</span>
 <span class="n">printer</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">()</span>
 
-<span class="c1"># logging.basicConfig(level=&quot;WARNING&quot;)</span>
-<span class="c1"># logging.basicConfig(level=&quot;DEBUG&quot;)</span>
+<span class="c1"># logging.basicConfig(level="WARNING")</span>
+<span class="c1"># logging.basicConfig(level="DEBUG")</span>
 <span class="n">variables</span> <span class="o">=</span> <span class="n">seamm</span><span class="o">.</span><span class="n">Variables</span><span class="p">()</span>
-<span class="n">header_line</span> <span class="o">=</span> <span class="s2">&quot;!MolSSI job_data 1.0</span><span class="se">\n</span><span class="s2">&quot;</span>
+<span class="n">header_line</span> <span class="o">=</span> <span class="s2">"!MolSSI job_data 1.0</span><span class="se">\n</span><span class="s2">"</span>
 
 
 <div class="viewcode-block" id="ExecFlowchart">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.exec_flowchart.ExecFlowchart">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ExecFlowchart</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flowchart</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute a flowchart, providing support for the actual</span>
-<span class="sd">        execution of codes&quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;In ExecFlowchart.init()&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">"""Execute a flowchart, providing support for the actual</span>
+<span class="sd">        execution of codes"""</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"In ExecFlowchart.init()"</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span> <span class="o">=</span> <span class="n">flowchart</span>
 
 <div class="viewcode-block" id="ExecFlowchart.run">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.exec_flowchart.ExecFlowchart.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;In ExecFlowchart.run()&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"In ExecFlowchart.run()"</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;There is no flowchart to run!&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"There is no flowchart to run!"</span><span class="p">)</span>
 
         <span class="c1"># Get the command line options</span>
-        <span class="n">parser</span> <span class="o">=</span> <span class="n">getParser</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;SEAMM&quot;</span><span class="p">)</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">getParser</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"SEAMM"</span><span class="p">)</span>
         <span class="n">options</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">get_options</span><span class="p">()</span>
 
         <span class="c1"># Set the options in each step</span>
@@ -492,28 +491,28 @@
             <span class="n">node</span><span class="o">.</span><span class="n">all_options</span> <span class="o">=</span> <span class="n">options</span>
 
         <span class="c1"># Create the global context</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Creating global variables space&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Creating global variables space"</span><span class="p">)</span>
         <span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span> <span class="o">=</span> <span class="n">seamm</span><span class="o">.</span><span class="n">Variables</span><span class="p">()</span>
 
         <span class="c1"># Put the current time as a variable</span>
-        <span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">&quot;_start_time&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
-        <span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">&quot;_job_id&quot;</span><span class="p">,</span> <span class="n">job_id</span><span class="p">)</span>
+        <span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">"_start_time"</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+        <span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">"_job_id"</span><span class="p">,</span> <span class="n">job_id</span><span class="p">)</span>
 
         <span class="c1"># And add the printer</span>
-        <span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">&quot;printer&quot;</span><span class="p">,</span> <span class="n">printer</span><span class="p">)</span>
+        <span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">"printer"</span><span class="p">,</span> <span class="n">printer</span><span class="p">)</span>
 
         <span class="c1"># Setup the citations</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">root_directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;references.db&quot;</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">root_directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"references.db"</span>
         <span class="n">filename</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">missing_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">references</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">references</span> <span class="o">=</span> <span class="n">reference_handler</span><span class="o">.</span><span class="n">Reference_Handler</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="s2">&quot;Error with references:&quot;</span><span class="p">)</span>
+            <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="s2">"Error with references:"</span><span class="p">)</span>
             <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">references</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">template</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">Template</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+            <span class="n">template</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">Template</span><span class="p">(</span><span class="s2">"""</span><span class="se">\</span>
 <span class="s2">                @misc{seamm,</span>
 <span class="s2">                  address      = {Virginia Tech, Blacksburg, VA, USA},</span>
 <span class="s2">                  author       = {Jessica Nash and</span>
@@ -530,11 +529,11 @@
 <span class="s2">                  url          = {https://doi.org/10.5281/zenodo.5153984},</span>
 <span class="s2">                  version      = {$version},</span>
 <span class="s2">                  year         = $year</span>
-<span class="s2">                }&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="s2">                }"""</span><span class="p">)</span>
 
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">version</span> <span class="o">=</span> <span class="n">__version__</span>
-                <span class="n">year</span><span class="p">,</span> <span class="n">month</span> <span class="o">=</span> <span class="n">version</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">year</span><span class="p">,</span> <span class="n">month</span> <span class="o">=</span> <span class="n">version</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"."</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
                 <span class="n">month</span> <span class="o">=</span> <span class="n">calendar</span><span class="o">.</span><span class="n">month_abbr</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">month</span><span class="p">)]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
                 <span class="n">citation</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span>
                     <span class="n">month</span><span class="o">=</span><span class="n">month</span><span class="p">,</span>
@@ -544,33 +543,33 @@
 
                 <span class="n">references</span><span class="o">.</span><span class="n">cite</span><span class="p">(</span>
                     <span class="n">raw</span><span class="o">=</span><span class="n">citation</span><span class="p">,</span>
-                    <span class="n">alias</span><span class="o">=</span><span class="s2">&quot;SEAMM&quot;</span><span class="p">,</span>
-                    <span class="n">module</span><span class="o">=</span><span class="s2">&quot;seamm&quot;</span><span class="p">,</span>
+                    <span class="n">alias</span><span class="o">=</span><span class="s2">"SEAMM"</span><span class="p">,</span>
+                    <span class="n">module</span><span class="o">=</span><span class="s2">"seamm"</span><span class="p">,</span>
                     <span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                    <span class="n">note</span><span class="o">=</span><span class="s2">&quot;The principle citation for SEAMM.&quot;</span><span class="p">,</span>
+                    <span class="n">note</span><span class="o">=</span><span class="s2">"The principle citation for SEAMM."</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Exception in citation </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Exception in citation </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                 <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
 
         <span class="c1"># Create the system database, default system and configuration</span>
-        <span class="k">if</span> <span class="s2">&quot;SEAMM&quot;</span> <span class="ow">in</span> <span class="n">options</span><span class="p">:</span>
-            <span class="n">seamm_options</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;SEAMM&quot;</span><span class="p">]</span>
-            <span class="n">read_only</span> <span class="o">=</span> <span class="s2">&quot;read_only&quot;</span> <span class="ow">in</span> <span class="n">seamm_options</span> <span class="ow">and</span> <span class="n">seamm_options</span><span class="p">[</span><span class="s2">&quot;read_only&quot;</span><span class="p">]</span>
-            <span class="n">db_file</span> <span class="o">=</span> <span class="n">seamm_options</span><span class="p">[</span><span class="s2">&quot;database&quot;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="s2">&quot;:memory:&quot;</span> <span class="ow">in</span> <span class="n">db_file</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">"SEAMM"</span> <span class="ow">in</span> <span class="n">options</span><span class="p">:</span>
+            <span class="n">seamm_options</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">"SEAMM"</span><span class="p">]</span>
+            <span class="n">read_only</span> <span class="o">=</span> <span class="s2">"read_only"</span> <span class="ow">in</span> <span class="n">seamm_options</span> <span class="ow">and</span> <span class="n">seamm_options</span><span class="p">[</span><span class="s2">"read_only"</span><span class="p">]</span>
+            <span class="n">db_file</span> <span class="o">=</span> <span class="n">seamm_options</span><span class="p">[</span><span class="s2">"database"</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">":memory:"</span> <span class="ow">in</span> <span class="n">db_file</span><span class="p">:</span>
                 <span class="n">db</span> <span class="o">=</span> <span class="n">SystemDB</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">db_file</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">db_file</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
-                <span class="n">uri</span> <span class="o">=</span> <span class="s2">&quot;file:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                <span class="n">uri</span> <span class="o">=</span> <span class="s2">"file:"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">read_only</span><span class="p">:</span>
-                    <span class="n">uri</span> <span class="o">+=</span> <span class="s2">&quot;?mode=ro&quot;</span>
+                    <span class="n">uri</span> <span class="o">+=</span> <span class="s2">"?mode=ro"</span>
                 <span class="n">db</span> <span class="o">=</span> <span class="n">SystemDB</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">uri</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">db</span> <span class="o">=</span> <span class="n">SystemDB</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">&quot;file:seamm.db&quot;</span><span class="p">)</span>
+            <span class="n">db</span> <span class="o">=</span> <span class="n">SystemDB</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">"file:seamm.db"</span><span class="p">)</span>
 
         <span class="c1"># Put the system database in the global context for access.</span>
-        <span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">&quot;_system_db&quot;</span><span class="p">,</span> <span class="n">db</span><span class="p">)</span>
+        <span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">"_system_db"</span><span class="p">,</span> <span class="n">db</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">root_directory</span> <span class="o">=</span> <span class="n">root</span>
 
@@ -582,46 +581,46 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">reset_visited</span><span class="p">()</span>
 
         <span class="c1"># Get the start node</span>
-        <span class="n">next_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="s2">&quot;1&quot;</span><span class="p">)</span>
+        <span class="n">next_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="s2">"1"</span><span class="p">)</span>
 
         <span class="c1"># describe ourselves</span>
-        <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">((</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Description of the flowchart&quot;</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">----------------------------&quot;</span><span class="p">))</span>
+        <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">((</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Description of the flowchart"</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">----------------------------"</span><span class="p">))</span>
 
         <span class="k">while</span> <span class="n">next_node</span><span class="p">:</span>
             <span class="c1"># and print the description</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">next_node</span> <span class="o">=</span> <span class="n">next_node</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
             <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-                <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Error describing the flowchart</span><span class="se">\n\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="s2">"Error describing the flowchart</span><span class="se">\n\n</span><span class="s2">"</span> <span class="o">+</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
                 <span class="nb">print</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
                 <span class="k">raise</span>
             <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
                 <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="s2">&quot;Unexpected error describing the flowchart</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+                    <span class="s2">"Unexpected error describing the flowchart</span><span class="se">\n\n</span><span class="s2">"</span>
                     <span class="o">+</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
                 <span class="p">)</span>
                 <span class="nb">print</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
                 <span class="k">raise</span>
 
-        <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
 
         <span class="c1"># And actually run it!</span>
-        <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">((</span><span class="s2">&quot;Running the flowchart</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="s2">&quot;---------------------&quot;</span><span class="p">))</span>
+        <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">((</span><span class="s2">"Running the flowchart</span><span class="se">\n</span><span class="s2">"</span> <span class="s2">"---------------------"</span><span class="p">))</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">next_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="s2">&quot;1&quot;</span><span class="p">)</span>
+            <span class="n">next_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="s2">"1"</span><span class="p">)</span>
             <span class="k">while</span> <span class="n">next_node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">next_node</span> <span class="o">=</span> <span class="n">next_node</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
                 <span class="k">except</span> <span class="ne">DeprecationWarning</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Deprecation warning: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Deprecation warning: "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
                     <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
                     <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="c1"># Write the final structure</span>
-            <span class="n">db</span> <span class="o">=</span> <span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_system_db&quot;</span><span class="p">)</span>
+            <span class="n">db</span> <span class="o">=</span> <span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"_system_db"</span><span class="p">)</span>
             <span class="n">system</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">system</span>
             <span class="k">if</span> <span class="n">system</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">configuration</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">configuration</span>
@@ -630,7 +629,7 @@
                     <span class="k">if</span> <span class="n">configuration</span><span class="o">.</span><span class="n">n_atoms</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                         <span class="c1"># MMCIF file has bonds</span>
                         <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">root_directory</span><span class="p">,</span> <span class="s2">&quot;final_structure.mmcif&quot;</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">root_directory</span><span class="p">,</span> <span class="s2">"final_structure.mmcif"</span>
                         <span class="p">)</span>
                         <span class="n">text</span> <span class="o">=</span> <span class="kc">None</span>
                         <span class="k">try</span><span class="p">:</span>
@@ -638,9 +637,9 @@
                         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
                             <span class="k">pass</span>
                         <span class="k">if</span> <span class="n">text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+                            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
                                 <span class="nb">print</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">fd</span><span class="p">)</span>
-                            <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;final_structure.mmcif&quot;</span><span class="p">)</span>
+                            <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"final_structure.mmcif"</span><span class="p">)</span>
 
                         <span class="c1"># CIF file has cell and may have bonds</span>
                         <span class="k">if</span> <span class="n">configuration</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
@@ -651,33 +650,33 @@
                                 <span class="k">pass</span>
                             <span class="k">if</span> <span class="n">text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                                 <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                                    <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">root_directory</span><span class="p">,</span> <span class="s2">&quot;final_structure.cif&quot;</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">root_directory</span><span class="p">,</span> <span class="s2">"final_structure.cif"</span>
                                 <span class="p">)</span>
-                                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+                                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
                                     <span class="nb">print</span><span class="p">(</span><span class="n">configuration</span><span class="o">.</span><span class="n">to_cif_text</span><span class="p">(),</span> <span class="n">file</span><span class="o">=</span><span class="n">fd</span><span class="p">)</span>
-                                    <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;final_structure.cif&quot;</span><span class="p">)</span>
+                                    <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"final_structure.cif"</span><span class="p">)</span>
                         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">output</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                            <span class="n">files</span> <span class="o">=</span> <span class="s2">&quot;&#39; and &#39;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+                            <span class="n">files</span> <span class="o">=</span> <span class="s2">"' and '"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
                             <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span>
-                                <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Wrote the final structure to &#39;</span><span class="si">{</span><span class="n">files</span><span class="si">}</span><span class="s2">&#39; for viewing.&quot;</span>
+                                <span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Wrote the final structure to '</span><span class="si">{</span><span class="n">files</span><span class="si">}</span><span class="s2">' for viewing."</span>
                             <span class="p">)</span>
                         <span class="k">else</span><span class="p">:</span>
                             <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span>
-                                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Was unable to write the final structure as either &quot;</span>
-                                <span class="s2">&quot;an mmcif or cif file for viewing.&quot;</span>
+                                <span class="s2">"</span><span class="se">\n</span><span class="s2">Was unable to write the final structure as either "</span>
+                                <span class="s2">"an mmcif or cif file for viewing."</span>
                             <span class="p">)</span>
 
             <span class="c1"># And print out the references</span>
-            <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">root_directory</span><span class="p">,</span> <span class="s2">&quot;references.db&quot;</span><span class="p">)</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">root_directory</span><span class="p">,</span> <span class="s2">"references.db"</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">references</span> <span class="o">=</span> <span class="n">reference_handler</span><span class="o">.</span><span class="n">Reference_Handler</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="s2">&quot;Error with references:&quot;</span><span class="p">)</span>
+                <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="s2">"Error with references:"</span><span class="p">)</span>
                 <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">references</span><span class="o">.</span><span class="n">total_citations</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">tmp</span> <span class="o">=</span> <span class="p">{}</span>
-                <span class="n">citations</span> <span class="o">=</span> <span class="n">references</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;text&quot;</span><span class="p">)</span>
+                <span class="n">citations</span> <span class="o">=</span> <span class="n">references</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">fmt</span><span class="o">=</span><span class="s2">"text"</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">citation</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="n">level</span> <span class="ow">in</span> <span class="n">citations</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">level</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">tmp</span><span class="p">:</span>
                         <span class="n">tmp</span><span class="p">[</span><span class="n">level</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
@@ -687,13 +686,13 @@
                 <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
                     <span class="n">ref_dict</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="n">level</span><span class="p">]</span>
                     <span class="k">if</span> <span class="n">level</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                        <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Primary references:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Primary references:</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
                         <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
                     <span class="k">elif</span> <span class="n">level</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-                        <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Secondary references:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Secondary references:</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
                         <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Less important references:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Less important references:</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
                         <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
 
                     <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
@@ -701,13 +700,13 @@
                         <span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
                         <span class="n">text</span><span class="p">,</span> <span class="n">count</span> <span class="o">=</span> <span class="n">ref_dict</span><span class="p">[</span><span class="n">citation</span><span class="p">]</span>
                         <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) </span><span class="si">{:s}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">text</span><span class="p">))</span>
+                            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"(</span><span class="si">{}</span><span class="s2">) </span><span class="si">{:s}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">text</span><span class="p">))</span>
                         <span class="k">else</span><span class="p">:</span>
                             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                                <span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) </span><span class="si">{:s}</span><span class="s2"> (used </span><span class="si">{:d}</span><span class="s2"> times)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">count</span><span class="p">)</span>
+                                <span class="s2">"(</span><span class="si">{}</span><span class="s2">) </span><span class="si">{:s}</span><span class="s2"> (used </span><span class="si">{:d}</span><span class="s2"> times)"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">count</span><span class="p">)</span>
                             <span class="p">)</span>
                     <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span>
-                        <span class="n">__</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">),</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">indent_initial</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                        <span class="n">__</span><span class="p">(</span><span class="s2">"</span><span class="se">\n\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">),</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">,</span> <span class="n">indent_initial</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
                     <span class="p">)</span></div>
 </div>
 
@@ -716,7 +715,7 @@
 <div class="viewcode-block" id="cd">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.exec_flowchart.cd">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">cd</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Context manager for changing the current working directory&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Context manager for changing the current working directory"""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newPath</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">newPath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">newPath</span><span class="p">)</span>
@@ -730,10 +729,29 @@
 
 
 
+<div class="viewcode-block" id="credential_sections">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.exec_flowchart.credential_sections">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">credential_sections</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The seammrc sections to look in for datastore credentials, in order.</span>
+
+<span class="sd">    ``[Dashboard: &lt;name&gt;]`` where name is the installation's root directory name</span>
+<span class="sd">    (``SEAMM_DEV``, ``SEAMM_NEW``, ...), then, as before, ``dev`` for a root whose</span>
+<span class="sd">    path contains "dev" or ``localhost`` otherwise, then this host's name.</span>
+<span class="sd">    """</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">name</span>
+    <span class="n">legacy</span> <span class="o">=</span> <span class="s2">"dev"</span> <span class="k">if</span> <span class="s2">"dev"</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">else</span> <span class="s2">"localhost"</span>
+    <span class="n">sections</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">legacy</span><span class="p">,</span> <span class="n">platform</span><span class="o">.</span><span class="n">node</span><span class="p">()):</span>
+        <span class="k">if</span> <span class="n">section</span> <span class="ow">and</span> <span class="n">section</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sections</span><span class="p">:</span>
+            <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">section</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sections</span></div>
+
+
+
 <div class="viewcode-block" id="open_datastore">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.exec_flowchart.open_datastore">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">open_datastore</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">datastore</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">20.0</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Open the database via the datastore&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Open the database via the datastore"""</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">seamm_datastore</span>
 
     <span class="c1"># Get the user information for the datastore</span>
@@ -742,28 +760,23 @@
     <span class="n">user</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">password</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">if</span> <span class="s2">&quot;dev&quot;</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
-        <span class="n">sections</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;dev&quot;</span><span class="p">]</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">sections</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;localhost&quot;</span><span class="p">]</span>
-    <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">platform</span><span class="o">.</span><span class="n">node</span><span class="p">())</span>
-    <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">sections</span><span class="p">:</span>
-        <span class="n">section</span> <span class="o">=</span> <span class="s2">&quot;Dashboard: &quot;</span> <span class="o">+</span> <span class="n">section</span>
+    <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">credential_sections</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
+        <span class="n">section</span> <span class="o">=</span> <span class="s2">"Dashboard: "</span> <span class="o">+</span> <span class="n">section</span>
         <span class="k">if</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">rc</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">rc</span><span class="o">.</span><span class="n">has_option</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="s2">&quot;user&quot;</span><span class="p">):</span>
-                <span class="n">user</span> <span class="o">=</span> <span class="n">rc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="s2">&quot;user&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">password</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">rc</span><span class="o">.</span><span class="n">has_option</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="s2">&quot;password&quot;</span><span class="p">):</span>
-                <span class="n">password</span> <span class="o">=</span> <span class="n">rc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="s2">&quot;password&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">rc</span><span class="o">.</span><span class="n">has_option</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="s2">"user"</span><span class="p">):</span>
+                <span class="n">user</span> <span class="o">=</span> <span class="n">rc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="s2">"user"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">password</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">rc</span><span class="o">.</span><span class="n">has_option</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="s2">"password"</span><span class="p">):</span>
+                <span class="n">password</span> <span class="o">=</span> <span class="n">rc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="s2">"password"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">password</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-            <span class="s2">&quot;You need credentials in &#39;~/.seamm.d/seammrc&#39; to run jobs from the &quot;</span>
-            <span class="s2">&quot;commandline. See the documentation for more details.&quot;</span>
+            <span class="s2">"You need credentials in '~/.seamm.d/seammrc' to run jobs from the "</span>
+            <span class="s2">"commandline. See the documentation for more details."</span>
         <span class="p">)</span>
 
     <span class="c1"># Add to the database</span>
-    <span class="n">db_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">datastore</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;seamm.db&quot;</span>
-    <span class="n">db_uri</span> <span class="o">=</span> <span class="s2">&quot;sqlite:///&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">db_path</span><span class="p">)</span>
+    <span class="n">db_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">datastore</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span> <span class="o">/</span> <span class="s2">"seamm.db"</span>
+    <span class="n">db_uri</span> <span class="o">=</span> <span class="s2">"sqlite:///"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">db_path</span><span class="p">)</span>
     <span class="n">db</span> <span class="o">=</span> <span class="n">seamm_datastore</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span>
         <span class="n">database_uri</span><span class="o">=</span><span class="n">db_uri</span><span class="p">,</span>
         <span class="n">datastore_location</span><span class="o">=</span><span class="n">datastore</span><span class="p">,</span>
@@ -779,10 +792,10 @@
 <div class="viewcode-block" id="run_from_jobserver">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.exec_flowchart.run_from_jobserver">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_from_jobserver</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper routine to run from the JobServer.</span>
+<span class="w">    </span><span class="sd">"""Helper routine to run from the JobServer.</span>
 
 <span class="sd">    Gets the arguments from the command line.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">job_id</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">wdir</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
     <span class="n">db_path</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
@@ -798,21 +811,21 @@
                 <span class="n">cmdline</span><span class="o">=</span><span class="n">cmdline</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;job_data.json&quot;</span><span class="p">)</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"job_data.json"</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-                <span class="k">with</span> <span class="n">path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
                     <span class="n">fd</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
                     <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
 
-            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;state&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;error&quot;</span>
-            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;error type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
-            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;error message&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
-            <span class="k">with</span> <span class="n">path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">"state"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"error"</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">"error type"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">"error message"</span><span class="p">]</span> <span class="o">=</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
+            <span class="k">with</span> <span class="n">path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
                 <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">header_line</span><span class="p">)</span>
                 <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">fd</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
             <span class="k">raise</span></div>
 
 
@@ -824,32 +837,32 @@
     <span class="n">wdir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="c1"># db_path is no longer used here (the JobServer now owns every terminal</span>
     <span class="c1"># status write -- see the finally block below), but stays accepted</span>
-    <span class="c1"># since seamm_jobserver&#39;s _build_cmd() still passes it positionally on</span>
+    <span class="c1"># since seamm_jobserver's _build_cmd() still passes it positionally on</span>
     <span class="c1"># the run_from_jobserver command line.</span>
     <span class="n">db_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">setup_logging</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">in_jobserver</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">cmdline</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The standalone flowchart app&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""The standalone flowchart app"""</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">in_jobserver</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;--help&quot;</span> <span class="ow">or</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;-h&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"--help"</span> <span class="ow">or</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"-h"</span><span class="p">:</span>
             <span class="c1"># Running run_flowchart by hand ...</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;usage: run_flowchart &lt;flowchart&gt; [options]&quot;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;usually it is simpler to execute the flowchart file itself&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"usage: run_flowchart &lt;flowchart&gt; [options]"</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"usually it is simpler to execute the flowchart file itself"</span><span class="p">)</span>
             <span class="n">exit</span><span class="p">()</span>
 
-        <span class="c1"># Slice off &#39;run_flowchart&#39; from the arguments, leaving the</span>
+        <span class="c1"># Slice off 'run_flowchart' from the arguments, leaving the</span>
         <span class="c1"># flowchart as the thing being run.</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">argv</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
 
         <span class="n">filename</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">wdir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;flowchart.flow&quot;</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="s2">"flowchart.flow"</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">wdir</span><span class="p">,</span> <span class="s2">&quot;flowchart.flow&quot;</span><span class="p">)</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">wdir</span><span class="p">,</span> <span class="s2">"flowchart.flow"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">cmdline</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">cmdline</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
@@ -857,7 +870,7 @@
     <span class="c1"># Set up the argument parser for this node.</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">seamm_util</span><span class="o">.</span><span class="n">seamm_parser</span><span class="p">()</span>
 
-    <span class="n">parser</span><span class="o">.</span><span class="n">epilog</span> <span class="o">=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">epilog</span> <span class="o">=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="s2">"""</span>
 <span class="s2">        The plug-ins in this flowchart are listed above.</span>
 <span class="s2">        Options, if any, for plug-ins are placed after</span>
 <span class="s2">        the name of the plug-in, e.g.:</span>
@@ -868,36 +881,36 @@
 <span class="s2">        plug-in name. E.g.</span>
 
 <span class="s2">           test.flow lammps-step --help</span>
-<span class="s2">        &quot;&quot;&quot;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">usage</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%(prog)s</span><span class="s2"> [options] plug-in [options] plug-in [options] ...&quot;</span>
+<span class="s2">        """</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">usage</span> <span class="o">=</span> <span class="s2">"</span><span class="si">%(prog)s</span><span class="s2"> [options] plug-in [options] plug-in [options] ..."</span>
 
     <span class="c1"># How steps will execute simulation engines</span>
-    <span class="k">if</span> <span class="s2">&quot;SEAMM_ENVIRONMENT&quot;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
-        <span class="n">default</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;SEAMM_ENVIRONMENT&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="s2">"SEAMM_ENVIRONMENT"</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+        <span class="n">default</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"SEAMM_ENVIRONMENT"</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">default</span> <span class="o">=</span> <span class="s2">&quot;local&quot;</span>
+        <span class="n">default</span> <span class="o">=</span> <span class="s2">"local"</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;SEAMM&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--executor&quot;</span><span class="p">,</span>
-        <span class="n">group</span><span class="o">=</span><span class="s2">&quot;job options&quot;</span><span class="p">,</span>
+        <span class="s2">"SEAMM"</span><span class="p">,</span>
+        <span class="s2">"--executor"</span><span class="p">,</span>
+        <span class="n">group</span><span class="o">=</span><span class="s2">"job options"</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">,</span>
         <span class="n">choices</span><span class="o">=</span><span class="n">seamm_exec</span><span class="o">.</span><span class="n">executors</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;The executor used to run simulation engines.&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"The executor used to run simulation engines."</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="c1"># Now we need to get the flowchart so that we can set up all the</span>
     <span class="c1"># parsers for the steps in order to provide appropriate help.</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The flowchart &#39;</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&#39; does not exist.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The flowchart '</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">' does not exist."</span><span class="p">)</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    reading in flowchart &#39;</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
-    <span class="n">flowchart</span> <span class="o">=</span> <span class="n">seamm</span><span class="o">.</span><span class="n">Flowchart</span><span class="p">(</span><span class="n">parser_name</span><span class="o">=</span><span class="s2">&quot;SEAMM&quot;</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="n">wdir</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"    reading in flowchart '</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+    <span class="n">flowchart</span> <span class="o">=</span> <span class="n">seamm</span><span class="o">.</span><span class="n">Flowchart</span><span class="p">(</span><span class="n">parser_name</span><span class="o">=</span><span class="s2">"SEAMM"</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="n">wdir</span><span class="p">)</span>
 
     <span class="c1"># Setup some useful parameters</span>
     <span class="n">flowchart</span><span class="o">.</span><span class="n">in_jobserver</span> <span class="o">=</span> <span class="n">in_jobserver</span>
 
     <span class="n">flowchart</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;   finished reading the flowchart&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"   finished reading the flowchart"</span><span class="p">)</span>
 
     <span class="c1"># Now traverse the flowchart, setting up the ids and parsers</span>
     <span class="n">flowchart</span><span class="o">.</span><span class="n">set_ids</span><span class="p">()</span>
@@ -905,74 +918,74 @@
 
     <span class="c1"># And handle the command-line arguments and ini file options.</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">cmdline</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Parsed the command-line arguments&quot;</span><span class="p">)</span>
-    <span class="n">options</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">get_options</span><span class="p">(</span><span class="s2">&quot;SEAMM&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Parsed the command-line arguments"</span><span class="p">)</span>
+    <span class="n">options</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">get_options</span><span class="p">(</span><span class="s2">"SEAMM"</span><span class="p">)</span>
 
     <span class="c1"># Whether to just run as-is, without getting a job_id, using the</span>
     <span class="c1"># datastore, etc.</span>
-    <span class="n">standalone</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;standalone&quot;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;projects&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span>
+    <span class="n">standalone</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">"standalone"</span><span class="p">]</span> <span class="ow">or</span> <span class="n">options</span><span class="p">[</span><span class="s2">"projects"</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span>
 
     <span class="c1"># Setup the logging</span>
     <span class="k">if</span> <span class="n">setup_logging</span><span class="p">:</span>
-        <span class="k">if</span> <span class="s2">&quot;log_level&quot;</span> <span class="ow">in</span> <span class="n">options</span><span class="p">:</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;log_level&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s2">"log_level"</span> <span class="ow">in</span> <span class="n">options</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">options</span><span class="p">[</span><span class="s2">"log_level"</span><span class="p">])</span>
 
         <span class="c1"># Set the log level for the plug-ins</span>
         <span class="n">flowchart</span><span class="o">.</span><span class="n">set_log_level</span><span class="p">(</span><span class="n">parser</span><span class="o">.</span><span class="n">get_options</span><span class="p">())</span>
 
     <span class="c1"># Get the executor for tasks</span>
-    <span class="n">flowchart</span><span class="o">.</span><span class="n">executor</span> <span class="o">=</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">get_executor</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;executor&quot;</span><span class="p">])</span>
+    <span class="n">flowchart</span><span class="o">.</span><span class="n">executor</span> <span class="o">=</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">get_executor</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">"executor"</span><span class="p">])</span>
 
     <span class="c1"># Create the working directory where files, output, etc. go.</span>
     <span class="c1"># At the moment this is datastore/job_id</span>
 
     <span class="k">if</span> <span class="n">standalone</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Running in standalone mode.&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Running in standalone mode."</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">wdir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">wdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">datastore</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;datastore&quot;</span><span class="p">])</span>
+        <span class="n">datastore</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">"datastore"</span><span class="p">])</span>
 
         <span class="k">if</span> <span class="n">job_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;job_id_file&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">job_id_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">datastore</span><span class="p">,</span> <span class="s2">&quot;job.id&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">"job_id_file"</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">job_id_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">datastore</span><span class="p">,</span> <span class="s2">"job.id"</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">job_id_file</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;job_id_file&quot;</span><span class="p">]</span>
+                <span class="n">job_id_file</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">"job_id_file"</span><span class="p">]</span>
 
             <span class="c1"># Get the job_id from the file, creating the file if necessary</span>
             <span class="n">job_id</span> <span class="o">=</span> <span class="n">get_job_id</span><span class="p">(</span><span class="n">job_id_file</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;projects&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">projects</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">"projects"</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">projects</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"default"</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">projects</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;projects&quot;</span><span class="p">]</span>
+            <span class="n">projects</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">"projects"</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">wdir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># And put it all together</span>
             <span class="n">wdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                    <span class="n">datastore</span><span class="p">,</span> <span class="s2">&quot;projects&quot;</span><span class="p">,</span> <span class="n">projects</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;Job_</span><span class="si">{:06d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+                    <span class="n">datastore</span><span class="p">,</span> <span class="s2">"projects"</span><span class="p">,</span> <span class="n">projects</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">"Job_</span><span class="si">{:06d}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
                 <span class="p">)</span>
             <span class="p">)</span>
 
             <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">wdir</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;force&quot;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">"force"</span><span class="p">]:</span>
                     <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">wdir</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Directory &#39;</span><span class="si">{}</span><span class="s2">&#39; exists, use --force to overwrite&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">wdir</span><span class="p">)</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="s2">"Directory '</span><span class="si">{}</span><span class="s2">' exists, use --force to overwrite"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">wdir</span><span class="p">)</span>
 
                     <span class="n">logging</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
                     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">wdir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;The working directory is &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">wdir</span><span class="p">))</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"The working directory is '</span><span class="si">{}</span><span class="s2">'"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">wdir</span><span class="p">))</span>
 
     <span class="c1"># Set up the root printer, and add handlers to print to the file</span>
-    <span class="c1"># &#39;job.out&#39; in the working directory and to stdout, as requested</span>
+    <span class="c1"># 'job.out' in the working directory and to stdout, as requested</span>
     <span class="c1"># in the options. Since all printers are children of the root</span>
     <span class="c1"># printer, all output at the right levels will flow here</span>
 
     <span class="c1"># Set up our formatter</span>
-    <span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{message:s}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;{&quot;</span><span class="p">)</span>
+    <span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="n">fmt</span><span class="o">=</span><span class="s2">"</span><span class="si">{message:s}</span><span class="s2">"</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"{"</span><span class="p">)</span>
 
     <span class="c1"># A handler for stdout</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">in_jobserver</span><span class="p">:</span>
@@ -983,19 +996,19 @@
 
     <span class="c1"># A handler for the file</span>
     <span class="c1"># Frist remove the job.out file if it exists so we start freash</span>
-    <span class="n">job_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">wdir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;job.out&quot;</span>
+    <span class="n">job_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">wdir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"job.out"</span>
     <span class="n">job_file</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">missing_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="n">file_handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">wdir</span><span class="p">,</span> <span class="s2">&quot;job.out&quot;</span><span class="p">))</span>
+    <span class="n">file_handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">wdir</span><span class="p">,</span> <span class="s2">"job.out"</span><span class="p">))</span>
     <span class="n">file_handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">seamm_util</span><span class="o">.</span><span class="n">printing</span><span class="o">.</span><span class="n">NORMAL</span><span class="p">)</span>
     <span class="n">file_handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
     <span class="n">printer</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">file_handler</span><span class="p">)</span>
 
     <span class="c1"># And ... finally ... run!</span>
-    <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%A %Y.%m.</span><span class="si">%d</span><span class="s2"> %H:%M:%S %Z&quot;</span><span class="p">))</span>
-    <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="s2">&quot;Running in directory &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">wdir</span><span class="p">))</span>
+    <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">"%A %Y.%m.</span><span class="si">%d</span><span class="s2"> %H:%M:%S %Z"</span><span class="p">))</span>
+    <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="s2">"Running in directory '</span><span class="si">{}</span><span class="s2">'"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">wdir</span><span class="p">))</span>
 
-    <span class="n">flowchart_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">wdir</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;flowchart.flow&quot;</span>
+    <span class="n">flowchart_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">wdir</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span> <span class="o">/</span> <span class="s2">"flowchart.flow"</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
 
     <span class="c1"># copy the flowchart to the root directory if it is not there already</span>
@@ -1005,132 +1018,132 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">flowchart_path</span><span class="p">)</span>
 
-    <span class="c1"># Make executable if it isn&#39;t</span>
+    <span class="c1"># Make executable if it isn't</span>
     <span class="n">permissions</span> <span class="o">=</span> <span class="n">flowchart_path</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_mode</span>
     <span class="k">if</span> <span class="n">permissions</span> <span class="o">&amp;</span> <span class="mo">0o100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">flowchart_path</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">permissions</span> <span class="o">|</span> <span class="mo">0o110</span><span class="p">)</span>
 
-    <span class="c1"># logger.info(f&quot;    reading in flowchart &#39;{flowchart_path}&#39; -- 2&quot;)</span>
+    <span class="c1"># logger.info(f"    reading in flowchart '{flowchart_path}' -- 2")</span>
     <span class="c1"># flowchart = seamm.Flowchart(directory=wdir)</span>
     <span class="c1"># flowchart.read(flowchart_path)</span>
-    <span class="c1"># logger.info(&quot;   finished reading the flowchart -- 2&quot;)</span>
+    <span class="c1"># logger.info("   finished reading the flowchart -- 2")</span>
 
     <span class="c1"># Change to the working directory and run the flowchart</span>
     <span class="k">with</span> <span class="n">cd</span><span class="p">(</span><span class="n">wdir</span><span class="p">):</span>
         <span class="c1"># Set up the initial metadata for the job.</span>
         <span class="n">time_now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">in_jobserver</span><span class="p">:</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;job_data.json&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"job_data.json"</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
                 <span class="n">fd</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
                 <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-                <span class="n">title</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">"title"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">""</span><span class="p">:</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">"title"</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">title</span> <span class="o">=</span> <span class="n">flowchart</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">title</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-                <span class="s2">&quot;untitled job&quot;</span>
-            <span class="k">if</span> <span class="s2">&quot;description&quot;</span> <span class="ow">in</span> <span class="n">options</span><span class="p">:</span>
-                <span class="n">description</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">]</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="n">flowchart</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">"title"</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">title</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
+                <span class="s2">"untitled job"</span>
+            <span class="k">if</span> <span class="s2">"description"</span> <span class="ow">in</span> <span class="n">options</span><span class="p">:</span>
+                <span class="n">description</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">"description"</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">description</span> <span class="o">=</span> <span class="n">flowchart</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">description</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-                <span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;Run from the command-line.&quot;</span>
+                <span class="n">description</span> <span class="o">=</span> <span class="n">flowchart</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">"description"</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">description</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
+                <span class="n">description</span> <span class="o">=</span> <span class="s2">"Run from the command-line."</span>
             <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;data_version&quot;</span><span class="p">:</span> <span class="s2">&quot;1.0&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">title</span><span class="p">,</span>
-                <span class="s2">&quot;working directory&quot;</span><span class="p">:</span> <span class="n">wdir</span><span class="p">,</span>
-                <span class="s2">&quot;submitted time&quot;</span><span class="p">:</span> <span class="n">time_now</span><span class="p">,</span>
+                <span class="s2">"data_version"</span><span class="p">:</span> <span class="s2">"1.0"</span><span class="p">,</span>
+                <span class="s2">"title"</span><span class="p">:</span> <span class="n">title</span><span class="p">,</span>
+                <span class="s2">"working directory"</span><span class="p">:</span> <span class="n">wdir</span><span class="p">,</span>
+                <span class="s2">"submitted time"</span><span class="p">:</span> <span class="n">time_now</span><span class="p">,</span>
             <span class="p">}</span>
         <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
             <span class="p">{</span>
-                <span class="s2">&quot;command line&quot;</span><span class="p">:</span> <span class="n">cmdline</span><span class="p">,</span>
-                <span class="s2">&quot;flowchart_digest&quot;</span><span class="p">:</span> <span class="n">flowchart</span><span class="o">.</span><span class="n">digest</span><span class="p">(),</span>
-                <span class="s2">&quot;flowchart_digest_strict&quot;</span><span class="p">:</span> <span class="n">flowchart</span><span class="o">.</span><span class="n">digest</span><span class="p">(</span><span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-                <span class="s2">&quot;start time&quot;</span><span class="p">:</span> <span class="n">time_now</span><span class="p">,</span>
-                <span class="s2">&quot;state&quot;</span><span class="p">:</span> <span class="s2">&quot;started&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">,</span>
-                <span class="s2">&quot;~cpuinfo&quot;</span><span class="p">:</span> <span class="n">cpuinfo</span><span class="o">.</span><span class="n">get_cpu_info</span><span class="p">(),</span>
+                <span class="s2">"command line"</span><span class="p">:</span> <span class="n">cmdline</span><span class="p">,</span>
+                <span class="s2">"flowchart_digest"</span><span class="p">:</span> <span class="n">flowchart</span><span class="o">.</span><span class="n">digest</span><span class="p">(),</span>
+                <span class="s2">"flowchart_digest_strict"</span><span class="p">:</span> <span class="n">flowchart</span><span class="o">.</span><span class="n">digest</span><span class="p">(</span><span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                <span class="s2">"start time"</span><span class="p">:</span> <span class="n">time_now</span><span class="p">,</span>
+                <span class="s2">"state"</span><span class="p">:</span> <span class="s2">"started"</span><span class="p">,</span>
+                <span class="s2">"uuid"</span><span class="p">:</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">,</span>
+                <span class="s2">"~cpuinfo"</span><span class="p">:</span> <span class="n">cpuinfo</span><span class="o">.</span><span class="n">get_cpu_info</span><span class="p">(),</span>
             <span class="p">}</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">in_jobserver</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">standalone</span><span class="p">:</span>
             <span class="kn">import</span><span class="w"> </span><span class="nn">seamm_datastore</span>
 
-            <span class="k">if</span> <span class="s2">&quot;projects&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
-                <span class="n">data</span><span class="p">[</span><span class="s2">&quot;projects&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">projects</span>
-            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;datastore&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datastore</span>
-            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;job id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">job_id</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;SEAMM_JOB_ID&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">"projects"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="s2">"projects"</span><span class="p">]</span> <span class="o">=</span> <span class="n">projects</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">"datastore"</span><span class="p">]</span> <span class="o">=</span> <span class="n">datastore</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">"job id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">job_id</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"SEAMM_JOB_ID"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
 
             <span class="n">db</span> <span class="o">=</span> <span class="n">open_datastore</span><span class="p">(</span>
-                <span class="n">options</span><span class="p">[</span><span class="s2">&quot;root&quot;</span><span class="p">],</span>
+                <span class="n">options</span><span class="p">[</span><span class="s2">"root"</span><span class="p">],</span>
                 <span class="n">datastore</span><span class="p">,</span>
-                <span class="n">timeout</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;database_timeout&quot;</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">),</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"database_timeout"</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">),</span>
             <span class="p">)</span>
 
             <span class="n">pid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span>
             <span class="n">current_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
             <span class="k">with</span> <span class="n">seamm_datastore</span><span class="o">.</span><span class="n">session_scope</span><span class="p">(</span>
-                <span class="n">db</span><span class="o">.</span><span class="n">Session</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;database_timeout&quot;</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">)</span>
+                <span class="n">db</span><span class="o">.</span><span class="n">Session</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"database_timeout"</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">)</span>
             <span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
                 <span class="n">job</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Job</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
                     <span class="n">job_id</span><span class="p">,</span>
                     <span class="nb">str</span><span class="p">(</span><span class="n">flowchart_path</span><span class="p">),</span>
-                    <span class="n">project_names</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;projects&quot;</span><span class="p">],</span>
+                    <span class="n">project_names</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">"projects"</span><span class="p">],</span>
                     <span class="n">path</span><span class="o">=</span><span class="n">wdir</span><span class="p">,</span>
                     <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
                     <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
                     <span class="n">submitted</span><span class="o">=</span><span class="n">current_time</span><span class="p">,</span>
                     <span class="n">started</span><span class="o">=</span><span class="n">current_time</span><span class="p">,</span>
-                    <span class="n">parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;cmdline&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;pid&quot;</span><span class="p">:</span> <span class="n">pid</span><span class="p">},</span>
-                    <span class="n">status</span><span class="o">=</span><span class="s2">&quot;started&quot;</span><span class="p">,</span>
+                    <span class="n">parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">"cmdline"</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">"pid"</span><span class="p">:</span> <span class="n">pid</span><span class="p">},</span>
+                    <span class="n">status</span><span class="o">=</span><span class="s2">"started"</span><span class="p">,</span>
                 <span class="p">)</span>
                 <span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
 
             <span class="k">del</span> <span class="n">db</span>
 
         <span class="c1"># Output the initial metadata for the job.</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;job_data.json&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"job_data.json"</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
             <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">header_line</span><span class="p">)</span>
             <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">fd</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="n">pt0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">process_time</span><span class="p">()</span>
 
         <span class="c1"># And run the flowchart</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Executing the flowchart&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Executing the flowchart"</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">exec</span> <span class="o">=</span> <span class="n">ExecFlowchart</span><span class="p">(</span><span class="n">flowchart</span><span class="p">)</span>
             <span class="n">exec</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="n">wdir</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">job_id</span><span class="p">)</span>
-            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;state&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;finished&quot;</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">"state"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"finished"</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;state&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;error&quot;</span>
-            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;error type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
-            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;error message&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">"state"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"error"</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">"error type"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">"error message"</span><span class="p">]</span> <span class="o">=</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
             <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="c1"># Wrap things up</span>
             <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
             <span class="n">pt1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">process_time</span><span class="p">()</span>
-            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;end time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">"end time"</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
             <span class="n">t</span> <span class="o">=</span> <span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span>
             <span class="n">pt</span> <span class="o">=</span> <span class="n">pt1</span> <span class="o">-</span> <span class="n">pt0</span>
-            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;elapsed time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
-            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;process time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pt</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">"elapsed time"</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">"process time"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pt</span>
 
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;job_data.json&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"job_data.json"</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
                 <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">header_line</span><span class="p">)</span>
                 <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">fd</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
-            <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Process time: </span><span class="si">{</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">pt</span><span class="p">)</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">pt</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> s)&quot;</span><span class="p">)</span>
-            <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Elapsed time: </span><span class="si">{</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">t</span><span class="p">)</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">t</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> s)&quot;</span><span class="p">)</span>
+            <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Process time: </span><span class="si">{</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">pt</span><span class="p">)</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">pt</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> s)"</span><span class="p">)</span>
+            <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Elapsed time: </span><span class="si">{</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">t</span><span class="p">)</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">t</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> s)"</span><span class="p">)</span>
 
             <span class="c1"># Under a JobServer (in_jobserver=True), nothing more to do here:</span>
-            <span class="c1"># job_data.json above is the JobServer&#39;s sole source for this</span>
-            <span class="c1"># job&#39;s terminal status -- it reads it back and writes the</span>
-            <span class="c1"># datastore itself (see seamm_jobserver.jobserver&#39;s</span>
+            <span class="c1"># job_data.json above is the JobServer's sole source for this</span>
+            <span class="c1"># job's terminal status -- it reads it back and writes the</span>
+            <span class="c1"># datastore itself (see seamm_jobserver.jobserver's</span>
             <span class="c1"># _read_job_data_state/_finalize_job_status), rather than this</span>
             <span class="c1"># process writing to a datastore it may not even be able to</span>
             <span class="c1"># reach (true for a JobServer dispatching to a remote SLURM</span>
@@ -1147,84 +1160,84 @@
                 <span class="n">current_time</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">dt</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>
 
                 <span class="c1"># Add to the database</span>
-                <span class="c1"># N.B. Don&#39;t know how to remove &#39;pid&#39; from the JSON properties column</span>
+                <span class="c1"># N.B. Don't know how to remove 'pid' from the JSON properties column</span>
                 <span class="n">db</span> <span class="o">=</span> <span class="n">open_datastore</span><span class="p">(</span>
-                    <span class="n">options</span><span class="p">[</span><span class="s2">&quot;root&quot;</span><span class="p">],</span>
+                    <span class="n">options</span><span class="p">[</span><span class="s2">"root"</span><span class="p">],</span>
                     <span class="n">datastore</span><span class="p">,</span>
-                    <span class="n">timeout</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;database_timeout&quot;</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">),</span>
+                    <span class="n">timeout</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"database_timeout"</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">),</span>
                 <span class="p">)</span>
                 <span class="k">with</span> <span class="n">seamm_datastore</span><span class="o">.</span><span class="n">session_scope</span><span class="p">(</span>
-                    <span class="n">db</span><span class="o">.</span><span class="n">Session</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;database_timeout&quot;</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">)</span>
+                    <span class="n">db</span><span class="o">.</span><span class="n">Session</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"database_timeout"</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">)</span>
                 <span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
                     <span class="n">job</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Job</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                        <span class="n">job_id</span><span class="p">,</span> <span class="n">finished</span><span class="o">=</span><span class="n">current_time</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;state&quot;</span><span class="p">]</span>
+                        <span class="n">job_id</span><span class="p">,</span> <span class="n">finished</span><span class="o">=</span><span class="n">current_time</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">"state"</span><span class="p">]</span>
                     <span class="p">)</span>
                 <span class="k">del</span> <span class="n">db</span>
-        <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%A %Y.%m.</span><span class="si">%d</span><span class="s2"> %H:%M:%S %Z&quot;</span><span class="p">))</span></div>
+        <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">"%A %Y.%m.</span><span class="si">%d</span><span class="s2"> %H:%M:%S %Z"</span><span class="p">))</span></div>
 
 
 
 <div class="viewcode-block" id="get_job_id">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.exec_flowchart.get_job_id">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_job_id</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the next job id from the given file.</span>
+<span class="w">    </span><span class="sd">"""Get the next job id from the given file.</span>
 
 <span class="sd">    This uses the fasteners module to provide locking so that</span>
 <span class="sd">    only one job at a time can access the file, so that the job</span>
 <span class="sd">    ids are unique and monotonically increasing.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
 
-    <span class="n">lock_file</span> <span class="o">=</span> <span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;.lock&quot;</span>
+    <span class="n">lock_file</span> <span class="o">=</span> <span class="n">filename</span> <span class="o">+</span> <span class="s2">".lock"</span>
     <span class="n">lock</span> <span class="o">=</span> <span class="n">fasteners</span><span class="o">.</span><span class="n">InterProcessLock</span><span class="p">(</span><span class="n">lock_file</span><span class="p">)</span>
     <span class="n">locked</span> <span class="o">=</span> <span class="n">lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="n">blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">locked</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
             <span class="n">job_id</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
-                <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;!MolSSI job_id 1.0</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;1</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+                <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">"!MolSSI job_id 1.0</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+                <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">"1</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
             <span class="n">lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r+&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">"r+"</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
                 <span class="n">line</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
                 <span class="n">pos</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span>
-                <span class="k">if</span> <span class="n">line</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">line</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
                     <span class="n">lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
-                    <span class="k">raise</span> <span class="ne">EOFError</span><span class="p">(</span><span class="s2">&quot;job_id file &#39;</span><span class="si">{}</span><span class="s2">&#39; is empty&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+                    <span class="k">raise</span> <span class="ne">EOFError</span><span class="p">(</span><span class="s2">"job_id file '</span><span class="si">{}</span><span class="s2">' is empty"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
                 <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-                <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;!MolSSI job_id ([0-9]+(?:\.[0-9]+)*)&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+                <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="sa">r</span><span class="s2">"!MolSSI job_id ([0-9]+(?:\.[0-9]+)*)"</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">match</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                        <span class="s2">&quot;The job_id file has an incorrect header: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                        <span class="s2">"The job_id file has an incorrect header: </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
                     <span class="p">)</span>
                 <span class="n">line</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
-                <span class="k">if</span> <span class="n">line</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">line</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
                     <span class="n">lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
-                    <span class="k">raise</span> <span class="ne">EOFError</span><span class="p">(</span><span class="s2">&quot;job_id file &#39;</span><span class="si">{}</span><span class="s2">&#39; is truncated&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+                    <span class="k">raise</span> <span class="ne">EOFError</span><span class="p">(</span><span class="s2">"job_id file '</span><span class="si">{}</span><span class="s2">' is truncated"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">job_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                        <span class="s2">&quot;The job_id in file &#39;</span><span class="si">{}</span><span class="s2">&#39; is not an integer: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="s2">"The job_id in file '</span><span class="si">{}</span><span class="s2">' is not an integer: </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                             <span class="n">filename</span><span class="p">,</span> <span class="n">line</span>
                         <span class="p">)</span>
                     <span class="p">)</span>
                 <span class="n">job_id</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="n">fd</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
-                <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{:d}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">job_id</span><span class="p">))</span>
+                <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">"</span><span class="si">{:d}</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">job_id</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Could not lock the job_id file &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"Could not lock the job_id file '</span><span class="si">{}</span><span class="s2">'"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">job_id</span></div>
 
 
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_ALL</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+    <span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_ALL</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
     <span class="n">run</span><span class="p">()</span>
 </pre></div>
 
@@ -1255,8 +1268,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
-<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1268,7 +1281,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.20.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
 </p></div>
       
     </div>
