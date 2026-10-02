@@ -771,3 +771,39 @@ def test_lost_reason_has_the_log_tail(job):
     (result,) = ts.run()
     assert result.state == "lost"
     assert "ended (FAILED)" in result.reason
+
+
+def test_inline_rule_with_a_real_scheduler_backend(job):
+    job, root = job
+    queue = FakeQueue()
+    backend = make_backend(queue, job, root)
+    ts = TaskSet(
+        directory=job / "step",
+        backend=backend,
+        executor=_executor(),
+        root=root,
+        inline_below=10,
+    )
+    ts.add(fake_task("tiny", estimated_seconds=0.1))
+    ts.add(fake_task("big", estimated_seconds=600))
+    ts.add(
+        Task(
+            key="elsewhere",
+            program="notinstalled",
+            cmd=["true"],
+            shell=True,
+            estimated_seconds=0.1,
+        )
+    )
+    results = run_all(ts)
+    manifest = json.loads((job / "step" / "tasks" / "manifest.json").read_text())
+    backends = {k: v["backend"] for k, v in manifest["tasks"].items()}
+    assert backends == {
+        "tiny": "local",
+        "big": "queue:test",
+        # Not installed here: to the queue, where its ini is (and fails there)
+        "elsewhere": "queue:test",
+    }
+    assert results["tiny"].ok and results["big"].ok
+    assert results["elsewhere"].state == "failed"
+    assert "No configuration for 'notinstalled'" in results["elsewhere"].reason
