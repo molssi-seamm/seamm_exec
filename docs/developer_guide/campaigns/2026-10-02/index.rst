@@ -2,10 +2,10 @@
 ===============================================================================
 
 Status: design complete and all six open questions settled with Paul on
-2026-10-02; nothing implemented yet. Phase 1 (the task layer in ``seamm_exec``
-with ``LocalPool``, the manifest, bundling, pruning and archiving, plus the
-``orca_step`` and ``mopac_step`` conversions) is the first implementation
-step. The canonical copy of this design is
+2026-10-02. Phase 0 is done and released. Phase 1 (the task layer in
+``seamm_exec`` with ``LocalPool``, the manifest, bundling, pruning and
+archiving, plus the ``orca_step`` and ``mopac_step`` conversions) is
+implemented and tested on ``dev``, not yet released; see ``NOTES_phase1.rst``. The canonical copy of this design is
 ``~/Work/SEAMM/Parallel_execution_design.rst`` at the workspace root; this is
 the campaign copy, to be kept in sync while the design changes and to gain
 ``NOTES*`` files as the work proceeds. It continues the JobServer SLURM
@@ -197,15 +197,23 @@ Objects
     class Task:
         key: str                    # unique within the step, stable across restarts (e.g. fragment key)
         program: str                # "orca", "mopac", "vasp", "run_flowchart", ...
-        cmd: list[str]              # template; {code}, {NTASKS}, ... filled by the back end
+        cmd: list[str]              # template; {code}, {code_dir}, {NTASKS}, ... filled by the back end
         files: dict[str, str | bytes]
         return_files: list[str]     # globs; may include "@subdir+pattern" as today
-        resources: Resources
+        resources: Resources        # ntasks=None means the whole of the back end's capacity
         env: dict[str, str] = {}
         in_situ: bool | None = None # True = run and leave output in the task directory for watching
         shell: bool = False
+        input_data: str | None = None            # stdin, as Base.run() takes
         estimated_seconds: float | None = None   # plug-in's cost estimate; drives the inline rule
         target: str | None = None   # None = the job's target (reserved; no per-step override today)
+        directory: Path | None = None  # None = <step dir>/tasks/<key>/ (fan-out); a single-calculation
+                                       # step passes its own directory so its output stays put
+        config: dict | None = None  # local override of the <program>.ini section; remote back ends ignore it
+        fingerprint: str | None = None # restart identity; None hashes cmd + files (never env)
+        success_text: dict[str, str | list[str]] | None = None
+                                    # each file must contain its text(s), for codes such as ORCA
+                                    # that exit 0 after an error termination
 
     @dataclass
     class TaskResult:
@@ -213,24 +221,36 @@ Objects
         state: str                  # finished | failed | cancelled | lost
         returncode: int | None
         stdout: str; stderr: str
-        directory: Path             # <step dir>/tasks/<key>/
+        directory: Path             # Task.directory, or <step dir>/tasks/<key>/
         files: dict[str, bytes | str]
+        attempts: int; history: list[dict]   # over all runs, each with its reason
+        restored: bool              # from an earlier run's DONE, not recomputed
+        reason: str | None          # why it failed: return code, success check, lost, ...
 
     class TaskBackend(Protocol):
-        def submit(self, tasks: list[Task]) -> list[str]: ...        # backend ids
+        name: str
+        def submit(self, tasks: list[Task], directories: list[Path]) -> list[str]: ...  # backend ids
         def status(self, ids: list[str]) -> dict[str, str]: ...
         def cancel(self, ids: list[str]) -> None: ...
         def fetch(self, task: Task, backend_id: str) -> TaskResult: ...
+        # optional: wait(ids, timeout), reattach(records) -> {key: state}, capacity(), has_program(task)
 
     class TaskSet:
         """What a step uses: submit many, wait, iterate results as they finish."""
-        def __init__(self, node, target=None): ...
+        def __init__(self, node, target=None, *, archive=False, bundle_tasks=None,
+                     max_attempts=3, max_lost_retries=2, inline_below=60.0, ...): ...
         def add(self, task: Task) -> None: ...
+        def capacity(self) -> dict: ...                 # {"cores", "memory", "ngpus"}, to size tasks first
         def run(self) -> Iterator[TaskResult]: ...      # submits what is not done, polls, yields results
         def summary(self) -> dict: ...
 
-``Base.run()`` stays for backward compatibility and becomes ``TaskSet`` with one task and ``LocalPool``
-with one slot; existing steps keep working unchanged.
+    def run_task(task, node=None, **kwargs) -> TaskResult: ...   # a one-task TaskSet, for single calculations
+
+``Base.run()`` stays for backward compatibility and becomes ``TaskSet`` with one task and a synchronous
+``LocalPool`` with one slot and no manifest; existing steps keep working unchanged and their directories
+gain no new files. ``<step dir>/tasks/<key>/`` is the default task directory only for fan-out: a step
+running one calculation gives ``Task.directory`` as its own directory, and only its bookkeeping
+(``tasks/manifest.json``, ``tasks/<key>/DONE``) is new.
 
 The manifest and restart
 ------------------------
@@ -239,9 +259,14 @@ Each step that uses tasks gets ``<step dir>/tasks/manifest.json`` recording, per
 the state, timestamps and the attempt count, plus ``<step dir>/tasks/<key>/DONE`` on completion. On
 ``TaskSet.run()``:
 
-1. keys with ``DONE`` are yielded from their stored result and never resubmitted;
-2. keys with a live backend id are reattached by polling, not resubmitted;
-3. everything else is submitted, with a retry cap per task.
+1. keys with ``DONE`` whose fingerprint matches are yielded from their stored result and never
+   resubmitted (a changed fingerprint is rerun with a warning);
+2. keys with a live backend id are reattached by polling, not resubmitted. The ``LocalPool`` cannot
+   adopt another process's children, so it kills a leftover process group it finds and reruns the task;
+3. everything else is submitted. Within one run a failed task (nonzero return code, or a failed
+   ``success_text`` check) is never retried and a lost one is retried up to twice; across runs a failed
+   or lost task is eligible again until it has had ``max_attempts`` (default 3) attempts in all, after
+   which it is reported failed with its attempt history.
 
 This is the same trust-the-record pattern the JobServer uses for jobs, and it gives fragment- and
 iteration-level restart for free.
@@ -672,3 +697,13 @@ None blocking. Items to settle during implementation:
 2. The merge policy when two iterations write the same table index (error, or last wins with a warning).
 3. Whether the Dashboard shows child iterations as rows (``parent_id`` in ``parameters``) in the first
    release or only the per-step task counts.
+
+
+Notes
+=====
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+
+   NOTES*
