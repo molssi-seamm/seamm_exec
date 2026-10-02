@@ -12,6 +12,7 @@ Welcome to SEAMM exec's documentation!
 
    getting_started
    api
+   developer_guide/index
 
 
 

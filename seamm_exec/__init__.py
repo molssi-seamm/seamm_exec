@@ -6,6 +6,9 @@ from .exec_flowchart import run  # noqa: F401
 from .exec_flowchart import run_from_jobserver  # noqa: F401
 from .local import Local  # noqa: F401
 from .docker import Docker  # noqa: F401
+from .tasks import Resources, Task, TaskResult, TaskSet, TaskBackend  # noqa: F401
+from .tasks import run_task  # noqa: F401
+from .local_pool import LocalPool  # noqa: F401
 from ._version import __version__  # noqa: F401
 
 # List of executors corresponding to imports above.
