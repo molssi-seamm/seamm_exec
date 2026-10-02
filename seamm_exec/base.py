@@ -20,16 +20,16 @@ if platform.system() != "Windows":
     import grp
     import pwd
 
+
 # Environment variables that indicate we are running inside a batch-scheduler
 # allocation, where the job/step directory is commonly NFS-mounted shared
-# storage rather than node-local disk. Mirrors the SLURM check in
-# computational_environment.computational_environment.
-_SCHEDULER_ENV_VARS = ("SLURM_JOB_ID",)
-
-
+# storage rather than node-local disk. The same check
+# computational_environment.computational_environment makes.
 def _running_under_scheduler():
     """Whether we appear to be running inside a batch-scheduler allocation."""
-    return any(var in os.environ for var in _SCHEDULER_ENV_VARS)
+    from .computational_environment import scheduler_job_variables
+
+    return any(var in os.environ for var in scheduler_job_variables())
 
 
 def _is_kept(path, keep):

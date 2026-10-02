@@ -9,6 +9,8 @@ from .docker import Docker  # noqa: F401
 from .tasks import Resources, Task, TaskResult, TaskSet, TaskBackend  # noqa: F401
 from .tasks import run_task  # noqa: F401
 from .local_pool import LocalPool  # noqa: F401
+from .scheduler_backend import SchedulerBackend  # noqa: F401
+from .targets import find_target, write_target  # noqa: F401
 from ._version import __version__  # noqa: F401
 
 # List of executors corresponding to imports above.

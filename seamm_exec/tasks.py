@@ -337,15 +337,19 @@ class TaskSet:
     Parameters
     ----------
     node : seamm.Node, optional
-        The step. Gives the step directory, the executor and ``root``.
-    target : str, optional
-        Reserved for the job's target; unused in this version.
+        The step. Gives the step directory, the executor, ``root`` and the job
+        directory.
+    target : str or seamm_scheduler.TargetSection, optional
+        The job's target. Default: found by :func:`seamm_exec.targets.find_target`
+        (``<job dir>/target.json``, then ``$SEAMM_TARGET``), else the local pool.
+        Ignored when ``backend`` is given.
     directory : str or Path, optional
         The step directory, overriding ``node.directory``.
     executor : seamm_exec.Base, optional
         Overrides ``node.flowchart.executor``.
     backend : TaskBackend, optional
-        Where tasks go. Default: a ``LocalPool`` for this machine.
+        Where tasks go. Default: the target's back end (a ``SchedulerBackend``
+        for ``tasks = queue``), else a ``LocalPool`` for this machine.
     local : LocalPool, optional
         The evaluator's own pool, for the inline rule. Defaults to ``backend``
         when that is a ``LocalPool``, else one is made on demand.
@@ -357,15 +361,20 @@ class TaskSet:
         Pack each bundle's task directories into ``tasks/<bundle>.tar`` once all
         its tasks are done, and remove the directories.
     bundle_tasks : int, optional
-        Tasks per bundle, in the order added. Default: one bundle.
+        Tasks per bundle, in the order added. Default: the target's
+        ``bundle_tasks``; else one bundle (one task per bundle on a queue
+        without ``bundle_walltime``).
+    bundle_walltime : float, optional
+        Start a new bundle when the tasks' walltimes (or estimates) would add
+        up to more than this many seconds. Default: the target's.
     max_attempts : int = 3
         Attempts per task over all runs.
     max_lost_retries : int = 2
         Resubmissions of a lost task within one run.
-    inline_below : float = 60
+    inline_below : float, optional
         Tasks estimated to take less than this many seconds run in the local
         pool rather than on a remote back end, if their program is installed
-        here.
+        here. Default: the target's ``inline_below``, else 60.
     poll_interval : float
         Seconds between status checks of a back end without ``wait()``.
     """
@@ -383,9 +392,10 @@ class TaskSet:
         manifest=True,
         archive=False,
         bundle_tasks=None,
+        bundle_walltime=None,
         max_attempts=3,
         max_lost_retries=2,
-        inline_below=60.0,
+        inline_below=None,
         poll_interval=1.0,
     ):
         self.node = node
@@ -403,11 +413,44 @@ class TaskSet:
                 root = None
         self.root = root
         self.archive = archive
-        self.bundle_tasks = bundle_tasks
         self.max_attempts = max_attempts
         self.max_lost_retries = max_lost_retries
-        self.inline_below = inline_below
         self.poll_interval = poll_interval
+
+        # The job's target, unless the caller chose the back end itself
+        self.job_directory = None
+        if node is not None:
+            try:
+                self.job_directory = Path(node.flowchart.root_directory)
+            except Exception:
+                self.job_directory = None
+        self.target_section = None
+        if backend is None:
+            from .targets import find_target
+
+            self.target_section = find_target(
+                target, job_directory=self.job_directory, root=root
+            )
+        section = self.target_section
+        on_queue = section is not None and section.tasks == "queue"
+        if inline_below is None:
+            inline_below = 60.0
+            if section is not None and section.inline_below is not None:
+                inline_below = section.inline_below
+        self.inline_below = inline_below
+        if bundle_tasks is None and on_queue:
+            bundle_tasks = section.bundle_tasks
+        if bundle_walltime is None and on_queue:
+            bundle_walltime = section.bundle_walltime
+        if on_queue and bundle_tasks is None and bundle_walltime is None:
+            bundle_tasks = 1
+        self.bundle_tasks = bundle_tasks
+        self.bundle_walltime = bundle_walltime
+        self._bundle_index = 0
+        self._bundle_count = 0
+        self._bundle_seconds = 0.0
+        self._held = []  # [(backend, bundle, [tasks])] waiting for room
+        self._config_warned = False
 
         self._backend = backend
         self._local = local
@@ -447,7 +490,28 @@ class TaskSet:
     def backend(self):
         """The back end for this TaskSet's tasks (the job's target)."""
         if self._backend is None:
-            self._backend = self.local
+            section = self.target_section
+            tasks = None if section is None else section.tasks
+            if tasks == "queue":
+                from .scheduler_backend import SchedulerBackend
+
+                job_directory = self.job_directory
+                if job_directory is None:
+                    job_directory = Path.cwd()
+                executor = self.executor.name if self.executor is not None else "local"
+                self._backend = SchedulerBackend.from_target(
+                    section,
+                    job_directory=job_directory,
+                    root=self.root,
+                    executor=executor,
+                )
+            elif tasks == "taskserver":
+                raise NotImplementedError(
+                    f"Target '{section.name}' sends tasks to a TaskServer, which "
+                    "this version of seamm_exec does not have yet."
+                )
+            else:
+                self._backend = self.local
         return self._backend
 
     def add(self, task):
@@ -470,11 +534,23 @@ class TaskSet:
                         f"Tasks '{other.key}' and '{task.key}' share the directory "
                         f"{task.directory}."
                     )
-        n = len(self.tasks)
-        if self.bundle_tasks:
-            bundle = f"bundle_{n // self.bundle_tasks:04d}"
-        else:
-            bundle = "bundle_0000"
+        # A new bundle when this one is full, by count or by walltime
+        seconds = task.resources.walltime
+        if seconds is None:
+            seconds = task.estimated_seconds or 0.0
+        if self._bundle_count > 0 and (
+            (self.bundle_tasks and self._bundle_count >= self.bundle_tasks)
+            or (
+                self.bundle_walltime
+                and self._bundle_seconds + seconds > self.bundle_walltime
+            )
+        ):
+            self._bundle_index += 1
+            self._bundle_count = 0
+            self._bundle_seconds = 0.0
+        self._bundle_count += 1
+        self._bundle_seconds += seconds
+        bundle = f"bundle_{self._bundle_index:04d}"
         self.tasks[task.key] = task
         self._bundles[task.key] = bundle
 
@@ -515,6 +591,17 @@ class TaskSet:
         backend = self.backend
         if isinstance(backend, LocalPool):
             return backend
+        if task.config is not None and not getattr(backend, "accepts_config", True):
+            # The step resolved the program here; its paths mean nothing on the
+            # cluster. It runs here until the step names only the program.
+            if not self._config_warned:
+                self._config_warned = True
+                logger.warning(
+                    f"Task '{task.key}' ({task.program}) carries its own "
+                    f"configuration, so it runs on this machine rather than on "
+                    f"{backend.name}."
+                )
+            return self.local
         if (
             task.estimated_seconds is not None
             and task.estimated_seconds < self.inline_below
@@ -566,7 +653,8 @@ class TaskSet:
         self.manifest.flush(force=True)
 
         # Tasks an earlier evaluator left queued or running
-        pending = self._reattach(pending)
+        inflight = {}  # (backend, id) -> task
+        pending = self._reattach(pending, inflight)
 
         # Tasks past their attempts are reported, not run
         runnable = []
@@ -595,14 +683,22 @@ class TaskSet:
 
         self._archive_completed_bundles()
 
-        inflight = {}  # (backend, id) -> task
         lost_retries = {}
         try:
             self._submit(runnable, inflight)
             self.manifest.flush(force=True)
-            while inflight:
+            while inflight or self._held:
                 self.manifest.flush()
+                if self._held:
+                    self._submit_held(inflight)
+                    if not inflight:
+                        time.sleep(
+                            getattr(self._held[0][0], "poll_interval", None)
+                            or self.poll_interval
+                        )
+                        continue
                 changed = False
+                resubmit = []
                 by_backend = {}
                 for (backend, backend_id), task in inflight.items():
                     by_backend.setdefault(backend, []).append(backend_id)
@@ -625,15 +721,23 @@ class TaskSet:
                                 and record.get("attempts", 0) < self.max_attempts
                             ):
                                 lost_retries[task.key] = n + 1
+                                reason = "lost"
+                                if hasattr(backend, "reason"):
+                                    reason = backend.reason(backend_id) or reason
                                 self._finish_attempt(
-                                    task.key, LOST, None, reason="lost"
+                                    task.key, LOST, None, reason=reason
                                 )
-                                self._submit([task], inflight)
+                                if hasattr(backend, "forget"):
+                                    backend.forget(backend_id)
+                                resubmit.append(task)
                                 continue
                         result = self._collect(task, backend, backend_id, state)
                         self._results[task.key] = result
                         yield result
                         self._archive_completed_bundles()
+                if resubmit:
+                    # Together, so a bundle's lost tasks go back as one bundle
+                    self._submit(resubmit, inflight)
                 if not changed and inflight:
                     self._wait(inflight)
         finally:
@@ -669,28 +773,81 @@ class TaskSet:
         for task in tasks:
             by_backend.setdefault(self.route(task), []).append(task)
         for backend, group in by_backend.items():
-            now = _now()
+            if not getattr(backend, "bundles", False):
+                self._submit_group(backend, group, inflight)
+                continue
+            # A back end that bundles gets one call per bundle, while it has room.
+            by_bundle = {}
             for task in group:
-                record = self.manifest.get(task.key) or {}
+                by_bundle.setdefault(self._bundles[task.key], []).append(task)
+            for bundle, members in by_bundle.items():
+                self._held.append((backend, bundle, members))
+        self._submit_held(inflight)
+
+    def _submit_held(self, inflight):
+        """Submit held bundles while their back ends have room in the queue."""
+        from .scheduler_backend import QueueFull
+
+        still_held = []
+        full = set()
+        for backend, bundle, members in self._held:
+            if backend in full:
+                still_held.append((backend, bundle, members))
+                continue
+            room = backend.room() if hasattr(backend, "room") else None
+            if room is not None and room <= 0:
+                full.add(backend)
+                still_held.append((backend, bundle, members))
+                continue
+            try:
+                self._submit_group(backend, members, inflight, bundle=bundle)
+            except QueueFull as e:
+                logger.info(f"The queue is full, holding {bundle}: {e}")
+                full.add(backend)
+                still_held.append((backend, bundle, members))
+        if still_held and not inflight and len(still_held) == len(self._held):
+            logger.info(f"{len(still_held)} bundles are waiting for room in the queue")
+        self._held = still_held
+
+    def _submit_group(self, backend, group, inflight, bundle=None):
+        """Record the attempt and submit ``group`` to ``backend``."""
+        now = _now()
+        previous = {}
+        for task in group:
+            record = self.manifest.get(task.key) or {}
+            previous[task.key] = dict(record)
+            self.manifest.update(
+                task.key,
+                backend=backend.name,
+                state=QUEUED,
+                fingerprint=task.digest(),
+                attempts=record.get("attempts", 0) + 1,
+                submitted=now,
+                directory=self._relative(self.task_directory(task)),
+                pgid=None,
+                host=None,
+            )
+        kwargs = {"on_start": self._on_start}
+        if bundle is not None:
+            kwargs["bundle"] = bundle
+            kwargs["markers"] = [self.marker_directory(t.key) for t in group]
+        try:
+            ids = backend.submit(
+                group, [self.task_directory(t) for t in group], **kwargs
+            )
+        except Exception:
+            # Not submitted: the attempt does not count.
+            for task in group:
+                record = previous[task.key]
                 self.manifest.update(
                     task.key,
-                    backend=backend.name,
-                    state=QUEUED,
-                    fingerprint=task.digest(),
-                    attempts=record.get("attempts", 0) + 1,
-                    submitted=now,
-                    directory=self._relative(self.task_directory(task)),
-                    pgid=None,
-                    host=None,
+                    attempts=record.get("attempts", 0),
+                    state=record.get("state"),
                 )
-            ids = backend.submit(
-                group,
-                [self.task_directory(t) for t in group],
-                on_start=self._on_start,
-            )
-            for task, backend_id in zip(group, ids):
-                self.manifest.update(task.key, id=backend_id)
-                inflight[(backend, backend_id)] = task
+            raise
+        for task, backend_id in zip(group, ids):
+            self.manifest.update(task.key, id=backend_id)
+            inflight[(backend, backend_id)] = task
 
     def _on_start(self, task, info):
         """Called by a back end when a task's process starts.
@@ -849,6 +1006,10 @@ class TaskSet:
 
         directory = self.task_directory(task)
         files = {}
+        if "files" not in done and archive is None and directory is not None:
+            # A DONE written by the pure bundle worker, which knows nothing of
+            # return_files: list them as Base.run() would have.
+            done["files"] = self._list_returned(task, directory)
         for name in done.get("files", []):
             relative = self._returned_path(name)
             if archive is not None:
@@ -888,20 +1049,42 @@ class TaskSet:
             archive=archive,
         )
 
-    def _reattach(self, pending):
+    def _reattach(self, pending, inflight):
         """Recover tasks an earlier evaluator left queued or running.
 
-        Back ends that can (a scheduler) report them still queued or running;
-        the ``LocalPool`` cannot adopt another process's children, so it kills
-        any it finds and reports them lost. Lost tasks are rerun. In this
-        version every task still in flight is resubmitted.
+        A back end that can (a scheduler) adopts them: they go into
+        ``inflight`` and are polled, not submitted again. The ``LocalPool``
+        cannot adopt another process's children, so it kills any it finds and
+        reports them lost; lost tasks are rerun.
+
+        Returns
+        -------
+        [Task]
+            The tasks still to submit.
         """
         by_backend = {}
+        remaining = []
         for task in pending:
             record = self.manifest.get(task.key)
             if record is None or record.get("state") not in (QUEUED, RUNNING):
+                remaining.append(task)
                 continue
             backend = self._backend_named(record.get("backend"))
+            if backend is not None and hasattr(backend, "adopt"):
+                backend_id = backend.adopt(
+                    task,
+                    self.task_directory(task),
+                    self.marker_directory(task.key),
+                    record,
+                )
+                if backend_id is not None:
+                    logger.info(
+                        f"Task '{task.key}' is still with {backend.name} "
+                        f"({backend_id}); polling it rather than submitting again."
+                    )
+                    inflight[(backend, backend_id)] = task
+                    continue
+            remaining.append(task)
             if backend is None or not hasattr(backend, "reattach"):
                 continue
             by_backend.setdefault(backend, []).append(record)
@@ -912,15 +1095,20 @@ class TaskSet:
                     self._finish_attempt(
                         key, LOST, None, reason="the evaluator stopped while it ran"
                     )
-        return pending
+        return remaining
 
     def _backend_named(self, name):
         if name is None:
             return None
-        if self._backend is not None and self._backend.name == name:
-            return self._backend
         if name == "local":
             return self.local
+        try:
+            backend = self.backend
+        except Exception:
+            logger.exception("Could not make the target's back end")
+            return None
+        if backend.name == name:
+            return backend
         return None
 
     def _result_from_record(self, task, record, state):
@@ -1003,6 +1191,16 @@ class TaskSet:
     # ------------------------------------------------------------------
     # Utilities
     # ------------------------------------------------------------------
+    @staticmethod
+    def _list_returned(task, directory):
+        """The names ``task.return_files`` match in ``directory``."""
+        names = []
+        for pattern in task.return_files:
+            for path in sorted(Path(directory).glob(pattern)):
+                if path.is_file() and path.name not in names:
+                    names.append(path.name)
+        return names
+
     @staticmethod
     def _returned_path(name):
         """Where a returned file lands: ``@subdir+name`` is ``subdir/name``."""

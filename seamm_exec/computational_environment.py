@@ -4,8 +4,31 @@
 systems."""
 
 import os
+from pathlib import Path
 
 import psutil
+
+# The queueing systems whose allocations are recognized, in order. Each names
+# the variable that marks a job (``env_names["job_id"]``) in seamm_scheduler.
+SCHEDULERS = ("slurm", "pbs")
+
+
+def scheduler_job_variables():
+    """The environment variables that mark a batch job, one per scheduler."""
+    try:
+        from seamm_scheduler import get_scheduler
+
+        return tuple(get_scheduler(n).env_names["job_id"] for n in SCHEDULERS)
+    except ImportError:
+        return ("SLURM_JOB_ID", "PBS_JOBID")
+
+
+def running_scheduler():
+    """The name of the queueing system whose allocation this is, or None."""
+    for name, variable in zip(SCHEDULERS, scheduler_job_variables()):
+        if variable in os.environ:
+            return name
+    return None
 
 
 def computational_environment(limits={}):
@@ -22,8 +45,11 @@ def computational_environment(limits={}):
         The attributes of the computational enviroment, limited by the imposed limits.
     """
 
-    if "SLURM_JOB_ID" in os.environ:
+    scheduler = running_scheduler()
+    if scheduler == "slurm":
         ce = _slurm()
+    elif scheduler == "pbs":
+        ce = _pbs()
     else:
         ce = _local()
 
@@ -122,4 +148,49 @@ def _slurm_normalize_memory(ce):
         available = psutil.virtual_memory().available
         ce["MEM_PER_NODE"] = available
         ce["MEM_PER_CPU"] = available // cores_per_node
+    return ce
+
+
+def _pbs():
+    """Get the number of tasks, nodes, etc. for a PBS job.
+
+    PBS exports less than SLURM: the job id, ``NCPUS`` (the cores of this
+    node's chunk), ``OMP_NUM_THREADS`` and ``PBS_NODEFILE``, which has one line
+    per MPI rank. Memory is not exported, so it is this node's available memory.
+    """
+    from seamm_scheduler.pbs import Pbs
+
+    names = Pbs.env_names
+    if names["job_id"] not in os.environ:
+        raise RuntimeError("This does not appear to be a PBS job.")
+    ce = {"type": "pbs", "JOB_ID": os.environ[names["job_id"]]}
+
+    hosts = []
+    nodefile = os.environ.get(names["nodefile"])
+    if nodefile and Path(nodefile).exists():
+        hosts = [
+            h.strip() for h in Path(nodefile).read_text().splitlines() if h.strip()
+        ]
+    ncpus = int(os.environ.get(names["ncpus"], "0") or 0)
+    threads = int(os.environ.get(names["threads"], "1") or 1)
+    if hosts:
+        counts = {}
+        for host in hosts:
+            counts[host] = counts.get(host, 0) + 1
+        ce["NTASKS"] = len(hosts)
+        ce["NNODES"] = len(counts)
+        ce["NTASKS_PER_NODE"] = max(counts.values())
+        ce["NODELIST"] = ",".join(f"{h}:{n}" for h, n in counts.items())
+    else:
+        ce["NTASKS"] = max(1, ncpus // max(1, threads))
+        ce["NNODES"] = 1
+        ce["NTASKS_PER_NODE"] = ce["NTASKS"]
+    ce["CPUS_PER_TASK"] = max(1, threads)
+    if names["ngpus"] in os.environ:
+        ce["NGPUS"] = int(os.environ[names["ngpus"]] or 0)
+
+    cores_per_node = max(1, ce["NTASKS_PER_NODE"] * ce["CPUS_PER_TASK"])
+    available = psutil.virtual_memory().available
+    ce["MEM_PER_NODE"] = available
+    ce["MEM_PER_CPU"] = available // cores_per_node
     return ce

@@ -98,14 +98,27 @@ class LocalPool:
         exactly the original ``Base.run()``.
     max_concurrent : int, optional
         At most this many tasks at once.
+    resolve_programs : bool = False
+        Apply the program's resolver (see :mod:`seamm_exec.resolve`) to each
+        task's configuration, command and environment. The task worker in a
+        scheduler's allocation does; the evaluator's own pool does not, since
+        the steps that set ``Task.config`` have resolved it already.
     """
 
     name = "local"
 
     def __init__(
-        self, executor, *, root=None, ce=None, synchronous=False, max_concurrent=None
+        self,
+        executor,
+        *,
+        root=None,
+        ce=None,
+        synchronous=False,
+        max_concurrent=None,
+        resolve_programs=False,
     ):
         self.executor = executor
+        self.resolve_programs = resolve_programs
         self.root = Path(root).expanduser() if root is not None else None
         self.synchronous = synchronous
         self.max_concurrent = max_concurrent
@@ -367,12 +380,19 @@ class LocalPool:
     # ------------------------------------------------------------------
     def _arguments(self, job, concurrent):
         task = job.task
+        cmd = task.cmd
         if self.synchronous:
             config = task.config
             env = task.env
         else:
             config = self.config_for(task)
             env = dict(task.env)
+            if self.resolve_programs:
+                from .resolve import resolve
+
+                config, cmd, env = resolve(
+                    task.program, config, cmd, env, job.ce, self.root
+                )
             if concurrent:
                 # Keep concurrent tasks off each other's cores. A lone task
                 # gets the environment it always had.
@@ -380,7 +400,7 @@ class LocalPool:
                 env.setdefault(BINDING_ENV, "none")
         return dict(
             config=config,
-            cmd=task.cmd,
+            cmd=cmd,
             directory=job.directory,
             input_data=task.input_data,
             files=task.files,
