@@ -1,6 +1,29 @@
 =======
 History
 =======
+2026.10.2 -- The task layer: external codes as tasks, with restart
+    * Steps can now hand their external calculations to ``seamm_exec`` as *tasks*: the
+      program's name, its input files, the command, what it needs (cores, memory) and
+      the files to keep. A ``TaskSet`` runs any number of them concurrently in a pool
+      sized to the machine or the SLURM allocation, each in its own process group, and
+      records each task's state in ``tasks/manifest.json`` in the step directory with a
+      ``DONE`` marker per task. Rerunning a job in the same directory never recomputes
+      a finished task: its results are restored from the marker.
+    * A task whose program exits 0 but reports failure (ORCA's "error termination")
+      can declare the text that marks success, so it is counted as failed and tried
+      again. A failed task is not retried within a run; across reruns it is tried up
+      to three times, and the count resets when its inputs change. A rerun kills a
+      process the previous run left behind, only after checking that it is the same
+      process, and never kills a process started under ``nohup``.
+    * Finished tasks can be packed into one tar per bundle to keep the number of files
+      down, and a bundle worker script runs a list of tasks in one allocation for the
+      scheduler back ends of a later release.
+    * Nothing changes for plug-ins that have not been converted: ``executor.run()``
+      behaves exactly as before and writes no new files. ORCA and MOPAC (orca_step and
+      mopac_step 2026.10.2) are the first converted steps.
+    * The MOLSSI shared CI now runs on uv: ``devtools/conda-envs/test_env.yaml`` is
+      removed, so ``pyproject.toml`` is the one dependency list.
+
 2026.9.27 -- Datastore credentials by installation
     * A flowchart run straight into a datastore looked for its credentials in
       ``~/.seamm.d/seammrc`` under ``[Dashboard: dev]`` when the root's path contained
