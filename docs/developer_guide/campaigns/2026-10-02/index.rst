@@ -546,8 +546,76 @@ iteration jobs as real datastore jobs with a ``parent_id`` in the ``parameters``
 them in the job list; not needed for the first release.
 
 
+Rollout and compatibility
+=========================
+
+This is a sweeping change, so every phase is additive, old behaviour is the default, and each phase is
+released on its own with a one-line rollback. Production never takes a change it did not opt into.
+
+Compatibility promise
+---------------------
+
+Through every phase:
+
+- **Old flowcharts run unchanged.** The flowchart format does not change. The parallel Loop is a new
+  parameter, off by default. No new migration follows the 3.0 one.
+- **Old ini files keep their meaning.** A JobServer target section without the new keys behaves as today;
+  ``<code>.ini`` files are still read where the code runs.
+- **Old job directories stay readable.** New files (``tasks/manifest.json``, ``checkpoint.json``, the
+  ``_tables`` registry) are added beside the existing ones; nothing existing is renamed or removed.
+- **Unconverted plug-ins behave byte for byte as today.** ``Base.run()`` is reimplemented on the task layer
+  with a one-slot ``LocalPool``; a plug-in that has not been converted cannot tell the difference.
+- **Tables in the database ship behind a switch** for one release cycle (in-memory default first, then
+  flipped), so the highest-risk change has a rollback that is a single setting.
+
+Three rules
+-----------
+
+1. **Old code paths stay; new ones are opt-in; defaults are unchanged.** See the promise above. Each new
+   capability is reachable only through a new key, parameter or method.
+2. **Running jobs never see a mixed environment.** A job imports from the venv it started in, and SEAMM
+   imports lazily in places, so a venv updated in place while jobs run can mix versions. Rule: never
+   update a venv in place while jobs run. With uv the venv is cheap: ``seamm-manager`` builds the new one
+   beside the old, switches a symlink, and deletes the old venv only when its jobs have finished.
+   Restarting the JobServer is already safe for local jobs (it reattaches by pid); phase 5 makes it safe
+   for everything.
+3. **Validate in a separate installation against production output.** ``~/SEAMM_DEV`` (own venv,
+   JobServer, datastore) sits beside production. The gate for every phase is the same: run the Testing
+   flowcharts and a sample of real campaign flowcharts in both installations and diff the results files and
+   tables. Server order: paul.local, then ChemAI only on an explicit ask between runs, then ARC (no
+   services; a venv swap). Release order follows the shared-library rule: ``seamm_exec`` and
+   ``seamm_scheduler`` first, pinned as minimum versions in each converted plug-in, so a PyPI install can
+   never pair new plug-ins with an old library.
+
+Risk by phase
+-------------
+
+================ ======== ================================================================================
+Phase            Risk     Containment
+================ ======== ================================================================================
+0 preparation    none     Tooling and harness only (below).
+1 task layer     medium   Touches the path every code runs through; the ``Base.run()`` shim contains it.
+                          Convert ORCA and MOPAC first, then other codes one at a time on their own merits.
+2 scheduler pkg  low      ``seamm_slurm`` becomes a shim; the JobServer does not change. Validate from
+                          ``~/SEAMM_DEV`` to MolSSI10 and TinkerCliffs.
+3 batch + MBE    low      New provider methods, a new step; Energy keeps MDI as its default.
+4 tables in DB   high     Table step, ``store_results`` and every table-reading step. Facade keeps the
+                          DataFrame API; the switch keeps the old behaviour; the gate runs the whole local
+                          and Dropbox flowchart corpus through the comparison harness, with a soak period in
+                          ``~/SEAMM_DEV`` before the default is flipped.
+5 checkpointing  low      New files only; resume runs only when the JobServer asks for it on a new job.
+                          The node idempotence audit is the real work.
+6 parallel Loop  none     Opt-in parameter.
+7 TaskServer/PBS none     New and opt-in.
+================ ======== ================================================================================
+
+
 Phases
 ======
+
+0. **Preparation.** The venv swap-not-overwrite rule in ``seamm-manager`` (build beside, switch a
+   symlink, delete when idle); a comparison harness that runs a flowchart in two installations and diffs
+   results files and tables; and the compatibility promise above recorded in the campaign doc.
 
 1. **Task layer in ``seamm_exec``** with ``LocalPool``, the manifest, bundling, pruning and archiving, and
    ``Base.run()`` reimplemented on it. Convert ``orca_step`` and ``mopac_step`` to ``Task``. Test on the
@@ -566,7 +634,8 @@ Phases
 7. **TaskServer** and its client; **PBS** validated on a real PBS site when one is available; Dashboard
    task view.
 
-Phases 1 and 2 unblock the MBE step; 4 and 5 are prerequisites of 6.
+Phase 0 protects every later phase. Phases 1 to 3 unblock the MBE step with low production exposure;
+4 and 5 are prerequisites of 6; 4 is the one that needs a soak period before its switch is flipped.
 
 
 Decisions (2026-10-02)
