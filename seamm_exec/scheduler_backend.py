@@ -47,8 +47,18 @@ _QUEUE_FULL = re.compile(
 )
 
 
+#: A failure to reach the cluster, worth trying again later
+_TRANSIENT = re.compile(
+    r"ssh: |Connection (timed out|refused|reset|closed)|Operation timed out|"
+    r"Could not resolve hostname|Network is unreachable|No route to host|"
+    r"Socket timed out|Unable to contact slurm controller",
+    re.IGNORECASE,
+)
+
+
 class QueueFull(RuntimeError):
-    """The queue will not take more jobs from this user now."""
+    """The queue will not take more jobs now (it is full, or cannot be reached);
+    the TaskSet holds the bundle and tries again later."""
 
 
 class _Entry:
@@ -286,16 +296,21 @@ class SchedulerBackend:
             for directory, marker in zip(directories, markers):
                 paths.add(str(self.relative(directory)))
                 paths.add(str(self.relative(marker)))
-            self._clear_remote_markers(markers)
-            self.stager.push(
-                str(self.job_directory), self.remote_job_directory, sorted(paths)
-            )
+            try:
+                self._clear_remote_markers(markers)
+                self.stager.push(
+                    str(self.job_directory), self.remote_job_directory, sorted(paths)
+                )
+            except Exception as e:
+                if _TRANSIENT.search(str(e)):
+                    raise QueueFull(f"cannot stage to the cluster: {e}") from e
+                raise
 
         job_name = f"{self.job_name_prefix}-{bundle}"
         try:
             job_id = self.queue.submit(script, job_name=job_name)
         except Exception as e:
-            if _QUEUE_FULL.search(str(e)):
+            if _QUEUE_FULL.search(str(e)) or _TRANSIENT.search(str(e)):
                 raise QueueFull(str(e)) from e
             raise
         if self._count is not None:
@@ -493,6 +508,8 @@ class SchedulerBackend:
             ["xargs", "rm", "-f"], input_text="\n".join(paths) + "\n"
         )
         if rc != 0:
+            if _TRANSIENT.search(err):
+                raise RuntimeError(err.strip())
             logger.warning(f"Could not clear old task markers: {err.strip()}")
 
     def _poll(self, job_ids):
@@ -507,11 +524,22 @@ class SchedulerBackend:
         if not live or now - self._polled_at < self.poll_interval / 2:
             return
         self._polled_at = now
-        statuses = self.queue.poll_many(live)
+        try:
+            statuses = self.queue.poll_many(live)
+        except Exception as e:
+            logger.warning(f"Could not poll {self.name}: {e}")
+            return
+        failed = getattr(self.queue.scheduler, "poll_failed", False)
+        if failed:
+            logger.warning(
+                f"Could not ask {self.name} about every job; trying again later."
+            )
         for job_id in live:
             status = statuses.get(job_id)
             if status is None:
-                self._misses[job_id] = self._misses.get(job_id, 0) + 1
+                # Missing only counts when the queue could actually be asked.
+                if not failed:
+                    self._misses[job_id] = self._misses.get(job_id, 0) + 1
                 continue
             self._misses.pop(job_id, None)
             self._jobs[job_id] = status
@@ -525,7 +553,12 @@ class SchedulerBackend:
             )
         ]
         if ended and not self.shared:
-            self._pull(ended)
+            try:
+                self._pull(ended)
+            except Exception as e:
+                # Not pulled: the tasks stay running until the next try.
+                logger.warning(f"Could not stage back from {self.name}: {e}")
+                return
         self._pulled.update(ended)
 
     def _pull(self, job_ids):

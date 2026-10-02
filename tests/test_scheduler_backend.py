@@ -672,3 +672,48 @@ def test_pbs_computational_environment(tmp_path, monkeypatch):
     assert ce["NTASKS"] == 4 and ce["NNODES"] == 2 and ce["CPUS_PER_TASK"] == 2
     assert ce["NODELIST"] == "n1:2,n2:2"
     assert ce["MEM_PER_CPU"] > 0
+
+
+def test_unreachable_queue_is_not_lost_jobs(job):
+    """An ssh outage must not turn running bundles into lost ones."""
+    job, root = job
+    queue = FakeQueue(hold=True)
+    backend = make_backend(queue, job, root)
+    ts = TaskSet(directory=job / "step", backend=backend)
+    ts.add(fake_task("t0"))
+    real_poll = queue.poll_many
+    outage = {"on": True}
+
+    def poll_many(ids):
+        if outage["on"]:
+            queue.scheduler.poll_failed = True
+            return {}
+        queue.scheduler.poll_failed = False
+        return real_poll(ids)
+
+    queue.poll_many = poll_many
+
+    def recover():
+        time.sleep(1.5)  # several polls at 0.2 s
+        outage["on"] = False
+        queue.release(next(iter(queue.jobs)))
+
+    threading.Thread(target=recover, daemon=True).start()
+    (result,) = ts.run()
+    assert result.ok
+    assert len(queue.scripts) == 1
+
+
+def test_transient_submit_failure_holds(job):
+    job, root = job
+    queue = FakeQueue(fail_submit="ssh: connect to host x port 22: Operation timed out")
+    ts = TaskSet(directory=job / "step", backend=make_backend(queue, job, root))
+    ts.add(fake_task("t0"))
+
+    def clear():
+        time.sleep(0.5)
+        queue.fail_submit = None
+
+    threading.Thread(target=clear, daemon=True).start()
+    (result,) = ts.run()
+    assert result.ok
