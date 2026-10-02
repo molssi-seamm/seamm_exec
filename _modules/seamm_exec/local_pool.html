@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>seamm_exec.local_pool &#8212; SEAMM seamm-exec Plug-in 2026.10.2 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+
+    <script src="../../_static/documentation_options.js?v=52372788"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/seamm_exec/local_pool';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.10.2" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/SEAMM logo.png" class="logo__image only-light" alt=""/>
+    <img src="../../_static/SEAMM Inverted 288x181.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">SEAMM-EXEC</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../developer_guide/index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/seamm-exec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../developer_guide/index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/seamm-exec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../seamm_exec.html" class="nav-link">seamm_exec</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">seamm_exec.local_pool</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for seamm_exec.local_pool</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">"""LocalPool: run tasks concurrently on this machine or in this allocation.</span>
+
+<span class="sd">The pool's capacity is the computational environment -- the whole machine, or</span>
+<span class="sd">the SLURM allocation the evaluator runs in -- and each task gets a share of it</span>
+<span class="sd">from its :class:`~seamm_exec.tasks.Resources`. Tasks start, in the order</span>
+<span class="sd">submitted, as soon as enough cores and memory are free; a task larger than the</span>
+<span class="sd">pool is clamped to it and runs alone.</span>
+
+<span class="sd">Each task runs through the executor's ``_run_task()`` (the body of the original</span>
+<span class="sd">``Base.run()``), so the conda, modules and docker handling, ``in_situ`` and the</span>
+<span class="sd">return-file contract are exactly those of ``Base.run()``.</span>
+<span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">configparser</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">signal</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">socket</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">psutil</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.computational_environment</span><span class="w"> </span><span class="kn">import</span> <span class="n">computational_environment</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.tasks</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CANCELLED</span><span class="p">,</span>
+    <span class="n">FAILED</span><span class="p">,</span>
+    <span class="n">FINISHED</span><span class="p">,</span>
+    <span class="n">LOST</span><span class="p">,</span>
+    <span class="n">QUEUED</span><span class="p">,</span>
+    <span class="n">RUNNING</span><span class="p">,</span>
+    <span class="n">TERMINAL_STATES</span><span class="p">,</span>
+    <span class="n">TaskResult</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"seamm-exec"</span><span class="p">)</span>
+
+<span class="c1"># Set for concurrent MPI tasks so that independent mpiruns don't all bind their</span>
+<span class="c1"># ranks to the same low-numbered cores (see orca_step's _mpi_env).</span>
+<span class="n">BINDING_ENV</span> <span class="o">=</span> <span class="s2">"OMPI_MCA_hwloc_base_binding_policy"</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_Job</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The pool's record of one submitted task."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend_id</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">backend_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">=</span> <span class="n">task</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">=</span> <span class="n">directory</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">QUEUED</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cores</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">memory</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ce</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">process</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thread</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_start</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">concurrent</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_Hooks</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Passed to the executor's ``exec()`` through its thread-local context."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pool</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool</span> <span class="o">=</span> <span class="n">pool</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">job</span> <span class="o">=</span> <span class="n">job</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">started</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">process</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">_started</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">job</span><span class="p">,</span> <span class="n">process</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">finished</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">process</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">_process_finished</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">job</span><span class="p">,</span> <span class="n">process</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="LocalPool">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.local_pool.LocalPool">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LocalPool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A back end that runs tasks as local subprocesses.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    executor : seamm_exec.Base</span>
+<span class="sd">        Provides ``_run_task()`` and ``exec()``.</span>
+<span class="sd">    root : str or Path, optional</span>
+<span class="sd">        Where the ``&lt;program&gt;.ini`` files are, for tasks without ``config``.</span>
+<span class="sd">    ce : dict, optional</span>
+<span class="sd">        The computational environment to share out. Default:</span>
+<span class="sd">        ``computational_environment()``.</span>
+<span class="sd">    synchronous : bool = False</span>
+<span class="sd">        Run each task in ``submit()``, in the caller's thread, with the given</span>
+<span class="sd">        ``ce`` unchanged, the environment untouched and exceptions propagated:</span>
+<span class="sd">        exactly the original ``Base.run()``.</span>
+<span class="sd">    max_concurrent : int, optional</span>
+<span class="sd">        At most this many tasks at once.</span>
+<span class="sd">    """</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">"local"</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">executor</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ce</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">synchronous</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">max_concurrent</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">executor</span> <span class="o">=</span> <span class="n">executor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span> <span class="k">if</span> <span class="n">root</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">synchronous</span> <span class="o">=</span> <span class="n">synchronous</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_concurrent</span> <span class="o">=</span> <span class="n">max_concurrent</span>
+
+        <span class="k">if</span> <span class="n">synchronous</span><span class="p">:</span>
+            <span class="c1"># Base.run(): the caller's ce goes to the code untouched and is</span>
+            <span class="c1"># never interpreted here.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ce</span> <span class="o">=</span> <span class="n">ce</span> <span class="k">if</span> <span class="n">ce</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cores</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">memory</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ngpus</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ce</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span> <span class="k">if</span> <span class="n">ce</span> <span class="k">else</span> <span class="n">computational_environment</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cores</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ce</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"NTASKS"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">memory</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ce</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"MEM_PER_NODE"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ngpus</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ce</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"NGPUS"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_free_cores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cores</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_free_memory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">memory</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_running</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ids</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_condition</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Condition</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_host</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">()</span>
+
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># Capacity and programs</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+<div class="viewcode-block" id="LocalPool.capacity">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.local_pool.LocalPool.capacity">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">capacity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The cores, memory (bytes) and GPUs this pool shares out."""</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"cores"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cores</span><span class="p">,</span> <span class="s2">"memory"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">memory</span><span class="p">,</span> <span class="s2">"ngpus"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngpus</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="LocalPool.has_program">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.local_pool.LocalPool.has_program">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_program</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Whether the task's program can run here."""</span>
+        <span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_config</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">program</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="LocalPool.config_for">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.local_pool.LocalPool.config_for">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">config_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The program's configuration: ``task.config``, else ``&lt;program&gt;.ini``.</span>
+
+<span class="sd">        Adds ``code_dir``, the directory holding ``code``, for commands that run</span>
+<span class="sd">        a code's companion programs (e.g. ORCA's ``orca_2aim``), when ``code``</span>
+<span class="sd">        is a path rather than a bare name.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_config</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">program</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"No configuration for '</span><span class="si">{</span><span class="n">task</span><span class="o">.</span><span class="n">program</span><span class="si">}</span><span class="s2">': the task has no config "</span>
+                    <span class="sa">f</span><span class="s2">"and there is no [</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">] section in "</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_ini_path</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">program</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+                <span class="p">)</span>
+        <span class="k">if</span> <span class="s2">"code_dir"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span> <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"code"</span><span class="p">):</span>
+            <span class="c1"># Only when ``code`` is a path: a bare name is found on the PATH</span>
+            <span class="c1"># (in a conda environment, a container, ...), and so are its</span>
+            <span class="c1"># companions, so a command must then name them bare too.</span>
+            <span class="n">code</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">"code"</span><span class="p">])</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">code</span><span class="o">.</span><span class="n">parent</span> <span class="o">!=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"."</span><span class="p">):</span>
+                <span class="n">config</span><span class="p">[</span><span class="s2">"code_dir"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">code</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">config</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ini_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">program</span><span class="si">}</span><span class="s2">.ini"</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_read_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">):</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ini_path</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">full_config</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">ConfigParser</span><span class="p">()</span>
+        <span class="n">full_config</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">section</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">if</span> <span class="n">section</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">full_config</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">full_config</span><span class="o">.</span><span class="n">items</span><span class="p">(</span><span class="n">section</span><span class="p">))</span>
+
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># The TaskBackend interface</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+<div class="viewcode-block" id="LocalPool.submit">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.local_pool.LocalPool.submit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">submit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tasks</span><span class="p">,</span> <span class="n">directories</span><span class="p">,</span> <span class="n">on_start</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">ids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">task</span><span class="p">,</span> <span class="n">directory</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="n">directories</span><span class="p">):</span>
+                <span class="n">backend_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_host</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ids</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+                <span class="n">job</span> <span class="o">=</span> <span class="n">_Job</span><span class="p">(</span><span class="n">backend_id</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
+                <span class="n">job</span><span class="o">.</span><span class="n">on_start</span> <span class="o">=</span> <span class="n">on_start</span>
+                <span class="n">job</span><span class="o">.</span><span class="n">cores</span><span class="p">,</span> <span class="n">job</span><span class="o">.</span><span class="n">memory</span><span class="p">,</span> <span class="n">job</span><span class="o">.</span><span class="n">ce</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_share</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span><span class="p">[</span><span class="n">backend_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">job</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+                <span class="n">ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">backend_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">synchronous</span><span class="p">:</span>
+            <span class="c1"># signal.signal works only in the main thread, which submits.</span>
+            <span class="n">_install_handlers</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">synchronous</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">backend_id</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">:</span>
+                <span class="n">job</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span><span class="p">[</span><span class="n">backend_id</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_run_synchronously</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dispatch</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">ids</span></div>
+
+
+<div class="viewcode-block" id="LocalPool.status">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.local_pool.LocalPool.status">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">state</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span> <span class="k">else</span> <span class="n">LOST</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="LocalPool.wait">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.local_pool.LocalPool.wait">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wait</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Block until one of ``ids`` is finished, or ``timeout`` seconds."""</span>
+        <span class="n">deadline</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">+</span> <span class="n">timeout</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition</span><span class="p">:</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">state</span> <span class="ow">in</span> <span class="n">TERMINAL_STATES</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ids</span>
+                    <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span>
+                <span class="p">):</span>
+                    <span class="k">return</span>
+                <span class="n">remaining</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">deadline</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">deadline</span> <span class="o">-</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">remaining</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">remaining</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">return</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_condition</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">remaining</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LocalPool.cancel">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.local_pool.LocalPool.cancel">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">):</span>
+        <span class="n">to_kill</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">:</span>
+                <span class="n">job</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">job</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">job</span><span class="o">.</span><span class="n">state</span> <span class="ow">in</span> <span class="n">TERMINAL_STATES</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">job</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">job</span><span class="o">.</span><span class="n">process</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">to_kill</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">job</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">pid</span><span class="p">)</span>
+                <span class="c1"># A job started but without a process yet is killed when its</span>
+                <span class="c1"># process starts (see _started).</span>
+                <span class="n">job</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">CANCELLED</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_condition</span><span class="o">.</span><span class="n">notify_all</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">pgid</span> <span class="ow">in</span> <span class="n">to_kill</span><span class="p">:</span>
+            <span class="n">_kill_group</span><span class="p">(</span><span class="n">pgid</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LocalPool.fetch">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.local_pool.LocalPool.fetch">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fetch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">backend_id</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition</span><span class="p">:</span>
+            <span class="n">job</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">backend_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">job</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">CANCELLED</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">TaskResult</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">CANCELLED</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="n">job</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">job</span><span class="o">.</span><span class="n">error</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">TaskResult</span><span class="p">(</span>
+                <span class="n">key</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">FAILED</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">job</span><span class="o">.</span><span class="n">error</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="n">job</span><span class="o">.</span><span class="n">directory</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">TaskResult</span><span class="o">.</span><span class="n">from_raw</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">job</span><span class="o">.</span><span class="n">raw</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="n">job</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LocalPool.reattach">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.local_pool.LocalPool.reattach">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reattach</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">records</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Tasks from an earlier evaluator: kill any still running here; lost.</span>
+
+<span class="sd">        A process that is not our child cannot be waited for, so instead of</span>
+<span class="sd">        adopting it the pool kills its process group and the task is rerun. A</span>
+<span class="sd">        pid is reused once its process has gone, so the group is killed only if</span>
+<span class="sd">        its leader is the process the manifest recorded: same start time and</span>
+<span class="sd">        working directory. (The host name check means a laptop that changed</span>
+<span class="sd">        networks leaves the leftovers alone, the safe direction.)</span>
+<span class="sd">        """</span>
+        <span class="n">states</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">records</span><span class="p">:</span>
+            <span class="n">pgid</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"pgid"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">pgid</span>
+                <span class="ow">and</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"host"</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_host</span>
+                <span class="ow">and</span> <span class="n">_alive</span><span class="p">(</span><span class="n">pgid</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="n">_same_process</span><span class="p">(</span><span class="n">pgid</span><span class="p">,</span> <span class="n">record</span><span class="p">)</span>
+            <span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"Killing the leftover process group </span><span class="si">{</span><span class="n">pgid</span><span class="si">}</span><span class="s2"> of task "</span>
+                    <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'key'</span><span class="p">)</span><span class="si">}</span><span class="s2">' from an earlier run."</span>
+                <span class="p">)</span>
+                <span class="n">_kill_group</span><span class="p">(</span><span class="n">pgid</span><span class="p">)</span>
+            <span class="n">states</span><span class="p">[</span><span class="n">record</span><span class="p">[</span><span class="s2">"key"</span><span class="p">]]</span> <span class="o">=</span> <span class="n">LOST</span>
+        <span class="k">return</span> <span class="n">states</span></div>
+
+
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># Scheduling</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_share</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The cores, memory and computational environment for a task."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">synchronous</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ce</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">resources</span>
+        <span class="n">cpus_per_task</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">cpus_per_task</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">ntasks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ntasks</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cores</span> <span class="o">//</span> <span class="n">cpus_per_task</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ntasks</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">ntasks</span><span class="p">))</span>
+        <span class="n">cores</span> <span class="o">=</span> <span class="n">ntasks</span> <span class="o">*</span> <span class="n">cpus_per_task</span>
+        <span class="k">if</span> <span class="n">cores</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">cores</span><span class="p">:</span>
+            <span class="c1"># Clamp to the pool; it will run alone.</span>
+            <span class="n">ntasks</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cores</span> <span class="o">//</span> <span class="n">cpus_per_task</span><span class="p">)</span>
+            <span class="n">cpus_per_task</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">cpus_per_task</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cores</span><span class="p">)</span>
+            <span class="n">cores</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cores</span><span class="p">,</span> <span class="n">ntasks</span> <span class="o">*</span> <span class="n">cpus_per_task</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">mem_per_cpu</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mem_per_cpu</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">mem_per_cpu</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mem_per_cpu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">memory</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">cores</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cores</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">memory</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">mem_per_cpu</span> <span class="o">*</span> <span class="n">cores</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">memory</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">memory</span> <span class="k">else</span> <span class="mi">0</span>
+
+        <span class="n">ce</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ce</span><span class="p">)</span>
+        <span class="n">ce</span><span class="p">[</span><span class="s2">"NTASKS"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ntasks</span>
+        <span class="n">ce</span><span class="p">[</span><span class="s2">"CPUS_PER_TASK"</span><span class="p">]</span> <span class="o">=</span> <span class="n">cpus_per_task</span>
+        <span class="n">ce</span><span class="p">[</span><span class="s2">"MEM_PER_CPU"</span><span class="p">]</span> <span class="o">=</span> <span class="n">mem_per_cpu</span>
+        <span class="n">ce</span><span class="p">[</span><span class="s2">"MEM_PER_NODE"</span><span class="p">]</span> <span class="o">=</span> <span class="n">mem_per_cpu</span> <span class="o">*</span> <span class="n">cores</span>
+        <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">ngpus</span><span class="p">:</span>
+            <span class="n">ce</span><span class="p">[</span><span class="s2">"NGPUS"</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">ngpus</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ce</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"NGPUS"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cores</span><span class="p">,</span> <span class="n">memory</span><span class="p">,</span> <span class="n">ce</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_concurrent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_concurrent</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>  <span class="c1"># an oversized task runs alone</span>
+        <span class="k">return</span> <span class="n">job</span><span class="o">.</span><span class="n">cores</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_free_cores</span> <span class="ow">and</span> <span class="n">job</span><span class="o">.</span><span class="n">memory</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_free_memory</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_dispatch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition</span><span class="p">:</span>
+            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fits</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="n">job</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="c1"># Concurrent if any other task is queued or running now: it may</span>
+                <span class="c1"># share the machine with this one for some or all of its run.</span>
+                <span class="n">job</span><span class="o">.</span><span class="n">concurrent</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">j</span><span class="o">.</span><span class="n">state</span> <span class="ow">in</span> <span class="p">(</span><span class="n">QUEUED</span><span class="p">,</span> <span class="n">RUNNING</span><span class="p">))</span>
+                    <span class="o">&gt;</span> <span class="mi">1</span>
+                <span class="p">)</span>
+                <span class="n">job</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">RUNNING</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_running</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_free_cores</span> <span class="o">-=</span> <span class="n">job</span><span class="o">.</span><span class="n">cores</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_free_memory</span> <span class="o">-=</span> <span class="n">job</span><span class="o">.</span><span class="n">memory</span>
+                <span class="n">job</span><span class="o">.</span><span class="n">thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span>
+                    <span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_run_threaded</span><span class="p">,</span>
+                    <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">job</span><span class="p">,),</span>
+                    <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"seamm-task-</span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                    <span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">job</span><span class="o">.</span><span class="n">thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_release</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_running</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_free_cores</span> <span class="o">+=</span> <span class="n">job</span><span class="o">.</span><span class="n">cores</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_free_memory</span> <span class="o">+=</span> <span class="n">job</span><span class="o">.</span><span class="n">memory</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_condition</span><span class="o">.</span><span class="n">notify_all</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dispatch</span><span class="p">()</span>
+
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># Running one task</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_arguments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">,</span> <span class="n">concurrent</span><span class="p">):</span>
+        <span class="n">task</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">task</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">synchronous</span><span class="p">:</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">config</span>
+            <span class="n">env</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">env</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_for</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+            <span class="n">env</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">env</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">concurrent</span><span class="p">:</span>
+                <span class="c1"># Keep concurrent tasks off each other's cores. A lone task</span>
+                <span class="c1"># gets the environment it always had.</span>
+                <span class="n">env</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"OMP_NUM_THREADS"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">job</span><span class="o">.</span><span class="n">ce</span><span class="p">[</span><span class="s2">"CPUS_PER_TASK"</span><span class="p">]))</span>
+                <span class="n">env</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">BINDING_ENV</span><span class="p">,</span> <span class="s2">"none"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+            <span class="n">cmd</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">cmd</span><span class="p">,</span>
+            <span class="n">directory</span><span class="o">=</span><span class="n">job</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span>
+            <span class="n">input_data</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">input_data</span><span class="p">,</span>
+            <span class="n">files</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">files</span><span class="p">,</span>
+            <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span>
+            <span class="n">return_files</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">return_files</span><span class="p">,</span>
+            <span class="n">shell</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span>
+            <span class="n">in_situ</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">in_situ</span><span class="p">,</span>
+            <span class="n">ce</span><span class="o">=</span><span class="n">job</span><span class="o">.</span><span class="n">ce</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_run_synchronously</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The original ``Base.run()``: in this thread, exceptions propagate."""</span>
+        <span class="n">job</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">RUNNING</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">job</span><span class="o">.</span><span class="n">raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">_run_task</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_arguments</span><span class="p">(</span><span class="n">job</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
+            <span class="n">job</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">FAILED</span>
+            <span class="k">raise</span>
+        <span class="n">job</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">_state_of</span><span class="p">(</span><span class="n">job</span><span class="o">.</span><span class="n">raw</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_run_threaded</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">concurrent</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">concurrent</span>
+            <span class="n">context</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="p">,</span> <span class="s2">"_task_context"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">context</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">context</span><span class="o">.</span><span class="n">hooks</span> <span class="o">=</span> <span class="n">_Hooks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+            <span class="c1"># A task run in place in the step directory must not prune the</span>
+            <span class="c1"># tasks/ bookkeeping that other tasks write while it runs.</span>
+            <span class="n">keep</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">job</span><span class="o">.</span><span class="n">directory</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[</span><span class="n">Path</span><span class="p">(</span><span class="n">job</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"tasks"</span><span class="p">]</span>
+            <span class="n">job</span><span class="o">.</span><span class="n">raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">_run_task</span><span class="p">(</span>
+                <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_arguments</span><span class="p">(</span><span class="n">job</span><span class="p">,</span> <span class="n">concurrent</span><span class="p">),</span> <span class="n">set_umask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="n">keep</span>
+            <span class="p">)</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">job</span><span class="o">.</span><span class="n">state</span> <span class="o">!=</span> <span class="n">CANCELLED</span><span class="p">:</span>
+                    <span class="n">job</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">_state_of</span><span class="p">(</span><span class="n">job</span><span class="o">.</span><span class="n">raw</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">job</span><span class="o">.</span><span class="n">error</span> <span class="o">=</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Task '</span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s2">' raised an exception:</span><span class="se">\n</span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">error</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">job</span><span class="o">.</span><span class="n">state</span> <span class="o">!=</span> <span class="n">CANCELLED</span><span class="p">:</span>
+                    <span class="n">job</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">FAILED</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="c1"># Whatever happened, free the slot so the TaskSet is not left</span>
+            <span class="c1"># waiting on a task that will never finish.</span>
+            <span class="k">if</span> <span class="n">context</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">context</span><span class="o">.</span><span class="n">hooks</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_release</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_started</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">,</span> <span class="n">process</span><span class="p">):</span>
+        <span class="n">_register</span><span class="p">(</span><span class="n">process</span><span class="o">.</span><span class="n">pid</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition</span><span class="p">:</span>
+            <span class="n">job</span><span class="o">.</span><span class="n">process</span> <span class="o">=</span> <span class="n">process</span>
+            <span class="n">cancelled</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">CANCELLED</span>
+        <span class="k">if</span> <span class="n">cancelled</span><span class="p">:</span>
+            <span class="n">_kill_group</span><span class="p">(</span><span class="n">process</span><span class="o">.</span><span class="n">pid</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">job</span><span class="o">.</span><span class="n">on_start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"pgid"</span><span class="p">:</span> <span class="n">process</span><span class="o">.</span><span class="n">pid</span><span class="p">,</span> <span class="s2">"host"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_host</span><span class="p">}</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">leader</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">process</span><span class="o">.</span><span class="n">pid</span><span class="p">)</span>
+                <span class="n">info</span><span class="p">[</span><span class="s2">"create_time"</span><span class="p">]</span> <span class="o">=</span> <span class="n">leader</span><span class="o">.</span><span class="n">create_time</span><span class="p">()</span>
+                <span class="n">info</span><span class="p">[</span><span class="s2">"cwd"</span><span class="p">]</span> <span class="o">=</span> <span class="n">leader</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span>
+            <span class="k">except</span> <span class="p">(</span><span class="n">psutil</span><span class="o">.</span><span class="n">Error</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">):</span>
+                <span class="k">pass</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">job</span><span class="o">.</span><span class="n">on_start</span><span class="p">(</span><span class="n">job</span><span class="o">.</span><span class="n">task</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">"Error in the task-start callback"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_process_finished</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">,</span> <span class="n">process</span><span class="p">):</span>
+        <span class="n">_unregister</span><span class="p">(</span><span class="n">process</span><span class="o">.</span><span class="n">pid</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_state_of</span><span class="p">(</span><span class="n">raw</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">raw</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">FAILED</span>
+    <span class="n">returncode</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"returncode"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">FINISHED</span> <span class="k">if</span> <span class="n">returncode</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">else</span> <span class="n">FAILED</span>
+
+
+<span class="c1"># ----------------------------------------------------------------------</span>
+<span class="c1"># Killing the tasks with the evaluator</span>
+<span class="c1">#</span>
+<span class="c1"># Tasks run in their own sessions so they can be killed as a group, which also</span>
+<span class="c1"># means a signal to the evaluator's process group no longer reaches them. While</span>
+<span class="c1"># any are running, SIGTERM and SIGHUP to the evaluator first kill them, then do</span>
+<span class="c1"># what they did before. A signal the evaluator ignores (SIGHUP under nohup) is</span>
+<span class="c1"># left ignored. (A SIGKILL cannot be caught; the next run of the step kills the</span>
+<span class="c1"># leftovers it finds in the manifest.)</span>
+<span class="c1"># ----------------------------------------------------------------------</span>
+<span class="n">_live_groups</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<span class="n">_live_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+<span class="n">_previous_handlers</span> <span class="o">=</span> <span class="p">{}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_register</span><span class="p">(</span><span class="n">pgid</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">_live_lock</span><span class="p">:</span>
+        <span class="n">_live_groups</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pgid</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_unregister</span><span class="p">(</span><span class="n">pgid</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">_live_lock</span><span class="p">:</span>
+        <span class="n">_live_groups</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">pgid</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_install_handlers</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Install the signal handlers, if we can (main thread only)."""</span>
+    <span class="k">if</span> <span class="n">_previous_handlers</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">threading</span><span class="o">.</span><span class="n">main_thread</span><span class="p">():</span>
+        <span class="k">return</span>
+    <span class="k">for</span> <span class="n">signum</span> <span class="ow">in</span> <span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGHUP</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">signal</span><span class="o">.</span><span class="n">getsignal</span><span class="p">(</span><span class="n">signum</span><span class="p">)</span> <span class="o">==</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIG_IGN</span><span class="p">:</span>
+                <span class="c1"># e.g. SIGHUP under nohup: the evaluator, and so its tasks,</span>
+                <span class="c1"># are meant to survive it.</span>
+                <span class="n">_previous_handlers</span><span class="p">[</span><span class="n">signum</span><span class="p">]</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIG_IGN</span>
+                <span class="k">continue</span>
+            <span class="n">_previous_handlers</span><span class="p">[</span><span class="n">signum</span><span class="p">]</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">_on_signal</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">):</span>
+            <span class="k">pass</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_on_signal</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">_live_lock</span><span class="p">:</span>
+        <span class="n">groups</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">_live_groups</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">pgid</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">killpg</span><span class="p">(</span><span class="n">pgid</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGKILL</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="k">pass</span>
+    <span class="n">previous</span> <span class="o">=</span> <span class="n">_previous_handlers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIG_DFL</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">previous</span><span class="p">):</span>
+        <span class="n">previous</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">frame</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">previous</span> <span class="o">==</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIG_IGN</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIG_DFL</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">(),</span> <span class="n">signum</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_alive</span><span class="p">(</span><span class="n">pgid</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">killpg</span><span class="p">(</span><span class="n">pgid</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ProcessLookupError</span><span class="p">,</span> <span class="ne">PermissionError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_same_process</span><span class="p">(</span><span class="n">pgid</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Whether process ``pgid`` is still the task's, not a later reuse of the pid."""</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">leader</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">pgid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">getpgid</span><span class="p">(</span><span class="n">pgid</span><span class="p">)</span> <span class="o">!=</span> <span class="n">pgid</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="n">created</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"create_time"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">created</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">abs</span><span class="p">(</span><span class="n">leader</span><span class="o">.</span><span class="n">create_time</span><span class="p">()</span> <span class="o">-</span> <span class="n">created</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="n">cwd</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"cwd"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cwd</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">leader</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span> <span class="o">!=</span> <span class="n">cwd</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">except</span> <span class="p">(</span><span class="n">psutil</span><span class="o">.</span><span class="n">Error</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_kill_group</span><span class="p">(</span><span class="n">pgid</span><span class="p">,</span> <span class="n">grace</span><span class="o">=</span><span class="mf">5.0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""SIGTERM the process group, then SIGKILL it if it is still there."""</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">killpg</span><span class="p">(</span><span class="n">pgid</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ProcessLookupError</span><span class="p">,</span> <span class="ne">PermissionError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">):</span>
+        <span class="k">return</span>
+    <span class="n">deadline</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">+</span> <span class="n">grace</span>
+    <span class="k">while</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">deadline</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">_alive</span><span class="p">(</span><span class="n">pgid</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">killpg</span><span class="p">(</span><span class="n">pgid</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGKILL</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ProcessLookupError</span><span class="p">,</span> <span class="ne">PermissionError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.9.27 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.2 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=09c3d259"></script>
+    <script src="../_static/documentation_options.js?v=52372788"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -50,10 +50,11 @@
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Developer Documentation" href="../developer_guide/index.html" />
     <link rel="prev" title="seamm_exec" href="modules.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.27" />
+  <meta name="docsearch:version" content="2026.10.2" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -153,6 +154,13 @@
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="../api.html">
     API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../developer_guide/index.html">
+    Developer Documentation
   </a>
 </li>
 
@@ -286,6 +294,13 @@
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="../api.html">
     API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../developer_guide/index.html">
+    Developer Documentation
   </a>
 </li>
 
@@ -511,9 +526,17 @@ SLURM), since the job directory there is typically NFS-mounted
 and unsafe for an MPI code’s scratch I/O (molssi-seamm/orca_step#20);
 otherwise run in place, as before.</p></li>
 <li><p><strong>ce</strong> (<em>dict</em><em>(</em><em>str</em><em>, </em><em>str</em><em> or </em><em>int</em><em>)</em>) – Description of the computational enviroment</p></li>
+<li><p><strong>original</strong> (<em>This is the</em>)</p></li>
+<li><p><strong>a</strong> (<em>blocking interface. It runs one task through</em>)</p></li>
 </ul>
 </dd>
 </dl>
+<p>:param <a class="reference internal" href="#seamm_exec.tasks.TaskSet" title="seamm_exec.tasks.TaskSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">TaskSet</span></code></a> with a one-slot:
+:param synchronous:
+:param <a class="reference internal" href="#seamm_exec.local_pool.LocalPool" title="seamm_exec.local_pool.LocalPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">LocalPool</span></code></a>:
+:param without a manifest:
+:param so its:
+:param behaviour and the files it leaves are exactly as before.:</p>
 </dd></dl>
 
 </dd></dl>
@@ -696,6 +719,103 @@ runs, an executable locally.</p>
 </dd></dl>
 
 </section>
+<section id="module-seamm_exec.local_pool">
+<span id="seamm-exec-local-pool-module"></span><h2>seamm_exec.local_pool module<a class="headerlink" href="#module-seamm_exec.local_pool" title="Link to this heading">#</a></h2>
+<p>LocalPool: run tasks concurrently on this machine or in this allocation.</p>
+<p>The pool’s capacity is the computational environment – the whole machine, or
+the SLURM allocation the evaluator runs in – and each task gets a share of it
+from its <a class="reference internal" href="#seamm_exec.tasks.Resources" title="seamm_exec.tasks.Resources"><code class="xref py py-class docutils literal notranslate"><span class="pre">Resources</span></code></a>. Tasks start, in the order
+submitted, as soon as enough cores and memory are free; a task larger than the
+pool is clamped to it and runs alone.</p>
+<p>Each task runs through the executor’s <code class="docutils literal notranslate"><span class="pre">_run_task()</span></code> (the body of the original
+<code class="docutils literal notranslate"><span class="pre">Base.run()</span></code>), so the conda, modules and docker handling, <code class="docutils literal notranslate"><span class="pre">in_situ</span></code> and the
+return-file contract are exactly those of <code class="docutils literal notranslate"><span class="pre">Base.run()</span></code>.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="seamm_exec.local_pool.LocalPool">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.local_pool.</span></span><span class="sig-name descname"><span class="pre">LocalPool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">executor</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synchronous</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_concurrent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/local_pool.html#LocalPool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.local_pool.LocalPool" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A back end that runs tasks as local subprocesses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>executor</strong> (<em>seamm_exec.Base</em>) – Provides <code class="docutils literal notranslate"><span class="pre">_run_task()</span></code> and <code class="docutils literal notranslate"><span class="pre">exec()</span></code>.</p></li>
+<li><p><strong>root</strong> (<em>str</em><em> or </em><em>Path</em><em>, </em><em>optional</em>) – Where the <code class="docutils literal notranslate"><span class="pre">&lt;program&gt;.ini</span></code> files are, for tasks without <code class="docutils literal notranslate"><span class="pre">config</span></code>.</p></li>
+<li><p><strong>ce</strong> (<em>dict</em><em>, </em><em>optional</em>) – The computational environment to share out. Default:
+<code class="docutils literal notranslate"><span class="pre">computational_environment()</span></code>.</p></li>
+<li><p><strong>synchronous</strong> (<em>bool = False</em>) – Run each task in <code class="docutils literal notranslate"><span class="pre">submit()</span></code>, in the caller’s thread, with the given
+<code class="docutils literal notranslate"><span class="pre">ce</span></code> unchanged, the environment untouched and exceptions propagated:
+exactly the original <code class="docutils literal notranslate"><span class="pre">Base.run()</span></code>.</p></li>
+<li><p><strong>max_concurrent</strong> (<em>int</em><em>, </em><em>optional</em>) – At most this many tasks at once.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.local_pool.LocalPool.cancel">
+<span class="sig-name descname"><span class="pre">cancel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/local_pool.html#LocalPool.cancel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.local_pool.LocalPool.cancel" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.local_pool.LocalPool.capacity">
+<span class="sig-name descname"><span class="pre">capacity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/local_pool.html#LocalPool.capacity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.local_pool.LocalPool.capacity" title="Link to this definition">#</a></dt>
+<dd><p>The cores, memory (bytes) and GPUs this pool shares out.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.local_pool.LocalPool.config_for">
+<span class="sig-name descname"><span class="pre">config_for</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/local_pool.html#LocalPool.config_for"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.local_pool.LocalPool.config_for" title="Link to this definition">#</a></dt>
+<dd><p>The program’s configuration: <code class="docutils literal notranslate"><span class="pre">task.config</span></code>, else <code class="docutils literal notranslate"><span class="pre">&lt;program&gt;.ini</span></code>.</p>
+<p>Adds <code class="docutils literal notranslate"><span class="pre">code_dir</span></code>, the directory holding <code class="docutils literal notranslate"><span class="pre">code</span></code>, for commands that run
+a code’s companion programs (e.g. ORCA’s <code class="docutils literal notranslate"><span class="pre">orca_2aim</span></code>), when <code class="docutils literal notranslate"><span class="pre">code</span></code>
+is a path rather than a bare name.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.local_pool.LocalPool.fetch">
+<span class="sig-name descname"><span class="pre">fetch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/local_pool.html#LocalPool.fetch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.local_pool.LocalPool.fetch" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.local_pool.LocalPool.has_program">
+<span class="sig-name descname"><span class="pre">has_program</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/local_pool.html#LocalPool.has_program"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.local_pool.LocalPool.has_program" title="Link to this definition">#</a></dt>
+<dd><p>Whether the task’s program can run here.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.local_pool.LocalPool.name">
+<span class="sig-name descname"><span class="pre">name</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'local'</span></span><a class="headerlink" href="#seamm_exec.local_pool.LocalPool.name" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.local_pool.LocalPool.reattach">
+<span class="sig-name descname"><span class="pre">reattach</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">records</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/local_pool.html#LocalPool.reattach"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.local_pool.LocalPool.reattach" title="Link to this definition">#</a></dt>
+<dd><p>Tasks from an earlier evaluator: kill any still running here; lost.</p>
+<p>A process that is not our child cannot be waited for, so instead of
+adopting it the pool kills its process group and the task is rerun. A
+pid is reused once its process has gone, so the group is killed only if
+its leader is the process the manifest recorded: same start time and
+working directory. (The host name check means a laptop that changed
+networks leaves the leftovers alone, the safe direction.)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.local_pool.LocalPool.status">
+<span class="sig-name descname"><span class="pre">status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/local_pool.html#LocalPool.status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.local_pool.LocalPool.status" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.local_pool.LocalPool.submit">
+<span class="sig-name descname"><span class="pre">submit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tasks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/local_pool.html#LocalPool.submit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.local_pool.LocalPool.submit" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.local_pool.LocalPool.wait">
+<span class="sig-name descname"><span class="pre">wait</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/local_pool.html#LocalPool.wait"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.local_pool.LocalPool.wait" title="Link to this definition">#</a></dt>
+<dd><p>Block until one of <code class="docutils literal notranslate"><span class="pre">ids</span></code> is finished, or <code class="docutils literal notranslate"><span class="pre">timeout</span></code> seconds.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
 <section id="module-seamm_exec.seamm_exec">
 <span id="seamm-exec-seamm-exec-module"></span><h2>seamm_exec.seamm_exec module<a class="headerlink" href="#module-seamm_exec.seamm_exec" title="Link to this heading">#</a></h2>
 <p>Provide the primary functions.</p>
@@ -713,6 +833,858 @@ runs, an executable locally.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-seamm_exec.task_worker">
+<span id="seamm-exec-task-worker-module"></span><h2>seamm_exec.task_worker module<a class="headerlink" href="#module-seamm_exec.task_worker" title="Link to this heading">#</a></h2>
+<p>Run a bundle of tasks, one after another, inside one allocation.</p>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">task_worker</span><span class="o">.</span><span class="n">py</span> <span class="n">bundle</span><span class="o">.</span><span class="n">json</span>
+</pre></div>
+</div>
+<p>This is the generic worker that a scheduler back end submits for a bundle of
+small tasks. It is pure Python with no SEAMM imports, so it runs anywhere a
+<code class="docutils literal notranslate"><span class="pre">python3</span></code> exists, and is run by path rather than imported.</p>
+<p><code class="docutils literal notranslate"><span class="pre">bundle.json</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">"tasks"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">"key"</span><span class="p">:</span> <span class="s2">"frag-0001"</span><span class="p">,</span>
+      <span class="s2">"directory"</span><span class="p">:</span> <span class="s2">"/path/to/tasks/frag-0001"</span><span class="p">,</span>
+      <span class="s2">"command"</span><span class="p">:</span> <span class="s2">"orca orca.inp &gt; orca.out"</span><span class="p">,</span>   <span class="c1"># fully resolved</span>
+      <span class="s2">"shell"</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+      <span class="s2">"env"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"OMP_NUM_THREADS"</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">},</span>
+      <span class="s2">"input"</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+      <span class="s2">"fingerprint"</span><span class="p">:</span> <span class="s2">"sha256:..."</span><span class="p">,</span>
+      <span class="s2">"success_text"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"orca.out"</span><span class="p">:</span> <span class="s2">"ORCA TERMINATED NORMALLY"</span><span class="p">}</span>
+    <span class="p">},</span>
+    <span class="o">...</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>For each task, in order: if <code class="docutils literal notranslate"><span class="pre">&lt;directory&gt;/DONE</span></code> exists it is skipped;
+otherwise the command runs in the directory with its standard output and error
+in <code class="docutils literal notranslate"><span class="pre">stdout.txt</span></code> and <code class="docutils literal notranslate"><span class="pre">stderr.txt</span></code>, the return code goes in <code class="docutils literal notranslate"><span class="pre">returncode</span></code>,
+and a successful run – return code 0 and, if given, every <code class="docutils literal notranslate"><span class="pre">success_text</span></code>
+file containing its text – writes <code class="docutils literal notranslate"><span class="pre">DONE</span></code> (JSON). A failure does not stop the
+bundle.
+The worker exits 0 if every task succeeded and 1 otherwise.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.task_worker.main">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.task_worker.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/task_worker.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.task_worker.main" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.task_worker.run_bundle">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.task_worker.</span></span><span class="sig-name descname"><span class="pre">run_bundle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bundle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/task_worker.html#run_bundle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.task_worker.run_bundle" title="Link to this definition">#</a></dt>
+<dd><p>Run the tasks of a bundle. Returns the number that failed.</p>
+</dd></dl>
+
+</section>
+<section id="module-seamm_exec.tasks">
+<span id="seamm-exec-tasks-module"></span><h2>seamm_exec.tasks module<a class="headerlink" href="#module-seamm_exec.tasks" title="Link to this heading">#</a></h2>
+<p>Tasks: the units of work a step hands to a back end.</p>
+<p>A step describes each external calculation as a <a class="reference internal" href="#seamm_exec.tasks.Task" title="seamm_exec.tasks.Task"><code class="xref py py-class docutils literal notranslate"><span class="pre">Task</span></code></a> – the program, a
+command template, the input files, the files to keep and the resources – and
+runs a group of them with a <a class="reference internal" href="#seamm_exec.tasks.TaskSet" title="seamm_exec.tasks.TaskSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">TaskSet</span></code></a>, which submits what is not done to a
+back end (a <a class="reference internal" href="#seamm_exec.tasks.TaskBackend" title="seamm_exec.tasks.TaskBackend"><code class="xref py py-class docutils literal notranslate"><span class="pre">TaskBackend</span></code></a>, e.g. <a class="reference internal" href="#seamm_exec.local_pool.LocalPool" title="seamm_exec.local_pool.LocalPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">LocalPool</span></code></a>),
+waits, and yields a <a class="reference internal" href="#seamm_exec.tasks.TaskResult" title="seamm_exec.tasks.TaskResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">TaskResult</span></code></a> for each as it finishes.</p>
+<p>With a step directory, the <code class="docutils literal notranslate"><span class="pre">TaskSet</span></code> keeps <code class="docutils literal notranslate"><span class="pre">&lt;step</span> <span class="pre">dir&gt;/tasks/manifest.json</span></code>
+and writes <code class="docutils literal notranslate"><span class="pre">&lt;step</span> <span class="pre">dir&gt;/tasks/&lt;key&gt;/DONE</span></code> when a task finishes, so a rerun of
+the step in the same directory never recomputes a finished task.</p>
+<p>See <code class="docutils literal notranslate"><span class="pre">docs/developer_guide/campaigns/2026-10-02</span></code> for the design.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Manifest">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.tasks.</span></span><span class="sig-name descname"><span class="pre">Manifest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#Manifest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.Manifest" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">&lt;step</span> <span class="pre">dir&gt;/tasks/manifest.json</span></code>: what the evaluator knows of its tasks.</p>
+<p>One record per key: the back end, its id, the state, the fingerprint, the
+bundle, timestamps, the attempt count and history, and the archive.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Manifest.flush">
+<span class="sig-name descname"><span class="pre">flush</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#Manifest.flush"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.Manifest.flush" title="Link to this definition">#</a></dt>
+<dd><p>Write the manifest if it changed, at most every <code class="docutils literal notranslate"><span class="pre">save_interval</span></code>.</p>
+<p>The manifest is for reattaching and reporting; whether a task finished
+is recorded by its <code class="docutils literal notranslate"><span class="pre">DONE</span></code> file, which is written at once.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Manifest.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#Manifest.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.Manifest.get" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Manifest.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#Manifest.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.Manifest.save" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Manifest.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#Manifest.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.Manifest.update" title="Link to this definition">#</a></dt>
+<dd><p>Change a record. It is written by the next <a class="reference internal" href="#seamm_exec.tasks.Manifest.flush" title="seamm_exec.tasks.Manifest.flush"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flush()</span></code></a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Resources">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.tasks.</span></span><span class="sig-name descname"><span class="pre">Resources</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ntasks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpus_per_task</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mem_per_cpu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ngpus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">walltime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">account</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#Resources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.Resources" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>What a task needs, in scheduler-neutral terms.</p>
+<p>Each back end translates these: the <code class="docutils literal notranslate"><span class="pre">LocalPool</span></code> into a share of this
+machine or allocation, a scheduler into its directives.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ntasks</span> <span class="pre">=</span> <span class="pre">None</span></code> means “all of the back end’s capacity” (for the
+<code class="docutils literal notranslate"><span class="pre">LocalPool</span></code>, the whole machine or allocation, as a code got before tasks).
+Memory is in bytes and walltime in seconds.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Resources.account">
+<span class="sig-name descname"><span class="pre">account</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#seamm_exec.tasks.Resources.account" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Resources.cpus_per_task">
+<span class="sig-name descname"><span class="pre">cpus_per_task</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#seamm_exec.tasks.Resources.cpus_per_task" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Resources.mem_per_cpu">
+<span class="sig-name descname"><span class="pre">mem_per_cpu</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#seamm_exec.tasks.Resources.mem_per_cpu" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Resources.ngpus">
+<span class="sig-name descname"><span class="pre">ngpus</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></span><a class="headerlink" href="#seamm_exec.tasks.Resources.ngpus" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Resources.nodes">
+<span class="sig-name descname"><span class="pre">nodes</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#seamm_exec.tasks.Resources.nodes" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Resources.ntasks">
+<span class="sig-name descname"><span class="pre">ntasks</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#seamm_exec.tasks.Resources.ntasks" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Resources.partition">
+<span class="sig-name descname"><span class="pre">partition</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#seamm_exec.tasks.Resources.partition" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Resources.qos">
+<span class="sig-name descname"><span class="pre">qos</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#seamm_exec.tasks.Resources.qos" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Resources.walltime">
+<span class="sig-name descname"><span class="pre">walltime</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#seamm_exec.tasks.Resources.walltime" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Task">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.tasks.</span></span><span class="sig-name descname"><span class="pre">Task</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">program</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_files</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resources</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#seamm_exec.tasks.Resources" title="seamm_exec.tasks.Resources"><span class="pre">Resources</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_situ</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimated_seconds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fingerprint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">success_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#Task"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.Task" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>One external calculation.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Task.key">
+<span class="sig-name descname"><span class="pre">key</span></span><a class="headerlink" href="#seamm_exec.tasks.Task.key" title="Link to this definition">#</a></dt>
+<dd><p>Unique within the step and stable across restarts (e.g. a fragment key).
+Letters, digits and <code class="docutils literal notranslate"><span class="pre">._+=&#64;,-</span></code>; it names the task’s directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Task.program">
+<span class="sig-name descname"><span class="pre">program</span></span><a class="headerlink" href="#seamm_exec.tasks.Task.program" title="Link to this definition">#</a></dt>
+<dd><p>The program’s identity (“orca”, “mopac”, …), which names its
+<code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/&lt;program&gt;.ini</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Task.cmd">
+<span class="sig-name descname"><span class="pre">cmd</span></span><a class="headerlink" href="#seamm_exec.tasks.Task.cmd" title="Link to this definition">#</a></dt>
+<dd><p>The command template; <code class="docutils literal notranslate"><span class="pre">{code}</span></code>, <code class="docutils literal notranslate"><span class="pre">{code_dir}</span></code>, <code class="docutils literal notranslate"><span class="pre">{NTASKS}</span></code>, … are
+filled in by the back end from the configuration and the task’s share of
+the resources.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Task.files">
+<span class="sig-name descname"><span class="pre">files</span></span><a class="headerlink" href="#seamm_exec.tasks.Task.files" title="Link to this definition">#</a></dt>
+<dd><p>Input files to write before running.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>{str: str or bytes}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Task.return_files">
+<span class="sig-name descname"><span class="pre">return_files</span></span><a class="headerlink" href="#seamm_exec.tasks.Task.return_files" title="Link to this definition">#</a></dt>
+<dd><p>Globs of the files to keep; <code class="docutils literal notranslate"><span class="pre">&quot;&#64;subdir+name&quot;</span></code> moves a file into a
+subdirectory, as with <code class="docutils literal notranslate"><span class="pre">Base.run()</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Task.resources">
+<span class="sig-name descname"><span class="pre">resources</span></span><a class="headerlink" href="#seamm_exec.tasks.Task.resources" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#seamm_exec.tasks.Resources" title="seamm_exec.tasks.Resources">Resources</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Task.env">
+<span class="sig-name descname"><span class="pre">env</span></span><a class="headerlink" href="#seamm_exec.tasks.Task.env" title="Link to this definition">#</a></dt>
+<dd><p>Extra environment variables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>{str: str}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Task.in_situ">
+<span class="sig-name descname"><span class="pre">in_situ</span></span><a class="headerlink" href="#seamm_exec.tasks.Task.in_situ" title="Link to this definition">#</a></dt>
+<dd><p>True runs in the task directory, leaving output there to watch; False in
+a temporary directory, copying back only <code class="docutils literal notranslate"><span class="pre">return_files</span></code>; None picks
+per <code class="docutils literal notranslate"><span class="pre">Base.run()</span></code> (scratch under a scheduler, in place otherwise).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Task.shell">
+<span class="sig-name descname"><span class="pre">shell</span></span><a class="headerlink" href="#seamm_exec.tasks.Task.shell" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Task.input_data">
+<span class="sig-name descname"><span class="pre">input_data</span></span><a class="headerlink" href="#seamm_exec.tasks.Task.input_data" title="Link to this definition">#</a></dt>
+<dd><p>Data for the standard input.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Task.estimated_seconds">
+<span class="sig-name descname"><span class="pre">estimated_seconds</span></span><a class="headerlink" href="#seamm_exec.tasks.Task.estimated_seconds" title="Link to this definition">#</a></dt>
+<dd><p>The step’s estimate of the cost, used by the inline rule for tiny tasks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Task.target">
+<span class="sig-name descname"><span class="pre">target</span></span><a class="headerlink" href="#seamm_exec.tasks.Task.target" title="Link to this definition">#</a></dt>
+<dd><p>Reserved: None is the job’s target.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Task.directory">
+<span class="sig-name descname"><span class="pre">directory</span></span><a class="headerlink" href="#seamm_exec.tasks.Task.directory" title="Link to this definition">#</a></dt>
+<dd><p>Where the task runs and its results land. None means
+<code class="docutils literal notranslate"><span class="pre">&lt;step</span> <span class="pre">dir&gt;/tasks/&lt;key&gt;/</span></code>, the default for fan-out; a step running a
+single calculation passes its own directory so its output stays where it
+always was.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str or Path or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Task.config">
+<span class="sig-name descname"><span class="pre">config</span></span><a class="headerlink" href="#seamm_exec.tasks.Task.config" title="Link to this definition">#</a></dt>
+<dd><p>A local override of the program’s configuration (the <code class="docutils literal notranslate"><span class="pre">&lt;program&gt;.ini</span></code>
+section), for steps that resolve it themselves. Remote back ends ignore
+it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Task.fingerprint">
+<span class="sig-name descname"><span class="pre">fingerprint</span></span><a class="headerlink" href="#seamm_exec.tasks.Task.fingerprint" title="Link to this definition">#</a></dt>
+<dd><p>Identifies the inputs for restart. None hashes <code class="docutils literal notranslate"><span class="pre">cmd</span></code> and <code class="docutils literal notranslate"><span class="pre">files</span></code>;
+give one when the inputs carry run-dependent text (core counts,
+absolute paths).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Task.success_text">
+<span class="sig-name descname"><span class="pre">success_text</span></span><a class="headerlink" href="#seamm_exec.tasks.Task.success_text" title="Link to this definition">#</a></dt>
+<dd><p>For codes whose return code does not show failure (ORCA exits 0 after
+an error termination): each file must contain its text (or all of its
+texts), or the task failed, gets no <code class="docutils literal notranslate"><span class="pre">DONE</span></code> and is tried again on the
+next run.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>{str: str or [str]} or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">cmd</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></span><a class="headerlink" href="#id0" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">config</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id1" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.tasks.Task.digest">
+<span class="sig-name descname"><span class="pre">digest</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#Task.digest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.Task.digest" title="Link to this definition">#</a></dt>
+<dd><p>The fingerprint of the inputs, used to detect a changed task.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">directory</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id2" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">env</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></span><a class="headerlink" href="#id3" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">estimated_seconds</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id4" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">files</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id5" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">fingerprint</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id6" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id7">
+<span class="sig-name descname"><span class="pre">in_situ</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id7" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id8">
+<span class="sig-name descname"><span class="pre">input_data</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id8" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id9">
+<span class="sig-name descname"><span class="pre">key</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#id9" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id10">
+<span class="sig-name descname"><span class="pre">program</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#id10" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id11">
+<span class="sig-name descname"><span class="pre">resources</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#seamm_exec.tasks.Resources" title="seamm_exec.tasks.Resources"><span class="pre">Resources</span></a></span><a class="headerlink" href="#id11" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id12">
+<span class="sig-name descname"><span class="pre">return_files</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></span><a class="headerlink" href="#id12" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id13">
+<span class="sig-name descname"><span class="pre">shell</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#id13" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id14">
+<span class="sig-name descname"><span class="pre">success_text</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id14" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id15">
+<span class="sig-name descname"><span class="pre">target</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id15" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskBackend">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.tasks.</span></span><span class="sig-name descname"><span class="pre">TaskBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#TaskBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.TaskBackend" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Protocol</span></code></p>
+<p>What runs tasks: the <code class="docutils literal notranslate"><span class="pre">LocalPool</span></code> now; a scheduler or TaskServer later.</p>
+<p>A back end may also offer <code class="docutils literal notranslate"><span class="pre">wait(ids,</span> <span class="pre">timeout)</span></code> to block until one of
+<code class="docutils literal notranslate"><span class="pre">ids</span></code> changes state, <code class="docutils literal notranslate"><span class="pre">reattach(records)</span> <span class="pre">-&gt;</span> <span class="pre">{key:</span> <span class="pre">state}</span></code> to recover tasks
+an earlier evaluator submitted, <code class="docutils literal notranslate"><span class="pre">capacity()</span></code> and <code class="docutils literal notranslate"><span class="pre">has_program(task)</span></code>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskBackend.cancel">
+<span class="sig-name descname"><span class="pre">cancel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#TaskBackend.cancel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.TaskBackend.cancel" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskBackend.fetch">
+<span class="sig-name descname"><span class="pre">fetch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#seamm_exec.tasks.Task" title="seamm_exec.tasks.Task"><span class="pre">Task</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#seamm_exec.tasks.TaskResult" title="seamm_exec.tasks.TaskResult"><span class="pre">TaskResult</span></a></span></span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#TaskBackend.fetch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.TaskBackend.fetch" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskBackend.name">
+<span class="sig-name descname"><span class="pre">name</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#seamm_exec.tasks.TaskBackend.name" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskBackend.status">
+<span class="sig-name descname"><span class="pre">status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#TaskBackend.status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.TaskBackend.status" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskBackend.submit">
+<span class="sig-name descname"><span class="pre">submit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tasks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#TaskBackend.submit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.TaskBackend.submit" title="Link to this definition">#</a></dt>
+<dd><p>Submit tasks; return their ids. <code class="docutils literal notranslate"><span class="pre">on_start(task,</span> <span class="pre">info)</span></code>, if given, is
+called when a task’s process starts (<code class="docutils literal notranslate"><span class="pre">info</span></code> is what is needed to find
+it again, e.g. its process group).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskResult">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.tasks.</span></span><span class="sig-name descname"><span class="pre">TaskResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">returncode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stdout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stderr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attempts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">history</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_situ</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">restored</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">archive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reason</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#TaskResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.TaskResult" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The outcome of a task.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskResult.key">
+<span class="sig-name descname"><span class="pre">key</span></span><a class="headerlink" href="#seamm_exec.tasks.TaskResult.key" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskResult.state">
+<span class="sig-name descname"><span class="pre">state</span></span><a class="headerlink" href="#seamm_exec.tasks.TaskResult.state" title="Link to this definition">#</a></dt>
+<dd><p>finished | failed | cancelled | lost</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskResult.returncode">
+<span class="sig-name descname"><span class="pre">returncode</span></span><a class="headerlink" href="#seamm_exec.tasks.TaskResult.returncode" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">stdout,</span> <span class="pre">stderr</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskResult.directory">
+<span class="sig-name descname"><span class="pre">directory</span></span><a class="headerlink" href="#seamm_exec.tasks.TaskResult.directory" title="Link to this definition">#</a></dt>
+<dd><p>Where the task’s results are (for an archived task, where they were).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Path or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskResult.files">
+<span class="sig-name descname"><span class="pre">files</span></span><a class="headerlink" href="#seamm_exec.tasks.TaskResult.files" title="Link to this definition">#</a></dt>
+<dd><p>The returned files’ contents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>{str: str or bytes}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskResult.attempts">
+<span class="sig-name descname"><span class="pre">attempts</span></span><a class="headerlink" href="#seamm_exec.tasks.TaskResult.attempts" title="Link to this definition">#</a></dt>
+<dd><p>How many times the task has been submitted, over all runs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskResult.history">
+<span class="sig-name descname"><span class="pre">history</span></span><a class="headerlink" href="#seamm_exec.tasks.TaskResult.history" title="Link to this definition">#</a></dt>
+<dd><p>One record per attempt.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>[dict]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskResult.in_situ">
+<span class="sig-name descname"><span class="pre">in_situ</span></span><a class="headerlink" href="#seamm_exec.tasks.TaskResult.in_situ" title="Link to this definition">#</a></dt>
+<dd><p>Whether it ran in place.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskResult.run_directory">
+<span class="sig-name descname"><span class="pre">run_directory</span></span><a class="headerlink" href="#seamm_exec.tasks.TaskResult.run_directory" title="Link to this definition">#</a></dt>
+<dd><p>Where it actually ran (a scratch directory when not in situ).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskResult.restored">
+<span class="sig-name descname"><span class="pre">restored</span></span><a class="headerlink" href="#seamm_exec.tasks.TaskResult.restored" title="Link to this definition">#</a></dt>
+<dd><p>True when the result came from an earlier run rather than this one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskResult.reason">
+<span class="sig-name descname"><span class="pre">reason</span></span><a class="headerlink" href="#seamm_exec.tasks.TaskResult.reason" title="Link to this definition">#</a></dt>
+<dd><p>Why a task failed: its return code, a failed success check, …</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskResult.archive">
+<span class="sig-name descname"><span class="pre">archive</span></span><a class="headerlink" href="#seamm_exec.tasks.TaskResult.archive" title="Link to this definition">#</a></dt>
+<dd><p>The tar holding the task’s directory, once archived.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Path or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskResult.raw">
+<span class="sig-name descname"><span class="pre">raw</span></span><a class="headerlink" href="#seamm_exec.tasks.TaskResult.raw" title="Link to this definition">#</a></dt>
+<dd><p>The <code class="docutils literal notranslate"><span class="pre">Base.run()</span></code>-style dictionary, for this run’s results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id16">
+<span class="sig-name descname"><span class="pre">archive</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id16" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id17">
+<span class="sig-name descname"><span class="pre">attempts</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></span><a class="headerlink" href="#id17" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id18">
+<span class="sig-name descname"><span class="pre">directory</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id18" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id19">
+<span class="sig-name descname"><span class="pre">files</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></span><a class="headerlink" href="#id19" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskResult.from_raw">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_raw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#TaskResult.from_raw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.TaskResult.from_raw" title="Link to this definition">#</a></dt>
+<dd><p>Make a result from the dictionary <code class="docutils literal notranslate"><span class="pre">Base._run_task()</span></code> returns.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id20">
+<span class="sig-name descname"><span class="pre">history</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></span><a class="headerlink" href="#id20" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id21">
+<span class="sig-name descname"><span class="pre">in_situ</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id21" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id22">
+<span class="sig-name descname"><span class="pre">key</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#id22" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskResult.ok">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ok</span></span><a class="headerlink" href="#seamm_exec.tasks.TaskResult.ok" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id23">
+<span class="sig-name descname"><span class="pre">raw</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id23" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id24">
+<span class="sig-name descname"><span class="pre">reason</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id24" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id25">
+<span class="sig-name descname"><span class="pre">restored</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#id25" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id26">
+<span class="sig-name descname"><span class="pre">returncode</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id26" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id27">
+<span class="sig-name descname"><span class="pre">run_directory</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id27" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id28">
+<span class="sig-name descname"><span class="pre">state</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#id28" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskResult.stderr">
+<span class="sig-name descname"><span class="pre">stderr</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></span><a class="headerlink" href="#seamm_exec.tasks.TaskResult.stderr" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskResult.stdout">
+<span class="sig-name descname"><span class="pre">stdout</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></span><a class="headerlink" href="#seamm_exec.tasks.TaskResult.stdout" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskSet">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.tasks.</span></span><span class="sig-name descname"><span class="pre">TaskSet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">manifest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">archive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bundle_tasks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_attempts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_lost_retries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inline_below</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">60.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poll_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#TaskSet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.TaskSet" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>What a step uses: add tasks, then iterate over their results.</p>
+<p><code class="docutils literal notranslate"><span class="pre">run()</span></code> yields finished tasks from earlier runs first (from their <code class="docutils literal notranslate"><span class="pre">DONE</span></code>
+markers, never recomputed), then submits the rest and yields each result as
+it completes. Within a run a task that fails (nonzero return code) is not
+retried; a lost one is, up to <code class="docutils literal notranslate"><span class="pre">max_lost_retries</span></code>. Across runs a failed or
+lost task is tried again until it has had <code class="docutils literal notranslate"><span class="pre">max_attempts</span></code> attempts in all.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>node</strong> (<em>seamm.Node</em><em>, </em><em>optional</em>) – The step. Gives the step directory, the executor and <code class="docutils literal notranslate"><span class="pre">root</span></code>.</p></li>
+<li><p><strong>target</strong> (<em>str</em><em>, </em><em>optional</em>) – Reserved for the job’s target; unused in this version.</p></li>
+<li><p><strong>directory</strong> (<em>str</em><em> or </em><em>Path</em><em>, </em><em>optional</em>) – The step directory, overriding <code class="docutils literal notranslate"><span class="pre">node.directory</span></code>.</p></li>
+<li><p><strong>executor</strong> (<em>seamm_exec.Base</em><em>, </em><em>optional</em>) – Overrides <code class="docutils literal notranslate"><span class="pre">node.flowchart.executor</span></code>.</p></li>
+<li><p><strong>backend</strong> (<a class="reference internal" href="#seamm_exec.tasks.TaskBackend" title="seamm_exec.tasks.TaskBackend"><em>TaskBackend</em></a><em>, </em><em>optional</em>) – Where tasks go. Default: a <code class="docutils literal notranslate"><span class="pre">LocalPool</span></code> for this machine.</p></li>
+<li><p><strong>local</strong> (<a class="reference internal" href="#seamm_exec.local_pool.LocalPool" title="seamm_exec.local_pool.LocalPool"><em>LocalPool</em></a><em>, </em><em>optional</em>) – The evaluator’s own pool, for the inline rule. Defaults to <code class="docutils literal notranslate"><span class="pre">backend</span></code>
+when that is a <code class="docutils literal notranslate"><span class="pre">LocalPool</span></code>, else one is made on demand.</p></li>
+<li><p><strong>root</strong> (<em>str</em><em> or </em><em>Path</em><em>, </em><em>optional</em>) – Where the <code class="docutils literal notranslate"><span class="pre">&lt;program&gt;.ini</span></code> files are. Default <code class="docutils literal notranslate"><span class="pre">node.global_options[&quot;root&quot;]</span></code>.</p></li>
+<li><p><strong>manifest</strong> (<em>bool = True</em>) – Keep the manifest and <code class="docutils literal notranslate"><span class="pre">DONE</span></code> markers. False only for <code class="docutils literal notranslate"><span class="pre">Base.run()</span></code>.</p></li>
+<li><p><strong>archive</strong> (<em>bool = False</em>) – Pack each bundle’s task directories into <code class="docutils literal notranslate"><span class="pre">tasks/&lt;bundle&gt;.tar</span></code> once all
+its tasks are done, and remove the directories.</p></li>
+<li><p><strong>bundle_tasks</strong> (<em>int</em><em>, </em><em>optional</em>) – Tasks per bundle, in the order added. Default: one bundle.</p></li>
+<li><p><strong>max_attempts</strong> (<em>int = 3</em>) – Attempts per task over all runs.</p></li>
+<li><p><strong>max_lost_retries</strong> (<em>int = 2</em>) – Resubmissions of a lost task within one run.</p></li>
+<li><p><strong>inline_below</strong> (<em>float = 60</em>) – Tasks estimated to take less than this many seconds run in the local
+pool rather than on a remote back end, if their program is installed
+here.</p></li>
+<li><p><strong>poll_interval</strong> (<em>float</em>) – Seconds between status checks of a back end without <code class="docutils literal notranslate"><span class="pre">wait()</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskSet.add">
+<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#TaskSet.add"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.TaskSet.add" title="Link to this definition">#</a></dt>
+<dd><p>Add a task. Keys must be unique and filesystem-safe.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskSet.backend">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">backend</span></span><a class="headerlink" href="#seamm_exec.tasks.TaskSet.backend" title="Link to this definition">#</a></dt>
+<dd><p>The back end for this TaskSet’s tasks (the job’s target).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskSet.capacity">
+<span class="sig-name descname"><span class="pre">capacity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#TaskSet.capacity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.TaskSet.capacity" title="Link to this definition">#</a></dt>
+<dd><p>The back end’s capacity, so a step can size its tasks beforehand.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">{&quot;cores&quot;:</span> <span class="pre">int,</span> <span class="pre">&quot;memory&quot;:</span> <span class="pre">bytes,</span> <span class="pre">&quot;ngpus&quot;:</span> <span class="pre">int}</span></code></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskSet.local">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">local</span></span><a class="headerlink" href="#seamm_exec.tasks.TaskSet.local" title="Link to this definition">#</a></dt>
+<dd><p>The evaluator’s own LocalPool.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskSet.marker_directory">
+<span class="sig-name descname"><span class="pre">marker_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#TaskSet.marker_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.TaskSet.marker_directory" title="Link to this definition">#</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">&lt;step</span> <span class="pre">dir&gt;/tasks/&lt;key&gt;</span></code>, holding the task’s <code class="docutils literal notranslate"><span class="pre">DONE</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskSet.route">
+<span class="sig-name descname"><span class="pre">route</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#TaskSet.route"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.TaskSet.route" title="Link to this definition">#</a></dt>
+<dd><p>The back end for a task: the job’s target, except for tiny tasks.</p>
+<p>The inline rule: a task whose <code class="docutils literal notranslate"><span class="pre">estimated_seconds</span></code> is below
+<code class="docutils literal notranslate"><span class="pre">inline_below</span></code> runs in the evaluator’s own pool instead of a remote
+back end, provided its program is installed here.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskSet.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#seamm_exec.tasks.TaskResult" title="seamm_exec.tasks.TaskResult"><span class="pre">TaskResult</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#TaskSet.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.TaskSet.run" title="Link to this definition">#</a></dt>
+<dd><p>Submit what is not done, wait, and yield results as they finish.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskSet.summary">
+<span class="sig-name descname"><span class="pre">summary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#TaskSet.summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.TaskSet.summary" title="Link to this definition">#</a></dt>
+<dd><p>Counts by state, for the Dashboard and the step’s report.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">{&quot;total&quot;:</span> <span class="pre">n,</span> <span class="pre">&quot;finished&quot;:</span> <span class="pre">n,</span> <span class="pre">&quot;failed&quot;:</span> <span class="pre">n,</span> <span class="pre">...}</span></code></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskSet.task_directory">
+<span class="sig-name descname"><span class="pre">task_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#TaskSet.task_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.TaskSet.task_directory" title="Link to this definition">#</a></dt>
+<dd><p>Where a task runs and its results land.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskSet.tasks_directory">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">tasks_directory</span></span><a class="headerlink" href="#seamm_exec.tasks.TaskSet.tasks_directory" title="Link to this definition">#</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">&lt;step</span> <span class="pre">dir&gt;/tasks</span></code></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.tasks.WORKER_SCRIPT">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.tasks.</span></span><span class="sig-name descname"><span class="pre">WORKER_SCRIPT</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">PosixPath('/home/runner/work/seamm_exec/seamm_exec/seamm_exec/task_worker.py')</span></span><a class="headerlink" href="#seamm_exec.tasks.WORKER_SCRIPT" title="Link to this definition">#</a></dt>
+<dd><p>The pure-Python bundle worker, run by path (<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">task_worker.py</span> <span class="pre">bundle.json</span></code>)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.tasks.run_task">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.tasks.</span></span><span class="sig-name descname"><span class="pre">run_task</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#run_task"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.run_task" title="Link to this definition">#</a></dt>
+<dd><p>Run one task through a <a class="reference internal" href="#seamm_exec.tasks.TaskSet" title="seamm_exec.tasks.TaskSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">TaskSet</span></code></a> and return its result.</p>
+<p>The convenience for a step that runs a single calculation: it gets the
+manifest, restart and the pool’s handling of the process like any other
+task. <code class="docutils literal notranslate"><span class="pre">kwargs</span></code> go to <a class="reference internal" href="#seamm_exec.tasks.TaskSet" title="seamm_exec.tasks.TaskSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">TaskSet</span></code></a> (e.g. <code class="docutils literal notranslate"><span class="pre">directory=</span></code> when the task
+runs somewhere other than <code class="docutils literal notranslate"><span class="pre">node.directory</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#seamm_exec.tasks.TaskResult" title="seamm_exec.tasks.TaskResult">TaskResult</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -756,6 +1728,15 @@ runs, an executable locally.</p>
         <p class="prev-next-subtitle">previous</p>
         <p class="prev-next-title">seamm_exec</p>
       </div>
+    </a>
+    <a class="right-next"
+       href="../developer_guide/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Developer Documentation</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div>
                 </footer>
@@ -821,8 +1802,143 @@ runs, an executable locally.</p>
 </li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.local_pool">seamm_exec.local_pool module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.local_pool.LocalPool"><code class="docutils literal notranslate"><span class="pre">LocalPool</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.local_pool.LocalPool.cancel"><code class="docutils literal notranslate"><span class="pre">LocalPool.cancel()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.local_pool.LocalPool.capacity"><code class="docutils literal notranslate"><span class="pre">LocalPool.capacity()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.local_pool.LocalPool.config_for"><code class="docutils literal notranslate"><span class="pre">LocalPool.config_for()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.local_pool.LocalPool.fetch"><code class="docutils literal notranslate"><span class="pre">LocalPool.fetch()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.local_pool.LocalPool.has_program"><code class="docutils literal notranslate"><span class="pre">LocalPool.has_program()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.local_pool.LocalPool.name"><code class="docutils literal notranslate"><span class="pre">LocalPool.name</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.local_pool.LocalPool.reattach"><code class="docutils literal notranslate"><span class="pre">LocalPool.reattach()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.local_pool.LocalPool.status"><code class="docutils literal notranslate"><span class="pre">LocalPool.status()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.local_pool.LocalPool.submit"><code class="docutils literal notranslate"><span class="pre">LocalPool.submit()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.local_pool.LocalPool.wait"><code class="docutils literal notranslate"><span class="pre">LocalPool.wait()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.seamm_exec">seamm_exec.seamm_exec module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.seamm_exec.canvas"><code class="docutils literal notranslate"><span class="pre">canvas()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.task_worker">seamm_exec.task_worker module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.task_worker.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.task_worker.run_bundle"><code class="docutils literal notranslate"><span class="pre">run_bundle()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.tasks">seamm_exec.tasks module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Manifest"><code class="docutils literal notranslate"><span class="pre">Manifest</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Manifest.flush"><code class="docutils literal notranslate"><span class="pre">Manifest.flush()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Manifest.get"><code class="docutils literal notranslate"><span class="pre">Manifest.get()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Manifest.save"><code class="docutils literal notranslate"><span class="pre">Manifest.save()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Manifest.update"><code class="docutils literal notranslate"><span class="pre">Manifest.update()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Resources"><code class="docutils literal notranslate"><span class="pre">Resources</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Resources.account"><code class="docutils literal notranslate"><span class="pre">Resources.account</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Resources.cpus_per_task"><code class="docutils literal notranslate"><span class="pre">Resources.cpus_per_task</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Resources.mem_per_cpu"><code class="docutils literal notranslate"><span class="pre">Resources.mem_per_cpu</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Resources.ngpus"><code class="docutils literal notranslate"><span class="pre">Resources.ngpus</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Resources.nodes"><code class="docutils literal notranslate"><span class="pre">Resources.nodes</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Resources.ntasks"><code class="docutils literal notranslate"><span class="pre">Resources.ntasks</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Resources.partition"><code class="docutils literal notranslate"><span class="pre">Resources.partition</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Resources.qos"><code class="docutils literal notranslate"><span class="pre">Resources.qos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Resources.walltime"><code class="docutils literal notranslate"><span class="pre">Resources.walltime</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Task"><code class="docutils literal notranslate"><span class="pre">Task</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Task.key"><code class="docutils literal notranslate"><span class="pre">Task.key</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Task.program"><code class="docutils literal notranslate"><span class="pre">Task.program</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Task.cmd"><code class="docutils literal notranslate"><span class="pre">Task.cmd</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Task.files"><code class="docutils literal notranslate"><span class="pre">Task.files</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Task.return_files"><code class="docutils literal notranslate"><span class="pre">Task.return_files</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Task.resources"><code class="docutils literal notranslate"><span class="pre">Task.resources</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Task.env"><code class="docutils literal notranslate"><span class="pre">Task.env</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Task.in_situ"><code class="docutils literal notranslate"><span class="pre">Task.in_situ</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Task.shell"><code class="docutils literal notranslate"><span class="pre">Task.shell</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Task.input_data"><code class="docutils literal notranslate"><span class="pre">Task.input_data</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Task.estimated_seconds"><code class="docutils literal notranslate"><span class="pre">Task.estimated_seconds</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Task.target"><code class="docutils literal notranslate"><span class="pre">Task.target</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Task.directory"><code class="docutils literal notranslate"><span class="pre">Task.directory</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Task.config"><code class="docutils literal notranslate"><span class="pre">Task.config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Task.fingerprint"><code class="docutils literal notranslate"><span class="pre">Task.fingerprint</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Task.success_text"><code class="docutils literal notranslate"><span class="pre">Task.success_text</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id0"><code class="docutils literal notranslate"><span class="pre">Task.cmd</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id1"><code class="docutils literal notranslate"><span class="pre">Task.config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.Task.digest"><code class="docutils literal notranslate"><span class="pre">Task.digest()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id2"><code class="docutils literal notranslate"><span class="pre">Task.directory</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id3"><code class="docutils literal notranslate"><span class="pre">Task.env</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id4"><code class="docutils literal notranslate"><span class="pre">Task.estimated_seconds</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id5"><code class="docutils literal notranslate"><span class="pre">Task.files</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id6"><code class="docutils literal notranslate"><span class="pre">Task.fingerprint</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id7"><code class="docutils literal notranslate"><span class="pre">Task.in_situ</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id8"><code class="docutils literal notranslate"><span class="pre">Task.input_data</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id9"><code class="docutils literal notranslate"><span class="pre">Task.key</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id10"><code class="docutils literal notranslate"><span class="pre">Task.program</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id11"><code class="docutils literal notranslate"><span class="pre">Task.resources</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id12"><code class="docutils literal notranslate"><span class="pre">Task.return_files</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id13"><code class="docutils literal notranslate"><span class="pre">Task.shell</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id14"><code class="docutils literal notranslate"><span class="pre">Task.success_text</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id15"><code class="docutils literal notranslate"><span class="pre">Task.target</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskBackend"><code class="docutils literal notranslate"><span class="pre">TaskBackend</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskBackend.cancel"><code class="docutils literal notranslate"><span class="pre">TaskBackend.cancel()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskBackend.fetch"><code class="docutils literal notranslate"><span class="pre">TaskBackend.fetch()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskBackend.name"><code class="docutils literal notranslate"><span class="pre">TaskBackend.name</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskBackend.status"><code class="docutils literal notranslate"><span class="pre">TaskBackend.status()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskBackend.submit"><code class="docutils literal notranslate"><span class="pre">TaskBackend.submit()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult"><code class="docutils literal notranslate"><span class="pre">TaskResult</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.key"><code class="docutils literal notranslate"><span class="pre">TaskResult.key</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.state"><code class="docutils literal notranslate"><span class="pre">TaskResult.state</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.returncode"><code class="docutils literal notranslate"><span class="pre">TaskResult.returncode</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.directory"><code class="docutils literal notranslate"><span class="pre">TaskResult.directory</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.files"><code class="docutils literal notranslate"><span class="pre">TaskResult.files</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.attempts"><code class="docutils literal notranslate"><span class="pre">TaskResult.attempts</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.history"><code class="docutils literal notranslate"><span class="pre">TaskResult.history</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.in_situ"><code class="docutils literal notranslate"><span class="pre">TaskResult.in_situ</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.run_directory"><code class="docutils literal notranslate"><span class="pre">TaskResult.run_directory</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.restored"><code class="docutils literal notranslate"><span class="pre">TaskResult.restored</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.reason"><code class="docutils literal notranslate"><span class="pre">TaskResult.reason</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.archive"><code class="docutils literal notranslate"><span class="pre">TaskResult.archive</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.raw"><code class="docutils literal notranslate"><span class="pre">TaskResult.raw</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id16"><code class="docutils literal notranslate"><span class="pre">TaskResult.archive</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id17"><code class="docutils literal notranslate"><span class="pre">TaskResult.attempts</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id18"><code class="docutils literal notranslate"><span class="pre">TaskResult.directory</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id19"><code class="docutils literal notranslate"><span class="pre">TaskResult.files</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.from_raw"><code class="docutils literal notranslate"><span class="pre">TaskResult.from_raw()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id20"><code class="docutils literal notranslate"><span class="pre">TaskResult.history</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id21"><code class="docutils literal notranslate"><span class="pre">TaskResult.in_situ</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id22"><code class="docutils literal notranslate"><span class="pre">TaskResult.key</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.ok"><code class="docutils literal notranslate"><span class="pre">TaskResult.ok</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id23"><code class="docutils literal notranslate"><span class="pre">TaskResult.raw</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id24"><code class="docutils literal notranslate"><span class="pre">TaskResult.reason</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id25"><code class="docutils literal notranslate"><span class="pre">TaskResult.restored</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id26"><code class="docutils literal notranslate"><span class="pre">TaskResult.returncode</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id27"><code class="docutils literal notranslate"><span class="pre">TaskResult.run_directory</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id28"><code class="docutils literal notranslate"><span class="pre">TaskResult.state</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.stderr"><code class="docutils literal notranslate"><span class="pre">TaskResult.stderr</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.stdout"><code class="docutils literal notranslate"><span class="pre">TaskResult.stdout</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskSet"><code class="docutils literal notranslate"><span class="pre">TaskSet</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskSet.add"><code class="docutils literal notranslate"><span class="pre">TaskSet.add()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskSet.backend"><code class="docutils literal notranslate"><span class="pre">TaskSet.backend</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskSet.capacity"><code class="docutils literal notranslate"><span class="pre">TaskSet.capacity()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskSet.local"><code class="docutils literal notranslate"><span class="pre">TaskSet.local</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskSet.marker_directory"><code class="docutils literal notranslate"><span class="pre">TaskSet.marker_directory()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskSet.route"><code class="docutils literal notranslate"><span class="pre">TaskSet.route()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskSet.run"><code class="docutils literal notranslate"><span class="pre">TaskSet.run()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskSet.summary"><code class="docutils literal notranslate"><span class="pre">TaskSet.summary()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskSet.task_directory"><code class="docutils literal notranslate"><span class="pre">TaskSet.task_directory()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskSet.tasks_directory"><code class="docutils literal notranslate"><span class="pre">TaskSet.tasks_directory</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.WORKER_SCRIPT"><code class="docutils literal notranslate"><span class="pre">WORKER_SCRIPT</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.run_task"><code class="docutils literal notranslate"><span class="pre">run_task()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec">Module contents</a><ul class="pst-show_toc_level nav section-nav flex-column">

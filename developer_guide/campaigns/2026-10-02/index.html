@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops &#8212; SEAMM seamm-exec Plug-in 2026.10.2 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+
+    <script src="../../../_static/documentation_options.js?v=52372788"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'developer_guide/campaigns/2026-10-02/index';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Phase 0 notes" href="NOTES_phase0.html" />
+    <link rel="prev" title="Campaigns" href="../index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.10.2" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/SEAMM logo.png" class="logo__image only-light" alt=""/>
+    <img src="../../../_static/SEAMM Inverted 288x181.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">SEAMM-EXEC</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/seamm-exec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/seamm-exec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">Campaigns</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Developer Documentation</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Campaigns</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="parallel-execution-the-task-layer-schedulers-and-parallel-loops">
+<h1>2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops<a class="headerlink" href="#parallel-execution-the-task-layer-schedulers-and-parallel-loops" title="Link to this heading">#</a></h1>
+<p>Status: design complete and all six open questions settled with Paul on
+2026-10-02. Phase 0 is done and released. Phase 1 (the task layer in
+<code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code> with <code class="docutils literal notranslate"><span class="pre">LocalPool</span></code>, the manifest, bundling, pruning and
+archiving, plus the <code class="docutils literal notranslate"><span class="pre">orca_step</span></code> and <code class="docutils literal notranslate"><span class="pre">mopac_step</span></code> conversions) is
+implemented and tested on <code class="docutils literal notranslate"><span class="pre">dev</span></code>, not yet released; see <code class="docutils literal notranslate"><span class="pre">NOTES_phase1.rst</span></code>. The canonical copy of this design is
+<code class="docutils literal notranslate"><span class="pre">~/Work/SEAMM/Parallel_execution_design.rst</span></code> at the workspace root; this is
+the campaign copy, to be kept in sync while the design changes and to gain
+<code class="docutils literal notranslate"><span class="pre">NOTES*</span></code> files as the work proceeds. It continues the JobServer SLURM
+campaign (<code class="docutils literal notranslate"><span class="pre">seamm_jobserver</span></code> <code class="docutils literal notranslate"><span class="pre">campaigns/2026-08-05</span></code>) and the multi-queue
+routing campaign (<code class="docutils literal notranslate"><span class="pre">campaigns/2026-08-10</span></code>), and it answers the execution
+question left open in <code class="docutils literal notranslate"><span class="pre">MBE_correction_step_design.rst</span></code>.</p>
+</section>
+<section id="purpose">
+<h1>Purpose<a class="headerlink" href="#purpose" title="Link to this heading">#</a></h1>
+<p>SEAMM jobs run one step at a time, in one process, and every external code runs inline in that process.
+Two common patterns need more than that:</p>
+<ol class="arabic simple">
+<li><p><strong>Many independent calculations inside one step.</strong> The many-body correction (MBE) step needs about 2,800
+fragment calculations per periodic frame; the N-fragment counterpoise step, the Energy step over a
+trajectory, and the dimer-builder labelling all have the same shape.</p></li>
+<li><p><strong>Loops whose iterations are independent.</strong> A Loop over structures, table rows or parameters whose body
+may be one MOPAC step or a multi-step LAMMPS workflow, with results collected into tables or into the
+structure database.</p></li>
+</ol>
+<p>This document designs one mechanism that serves both, works on a disconnected laptop, on a server plus
+cluster pair (ChemAI + ARC), and on a cluster alone (ARC), and supports SLURM, PBS and other queueing
+systems as well as none.</p>
+<p>The design follows the model Paul used at Materials Design (MedeA): the <strong>JobServer</strong> manages jobs; a
+<strong>flowchart evaluator</strong> does the lightweight work of interpreting the flowchart, preparing inputs and
+analyzing outputs; and heavy codes run as <strong>tasks</strong> handed to whatever runs programs on the compute
+resource, either a very simple <strong>TaskServer</strong> or the site’s queueing system, which keeps the state.</p>
+</section>
+<section id="requirements">
+<h1>Requirements<a class="headerlink" href="#requirements" title="Link to this heading">#</a></h1>
+<section id="deployment-shapes">
+<h2>Deployment shapes<a class="headerlink" href="#deployment-shapes" title="Link to this heading">#</a></h2>
+<p>All three must work with the same flowcharts and the same plug-in code:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Shape</p></th>
+<th class="head"><p>Where things run</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Laptop, offline</p></td>
+<td><p>JobServer, evaluator and tasks all on the laptop. No queue, possibly no network.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Server + cluster</p></td>
+<td><p>JobServer and evaluator on the server (ChemAI). Tasks on the server’s own SLURM, or
+on a remote cluster (ARC) over ssh. Datastore and job directories stay on the server.</p></td>
+</tr>
+<tr class="row-even"><td><p>Cluster alone</p></td>
+<td><p>No persistent services allowed on the login nodes. The evaluator is a one-core queue
+job; it submits tasks to the same queue from the compute node.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="other-requirements">
+<h2>Other requirements<a class="headerlink" href="#other-requirements" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><strong>Queueing systems:</strong> SLURM and PBS from the start in the interface, SLURM first in code; LSF, Grid
+Engine and others later with no change to plug-ins. No queueing system must also work.</p></li>
+<li><p><strong>Restart:</strong> never recompute a finished calculation. A frame of 2,800 fragments or a loop of 1,000
+iterations must resume after a crash, a walltime limit, or a JobServer upgrade.</p></li>
+<li><p><strong>Site limits:</strong> respect per-user queued-job caps (TinkerCliffs: 1,000, each array element counting),
+bundle small tasks into shared allocations, and keep the file count down (the MBE prototype hit a
+10.5 M-inode quota overnight).</p></li>
+<li><p><strong>Live monitoring:</strong> running a code in place so its output can be watched (MOPAC, LAMMPS trajectories)
+must remain possible; it is a per-task choice, not a global one.</p></li>
+<li><p><strong>Visibility:</strong> the Dashboard should be able to show a job’s tasks and their states.</p></li>
+<li><p><strong>Codes need not be installed where the evaluator runs.</strong> The evaluator may be on ChemAI while ORCA is
+only on ARC.</p></li>
+<li><p><strong>Nesting:</strong> a loop body may itself contain a step that fans out, or another parallel loop.</p></li>
+</ul>
+</section>
+</section>
+<section id="what-exists-today">
+<h1>What exists today<a class="headerlink" href="#what-exists-today" title="Link to this heading">#</a></h1>
+<p>Facts established from the code on 2026-10-02:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">seamm_exec.Base.run(config,</span> <span class="pre">cmd,</span> <span class="pre">directory,</span> <span class="pre">input_data,</span> <span class="pre">files,</span> <span class="pre">env,</span> <span class="pre">return_files,</span> <span class="pre">shell,</span> <span class="pre">in_situ,</span> <span class="pre">ce)</span></code>
+already has the task shape: input files as a dict, a command template, return-file globs, a temporary
+working directory honouring <code class="docutils literal notranslate"><span class="pre">$TMPDIR</span></code> when not in situ, and copy-back of only the requested files. It
+is blocking, runs one command, and is given the whole allocation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">computational_environment()</span></code> reports the full SLURM allocation or the whole machine. Nothing shares an
+allocation among concurrent tasks. ORCA sets <code class="docutils literal notranslate"><span class="pre">%pal</span></code> to all of <code class="docutils literal notranslate"><span class="pre">NTASKS</span></code>.</p></li>
+<li><p>Each code step reads its own <code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/&lt;code&gt;.ini</span></code> (conda environment, modules, executable) in the
+evaluator process and resolves the command itself.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">seamm_slurm</span></code> has <code class="docutils literal notranslate"><span class="pre">SlurmBackend</span></code> (submit, poll_many, cancel), <code class="docutils literal notranslate"><span class="pre">LocalSlurm</span></code> and <code class="docutils literal notranslate"><span class="pre">SshSlurm</span></code>
+transports, <code class="docutils literal notranslate"><span class="pre">status.classify()</span></code>, <code class="docutils literal notranslate"><span class="pre">script.build_script()</span></code> and <code class="docutils literal notranslate"><span class="pre">RsyncStager</span></code>. It is already decoupled
+from the JobServer, which was intended to allow a per-step executor later.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">seamm_jobserver</span></code> submits a whole flowchart as one sbatch when a queue section is of type <code class="docutils literal notranslate"><span class="pre">slurm</span></code>, or
+spawns <code class="docutils literal notranslate"><span class="pre">run_from_jobserver</span></code> as a local subprocess. Queue sections live in <code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/&lt;jobserver-name&gt;.ini</span></code>
+and a job’s <code class="docutils literal notranslate"><span class="pre">parameters[&quot;queue&quot;]</span></code> selects one. Per-queue concurrency caps and resubmission exist.</p></li>
+<li><p><strong>Flowcharts do not resume.</strong> The JobServer’s resubmit-on-loss logic assumes a flowchart restarts from
+its first incomplete step. No such code exists in <code class="docutils literal notranslate"><span class="pre">seamm</span></code>, <code class="docutils literal notranslate"><span class="pre">exec_flowchart</span></code> or <code class="docutils literal notranslate"><span class="pre">loop_step</span></code>; a
+resubmitted job reruns from the top.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">loop_step</span></code> runs iterations sequentially in one process. Iterations share the global variables dict,
+the in-memory pandas tables and their <code class="docutils literal notranslate"><span class="pre">current</span> <span class="pre">index</span></code>, the SystemDB’s current system pointer, and the
+references database. Nothing checks independence and finished iterations are not skipped.</p></li>
+<li><p>Tables exist only in memory, as <code class="docutils literal notranslate"><span class="pre">{&quot;type&quot;:</span> <span class="pre">&quot;pandas&quot;,</span> <span class="pre">&quot;table&quot;:</span> <span class="pre">DataFrame,</span> <span class="pre">...}</span></code> variables, until a Table
+step saves them. <code class="docutils literal notranslate"><span class="pre">store_results</span></code> writes cells with <code class="docutils literal notranslate"><span class="pre">table.at[index,</span> <span class="pre">column]</span></code>.</p></li>
+<li><p>The structure database is SQLite in the job directory (<code class="docutils literal notranslate"><span class="pre">seamm.db</span></code>, WAL mode), owned by the one
+evaluator process.</p></li>
+<li><p>MDI engines are sequential by construction: one warm engine, one structure at a time. The ORCA engine
+runs a subprocess per evaluation in its own temporary directory, so for 27-second fragments MDI gains
+nothing over batch inputs.</p></li>
+<li><p>There is no parent/child job concept in the datastore, dashboard or JobServer.</p></li>
+</ul>
+</section>
+<section id="architecture">
+<h1>Architecture<a class="headerlink" href="#architecture" title="Link to this heading">#</a></h1>
+<section id="roles">
+<h2>Roles<a class="headerlink" href="#roles" title="Link to this heading">#</a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Dashboard / Tk client / MCP
+        |  submit job (flowchart, files, project, target)
+        v
+JobServer  -- manages jobs; spawns one evaluator per job (subprocess, as today)
+        |
+        v
+Flowchart evaluator (run_from_jobserver) -- interprets the flowchart, runs lightweight steps,
+        |     prepares inputs, analyzes outputs, writes the job database and checkpoint
+        |  tasks (program, files, resources, return globs)
+        v
+Task layer (seamm_exec) -- manifest, bundling, pruning, archiving, reattachment
+        |
+        +--&gt; LocalPool      : in-process, partitions this machine or this allocation
+        +--&gt; TaskServer     : tiny service on a compute machine without a queue
+        +--&gt; Scheduler      : SLURM | PBS | ... via local commands or ssh
+                 (staging: shared filesystem | rsync over ssh | TaskServer transfer)
+</pre></div>
+</div>
+<p>The JobServer does not become a task broker. It keeps doing what it does: pick up submitted jobs, start an
+evaluator, cap concurrency per target, reattach to or resubmit lost evaluators, and record state. The task
+layer runs inside the evaluator. The queueing system or the TaskServer keeps the task state; the evaluator
+keeps only the ids it needs to reattach.</p>
+</section>
+<section id="how-the-three-deployment-shapes-use-this">
+<h2>How the three deployment shapes use this<a class="headerlink" href="#how-the-three-deployment-shapes-use-this" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><strong>Laptop:</strong> the <code class="docutils literal notranslate"><span class="pre">LocalPool</span></code> back end. Tasks run concurrently, sized to the machine. A TaskServer on the
+laptop is optional and only buys independence from JobServer restarts.</p></li>
+<li><p><strong>Server + cluster:</strong> the evaluator runs on the server under the JobServer. Its target section says
+<code class="docutils literal notranslate"><span class="pre">scheduler</span> <span class="pre">=</span> <span class="pre">slurm,</span> <span class="pre">transport</span> <span class="pre">=</span> <span class="pre">local</span></code> for the server’s own queue, or <code class="docutils literal notranslate"><span class="pre">transport</span> <span class="pre">=</span> <span class="pre">ssh,</span> <span class="pre">host</span> <span class="pre">=</span> <span class="pre">arc</span></code>
+for the cluster, with rsync staging of each task’s directory. Only the heavy tasks leave the server.</p></li>
+<li><p><strong>Cluster alone:</strong> the JobServer (on the server, or none) submits the evaluator itself as a one-core job,
+which is today’s whole-flowchart path. The evaluator’s own target section then says <code class="docutils literal notranslate"><span class="pre">scheduler</span> <span class="pre">=</span> <span class="pre">slurm,</span>
+<span class="pre">transport</span> <span class="pre">=</span> <span class="pre">local</span></code> and tasks are submitted from the compute node. The prototype’s feeder job proved
+that sbatch works from TinkerCliffs compute nodes. Because the evaluator can outlive its walltime, this
+shape needs flowchart-level checkpointing (below).</p></li>
+</ul>
+</section>
+<section id="the-taskserver">
+<h2>The TaskServer<a class="headerlink" href="#the-taskserver" title="Link to this heading">#</a></h2>
+<p>A deliberately small service for a machine without a queueing system (a workstation, a second Mac, a cloud
+VM). Its protocol is the task API over HTTP, and nothing else:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/tasks</span></code>: program name, files, command template, resources, return globs, in-situ flag. Returns an id.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tasks/{id}</span></code>: state (queued, running, finished, failed, cancelled), return code, listing.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tasks/{id}/files/{name}</span></code>: a returned file.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/tasks/{id}</span></code>: cancel.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/programs</span></code>: the programs it knows how to run, from its own <code class="docutils literal notranslate"><span class="pre">&lt;code&gt;.ini</span></code> files.</p></li>
+</ul>
+<p>It owns the code configuration for its machine and a small pool for concurrency. It persists its queue
+to a local SQLite file so it survives its own restart. Because it changes rarely, the JobServer and
+plug-ins can be upgraded without losing running tasks.</p>
+<p><strong>Transport and trust:</strong> the TaskServer binds to loopback (<code class="docutils literal notranslate"><span class="pre">127.0.0.1</span></code>) only. A remote evaluator reaches
+it through an ssh port-forward using the same passwordless ssh the scheduler transport already needs, so
+trust is the user’s ssh key and there are no new credentials, tokens or certificates to manage. The
+<code class="docutils literal notranslate"><span class="pre">url</span></code> of a <code class="docutils literal notranslate"><span class="pre">tasks</span> <span class="pre">=</span> <span class="pre">taskserver</span></code> target is therefore the local end of that tunnel, and the back end
+opens the tunnel itself (<code class="docutils literal notranslate"><span class="pre">ssh</span> <span class="pre">-N</span> <span class="pre">-L</span></code>) when the target has a <code class="docutils literal notranslate"><span class="pre">host</span></code>.</p>
+</section>
+<section id="resource-vocabulary">
+<h2>Resource vocabulary<a class="headerlink" href="#resource-vocabulary" title="Link to this heading">#</a></h2>
+<p>Tasks state resources in scheduler-neutral terms; each back end translates:</p>
+<p><code class="docutils literal notranslate"><span class="pre">ntasks</span></code>, <code class="docutils literal notranslate"><span class="pre">cpus_per_task</span></code>, <code class="docutils literal notranslate"><span class="pre">mem_per_cpu</span></code>, <code class="docutils literal notranslate"><span class="pre">ngpus</span></code>, <code class="docutils literal notranslate"><span class="pre">walltime</span></code>, <code class="docutils literal notranslate"><span class="pre">partition</span></code>, <code class="docutils literal notranslate"><span class="pre">account</span></code>,
+<code class="docutils literal notranslate"><span class="pre">qos</span></code>, <code class="docutils literal notranslate"><span class="pre">nodes</span></code>. A code step fills these from its own knowledge (ORCA: <code class="docutils literal notranslate"><span class="pre">ntasks</span> <span class="pre">=</span> <span class="pre">4</span></code>, <code class="docutils literal notranslate"><span class="pre">mem_per_cpu</span> <span class="pre">=</span>
+<span class="pre">2</span> <span class="pre">GB</span></code>) or from the step’s parameters, and may read site defaults from the target section. Within a task
+the code sees its own allocation through the existing <code class="docutils literal notranslate"><span class="pre">computational_environment()</span></code> because the back end
+runs it under the scheduler, or sets the equivalent variables for the pool.</p>
+</section>
+</section>
+<section id="the-task-api-seamm-exec">
+<h1>The task API (<code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code>)<a class="headerlink" href="#the-task-api-seamm-exec" title="Link to this heading">#</a></h1>
+<section id="objects">
+<h2>Objects<a class="headerlink" href="#objects" title="Link to this heading">#</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Task</span><span class="p">:</span>
+    <span class="n">key</span><span class="p">:</span> <span class="nb">str</span>                    <span class="c1"># unique within the step, stable across restarts (e.g. fragment key)</span>
+    <span class="n">program</span><span class="p">:</span> <span class="nb">str</span>                <span class="c1"># "orca", "mopac", "vasp", "run_flowchart", ...</span>
+    <span class="n">cmd</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>              <span class="c1"># template; {code}, {code_dir}, {NTASKS}, ... filled by the back end</span>
+    <span class="n">files</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">bytes</span><span class="p">]</span>
+    <span class="n">return_files</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>     <span class="c1"># globs; may include "@subdir+pattern" as today</span>
+    <span class="n">resources</span><span class="p">:</span> <span class="n">Resources</span>        <span class="c1"># ntasks=None means the whole of the back end's capacity</span>
+    <span class="n">env</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">in_situ</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># True = run and leave output in the task directory for watching</span>
+    <span class="n">shell</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">input_data</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>            <span class="c1"># stdin, as Base.run() takes</span>
+    <span class="n">estimated_seconds</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>   <span class="c1"># plug-in's cost estimate; drives the inline rule</span>
+    <span class="n">target</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>   <span class="c1"># None = the job's target (reserved; no per-step override today)</span>
+    <span class="n">directory</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># None = &lt;step dir&gt;/tasks/&lt;key&gt;/ (fan-out); a single-calculation</span>
+                                   <span class="c1"># step passes its own directory so its output stays put</span>
+    <span class="n">config</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># local override of the &lt;program&gt;.ini section; remote back ends ignore it</span>
+    <span class="n">fingerprint</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># restart identity; None hashes cmd + files (never env)</span>
+    <span class="n">success_text</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+                                <span class="c1"># each file must contain its text(s), for codes such as ORCA</span>
+                                <span class="c1"># that exit 0 after an error termination</span>
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TaskResult</span><span class="p">:</span>
+    <span class="n">key</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">state</span><span class="p">:</span> <span class="nb">str</span>                  <span class="c1"># finished | failed | cancelled | lost</span>
+    <span class="n">returncode</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">stdout</span><span class="p">:</span> <span class="nb">str</span><span class="p">;</span> <span class="n">stderr</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">directory</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span>      <span class="c1"># Task.directory, or &lt;step dir&gt;/tasks/&lt;key&gt;/</span>
+    <span class="n">files</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]</span>
+    <span class="n">attempts</span><span class="p">:</span> <span class="nb">int</span><span class="p">;</span> <span class="n">history</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span>   <span class="c1"># over all runs, each with its reason</span>
+    <span class="n">restored</span><span class="p">:</span> <span class="nb">bool</span>              <span class="c1"># from an earlier run's DONE, not recomputed</span>
+    <span class="n">reason</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>          <span class="c1"># why it failed: return code, success check, lost, ...</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TaskBackend</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">submit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tasks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Task</span><span class="p">],</span> <span class="n">directories</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">],</span>
+               <span class="n">on_start</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span> <span class="o">...</span>  <span class="c1"># backend ids; on_start(task, info) per start</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span> <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fetch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="n">Task</span><span class="p">,</span> <span class="n">backend_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TaskResult</span><span class="p">:</span> <span class="o">...</span>
+    <span class="c1"># optional: wait(ids, timeout), reattach(records) -&gt; {key: state}, capacity(), has_program(task)</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TaskSet</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""What a step uses: submit many, wait, iterate results as they finish."""</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">archive</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">bundle_tasks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">max_attempts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">max_lost_retries</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">inline_below</span><span class="o">=</span><span class="mf">60.0</span><span class="p">,</span> <span class="o">...</span><span class="p">):</span> <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="n">Task</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">capacity</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span> <span class="o">...</span>                 <span class="c1"># {"cores", "memory", "ngpus"}, to size tasks first</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">TaskResult</span><span class="p">]:</span> <span class="o">...</span>      <span class="c1"># submits what is not done, polls, yields results</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span> <span class="o">...</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_task</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TaskResult</span><span class="p">:</span> <span class="o">...</span>   <span class="c1"># a one-task TaskSet, for single calculations</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Base.run()</span></code> stays for backward compatibility and becomes <code class="docutils literal notranslate"><span class="pre">TaskSet</span></code> with one task and a synchronous
+<code class="docutils literal notranslate"><span class="pre">LocalPool</span></code> with one slot and no manifest; existing steps keep working unchanged and their directories
+gain no new files. <code class="docutils literal notranslate"><span class="pre">&lt;step</span> <span class="pre">dir&gt;/tasks/&lt;key&gt;/</span></code> is the default task directory only for fan-out: a step
+running one calculation gives <code class="docutils literal notranslate"><span class="pre">Task.directory</span></code> as its own directory, and only its bookkeeping
+(<code class="docutils literal notranslate"><span class="pre">tasks/manifest.json</span></code>, <code class="docutils literal notranslate"><span class="pre">tasks/&lt;key&gt;/DONE</span></code>) is new.</p>
+</section>
+<section id="the-manifest-and-restart">
+<h2>The manifest and restart<a class="headerlink" href="#the-manifest-and-restart" title="Link to this heading">#</a></h2>
+<p>Each step that uses tasks gets <code class="docutils literal notranslate"><span class="pre">&lt;step</span> <span class="pre">dir&gt;/tasks/manifest.json</span></code> recording, per key: the backend, its id,
+the state, timestamps and the attempt count, plus <code class="docutils literal notranslate"><span class="pre">&lt;step</span> <span class="pre">dir&gt;/tasks/&lt;key&gt;/DONE</span></code> on completion. On
+<code class="docutils literal notranslate"><span class="pre">TaskSet.run()</span></code>:</p>
+<ol class="arabic simple">
+<li><p>keys with <code class="docutils literal notranslate"><span class="pre">DONE</span></code> whose fingerprint matches are yielded from their stored result and never
+resubmitted (a changed fingerprint is rerun with a warning);</p></li>
+<li><p>keys with a live backend id are reattached by polling, not resubmitted. The <code class="docutils literal notranslate"><span class="pre">LocalPool</span></code> cannot
+adopt another process’s children, so it kills a leftover process group it finds and reruns the task;</p></li>
+<li><p>everything else is submitted. Within one run a failed task (nonzero return code, or a failed
+<code class="docutils literal notranslate"><span class="pre">success_text</span></code> check) is never retried and a lost one is retried up to twice; across runs a failed
+or lost task is eligible again until it has had <code class="docutils literal notranslate"><span class="pre">max_attempts</span></code> (default 3) attempts in all, after
+which it is reported failed (“attempts exhausted”) with its attempt history. New inputs (a changed
+fingerprint) reset the count; deleting the task’s entry in the manifest does too.</p></li>
+</ol>
+<p>This is the same trust-the-record pattern the JobServer uses for jobs, and it gives fragment- and
+iteration-level restart for free.</p>
+</section>
+<section id="target-and-the-inline-rule-for-tiny-tasks">
+<h2>Target and the inline rule for tiny tasks<a class="headerlink" href="#target-and-the-inline-rule-for-tiny-tasks" title="Link to this heading">#</a></h2>
+<p>Every task goes to the <strong>job’s target</strong>, chosen at submission (<code class="docutils literal notranslate"><span class="pre">parameters[&quot;queue&quot;]</span></code>). There is no
+per-step target override; a flowchart that needs two targets is split into two jobs. <code class="docutils literal notranslate"><span class="pre">Task.target</span></code> is
+reserved so an override can be added later without changing plug-ins.</p>
+<p>The one exception is the <strong>inline rule</strong>, which catches the really bad cases such as submitting a 100 ms
+MOPAC run to SLURM:</p>
+<ul class="simple">
+<li><p>the plug-in supplies a <em>cost estimate</em>, not a routing decision: <code class="docutils literal notranslate"><span class="pre">Task.estimated_seconds</span></code> computed from
+what the step knows (MOPAC: atom count and method; ORCA: atoms, basis and method class). A plug-in with
+no idea leaves it unset;</p></li>
+<li><p>each target has a threshold, <code class="docutils literal notranslate"><span class="pre">inline_below</span></code> (default 60 s); tasks under it run in the evaluator’s own
+<code class="docutils literal notranslate"><span class="pre">LocalPool</span></code> instead of going to the queue, <strong>provided the program is installed where the evaluator
+runs</strong> (the pool checks for the program’s ini section). Otherwise the task goes to the target as usual,
+where bundling still groups thousands of tiny tasks into one allocation.</p></li>
+</ul>
+</section>
+<section id="bundling">
+<h2>Bundling<a class="headerlink" href="#bundling" title="Link to this heading">#</a></h2>
+<p>Small tasks are grouped into bundles that share one allocation. A bundle is itself a scheduler job that
+runs a generic worker script (shipped with <code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code>, pure Python, no SEAMM import) which executes the
+bundle’s tasks in order, writes each task’s <code class="docutils literal notranslate"><span class="pre">DONE</span></code>, and skips tasks already done. Bundling is in the task
+layer, not implemented through native job arrays, because array support and limits differ between SLURM
+and PBS and between sites. The target section sets bundle sizes (<code class="docutils literal notranslate"><span class="pre">bundle_tasks</span></code>, <code class="docutils literal notranslate"><span class="pre">bundle_walltime</span></code>) or
+the step computes them from an estimate per task, as the MBE prototype did (240 ORCA runs per 4-core job,
+8 VASP fragments per 8-core job).</p>
+</section>
+<section id="pruning-and-archiving">
+<h2>Pruning and archiving<a class="headerlink" href="#pruning-and-archiving" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">return_files</span></code> is the contract: nothing else comes back from a scratch run. In-situ tasks delete files
+not matched by <code class="docutils literal notranslate"><span class="pre">return_files</span></code> when they finish (<code class="docutils literal notranslate"><span class="pre">Base</span></code> already does this).</p></li>
+<li><p>A step may declare <code class="docutils literal notranslate"><span class="pre">archive</span> <span class="pre">=</span> <span class="pre">True</span></code> on a <code class="docutils literal notranslate"><span class="pre">TaskSet</span></code>; finished task directories are then packed into
+<code class="docutils literal notranslate"><span class="pre">tasks/&lt;bundle&gt;.tar</span></code> as their bundle completes, leaving the manifest, the archives and the step’s own
+results. The MBE step requires this (about 14 files per frame instead of 10,000).</p></li>
+<li><p>Code steps should list the files worth keeping explicitly (for VASP: INCAR, KPOINTS, POSCAR, OUTCAR,
+OSZICAR, vasprun.xml).</p></li>
+</ul>
+</section>
+<section id="back-ends">
+<h2>Back ends<a class="headerlink" href="#back-ends" title="Link to this heading">#</a></h2>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">LocalPool</span></code></dt><dd><p>Runs tasks as subprocesses with a slot budget computed from the machine or the current allocation
+(cores and memory). It reads the local <code class="docutils literal notranslate"><span class="pre">&lt;code&gt;.ini</span></code> files exactly as the steps do today. Honour
+<code class="docutils literal notranslate"><span class="pre">in_situ</span></code>. Set <code class="docutils literal notranslate"><span class="pre">OMP_NUM_THREADS</span></code> and the MPI binding policy per task as <code class="docutils literal notranslate"><span class="pre">orca_step</span></code> does now, so
+concurrent tasks don’t pile onto the same cores.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">TaskServerClient</span></code></dt><dd><p>Speaks the TaskServer protocol. Staging is part of the protocol (files in the POST, files back by GET).</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">SchedulerBackend</span></code></dt><dd><p>Parameterized by a scheduler module (below) and a transport (local commands or ssh), plus a stager
+(none on a shared filesystem, rsync over ssh otherwise). Writes one script per task or per bundle,
+submits it, polls many ids in one command, cancels, and fetches <code class="docutils literal notranslate"><span class="pre">return_files</span></code> after staging back.
+A target may set <code class="docutils literal notranslate"><span class="pre">shared_filesystem</span> <span class="pre">=</span> <span class="pre">yes</span></code> to skip staging when the evaluator and the target cluster
+see the same storage (TinkerCliffs, Falcon and Owl share <code class="docutils literal notranslate"><span class="pre">/projects</span></code>).</p>
+<p><strong>Cross-cluster from a queued evaluator.</strong> An evaluator that is itself a queue job may target another
+cluster over ssh. It is allowed, not precluded, but it is a last resort that the user sets up and
+tests: outbound ssh from compute nodes is site-dependent, and staging from a node whose allocation can
+end is fragile. The documentation says to test it from an interactive job first. The normal way to
+fan out across clusters is from the server shape, where the evaluator runs on ChemAI.</p>
+</dd>
+</dl>
+</section>
+<section id="code-configuration-moves-to-the-back-end">
+<h2>Code configuration moves to the back end<a class="headerlink" href="#code-configuration-moves-to-the-back-end" title="Link to this heading">#</a></h2>
+<p>Steps currently resolve the executable, conda environment or modules themselves from <code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/&lt;code&gt;.ini</span></code>.
+In the new model a step names the <strong>program</strong> and the back end resolves it on the machine where it runs:
+the <code class="docutils literal notranslate"><span class="pre">LocalPool</span></code> from the local ini files, the TaskServer from its own, the scheduler back end from the
+target section’s <code class="docutils literal notranslate"><span class="pre">setup</span></code> text and the remote ini files. The command template keeps the existing
+<code class="docutils literal notranslate"><span class="pre">{code}</span></code>/<code class="docutils literal notranslate"><span class="pre">{NTASKS}</span></code> placeholders. This is the one refactor every code step shares, and it is done once
+in <code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code>; a step’s change is limited to replacing its <code class="docutils literal notranslate"><span class="pre">executor.run(...)</span></code> call with a <code class="docutils literal notranslate"><span class="pre">Task</span></code>.</p>
+</section>
+</section>
+<section id="scheduler-abstraction">
+<h1>Scheduler abstraction<a class="headerlink" href="#scheduler-abstraction" title="Link to this heading">#</a></h1>
+<p>Generalize <code class="docutils literal notranslate"><span class="pre">seamm_slurm</span></code> into a new package, <code class="docutils literal notranslate"><span class="pre">seamm_scheduler</span></code>, with one module per queueing system and
+a shared interface. <code class="docutils literal notranslate"><span class="pre">seamm_slurm</span></code> remains as a thin compatibility shim re-exporting from
+<code class="docutils literal notranslate"><span class="pre">seamm_scheduler</span></code> so <code class="docutils literal notranslate"><span class="pre">seamm_jobserver</span></code> keeps working until it is updated to import the new package.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Scheduler</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>                                   <span class="c1"># "slurm", "pbs", ...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">directives</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resources</span><span class="p">:</span> <span class="n">Resources</span><span class="p">,</span> <span class="n">extra</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span> <span class="o">...</span>  <span class="c1"># "#SBATCH ..." lines</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">submit_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">script_path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span> <span class="o">...</span>     <span class="c1"># ["sbatch", "--parsable", ...]</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_submit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span> <span class="o">...</span>              <span class="c1"># job id</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">status_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span> <span class="o">...</span>             <span class="c1"># squeue/sacct or qstat</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">ids</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span> <span class="o">...</span>  <span class="c1"># id -&gt; queued|running|finished|failed|lost</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cancel_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span> <span class="o">...</span>
+    <span class="n">env_names</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>                   <span class="c1"># {"ntasks": "SLURM_NTASKS", ...} for computational_environment</span>
+</pre></div>
+</div>
+<p>What is SLURM-specific in <code class="docutils literal notranslate"><span class="pre">seamm_slurm</span></code> today is exactly this set: the directive syntax, the submit and
+status commands, the state vocabulary and the <code class="docutils literal notranslate"><span class="pre">--json</span></code> versus text parsing. The transports, the stager,
+the script builder and the JobServer-facing backend are already generic and move up unchanged. The
+JobServer’s whole-flowchart submission and the task layer use the same scheduler modules, so a new
+queueing system is one module plus tests.</p>
+<p><code class="docutils literal notranslate"><span class="pre">computational_environment()</span></code> gains the same abstraction: it asks the scheduler module for the names of
+its environment variables instead of hard-coding <code class="docutils literal notranslate"><span class="pre">SLURM_*</span></code>.</p>
+</section>
+<section id="configuration">
+<h1>Configuration<a class="headerlink" href="#configuration" title="Link to this heading">#</a></h1>
+<p>The existing <code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/&lt;jobserver-name&gt;.ini</span></code> sections become <strong>targets</strong> that describe both where a
+flowchart evaluator may run and where its tasks run. New keys are additive; current files keep working.</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[DEFAULT]</span>
+<span class="na">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">local</span>
+
+<span class="k">[local]</span>
+<span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">local</span><span class="w">                 </span><span class="c1">; evaluator runs as a local subprocess</span>
+<span class="na">tasks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">pool</span><span class="w">                 </span><span class="c1">; tasks: pool | taskserver | queue</span>
+<span class="na">max_concurrent_jobs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">4</span>
+
+<span class="k">[chemai]</span>
+<span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">local</span><span class="w">                 </span><span class="c1">; evaluator on this machine</span>
+<span class="na">tasks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">queue</span><span class="w">                </span><span class="c1">; tasks go to this machine's SLURM</span>
+<span class="na">scheduler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">slurm</span>
+<span class="na">transport</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">local</span>
+<span class="na">partition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">normal</span>
+<span class="na">bundle_tasks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span>
+
+<span class="k">[arc]</span>
+<span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">local</span><span class="w">                 </span><span class="c1">; evaluator still on ChemAI</span>
+<span class="na">tasks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">queue</span><span class="w">                </span><span class="c1">; tasks on ARC</span>
+<span class="na">scheduler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">slurm</span>
+<span class="na">transport</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ssh</span>
+<span class="na">host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">tinkercliffs</span>
+<span class="na">remote_root</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">/projects/seamm/psaxe/tasks</span>
+<span class="na">account</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">seamm</span>
+<span class="na">partition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">normal_q</span>
+<span class="na">max_queued_tasks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">800</span>
+<span class="na">setup</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">module load ORCA/6.1.1</span>
+
+<span class="k">[arc-all]</span>
+<span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">slurm</span><span class="w">                 </span><span class="c1">; evaluator itself is a one-core job on ARC (today's path)</span>
+<span class="na">transport</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ssh</span>
+<span class="na">host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">tinkercliffs</span>
+<span class="na">tasks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">queue</span><span class="w">                </span><span class="c1">; and it submits tasks locally from the compute node</span>
+<span class="na">scheduler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">slurm</span>
+
+<span class="k">[workstation]</span>
+<span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">local</span>
+<span class="na">tasks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">taskserver</span>
+<span class="na">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">https://workstation.local:5500</span>
+</pre></div>
+</div>
+<p>A job’s <code class="docutils literal notranslate"><span class="pre">parameters[&quot;queue&quot;]</span></code> already selects a section; its meaning becomes “this job’s target”. The Tk
+submit dialog’s queue picker and the <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/queues</span></code> route need no conceptual change. A step may
+override the target for its own tasks through a parameter when that is genuinely needed (a cheap
+preprocessing step staying local while the heavy step goes to the cluster), but the default is the job’s
+target.</p>
+</section>
+<section id="model-chemistry-batch-contract">
+<h1>Model Chemistry batch contract<a class="headerlink" href="#model-chemistry-batch-contract" title="Link to this heading">#</a></h1>
+<p>MDI remains the right interface for a warm engine on one machine. Farming out needs the prepare/analyze
+split. Add to the provider interface, next to <code class="docutils literal notranslate"><span class="pre">get_model_chemistry_options()</span></code> and
+<code class="docutils literal notranslate"><span class="pre">get_mdi_engine_command()</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">get_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">(</span><span class="s2">"energy"</span><span class="p">,</span> <span class="s2">"gradients"</span><span class="p">),</span>
+             <span class="n">resources</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Task</span><span class="p">:</span> <span class="o">...</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">analyze_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="n">TaskResult</span><span class="p">,</span> <span class="n">level</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span> <span class="o">...</span>
+    <span class="c1"># {"energy": kJ/mol, "gradients": (n, 3) kJ/mol/Å, "stress": (3, 3) GPa, ... , "citations": [...]}</span>
+</pre></div>
+</div>
+<p>Consumers (Energy, MBE, N-fragment counterpoise, dimer builder) use a facade in <code class="docutils literal notranslate"><span class="pre">seamm</span></code> with the same
+calls as <code class="docutils literal notranslate"><span class="pre">seamm_mdi.MDIEngine</span></code> but asynchronous: <code class="docutils literal notranslate"><span class="pre">submit(configuration)</span> <span class="pre">-&gt;</span> <span class="pre">key</span></code> and <code class="docutils literal notranslate"><span class="pre">results()</span> <span class="pre">-&gt;</span>
+<span class="pre">iterator</span></code>. <strong>The facade, not the user or the step, chooses the path:</strong> MDI when the job’s target runs
+tasks in the local pool and the provider has an MDI engine (so MLFF and MOPAC stay at milliseconds per
+structure), the batch path otherwise (ORCA and VASP fan out). Energy, MBE and the counterpoise code
+inherit the rule with no per-step logic, and the Energy step keeps its MDI path. Order of implementation: ORCA (its MDI engine already contains the analyze
+half), MOPAC (tests the whole chain on a laptop in seconds), then the VASP registered-fragment mode the MBE
+step needs. Options a consumer must be able to pass through: ghost atoms (counterpoise), point charges, an
+initial guess file, and the registered-box parameters for VASP.</p>
+</section>
+<section id="tables-in-the-job-database">
+<h1>Tables in the job database<a class="headerlink" href="#tables-in-the-job-database" title="Link to this heading">#</a></h1>
+<p>Tables move from in-memory pandas DataFrames to tables in the job’s SQLite file (<code class="docutils literal notranslate"><span class="pre">seamm.db</span></code>), beside the
+structures and properties. Reasons:</p>
+<ul class="simple">
+<li><p>the job’s whole state is one file that is already on disk and already staged by rsync, so checkpointing
+needs no table serialization;</p></li>
+<li><p>merging parallel iterations is a SQL insert keyed by iteration index, through the same path as properties;</p></li>
+<li><p>the Dashboard, the web UI and the MCP server can read a job’s tables directly, and “save or lose it” goes
+away.</p></li>
+</ul>
+<p>Keep a DataFrame-shaped facade so existing code keeps working: a <code class="docutils literal notranslate"><span class="pre">Table</span></code> object backed by the SQL table,
+with cell writes (<code class="docutils literal notranslate"><span class="pre">store_results</span></code>’s <code class="docutils literal notranslate"><span class="pre">table.at[index,</span> <span class="pre">column]</span></code>) going straight through, a DataFrame view
+materialized on demand for printing, plotting and <code class="docutils literal notranslate"><span class="pre">$table</span></code> expressions, and the <code class="docutils literal notranslate"><span class="pre">current</span> <span class="pre">index</span></code> and
+<code class="docutils literal notranslate"><span class="pre">index</span> <span class="pre">column</span></code> stored in a <code class="docutils literal notranslate"><span class="pre">_tables</span></code> registry table. Column types map to SQLite’s dynamic typing;
+<code class="docutils literal notranslate"><span class="pre">molsystem</span></code> supplies the connection and the WAL settings. The Table step’s Save/Save as keep exporting
+CSV, Excel and JSON. Rule, unchanged: one writer per database file, which is why children never write
+into the parent’s file (see the Loop).</p>
+<p><strong>Why not a multi-writer DBMS.</strong> PostgreSQL would allow concurrent writers but is a server to install,
+secure and reach from every compute node, and would mean porting <code class="docutils literal notranslate"><span class="pre">molsystem</span></code> off the sqlite3 module.
+DuckDB is single-writer like SQLite. rqlite/dqlite funnel writes through one leader behind a daemon. The
+deciding constraint is not the engine but the network: a task or iteration on an ARC compute node has no
+route back to ChemAI and its allocation can end mid-write, so any shared-write design needs a network path
+the cluster shapes do not reliably provide. Pull-merge needs none: the child writes its own file, the file
+is staged back with the task, and the single writer merges it. A job also stays a self-contained
+directory that the dashboard reads, rsync moves and Zenodo archives. No DBMS change is on the roadmap.</p>
+</section>
+<section id="checkpointing">
+<h1>Checkpointing<a class="headerlink" href="#checkpointing" title="Link to this heading">#</a></h1>
+<section id="task-level-first">
+<h2>Task level (first)<a class="headerlink" href="#task-level-first" title="Link to this heading">#</a></h2>
+<p>The manifest and <code class="docutils literal notranslate"><span class="pre">DONE</span></code> markers above. Cheap, and it makes almost all of the compute safe to interrupt.
+This alone meets the MBE requirement that no finished fragment is recomputed.</p>
+</section>
+<section id="flowchart-level-second">
+<h2>Flowchart level (second)<a class="headerlink" href="#flowchart-level-second" title="Link to this heading">#</a></h2>
+<p>Needed for the cluster-alone shape, where the evaluator outlives its walltime, and to make the JobServer’s
+resubmit-on-loss assumption true. Scheme:</p>
+<ul class="simple">
+<li><p>After each node completes, the evaluator writes <code class="docutils literal notranslate"><span class="pre">checkpoint.json</span></code> in the job directory: the id of the
+next node, the JSON-serializable variables, the current system and configuration ids, and the completed
+node ids. Tables and properties are already in the database. Non-serializable variables are listed by
+name and recreated by the node that made them, or the checkpoint refuses and says why.</p></li>
+<li><p>The Loop node records its iteration index and the per-iteration completion in the same file, so a loop
+resumes at the first unfinished iteration.</p></li>
+<li><p>On restart, nodes with a completion record are not run; their side effects are restored from the
+checkpoint. A node that was mid-flight re-enters <code class="docutils literal notranslate"><span class="pre">run()</span></code> and its <code class="docutils literal notranslate"><span class="pre">TaskSet</span></code> reattaches through the
+manifest.</p></li>
+<li><p>Nodes must therefore be idempotent on re-entry up to their tasks: they regenerate inputs
+deterministically (the task key makes this checkable) and must not append to tables before their tasks
+finish. A short audit of the code steps is part of this phase.</p></li>
+<li><p>The JobServer’s “trust <code class="docutils literal notranslate"><span class="pre">job_data.json</span></code>, else resubmit up to <code class="docutils literal notranslate"><span class="pre">max_resubmits</span></code>” path becomes correct
+without change.</p></li>
+</ul>
+</section>
+</section>
+<section id="the-parallel-loop">
+<h1>The parallel Loop<a class="headerlink" href="#the-parallel-loop" title="Link to this heading">#</a></h1>
+<p>A <code class="docutils literal notranslate"><span class="pre">parallel</span></code> option on the Loop step (default off) runs each iteration as a task whose program is the
+flowchart evaluator:</p>
+<ul class="simple">
+<li><p><strong>Child flowchart:</strong> the loop body as a flowchart, with a start node that loads a snapshot: the
+variables at loop entry plus the loop variable and <code class="docutils literal notranslate"><span class="pre">_loop_index</span></code>, and a child <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code> holding
+<strong>only the iteration’s selected configuration(s)</strong> and copies of the tables the body reads (the
+default). A Loop option, <em>give iterations the whole database</em>, copies the parent’s <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code> for
+bodies that read other structures, such as pairing the current structure against others.</p></li>
+<li><p><strong>Contract (documented, user-declared, not verified):</strong> the body communicates back only through table
+rows, properties on its configuration(s), and files in its iteration directory. Variables set inside an
+iteration are not visible after the loop. Table rows written by iterations are appended in iteration
+order when the parent merges. This is the same contract a job array imposes.</p></li>
+<li><p><strong>Merge:</strong> the parent collects each child’s <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code> and inserts its new table rows and properties
+into its own database, keyed by iteration index; files stay in <code class="docutils literal notranslate"><span class="pre">iter_N/</span></code>.</p></li>
+<li><p><strong>Placement:</strong> one choice per target, from the Loop’s parameters: run the body’s codes <strong>inline</strong> in the
+iteration’s allocation (default; right for a uniform body such as one MOPAC or one small ORCA step, with
+per-iteration resources set in the Loop) or <strong>as separate tasks</strong> submitted by the child (right for a
+body mixing a long LAMMPS run with short analyses). Iteration evaluators are small, so the task layer
+bundles several per allocation on a cluster.</p></li>
+<li><p><strong>Shapes:</strong> on the laptop iteration evaluators run concurrently in the pool; on ChemAI + ARC they run on
+ChemAI and only their heavy tasks cross to ARC; on ARC alone they are one-core queue jobs.</p></li>
+<li><p><strong>Nesting</strong> works because an iteration containing another parallel loop is a task spawning tasks.</p></li>
+<li><p><strong>Restart:</strong> each child has its own manifest and checkpoint; the parent’s manifest tracks iterations.</p></li>
+<li><p><strong>Errors:</strong> the existing <code class="docutils literal notranslate"><span class="pre">errors</span></code> parameter (continue / exit / raise) applies per iteration; failed
+iterations are reported in the loop’s results and never merged.</p></li>
+</ul>
+</section>
+<section id="how-the-mbe-step-maps-onto-this">
+<h1>How the MBE step maps onto this<a class="headerlink" href="#how-the-mbe-step-maps-onto-this" title="Link to this heading">#</a></h1>
+<ul class="simple">
+<li><p>Enumerate fragments; each fragment is a <code class="docutils literal notranslate"><span class="pre">Task</span></code> from the provider’s <code class="docutils literal notranslate"><span class="pre">get_task()</span></code>, keyed by its canonical
+fragment key, with <code class="docutils literal notranslate"><span class="pre">resources</span></code> from the level (VASP 8 ranks, 2 GB per rank; ORCA 4 ranks) and
+<code class="docutils literal notranslate"><span class="pre">return_files</span></code> restricted to the parse set.</p></li>
+<li><p>Two <code class="docutils literal notranslate"><span class="pre">TaskSet</span></code>s per frame (periodic and molecular levels), <code class="docutils literal notranslate"><span class="pre">archive</span> <span class="pre">=</span> <span class="pre">True</span></code>, bundle sizes from the
+per-task estimate. The cell calculation is a single task.</p></li>
+<li><p>The step waits on both sets, then runs the increment algebra from <code class="docutils literal notranslate"><span class="pre">seamm_mbe</span></code>; a frame with a failed
+fragment is reported and never written as a label.</p></li>
+<li><p>Restart comes from the manifest; a resubmitted job finishes the frame.</p></li>
+<li><p>Execution model (b) of the MBE document (“fan-out”) is realized without new JobServer capability.</p></li>
+</ul>
+</section>
+<section id="dashboard-visibility">
+<h1>Dashboard visibility<a class="headerlink" href="#dashboard-visibility" title="Link to this heading">#</a></h1>
+<p>Add a <code class="docutils literal notranslate"><span class="pre">tasks</span></code> summary to the job’s <code class="docutils literal notranslate"><span class="pre">job_data.json</span></code> (counts by state per step) that the evaluator updates
+as its <code class="docutils literal notranslate"><span class="pre">TaskSet</span></code>s progress, and a <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/jobs/{id}/tasks</span></code> route in <code class="docutils literal notranslate"><span class="pre">seamm_webui</span></code> that reads the
+manifests. No datastore migration is needed. A later option is for the JobServer to register child
+iteration jobs as real datastore jobs with a <code class="docutils literal notranslate"><span class="pre">parent_id</span></code> in the <code class="docutils literal notranslate"><span class="pre">parameters</span></code> JSON, which would show
+them in the job list; not needed for the first release.</p>
+</section>
+<section id="rollout-and-compatibility">
+<h1>Rollout and compatibility<a class="headerlink" href="#rollout-and-compatibility" title="Link to this heading">#</a></h1>
+<p>This is a sweeping change, so every phase is additive, old behaviour is the default, and each phase is
+released on its own with a one-line rollback. Production never takes a change it did not opt into.</p>
+<section id="compatibility-promise">
+<h2>Compatibility promise<a class="headerlink" href="#compatibility-promise" title="Link to this heading">#</a></h2>
+<p>Through every phase:</p>
+<ul class="simple">
+<li><p><strong>Old flowcharts run unchanged.</strong> The flowchart format does not change. The parallel Loop is a new
+parameter, off by default. No new migration follows the 3.0 one.</p></li>
+<li><p><strong>Old ini files keep their meaning.</strong> A JobServer target section without the new keys behaves as today;
+<code class="docutils literal notranslate"><span class="pre">&lt;code&gt;.ini</span></code> files are still read where the code runs.</p></li>
+<li><p><strong>Old job directories stay readable.</strong> New files (<code class="docutils literal notranslate"><span class="pre">tasks/manifest.json</span></code>, <code class="docutils literal notranslate"><span class="pre">checkpoint.json</span></code>, the
+<code class="docutils literal notranslate"><span class="pre">_tables</span></code> registry) are added beside the existing ones; nothing existing is renamed or removed.</p></li>
+<li><p><strong>Unconverted plug-ins behave byte for byte as today.</strong> <code class="docutils literal notranslate"><span class="pre">Base.run()</span></code> is reimplemented on the task layer
+with a one-slot <code class="docutils literal notranslate"><span class="pre">LocalPool</span></code>; a plug-in that has not been converted cannot tell the difference.</p></li>
+<li><p><strong>Tables in the database ship behind a switch</strong> for one release cycle (in-memory default first, then
+flipped), so the highest-risk change has a rollback that is a single setting.</p></li>
+</ul>
+</section>
+<section id="three-rules">
+<h2>Three rules<a class="headerlink" href="#three-rules" title="Link to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p><strong>Old code paths stay; new ones are opt-in; defaults are unchanged.</strong> See the promise above. Each new
+capability is reachable only through a new key, parameter or method.</p></li>
+<li><p><strong>Running jobs never see a mixed environment.</strong> A job imports from the venv it started in, and SEAMM
+imports lazily in places, so a venv updated in place while jobs run can mix versions. Rule: never
+update a venv in place while jobs run. With uv the venv is cheap: <code class="docutils literal notranslate"><span class="pre">seamm-manager</span></code> builds the new one
+beside the old, switches a symlink, and deletes the old venv only when its jobs have finished.
+Restarting the JobServer is already safe for local jobs (it reattaches by pid); phase 5 makes it safe
+for everything.</p></li>
+<li><p><strong>Validate in a separate installation against production output.</strong> <code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV</span></code> (own venv,
+JobServer, datastore) sits beside production. The gate for every phase is the same: run the Testing
+flowcharts and a sample of real campaign flowcharts in both installations and diff the results files and
+tables. Server order: paul.local, then ChemAI only on an explicit ask between runs, then ARC (no
+services; a venv swap). Release order follows the shared-library rule: <code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code> and
+<code class="docutils literal notranslate"><span class="pre">seamm_scheduler</span></code> first, pinned as minimum versions in each converted plug-in, so a PyPI install can
+never pair new plug-ins with an old library.</p></li>
+</ol>
+</section>
+<section id="risk-by-phase">
+<h2>Risk by phase<a class="headerlink" href="#risk-by-phase" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Phase</p></th>
+<th class="head"><p>Risk</p></th>
+<th class="head"><p>Containment</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0 preparation</p></td>
+<td><p>none</p></td>
+<td><p>Tooling and harness only (below).</p></td>
+</tr>
+<tr class="row-odd"><td><p>1 task layer</p></td>
+<td><p>medium</p></td>
+<td><p>Touches the path every code runs through; the <code class="docutils literal notranslate"><span class="pre">Base.run()</span></code> shim contains it.
+Convert ORCA and MOPAC first, then other codes one at a time on their own merits.</p></td>
+</tr>
+<tr class="row-even"><td><p>2 scheduler pkg</p></td>
+<td><p>low</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">seamm_slurm</span></code> becomes a shim; the JobServer does not change. Validate from
+<code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV</span></code> to MolSSI10 and TinkerCliffs.</p></td>
+</tr>
+<tr class="row-odd"><td><p>3 batch + MBE</p></td>
+<td><p>low</p></td>
+<td><p>New provider methods, a new step; Energy keeps MDI as its default.</p></td>
+</tr>
+<tr class="row-even"><td><p>4 tables in DB</p></td>
+<td><p>high</p></td>
+<td><p>Table step, <code class="docutils literal notranslate"><span class="pre">store_results</span></code> and every table-reading step. Facade keeps the
+DataFrame API; the switch keeps the old behaviour; the gate runs the whole local
+and Dropbox flowchart corpus through the comparison harness, with a soak period in
+<code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV</span></code> before the default is flipped.</p></td>
+</tr>
+<tr class="row-odd"><td><p>5 checkpointing</p></td>
+<td><p>low</p></td>
+<td><p>New files only; resume runs only when the JobServer asks for it on a new job.
+The node idempotence audit is the real work.</p></td>
+</tr>
+<tr class="row-even"><td><p>6 parallel Loop</p></td>
+<td><p>none</p></td>
+<td><p>Opt-in parameter.</p></td>
+</tr>
+<tr class="row-odd"><td><p>7 TaskServer/PBS</p></td>
+<td><p>none</p></td>
+<td><p>New and opt-in.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+<section id="phases">
+<h1>Phases<a class="headerlink" href="#phases" title="Link to this heading">#</a></h1>
+<ol class="arabic simple" start="0">
+<li><p><strong>Preparation.</strong> The venv swap-not-overwrite rule in <code class="docutils literal notranslate"><span class="pre">seamm-manager</span></code> (build beside, switch a
+symlink, delete when idle); a comparison harness that runs a flowchart in two installations and diffs
+results files and tables; and the compatibility promise above recorded in the campaign doc.</p></li>
+<li><p><strong>Task layer in ``seamm_exec``</strong> with <code class="docutils literal notranslate"><span class="pre">LocalPool</span></code>, the manifest, bundling, pruning and archiving, and
+<code class="docutils literal notranslate"><span class="pre">Base.run()</span></code> reimplemented on it. Convert <code class="docutils literal notranslate"><span class="pre">orca_step</span></code> and <code class="docutils literal notranslate"><span class="pre">mopac_step</span></code> to <code class="docutils literal notranslate"><span class="pre">Task</span></code>. Test on the
+laptop with concurrent MOPAC and ORCA runs; verify restart by killing mid-run.</p></li>
+<li><p><strong>Scheduler abstraction and the SLURM back end.</strong> Refactor <code class="docutils literal notranslate"><span class="pre">seamm_slurm</span></code> into scheduler modules used
+by both the JobServer and the task layer; local and ssh transports with rsync staging; bundled worker
+script. Validate ORCA fragments from this Mac to TinkerCliffs and from ChemAI to its own SLURM.
+Start the PBS module as a compile-time proof of the interface, tested against a mocked <code class="docutils literal notranslate"><span class="pre">qstat</span></code>.</p></li>
+<li><p><strong>Model Chemistry batch contract</strong> for ORCA and MOPAC, the asynchronous facade, and the Energy step
+using it. Then the MBE step (its Phase 3) on this.</p></li>
+<li><p><strong>Tables in the database</strong> behind the DataFrame facade; Table step and <code class="docutils literal notranslate"><span class="pre">store_results</span></code> converted.</p></li>
+<li><p><strong>Flowchart-level checkpointing</strong> in <code class="docutils literal notranslate"><span class="pre">exec_flowchart</span></code>, <code class="docutils literal notranslate"><span class="pre">Node.run()</span></code> and the Loop; node idempotence
+audit of the code steps; JobServer resubmission validated for real on ARC-alone.</p></li>
+<li><p><strong>Parallel Loop</strong> with the snapshot, merge and placement options; validate on the laptop (pool), on
+ChemAI + ARC, and on ARC alone.</p></li>
+<li><p><strong>TaskServer</strong> and its client; <strong>PBS</strong> validated on a real PBS site when one is available; Dashboard
+task view.</p></li>
+</ol>
+<p>Phase 0 protects every later phase. Phases 1 to 3 unblock the MBE step with low production exposure;
+4 and 5 are prerequisites of 6; 4 is the one that needs a soak period before its switch is flipped.</p>
+</section>
+<section id="decisions-2026-10-02">
+<h1>Decisions (2026-10-02)<a class="headerlink" href="#decisions-2026-10-02" title="Link to this heading">#</a></h1>
+<p>Settled with Paul, in the order the open questions were discussed:</p>
+<ul class="simple">
+<li><p>The JobServer stays a job manager; the task layer lives in the evaluator (MedeA model).</p></li>
+<li><p>The queueing system or the TaskServer keeps task state; the evaluator keeps ids in a manifest.</p></li>
+<li><p>Steps request a program by name plus scheduler-neutral resources; the back end owns code configuration.</p></li>
+<li><p>Bundling is generic (worker script), not native job arrays.</p></li>
+<li><p>Tables move into the job database behind a DataFrame facade; SQLite stays, one writer per file,
+results from children return by staging and merge. No multi-writer DBMS.</p></li>
+<li><p>Batch contract on the Model Chemistry providers; MDI kept for local warm engines, chosen by the facade.</p></li>
+<li><p>Task-level restart first, flowchart-level checkpointing second.</p></li>
+<li><p>Parallel Loop iterations are evaluator tasks with a declared independence contract.</p></li>
+<li><p><strong>Q1 package:</strong> new <code class="docutils literal notranslate"><span class="pre">seamm_scheduler</span></code>; <code class="docutils literal notranslate"><span class="pre">seamm_slurm</span></code> becomes a compatibility shim.</p></li>
+<li><p><strong>Q2 cross-cluster from a queued evaluator:</strong> allowed as a last resort, the user’s responsibility to set
+up and test; <code class="docutils literal notranslate"><span class="pre">shared_filesystem</span></code> flag skips staging on sites like ARC.</p></li>
+<li><p><strong>Q3 per-step target:</strong> no override; the job’s target for everything, except the plug-in cost-estimate
+inline rule for tiny tasks. <code class="docutils literal notranslate"><span class="pre">Task.target</span></code> reserved for later.</p></li>
+<li><p><strong>Q4 TaskServer:</strong> loopback only, reached through an ssh port-forward.</p></li>
+<li><p><strong>Q5 iteration snapshot:</strong> only the selected configurations by default, with a whole-database option.</p></li>
+<li><p><strong>Q6 Energy step:</strong> keeps MDI; the facade picks MDI versus batch.</p></li>
+</ul>
+</section>
+<section id="remaining-questions">
+<h1>Remaining questions<a class="headerlink" href="#remaining-questions" title="Link to this heading">#</a></h1>
+<p>None blocking. Items to settle during implementation:</p>
+<ol class="arabic simple">
+<li><p>The exact <code class="docutils literal notranslate"><span class="pre">estimated_seconds</span></code> heuristics per code, and whether the threshold should also consider
+the queue’s current wait.</p></li>
+<li><p>The merge policy when two iterations write the same table index (error, or last wins with a warning).</p></li>
+<li><p>Whether the Dashboard shows child iterations as rows (<code class="docutils literal notranslate"><span class="pre">parent_id</span></code> in <code class="docutils literal notranslate"><span class="pre">parameters</span></code>) in the first
+release or only the per-step task counts.</p></li>
+</ol>
+</section>
+<section id="notes">
+<h1>Notes<a class="headerlink" href="#notes" title="Link to this heading">#</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="NOTES_phase0.html">Phase 0 notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NOTES_phase1.html">Phase 1 notes</a></li>
+</ul>
+</div>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Campaigns</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="NOTES_phase0.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Phase 0 notes</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#purpose">Purpose</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#requirements">Requirements</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deployment-shapes">Deployment shapes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-requirements">Other requirements</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#what-exists-today">What exists today</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#architecture">Architecture</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#roles">Roles</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-the-three-deployment-shapes-use-this">How the three deployment shapes use this</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-taskserver">The TaskServer</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resource-vocabulary">Resource vocabulary</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#the-task-api-seamm-exec">The task API (<code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code>)</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#objects">Objects</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-manifest-and-restart">The manifest and restart</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#target-and-the-inline-rule-for-tiny-tasks">Target and the inline rule for tiny tasks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bundling">Bundling</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pruning-and-archiving">Pruning and archiving</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#back-ends">Back ends</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#code-configuration-moves-to-the-back-end">Code configuration moves to the back end</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#scheduler-abstraction">Scheduler abstraction</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration">Configuration</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#model-chemistry-batch-contract">Model Chemistry batch contract</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#tables-in-the-job-database">Tables in the job database</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#checkpointing">Checkpointing</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#task-level-first">Task level (first)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#flowchart-level-second">Flowchart level (second)</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#the-parallel-loop">The parallel Loop</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#how-the-mbe-step-maps-onto-this">How the MBE step maps onto this</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#dashboard-visibility">Dashboard visibility</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#rollout-and-compatibility">Rollout and compatibility</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#compatibility-promise">Compatibility promise</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#three-rules">Three rules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#risk-by-phase">Risk by phase</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#phases">Phases</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#decisions-2026-10-02">Decisions (2026-10-02)</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#remaining-questions">Remaining questions</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#notes">Notes</a></li>
+</ul>
+
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../../_sources/developer_guide/campaigns/2026-10-02/index.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

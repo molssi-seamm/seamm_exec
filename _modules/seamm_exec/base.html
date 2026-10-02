@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.base &#8212; SEAMM seamm-exec Plug-in 2026.9.27 documentation</title>
+    <title>seamm_exec.base &#8212; SEAMM seamm-exec Plug-in 2026.10.2 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=09c3d259"></script>
+    <script src="../../_static/documentation_options.js?v=52372788"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.27" />
+  <meta name="docsearch:version" content="2026.10.2" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -151,6 +151,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../api.html">
     API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../developer_guide/index.html">
+    Developer Documentation
   </a>
 </li>
 
@@ -282,6 +289,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../api.html">
     API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../developer_guide/index.html">
+    Developer Documentation
   </a>
 </li>
 
@@ -425,6 +439,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">stat</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">humanize</span>
@@ -446,6 +461,14 @@
     <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">var</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">_SCHEDULER_ENV_VARS</span><span class="p">)</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_kept</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">keep</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Whether ``path`` is, or is inside, one of the ``keep`` paths."""</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keep</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="o">==</span> <span class="n">k</span> <span class="ow">or</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">parents</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span>
+
+
 <div class="viewcode-block" id="Base">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.base.Base">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Base</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -455,6 +478,10 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_options</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Per-thread hooks set by a concurrent LocalPool around exec(), so that a</span>
+        <span class="c1"># subclass can start the process in its own session and report its pid.</span>
+        <span class="c1"># Unset (the default) means today's blocking behaviour.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_task_context</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">local</span><span class="p">()</span>
         <span class="c1"># times for formating 'ls' like output</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">now</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">recent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">now</span> <span class="o">-</span> <span class="p">(</span><span class="mi">6</span> <span class="o">*</span> <span class="mi">30</span> <span class="o">*</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>  <span class="c1"># 6 months ago</span>
@@ -547,6 +574,63 @@
 <span class="sd">            otherwise run in place, as before.</span>
 <span class="sd">        ce : dict(str, str or int)</span>
 <span class="sd">            Description of the computational enviroment</span>
+
+<span class="sd">        This is the original, blocking interface. It runs one task through a</span>
+<span class="sd">        :class:`~seamm_exec.tasks.TaskSet` with a one-slot, synchronous</span>
+<span class="sd">        :class:`~seamm_exec.local_pool.LocalPool`, without a manifest, so its</span>
+<span class="sd">        behaviour and the files it leaves are exactly as before.</span>
+<span class="sd">        """</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.local_pool</span><span class="w"> </span><span class="kn">import</span> <span class="n">LocalPool</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.tasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">Task</span><span class="p">,</span> <span class="n">TaskSet</span>
+
+        <span class="n">task</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span>
+            <span class="n">key</span><span class="o">=</span><span class="s2">"run"</span><span class="p">,</span>
+            <span class="n">program</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+            <span class="n">cmd</span><span class="o">=</span><span class="n">cmd</span><span class="p">,</span>
+            <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span>
+            <span class="n">return_files</span><span class="o">=</span><span class="n">return_files</span><span class="p">,</span>
+            <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span>
+            <span class="n">in_situ</span><span class="o">=</span><span class="n">in_situ</span><span class="p">,</span>
+            <span class="n">shell</span><span class="o">=</span><span class="n">shell</span><span class="p">,</span>
+            <span class="n">input_data</span><span class="o">=</span><span class="n">input_data</span><span class="p">,</span>
+            <span class="n">directory</span><span class="o">=</span><span class="n">directory</span><span class="p">,</span>
+            <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">pool</span> <span class="o">=</span> <span class="n">LocalPool</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">synchronous</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ce</span><span class="o">=</span><span class="n">ce</span><span class="p">)</span>
+        <span class="n">task_set</span> <span class="o">=</span> <span class="n">TaskSet</span><span class="p">(</span><span class="n">executor</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">pool</span><span class="p">,</span> <span class="n">manifest</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">task_set</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">task_set</span><span class="o">.</span><span class="n">run</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">raw</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_run_task</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">,</span>
+        <span class="n">cmd</span><span class="o">=</span><span class="p">[],</span>
+        <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">input_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">files</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">env</span><span class="o">=</span><span class="p">{},</span>
+        <span class="n">return_files</span><span class="o">=</span><span class="p">[],</span>
+        <span class="n">shell</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">in_situ</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">ce</span><span class="o">=</span><span class="p">{},</span>
+        <span class="n">set_umask</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">keep</span><span class="o">=</span><span class="p">(),</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Run one task: the body of the original ``run()``.</span>
+
+<span class="sd">        The parameters are those of :meth:`run`, plus two used only by a</span>
+<span class="sd">        concurrent :class:`~seamm_exec.local_pool.LocalPool`:</span>
+
+<span class="sd">        set_umask : bool = True</span>
+<span class="sd">            Tighten the process umask while running in a temporary directory.</span>
+<span class="sd">            The umask is process-wide, so concurrent tasks must not change it;</span>
+<span class="sd">            ``tempfile.mkdtemp`` already makes the directory private.</span>
+<span class="sd">        keep : [str or Path]</span>
+<span class="sd">            Paths never removed by the in-situ cleanup, e.g. the ``tasks/``</span>
+<span class="sd">            bookkeeping that other tasks write while this one runs.</span>
 <span class="sd">        """</span>
 
         <span class="k">if</span> <span class="n">in_situ</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -566,7 +650,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">tmpdir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">())</span>
             <span class="c1"># Ensure the file is read/write by the creator only</span>
-            <span class="n">saved_umask</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">umask</span><span class="p">(</span><span class="mo">0o077</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">set_umask</span><span class="p">:</span>
+                <span class="n">saved_umask</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">umask</span><span class="p">(</span><span class="mo">0o077</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Running in </span><span class="si">{</span><span class="n">tmpdir</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
@@ -589,7 +674,8 @@
                         <span class="s2">"An I/O error occured writing file '</span><span class="si">{}</span><span class="s2">'"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
                     <span class="p">)</span>
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">in_situ</span><span class="p">:</span>
-                        <span class="n">os</span><span class="o">.</span><span class="n">umask</span><span class="p">(</span><span class="n">saved_umask</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">set_umask</span><span class="p">:</span>
+                            <span class="n">os</span><span class="o">.</span><span class="n">umask</span><span class="p">(</span><span class="n">saved_umask</span><span class="p">)</span>
                         <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span>
                     <span class="k">return</span> <span class="kc">None</span>
                 <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
@@ -598,7 +684,8 @@
                     <span class="p">)</span>
                     <span class="n">path</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">in_situ</span><span class="p">:</span>
-                        <span class="n">os</span><span class="o">.</span><span class="n">umask</span><span class="p">(</span><span class="n">saved_umask</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">set_umask</span><span class="p">:</span>
+                            <span class="n">os</span><span class="o">.</span><span class="n">umask</span><span class="p">(</span><span class="n">saved_umask</span><span class="p">)</span>
                         <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span>
                     <span class="k">return</span> <span class="kc">None</span>
         <span class="c1"># get a list of all existing files so we can determine what to delete</span>
@@ -630,7 +717,7 @@
         <span class="n">result</span><span class="p">[</span><span class="s2">"in_situ"</span><span class="p">]</span> <span class="o">=</span> <span class="n">in_situ</span>
         <span class="n">result</span><span class="p">[</span><span class="s2">"directory"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">in_situ</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">in_situ</span> <span class="ow">and</span> <span class="n">set_umask</span><span class="p">:</span>
             <span class="n">os</span><span class="o">.</span><span class="n">umask</span><span class="p">(</span><span class="n">saved_umask</span><span class="p">)</span>
 
         <span class="c1"># capture the list of files in the directory</span>
@@ -684,8 +771,11 @@
         <span class="c1"># Clean up the temporary directory</span>
         <span class="k">if</span> <span class="n">in_situ</span><span class="p">:</span>
             <span class="c1"># Remove any files not originally here, or requested to return.</span>
+            <span class="n">keep</span> <span class="o">=</span> <span class="p">[</span><span class="n">Path</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keep</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">dirpath</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">):</span>
                 <span class="n">dirpath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">dirpath</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">keep</span> <span class="ow">and</span> <span class="n">_is_kept</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">keep</span><span class="p">):</span>
+                    <span class="k">continue</span>
                 <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
                     <span class="n">filename</span> <span class="o">=</span> <span class="n">dirpath</span> <span class="o">/</span> <span class="n">name</span>
                     <span class="k">if</span> <span class="n">filename</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">existing</span> <span class="ow">and</span> <span class="n">filename</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">returned</span><span class="p">:</span>
@@ -693,6 +783,8 @@
                 <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">dirs</span><span class="p">:</span>
                     <span class="n">dirname</span> <span class="o">=</span> <span class="n">dirpath</span> <span class="o">/</span> <span class="n">name</span>
                     <span class="k">if</span> <span class="n">dirname</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">existing_directories</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">keep</span> <span class="ow">and</span> <span class="n">_is_kept</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">keep</span><span class="p">):</span>
+                            <span class="k">continue</span>
                         <span class="n">dirname</span><span class="o">.</span><span class="n">rmdir</span><span class="p">()</span>
             <span class="c1"># And move any files the need to go in subdirectories</span>
             <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s2">"files"</span><span class="p">]:</span>
@@ -734,8 +826,7 @@
                 <span class="n">path</span> <span class="o">=</span> <span class="n">directory</span> <span class="o">/</span> <span class="s2">"stderr.txt"</span>
                 <span class="n">path</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">"stderr"</span><span class="p">])</span>
 
-        <span class="k">return</span> <span class="n">result</span></div>
-
+        <span class="k">return</span> <span class="n">result</span>
 
 <div class="viewcode-block" id="Base.get_mode_info">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.base.Base.get_mode_info">[docs]</a>

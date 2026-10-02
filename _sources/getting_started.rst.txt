@@ -1,4 +1,102 @@
 Getting Started
 ===============
 
-This page details how to get started with SEAMM exec. 
+``seamm_exec`` runs flowcharts (``run_flowchart``, ``run_from_jobserver``) and runs
+the external codes that steps need. A step gets the executor from its flowchart and
+asks it to run a program; the executor handles the program's configuration from
+``<root>/<program>.ini`` (a conda environment, environment modules, a Docker image,
+or a plain executable), where the program runs, and which files come back.
+
+Running a code: ``executor.run()``
+----------------------------------
+
+The original interface, used by most steps:
+
+.. code-block:: python
+
+    result = self.flowchart.executor.run(
+        config,                      # the program's section of <root>/<program>.ini
+        cmd=["{code}", "input.dat", ">", "output.txt"],
+        directory=self.directory,
+        files={"input.dat": text},   # written before the run
+        return_files=["output.txt", "*.log"],
+        shell=True,
+    )
+    output = result["output.txt"]["data"]
+
+``in_situ`` chooses where the code runs: ``None`` (the default) runs in a scratch
+directory under a scheduler such as SLURM (``$TMPDIR``, so node-local storage) and
+in place otherwise; ``True`` always runs in place, so the output can be watched as
+it is written; ``False`` always uses scratch. Only the ``return_files`` come back to
+the step directory.
+
+Running codes as tasks
+----------------------
+
+Since 2026.10.2 a step can describe each calculation as a :class:`~seamm_exec.Task`
+and run any number of them through a :class:`~seamm_exec.TaskSet`:
+
+.. code-block:: python
+
+    from seamm_exec import Resources, Task, TaskSet
+
+    tasks = TaskSet(self, archive=True)
+    for key, text in inputs.items():
+        tasks.add(
+            Task(
+                key=key,                       # stable across reruns, e.g. a fragment key
+                program="orca",
+                cmd=["{code}", "orca.inp", ">", "orca.out"],
+                files={"orca.inp": text},
+                return_files=["orca.out", "orca.engrad"],
+                resources=Resources(ntasks=4),   # mem_per_cpu in bytes if needed
+                success_text={"orca.out": "ORCA TERMINATED NORMALLY"},
+                estimated_seconds=30,
+                shell=True,
+            )
+        )
+    for result in tasks.run():
+        if result.ok:
+            parse(result.files["orca.out"])
+        else:
+            print(f"{result.key} failed: {result.reason}")
+
+What this gives a step:
+
+* **Concurrency.** The tasks run through a pool sized to the machine or to the
+  SLURM allocation, each in its own process group; a task's ``Resources`` say how
+  many cores and how much memory it needs, and ``ntasks=None`` means all of it.
+  ``tasks.capacity()`` reports the pool's size, for a step that sizes its input
+  (ORCA's ``%pal``) before writing it.
+* **Restart.** The set keeps ``tasks/manifest.json`` in the step directory and a
+  ``DONE`` marker in each task's directory, ``tasks/<key>/``. Rerunning the job in
+  the same directory restores finished tasks from their markers and never
+  recomputes them; a task whose inputs changed is recomputed. A task that failed is
+  not retried within a run, but is tried again on a rerun, up to three attempts in
+  all (the count resets when the inputs change). A process that a crashed run left
+  behind is killed on the rerun, after checking it is the same process.
+* **Success beyond the exit code.** ``success_text`` names text that must appear in
+  a result file; ORCA exits 0 on an error termination, for example.
+* **Archiving.** With ``archive=True`` finished task directories are packed into one
+  tar per bundle, so a step with thousands of tasks leaves a handful of files.
+
+A step with a single calculation uses the same machinery through
+:func:`~seamm_exec.run_task`, which also keeps the output in the step directory, as
+``executor.run()`` did:
+
+.. code-block:: python
+
+    result = run_task(task, self, directory=self.directory)
+
+Converted steps keep their own handling of ``<program>.ini`` by passing the
+program's ``config`` (and ``env``) on the task; a task without ``config`` is
+configured by the pool from ``<root>/<program>.ini``. In the command, ``{code}`` is
+the program and ``{code_dir}`` its directory, when it has one.
+
+Where things run
+----------------
+
+This release runs tasks on the local machine or inside the current allocation.
+Scheduler back ends (SLURM, PBS) that submit tasks, or bundles of tasks, as queue
+jobs are the next phase of the parallel-execution campaign; see the developer
+guide. The ``Task`` and ``TaskSet`` interfaces will not change for them.

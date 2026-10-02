@@ -44,10 +44,34 @@ seamm\_exec.local module
    :show-inheritance:
    :undoc-members:
 
+seamm\_exec.local\_pool module
+------------------------------
+
+.. automodule:: seamm_exec.local_pool
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 seamm\_exec.seamm\_exec module
 ------------------------------
 
 .. automodule:: seamm_exec.seamm_exec
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+seamm\_exec.task\_worker module
+-------------------------------
+
+.. automodule:: seamm_exec.task_worker
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+seamm\_exec.tasks module
+------------------------
+
+.. automodule:: seamm_exec.tasks
    :members:
    :show-inheritance:
    :undoc-members:
