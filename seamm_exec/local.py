@@ -232,17 +232,42 @@ class Local(Base):
                 f"Full:\n {pprint.pformat(tmp_env)}"
             )
 
-            p = subprocess.run(
-                command,
-                cwd=directory,
-                env=tmp_env,
-                input=input_data,
-                shell=shell,
-                executable=shell_exe,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                universal_newlines=True,
-            )
+            hooks = getattr(getattr(self, "_task_context", None), "hooks", None)
+            if hooks is None:
+                p = subprocess.run(
+                    command,
+                    cwd=directory,
+                    env=tmp_env,
+                    input=input_data,
+                    shell=shell,
+                    executable=shell_exe,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    universal_newlines=True,
+                )
+            else:
+                # Under a concurrent LocalPool: run in a new session so the pool
+                # can kill the whole process tree, and report the pid.
+                proc = subprocess.Popen(
+                    command,
+                    cwd=directory,
+                    env=tmp_env,
+                    stdin=subprocess.PIPE if input_data is not None else None,
+                    shell=shell,
+                    executable=shell_exe,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    universal_newlines=True,
+                    start_new_session=True,
+                )
+                hooks.started(proc)
+                try:
+                    stdout, stderr = proc.communicate(input_data)
+                finally:
+                    hooks.finished(proc)
+                p = subprocess.CompletedProcess(
+                    proc.args, proc.returncode, stdout, stderr
+                )
 
             self.logger.debug("Result from subprocess\n" + pprint.pformat(p))
 

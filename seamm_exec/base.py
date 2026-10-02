@@ -10,6 +10,7 @@ import shutil
 import stat
 import sys
 import tempfile
+import threading
 import time
 
 import humanize
@@ -31,6 +32,14 @@ def _running_under_scheduler():
     return any(var in os.environ for var in _SCHEDULER_ENV_VARS)
 
 
+def _is_kept(path, keep):
+    """Whether ``path`` is, or is inside, one of the ``keep`` paths."""
+    for k in keep:
+        if path == k or k in path.parents:
+            return True
+    return False
+
+
 class Base(object):
     def __init__(self, logger):
         """Execute a flowchart, providing support for the actual
@@ -38,6 +47,10 @@ class Base(object):
 
         self.logger = logger
         self._options = None
+        # Per-thread hooks set by a concurrent LocalPool around exec(), so that a
+        # subclass can start the process in its own session and report its pid.
+        # Unset (the default) means today's blocking behaviour.
+        self._task_context = threading.local()
         # times for formating 'ls' like output
         self.now = int(time.time())
         self.recent = self.now - (6 * 30 * 24 * 60 * 60)  # 6 months ago
@@ -125,6 +138,62 @@ class Base(object):
             otherwise run in place, as before.
         ce : dict(str, str or int)
             Description of the computational enviroment
+
+        This is the original, blocking interface. It runs one task through a
+        :class:`~seamm_exec.tasks.TaskSet` with a one-slot, synchronous
+        :class:`~seamm_exec.local_pool.LocalPool`, without a manifest, so its
+        behaviour and the files it leaves are exactly as before.
+        """
+        from .local_pool import LocalPool
+        from .tasks import Task, TaskSet
+
+        task = Task(
+            key="run",
+            program="",
+            cmd=cmd,
+            files=files,
+            return_files=return_files,
+            env=env,
+            in_situ=in_situ,
+            shell=shell,
+            input_data=input_data,
+            directory=directory,
+            config=config,
+        )
+        pool = LocalPool(self, synchronous=True, ce=ce)
+        task_set = TaskSet(executor=self, backend=pool, manifest=False)
+        task_set.add(task)
+        for result in task_set.run():
+            return result.raw
+        return None
+
+    def _run_task(
+        self,
+        config,
+        cmd=[],
+        directory=None,
+        input_data=None,
+        files=None,
+        env={},
+        return_files=[],
+        shell=False,
+        in_situ=None,
+        ce={},
+        set_umask=True,
+        keep=(),
+    ):
+        """Run one task: the body of the original ``run()``.
+
+        The parameters are those of :meth:`run`, plus two used only by a
+        concurrent :class:`~seamm_exec.local_pool.LocalPool`:
+
+        set_umask : bool = True
+            Tighten the process umask while running in a temporary directory.
+            The umask is process-wide, so concurrent tasks must not change it;
+            ``tempfile.mkdtemp`` already makes the directory private.
+        keep : [str or Path]
+            Paths never removed by the in-situ cleanup, e.g. the ``tasks/``
+            bookkeeping that other tasks write while this one runs.
         """
 
         if in_situ is None:
@@ -144,7 +213,8 @@ class Base(object):
         else:
             tmpdir = Path(tempfile.mkdtemp())
             # Ensure the file is read/write by the creator only
-            saved_umask = os.umask(0o077)
+            if set_umask:
+                saved_umask = os.umask(0o077)
 
         self.logger.debug(f"Running in {tmpdir}\n")
 
@@ -167,7 +237,8 @@ class Base(object):
                         "An I/O error occured writing file '{}'".format(path)
                     )
                     if not in_situ:
-                        os.umask(saved_umask)
+                        if set_umask:
+                            os.umask(saved_umask)
                         shutil.rmtree(tmpdir)
                     return None
                 except Exception:
@@ -176,7 +247,8 @@ class Base(object):
                     )
                     path.unlink()
                     if not in_situ:
-                        os.umask(saved_umask)
+                        if set_umask:
+                            os.umask(saved_umask)
                         shutil.rmtree(tmpdir)
                     return None
         # get a list of all existing files so we can determine what to delete
@@ -208,7 +280,7 @@ class Base(object):
         result["in_situ"] = in_situ
         result["directory"] = str(tmpdir)
 
-        if not in_situ:
+        if not in_situ and set_umask:
             os.umask(saved_umask)
 
         # capture the list of files in the directory
@@ -262,8 +334,11 @@ class Base(object):
         # Clean up the temporary directory
         if in_situ:
             # Remove any files not originally here, or requested to return.
+            keep = [Path(k) for k in keep]
             for dirpath, dirs, files in os.walk(tmpdir):
                 dirpath = Path(dirpath)
+                if keep and _is_kept(dirpath, keep):
+                    continue
                 for name in files:
                     filename = dirpath / name
                     if filename not in existing and filename not in returned:
@@ -271,6 +346,8 @@ class Base(object):
                 for name in dirs:
                     dirname = dirpath / name
                     if dirname not in existing_directories:
+                        if keep and _is_kept(dirname, keep):
+                            continue
                         dirname.rmdir()
             # And move any files the need to go in subdirectories
             for filename in result["files"]:
