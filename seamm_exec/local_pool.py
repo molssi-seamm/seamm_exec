@@ -26,6 +26,8 @@ import threading
 import time
 import traceback
 
+import psutil
+
 from .computational_environment import computational_environment
 from .tasks import (
     CANCELLED,
@@ -60,6 +62,8 @@ class _Job:
         self.error = None
         self.process = None
         self.thread = None
+        self.on_start = None
+        self.concurrent = False
 
 
 class _Hooks:
@@ -105,15 +109,19 @@ class LocalPool:
         self.root = Path(root).expanduser() if root is not None else None
         self.synchronous = synchronous
         self.max_concurrent = max_concurrent
-        self.on_start = None  # callback(task, info), set by the TaskSet
 
         if synchronous:
+            # Base.run(): the caller's ce goes to the code untouched and is
+            # never interpreted here.
             self.ce = ce if ce is not None else {}
+            self.cores = 1
+            self.memory = 0
+            self.ngpus = 0
         else:
             self.ce = dict(ce) if ce else computational_environment()
-        self.cores = max(1, int(self.ce.get("NTASKS", 1) or 1))
-        self.memory = int(self.ce.get("MEM_PER_NODE", 0) or 0)
-        self.ngpus = int(self.ce.get("NGPUS", 0) or 0)
+            self.cores = max(1, int(self.ce.get("NTASKS", 1) or 1))
+            self.memory = int(self.ce.get("MEM_PER_NODE", 0) or 0)
+            self.ngpus = int(self.ce.get("NGPUS", 0) or 0)
 
         self._jobs = {}
         self._queue = []
@@ -141,7 +149,8 @@ class LocalPool:
         """The program's configuration: ``task.config``, else ``<program>.ini``.
 
         Adds ``code_dir``, the directory holding ``code``, for commands that run
-        a code's companion programs (e.g. ORCA's ``orca_2aim``).
+        a code's companion programs (e.g. ORCA's ``orca_2aim``), when ``code``
+        is a path rather than a bare name.
         """
         if task.config is not None:
             config = dict(task.config)
@@ -154,7 +163,12 @@ class LocalPool:
                     f"{self._ini_path(task.program)}."
                 )
         if "code_dir" not in config and config.get("code"):
-            config["code_dir"] = str(Path(config["code"]).expanduser().parent)
+            # Only when ``code`` is a path: a bare name is found on the PATH
+            # (in a conda environment, a container, ...), and so are its
+            # companions, so a command must then name them bare too.
+            code = Path(config["code"]).expanduser()
+            if code.parent != Path("."):
+                config["code_dir"] = str(code.parent)
         return config
 
     def _ini_path(self, program):
@@ -176,12 +190,13 @@ class LocalPool:
     # ------------------------------------------------------------------
     # The TaskBackend interface
     # ------------------------------------------------------------------
-    def submit(self, tasks, directories):
+    def submit(self, tasks, directories, on_start=None):
         ids = []
         with self._condition:
             for task, directory in zip(tasks, directories):
                 backend_id = f"{self._host}:{os.getpid()}:{next(self._ids)}"
                 job = _Job(backend_id, task, directory)
+                job.on_start = on_start
                 job.cores, job.memory, job.ce = self._share(task)
                 self._jobs[backend_id] = job
                 self._queue.append(job)
@@ -237,7 +252,8 @@ class LocalPool:
             _kill_group(pgid)
 
     def fetch(self, task, backend_id):
-        job = self._jobs[backend_id]
+        with self._condition:
+            job = self._jobs.pop(backend_id)
         if job.state == CANCELLED:
             return TaskResult(key=task.key, state=CANCELLED, directory=job.directory)
         if job.error is not None:
@@ -250,12 +266,21 @@ class LocalPool:
         """Tasks from an earlier evaluator: kill any still running here; lost.
 
         A process that is not our child cannot be waited for, so instead of
-        adopting it the pool kills its process group and the task is rerun.
+        adopting it the pool kills its process group and the task is rerun. A
+        pid is reused once its process has gone, so the group is killed only if
+        its leader is the process the manifest recorded: same start time and
+        working directory. (The host name check means a laptop that changed
+        networks leaves the leftovers alone, the safe direction.)
         """
         states = {}
         for record in records:
             pgid = record.get("pgid")
-            if pgid and record.get("host") == self._host and _alive(pgid):
+            if (
+                pgid
+                and record.get("host") == self._host
+                and _alive(pgid)
+                and _same_process(pgid, record)
+            ):
                 logger.warning(
                     f"Killing the leftover process group {pgid} of task "
                     f"'{record.get('key')}' from an earlier run."
@@ -311,6 +336,12 @@ class LocalPool:
         with self._condition:
             while self._queue and self._fits(self._queue[0]):
                 job = self._queue.pop(0)
+                # Concurrent if any other task is queued or running now: it may
+                # share the machine with this one for some or all of its run.
+                job.concurrent = (
+                    sum(1 for j in self._jobs.values() if j.state in (QUEUED, RUNNING))
+                    > 1
+                )
                 job.state = RUNNING
                 self._running += 1
                 self._free_cores -= job.cores
@@ -373,7 +404,7 @@ class LocalPool:
     def _run_threaded(self, job):
         context = None
         try:
-            concurrent = len(self._jobs) > 1
+            concurrent = job.concurrent
             context = getattr(self.executor, "_task_context", None)
             if context is not None:
                 context.hooks = _Hooks(self, job)
@@ -407,9 +438,16 @@ class LocalPool:
         if cancelled:
             _kill_group(process.pid)
             return
-        if self.on_start is not None:
+        if job.on_start is not None:
+            info = {"pgid": process.pid, "host": self._host}
             try:
-                self.on_start(job.task, {"pgid": process.pid, "host": self._host})
+                leader = psutil.Process(process.pid)
+                info["create_time"] = leader.create_time()
+                info["cwd"] = leader.cwd()
+            except (psutil.Error, OSError):
+                pass
+            try:
+                job.on_start(job.task, info)
             except Exception:
                 logger.exception("Error in the task-start callback")
 
@@ -430,8 +468,9 @@ def _state_of(raw):
 # Tasks run in their own sessions so they can be killed as a group, which also
 # means a signal to the evaluator's process group no longer reaches them. While
 # any are running, SIGTERM and SIGHUP to the evaluator first kill them, then do
-# what they did before. (A SIGKILL cannot be caught; the next run of the step
-# kills the leftovers it finds in the manifest.)
+# what they did before. A signal the evaluator ignores (SIGHUP under nohup) is
+# left ignored. (A SIGKILL cannot be caught; the next run of the step kills the
+# leftovers it finds in the manifest.)
 # ----------------------------------------------------------------------
 _live_groups = set()
 _live_lock = threading.Lock()
@@ -456,6 +495,11 @@ def _install_handlers():
         return
     for signum in (signal.SIGTERM, signal.SIGHUP):
         try:
+            if signal.getsignal(signum) == signal.SIG_IGN:
+                # e.g. SIGHUP under nohup: the evaluator, and so its tasks,
+                # are meant to survive it.
+                _previous_handlers[signum] = signal.SIG_IGN
+                continue
             _previous_handlers[signum] = signal.signal(signum, _on_signal)
         except (ValueError, OSError):
             pass
@@ -485,6 +529,23 @@ def _alive(pgid):
     except (ProcessLookupError, PermissionError):
         return False
     except OSError:
+        return False
+    return True
+
+
+def _same_process(pgid, record):
+    """Whether process ``pgid`` is still the task's, not a later reuse of the pid."""
+    try:
+        leader = psutil.Process(pgid)
+        if os.getpgid(pgid) != pgid:
+            return False
+        created = record.get("create_time")
+        if created is None or abs(leader.create_time() - created) > 1.0:
+            return False
+        cwd = record.get("cwd")
+        if cwd is not None and leader.cwd() != cwd:
+            return False
+    except (psutil.Error, OSError):
         return False
     return True
 

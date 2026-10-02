@@ -221,7 +221,7 @@ Objects
         state: str                  # finished | failed | cancelled | lost
         returncode: int | None
         stdout: str; stderr: str
-        directory: Path             # Task.directory, or <step dir>/tasks/<key>/
+        directory: Path | None      # Task.directory, or <step dir>/tasks/<key>/
         files: dict[str, bytes | str]
         attempts: int; history: list[dict]   # over all runs, each with its reason
         restored: bool              # from an earlier run's DONE, not recomputed
@@ -229,7 +229,8 @@ Objects
 
     class TaskBackend(Protocol):
         name: str
-        def submit(self, tasks: list[Task], directories: list[Path]) -> list[str]: ...  # backend ids
+        def submit(self, tasks: list[Task], directories: list[Path],
+                   on_start=None) -> list[str]: ...  # backend ids; on_start(task, info) per start
         def status(self, ids: list[str]) -> dict[str, str]: ...
         def cancel(self, ids: list[str]) -> None: ...
         def fetch(self, task: Task, backend_id: str) -> TaskResult: ...
@@ -266,7 +267,8 @@ the state, timestamps and the attempt count, plus ``<step dir>/tasks/<key>/DONE`
 3. everything else is submitted. Within one run a failed task (nonzero return code, or a failed
    ``success_text`` check) is never retried and a lost one is retried up to twice; across runs a failed
    or lost task is eligible again until it has had ``max_attempts`` (default 3) attempts in all, after
-   which it is reported failed with its attempt history.
+   which it is reported failed ("attempts exhausted") with its attempt history. New inputs (a changed
+   fingerprint) reset the count; deleting the task's entry in the manifest does too.
 
 This is the same trust-the-record pattern the JobServer uses for jobs, and it gives fragment- and
 iteration-level restart for free.

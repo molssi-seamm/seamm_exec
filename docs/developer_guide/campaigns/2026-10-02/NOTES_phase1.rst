@@ -32,7 +32,9 @@ What was built (``seamm_exec``)
     and ``Local.exec`` starts it with ``Popen(start_new_session=True)``.
   - SIGTERM and SIGHUP to the evaluator kill the task process groups, then
     chain to the previous handler. The JobServer stops a job with
-    ``process.terminate()``, so this covers it.
+    ``process.terminate()``, so this covers it. A signal the evaluator
+    ignores is left alone: under ``nohup`` SIGHUP stays ignored and the
+    tasks survive, as the codes did before.
 - ``task_worker.py``: the pure-Python bundle worker, run by path. It applies
   ``success_text`` too.
 - ``base.py``: the old ``run()`` body is now ``_run_task()``, unchanged except
@@ -83,17 +85,33 @@ These are now in the design's task API section.
     attempts in all, then reported failed with its history. Each history entry
     and the manifest record carry a ``reason``: the return code, the failed
     success check and the file, or lost.
-  - ``LocalPool`` does not reattach: it kills a leftover process group (same
-    host, pid alive) and reruns the task.
+  - New inputs (a changed fingerprint) reset the attempts. The old count and
+    history are kept under ``previous`` in the manifest record.
+  - A task refused for having used up its attempts gets a ``reason`` that
+    starts "attempts exhausted" and names the manifest. Changing its input,
+    or deleting its entry in ``tasks/manifest.json``, lets it run again. ORCA
+    and MOPAC raise or stop on such a result instead of parsing its stale
+    output, and print the reason of any other failure.
+  - ``LocalPool`` does not reattach: it kills a leftover process group and
+    reruns the task. Since a pid is reused once its process has gone, the
+    group is killed only if its leader is the recorded process: same host,
+    start time within 1 s, same working directory. The start (``pgid``,
+    ``create_time``, ``cwd``) is written to the manifest at once, not at the
+    next throttled save, so an evaluator killed a moment after a start still
+    leaves enough to find the process. A laptop whose host name changed with
+    its network leaves leftovers alone, the safe direction.
 - MPI binding (``OMPI_MCA_hwloc_base_binding_policy=none``) and
-  ``OMP_NUM_THREADS = cpus_per_task`` are set **only when the pool runs more
-  than one task**, on or off SLURM, and never over a value the task sets. A
-  lone task gets exactly the environment it always had.
+  ``OMP_NUM_THREADS = cpus_per_task`` are set **only when another task is
+  queued or running in the pool as the task starts**, decided when it is
+  dispatched, on or off SLURM, and never over a value the task sets. A task
+  running alone gets exactly the environment it always had.
 - Bundling: ``TaskSet`` assigns bundles in the order tasks are added
   (``bundle_tasks``; one bundle by default). ``archive=True`` appends a
   bundle's ``tasks/<key>/`` directories to ``tasks/<bundle>.tar`` once all of
   its tasks are done, removes the directories, and records the tar in the
-  manifest. Restart reads ``DONE`` and the returned files from the tar.
+  manifest. Only finished tasks are archived; failed ones stay as directories,
+  since they may run again. Restart reads ``DONE`` and the returned files from
+  the tar, opening each tar once per run with an index of its members.
   ``LocalPool`` does not go through the worker script.
 - Inline rule: ``TaskSet.route()`` sends a task with ``estimated_seconds <
   inline_below`` (60 s) to the evaluator's own pool when the program is
@@ -109,7 +127,9 @@ These are now in the design's task API section.
 Validation
 ~~~~~~~~~~
 
-- ``seamm_exec`` has 41 tests:
+- ``seamm_exec`` has 51 tests: 39 in ``tests/test_tasks.py`` (the task layer)
+  and 12 in ``test_seamm_exec.py`` and ``test_credential_sections.py`` (the
+  shim's in-situ cases, memory and credentials). They cover:
 
   - the shim's result dictionary and files, exception propagation, and
     ``@subdir+``;
@@ -123,9 +143,16 @@ Validation
   - SIGKILL and SIGTERM of a real evaluator subprocess, then rerun;
   - one tar per bundle, with restore from the tar;
   - the inline rule, the worker, ``success_text``, and a broken executor
-    that fails its task instead of hanging.
+    that fails its task instead of hanging;
+  - from the review: the shim under ``SLURM_JOB_ID`` (``mkdtemp`` honouring
+    ``$TMPDIR``, only ``return_files`` back, inputs also written to the
+    directory) and with ``config``, ``env`` and ``ce`` passed through
+    untouched; lost-task retries; the pid-reuse guard; the start recorded
+    before any throttled save; separate start callbacks on one pool; a bare
+    ``code`` without ``{code_dir}``; the attempts reset; an ignored SIGHUP;
+    and failed tasks left out of the archive.
 
-  All pass repeatedly in about 18 s. ``orca_step`` passes 164 and
+  All pass repeatedly in about 19 s. ``orca_step`` passes 166 and
   ``mopac_step`` 35, each with tests of the new helpers.
 - ``Testing/test.flow`` (ORCA energy, then DDEC6 through ``.wfx``) runs
   clean. Rerun in place without clearing ``tmp/``, ORCA reports "ORCA had
@@ -154,6 +181,24 @@ Found on the way
   load on this Mac. With 2 GB per ORCA task that allowed two at a time, which
   is correct but conservative. Total memory, or a site setting, may be the
   better capacity later.
+
+Review fixes (2026-10-02)
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The design session's review of the three diffs found these, all fixed:
+
+1. The attempts cap never reset when the input changed.
+2. The orphan kill could hit a reused pid.
+3. The start reached the manifest only at the next throttled save.
+4. The SIGHUP handler replaced ``SIG_IGN``.
+5. ``{code_dir}`` turned a bare ``orca`` into ``./orca_2aim``; ORCA now uses a
+   bare ``orca_2aim`` then.
+6. The start callback was shared on the pool; it now travels with each
+   ``submit``.
+7. A refused task slipped past the plug-ins' error check.
+8. The definition of "concurrent".
+9. The shim parsed ``ce``; it no longer reads it.
+10. Archiving: failed tasks were tarred, and each tar was reopened per member.
 
 Deferred, for later phases
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

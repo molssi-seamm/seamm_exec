@@ -247,7 +247,11 @@ class TaskBackend(Protocol):
 
     name: str
 
-    def submit(self, tasks: list, directories: list) -> list: ...
+    def submit(self, tasks: list, directories: list, on_start=None) -> list:
+        """Submit tasks; return their ids. ``on_start(task, info)``, if given, is
+        called when a task's process starts (``info`` is what is needed to find
+        it again, e.g. its process group)."""
+        ...
 
     def status(self, ids: list) -> dict: ...
 
@@ -530,9 +534,28 @@ class TaskSet:
 
         self.tasks_directory.mkdir(parents=True, exist_ok=True)
 
+        self._tars = {}
         pending = []
         for key, task in self.tasks.items():
             record = self.manifest.get(key)
+            if (
+                record is not None
+                and record.get("fingerprint") is not None
+                and record["fingerprint"] != task.digest()
+                and record.get("attempts", 0) > 0
+            ):
+                # New inputs: a fresh start, keeping the old history.
+                previous = list(record.get("previous", []))
+                previous.append(
+                    {
+                        "fingerprint": record.get("fingerprint"),
+                        "attempts": record.get("attempts"),
+                        "history": record.get("history", []),
+                    }
+                )
+                record = self.manifest.update(
+                    key, previous=previous, attempts=0, history=[], reason=None
+                )
             self.manifest.update(key, bundle=self._bundles[key])
             stored = self._restore(task, record)
             if stored is not None:
@@ -551,10 +574,13 @@ class TaskSet:
             record = self.manifest.get(task.key) or {}
             if record.get("attempts", 0) >= self.max_attempts:
                 result = self._result_from_record(task, record, FAILED)
-                result.stderr = (
-                    f"Not rerun: {record.get('attempts')} attempts already "
-                    f"(the limit is {self.max_attempts}).\n" + result.stderr
+                result.reason = (
+                    f"attempts exhausted: {record.get('attempts')} attempts, the "
+                    f"limit is {self.max_attempts}; last: {record.get('reason')}. "
+                    "Changing its input, or deleting the task's entry in "
+                    f"{self.manifest.path}, allows it to run again"
                 )
+                result.stderr = f"Not rerun: {result.reason}.\n" + (result.stderr or "")
                 self._results[task.key] = result
                 yield result
             else:
@@ -622,6 +648,7 @@ class TaskSet:
                     except Exception:
                         logger.exception("Error cancelling tasks")
             self.manifest.flush(force=True)
+            self._close_tars()
 
     def _run_without_manifest(self):
         """``Base.run()``: no bookkeeping, results as ``Base`` always made them."""
@@ -656,16 +683,23 @@ class TaskSet:
                     pgid=None,
                     host=None,
                 )
-            if hasattr(backend, "on_start"):
-                backend.on_start = self._on_start
-            ids = backend.submit(group, [self.task_directory(t) for t in group])
+            ids = backend.submit(
+                group,
+                [self.task_directory(t) for t in group],
+                on_start=self._on_start,
+            )
             for task, backend_id in zip(group, ids):
                 self.manifest.update(task.key, id=backend_id)
                 inflight[(backend, backend_id)] = task
 
     def _on_start(self, task, info):
-        """Called by a back end when a task's process starts."""
+        """Called by a back end when a task's process starts.
+
+        Written at once: if the evaluator dies a moment later, the next run must
+        know the process to stop before it starts the task again.
+        """
         self.manifest.update(task.key, state=RUNNING, started=_now(), **info)
+        self.manifest.flush(force=True)
 
     def _wait(self, inflight):
         backends = {}
@@ -914,15 +948,19 @@ class TaskSet:
                 continue
             # Only directories under tasks/ are archived; a task given its own
             # directory keeps it.
+            # Failed tasks stay as directories: they may run again.
             to_pack = [
                 k
                 for k in keys
                 if self.tasks[k].directory is None
+                and self._results[k].ok
+                and not self._results[k].restored
                 and (self.tasks_directory / k).is_dir()
             ]
             if not to_pack:
                 continue
             tar_path = self.tasks_directory / f"{bundle}.tar"
+            self._close_tars(tar_path)
             with tarfile.open(tar_path, "a" if tar_path.exists() else "w") as tar:
                 for k in to_pack:
                     tar.add(self.tasks_directory / k, arcname=k)
@@ -931,21 +969,36 @@ class TaskSet:
                 self.manifest.update(k, archive=tar_path.name)
                 self._results[k].archive = tar_path
 
-    @staticmethod
-    def _read_from_tar(path, member):
+    def _read_from_tar(self, path, member):
+        """A member of an archive, opening each archive once per run."""
         path = Path(path)
-        if not path.exists():
+        tars = getattr(self, "_tars", None)
+        if tars is None:
+            tars = self._tars = {}
+        if path not in tars:
+            if not path.exists():
+                return None
+            try:
+                tar = tarfile.open(path, "r")
+                # The last copy of a name wins, as on extraction.
+                index = {info.name: info for info in tar.getmembers()}
+            except tarfile.TarError:
+                return None
+            tars[path] = (tar, index)
+        tar, index = tars[path]
+        info = index.get(member)
+        if info is None:
             return None
-        try:
-            with tarfile.open(path, "r") as tar:
-                try:
-                    info = tar.getmember(member)
-                except KeyError:
-                    return None
-                fd = tar.extractfile(info)
-                return fd.read() if fd is not None else None
-        except tarfile.TarError:
-            return None
+        fd = tar.extractfile(info)
+        return fd.read() if fd is not None else None
+
+    def _close_tars(self, path=None):
+        """Close the cached archives (or just ``path``, before it is changed)."""
+        tars = getattr(self, "_tars", None) or {}
+        for p in [path] if path is not None else list(tars):
+            entry = tars.pop(Path(p), None) if p is not None else None
+            if entry is not None:
+                entry[0].close()
 
     # ------------------------------------------------------------------
     # Utilities

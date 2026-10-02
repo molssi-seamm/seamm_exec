@@ -174,7 +174,7 @@ def test_binding_disabled_only_when_concurrent(tmp_path):
 
     many = TaskSet(directory=tmp_path / "many", backend=pool(), executor=Local())
     many.add(shell_task("a", cmd, resources=Resources(1, cpus_per_task=2)))
-    many.add(shell_task("b", cmd, env={BINDING_ENV: "core"}))
+    many.add(shell_task("b", cmd, env={BINDING_ENV: "core"}, resources=Resources(1)))
     results = run_all(many)
     assert results["a"].files["b.txt"] == "none:2\n"
     assert results["b"].files["b.txt"] == "core:1\n"  # the task's own setting wins
@@ -373,6 +373,8 @@ def test_failed_tasks_retry_across_runs_up_to_the_cap(tmp_path):
     assert run_all(make())["bad"].attempts == 3
     r = run_all(make())["bad"]  # past the cap: reported, not run
     assert r.state == "failed" and r.attempts == 3
+    assert r.reason.startswith("attempts exhausted")
+    assert "manifest.json" in r.reason
     assert [h["returncode"] for h in r.history] == [3, 3, 3]
     assert {h["reason"] for h in r.history} == {"return code 3"}
     assert len(counter.read_text().split()) == 3
@@ -539,7 +541,7 @@ class FakeRemote:
         self.submitted = []
         self.dirs = {}
 
-    def submit(self, tasks, directories):
+    def submit(self, tasks, directories, on_start=None):
         ids = []
         for task, directory in zip(tasks, directories):
             self.submitted.append(task.key)
@@ -714,8 +716,8 @@ def test_success_text_catches_a_zero_exit_failure(tmp_path):
     manifest = json.loads((tmp_path / "step" / "tasks" / "manifest.json").read_text())
     assert manifest["tasks"]["orca"]["history"][0]["reason"] == r.reason
     assert not (tmp_path / "step" / "tasks" / "orca" / "DONE").exists()
-    r = run_all(make("ORCA TERMINATED NORMALLY"))["orca"]  # rerun, and now passes
-    assert r.ok and r.attempts == 2
+    r = run_all(make("ORCA TERMINATED NORMALLY"))["orca"]  # new input: a fresh start
+    assert r.ok and r.attempts == 1
     assert run_all(make("ORCA TERMINATED NORMALLY"))["orca"].restored
     assert len(counter.read_text().split()) == 2
 
@@ -751,3 +753,264 @@ def test_success_text_list_needs_every_text(tmp_path):
     assert results["both"].ok
     assert results["one"].reason == "success check: 'second' is not in o.txt"
     assert results["none"].reason == "success check: o.txt is missing"
+
+
+# ----------------------------------------------------------------------
+# Review fixes (2026-10-02)
+# ----------------------------------------------------------------------
+class _RecordingExecutor(Base):
+    """Records what exec() is given; writes out.txt."""
+
+    def __init__(self):
+        super().__init__(logging.getLogger("test-recording"))
+        self.calls = []
+
+    @property
+    def name(self):
+        return "recording"
+
+    def exec(
+        self,
+        config,
+        cmd=[],
+        directory=None,
+        input_data=None,
+        env={},
+        shell=False,
+        ce={},
+    ):
+        self.calls.append(
+            {"config": config, "env": env, "ce": ce, "directory": Path(directory)}
+        )
+        (Path(directory) / "out.txt").write_text("result")
+        (Path(directory) / "junk.dat").write_text("junk")
+        return {"returncode": 0, "stdout": "", "stderr": ""}
+
+
+def test_shim_under_slurm_uses_tmpdir_and_copies_back(tmp_path, monkeypatch):
+    import tempfile
+
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    monkeypatch.setenv("SLURM_JOB_ID", "1")
+    monkeypatch.setattr(tempfile, "tempdir", str(scratch))
+    job = tmp_path / "job"
+    job.mkdir()
+    executor = _RecordingExecutor()
+    result = executor.run(
+        config={},
+        cmd=["x"],
+        directory=job,
+        files={"in.inp": "input"},
+        return_files=["out.txt"],
+    )
+    ran_in = executor.calls[0]["directory"]
+    assert ran_in.parent == scratch and not ran_in.exists()
+    assert result["in_situ"] is False
+    assert sorted(p.name for p in job.iterdir()) == ["in.inp", "out.txt"]
+    assert (job / "in.inp").read_text() == "input"  # inputs written here too
+
+
+def test_shim_passes_config_env_and_ce_through(tmp_path):
+    executor = _RecordingExecutor()
+    config = {"code": "x"}
+    env = {"A": "1"}
+    ce = {"NTASKS": "not-a-number", "ODD": object()}
+    executor.run(config=config, cmd=["x"], directory=tmp_path, env=env, ce=ce)
+    call = executor.calls[0]
+    assert call["config"] is config and call["env"] is env and call["ce"] is ce
+
+
+class FlakyRemote(FakeRemote):
+    """Loses each task the first ``losses`` times it is submitted."""
+
+    name = "flaky"
+
+    def __init__(self, losses):
+        super().__init__()
+        self.losses = losses
+        self.counts = {}
+
+    def status(self, ids):
+        states = {}
+        for i in ids:
+            key = i[2:].rsplit("#", 1)[0]
+            states[i] = "lost" if self.counts[key] <= self.losses else "finished"
+        return states
+
+    def submit(self, tasks, directories, on_start=None):
+        ids = []
+        for task, directory in zip(tasks, directories):
+            self.counts[task.key] = self.counts.get(task.key, 0) + 1
+            ids.append(f"r-{task.key}#{self.counts[task.key]}")
+            self.dirs[ids[-1]] = directory
+        return ids
+
+
+def test_lost_tasks_are_retried_within_a_run(tmp_path):
+    remote = FlakyRemote(losses=2)
+    ts = TaskSet(
+        directory=tmp_path, backend=remote, executor=Local(), poll_interval=0.01
+    )
+    ts.add(shell_task("a", "true"))
+    r = run_all(ts)["a"]
+    assert r.ok and r.attempts == 3 and remote.counts["a"] == 3
+    assert [h["state"] for h in r.history] == ["lost", "lost", "finished"]
+
+    remote = FlakyRemote(losses=5)
+    ts = TaskSet(
+        directory=tmp_path / "b", backend=remote, executor=Local(), poll_interval=0.01
+    )
+    ts.add(shell_task("a", "true"))
+    r = run_all(ts)["a"]
+    assert r.state == "lost" and remote.counts["a"] == 3  # 1 + 2 retries
+
+
+def test_reattach_kills_only_the_recorded_process(tmp_path):
+    import psutil
+
+    p = subprocess.Popen(["sleep", "30"], start_new_session=True, cwd=tmp_path)
+    try:
+        leader = psutil.Process(p.pid)
+        record = {
+            "key": "a",
+            "pgid": p.pid,
+            "host": pool()._host,
+            "create_time": leader.create_time(),
+            "cwd": leader.cwd(),
+        }
+        # A reused pid: a different start time, or another directory
+        for changed in (
+            {"create_time": leader.create_time() - 100},
+            {"cwd": "/somewhere/else"},
+            {"create_time": None},
+        ):
+            assert pool().reattach([{**record, **changed}]) == {"a": "lost"}
+            assert p.poll() is None, changed
+        assert pool().reattach([record]) == {"a": "lost"}
+        assert p.wait(timeout=10) is not None
+    finally:
+        if p.poll() is None:
+            p.kill()
+
+
+def test_start_is_recorded_before_any_throttled_flush(tmp_path):
+    """Kill the evaluator just after a task starts: the rerun must find it."""
+    driver = tmp_path / "driver.py"
+    driver.write_text(textwrap.dedent("""
+        import sys
+        from seamm_exec import Local, LocalPool, Task, TaskSet
+        ce = {"NTASKS": 2, "MEM_PER_NODE": 2**33, "MEM_PER_CPU": 2**32}
+        # A long poll interval, so the main loop never flushes the manifest
+        ts = TaskSet(directory=sys.argv[1], backend=LocalPool(Local(), ce=ce),
+                     executor=Local(), poll_interval=60)
+        ts.add(Task(key="slow", program="sh", config={}, shell=True,
+                    cmd=["touch started; sleep $SLOW"], env={"SLOW": sys.argv[2]}))
+        for r in ts.run():
+            print(r.key, r.state, flush=True)
+    """))
+    step = tmp_path / "step"
+    proc = subprocess.Popen(
+        [sys.executable, str(driver), str(step), "60"], env=_driver_env()
+    )
+    try:
+        assert _wait_for(lambda: (step / "tasks" / "slow" / "started").exists())
+        proc.kill()
+        proc.wait(timeout=10)
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+    record = json.loads((step / "tasks" / "manifest.json").read_text())["tasks"]["slow"]
+    assert record["state"] == "running" and record["pgid"]
+    pgid = record["pgid"]
+    assert _alive(pgid)
+    subprocess.run(
+        [sys.executable, str(driver), str(step), "0"],
+        check=True,
+        timeout=60,
+        env=_driver_env(),
+    )
+    assert not _alive(pgid)
+
+
+def test_each_submit_reports_to_its_own_callback(tmp_path):
+    shared = pool()
+    seen = {"one": [], "two": []}
+    (tmp_path / "a").mkdir()
+    (tmp_path / "b").mkdir()
+    ids1 = shared.submit(
+        [shell_task("a", "true")],
+        [tmp_path / "a"],
+        on_start=lambda t, info: seen["one"].append(t.key),
+    )
+    ids2 = shared.submit(
+        [shell_task("b", "true")],
+        [tmp_path / "b"],
+        on_start=lambda t, info: seen["two"].append(t.key),
+    )
+    for i in ids1 + ids2:
+        while shared.status([i])[i] not in ("finished", "failed"):
+            shared.wait([i], timeout=1)
+    assert seen == {"one": ["a"], "two": ["b"]}
+
+
+def test_code_dir_only_for_a_path():
+    p = pool()
+    assert p.config_for(Task(key="a", program="x", config={"code": "orca"})) == {
+        "code": "orca"
+    }
+    config = p.config_for(Task(key="a", program="x", config={"code": "~/o/orca"}))
+    assert config["code_dir"] == str(Path("~/o").expanduser())
+
+
+def test_changed_input_resets_the_attempts(tmp_path):
+    def make(command):
+        ts = TaskSet(directory=tmp_path, backend=pool(), executor=Local())
+        ts.add(shell_task("a", command))
+        return ts
+
+    for _ in range(3):
+        run_all(make("exit 1"))
+    assert run_all(make("exit 1"))["a"].reason.startswith("attempts exhausted")
+    r = run_all(make("echo fixed > f.txt"))["a"]
+    assert r.ok and r.attempts == 1
+    record = json.loads((tmp_path / "tasks" / "manifest.json").read_text())
+    previous = record["tasks"]["a"]["previous"]
+    assert previous[0]["attempts"] == 3 and len(previous[0]["history"]) == 3
+
+
+def test_an_ignored_sighup_stays_ignored(tmp_path):
+    script = tmp_path / "s.py"
+    script.write_text(textwrap.dedent("""
+        import signal, sys
+        signal.signal(signal.SIGHUP, signal.SIG_IGN)  # as under nohup
+        from seamm_exec import Local, LocalPool, Task, TaskSet
+        from seamm_exec.local_pool import _on_signal
+        ce = {"NTASKS": 2, "MEM_PER_NODE": 2**33, "MEM_PER_CPU": 2**32}
+        ts = TaskSet(directory=sys.argv[1], backend=LocalPool(Local(), ce=ce),
+                     executor=Local())
+        for k in "ab":
+            ts.add(Task(key=k, program="sh", config={}, shell=True, cmd=["true"]))
+        list(ts.run())
+        print(signal.getsignal(signal.SIGHUP) == signal.SIG_IGN,
+              signal.getsignal(signal.SIGTERM) is _on_signal)
+    """))
+    out = subprocess.run(
+        [sys.executable, str(script), str(tmp_path / "step")],
+        check=True,
+        stdout=subprocess.PIPE,
+        universal_newlines=True,
+        env=_driver_env(),
+    ).stdout
+    assert out.split() == ["True", "True"]
+
+
+def test_failed_tasks_are_not_archived(tmp_path):
+    ts = TaskSet(directory=tmp_path, backend=pool(), executor=Local(), archive=True)
+    ts.add(shell_task("good", "echo g > g.txt"))
+    ts.add(shell_task("bad", "exit 2"))
+    run_all(ts)
+    with tarfile.open(tmp_path / "tasks" / "bundle_0000.tar") as tar:
+        names = {n.split("/")[0] for n in tar.getnames()}
+    assert names == {"good"}
+    assert (tmp_path / "tasks" / "bad").is_dir()
