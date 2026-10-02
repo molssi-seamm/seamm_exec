@@ -29,6 +29,7 @@ from dataclasses import asdict
 import hashlib
 import json
 import logging
+import os
 from pathlib import Path, PurePosixPath
 import re
 import shlex
@@ -168,6 +169,14 @@ class SchedulerBackend:
         remote_job_directory = None
         python = None
         remote_root = root
+        if remote_root is None and section.task_transport == "local":
+            # The evaluator's own installation, as a step would find it.
+            try:
+                from seamm_util.root import current_root
+
+                remote_root = str(current_root())
+            except Exception:
+                remote_root = os.environ.get("SEAMM_ROOT", "~/SEAMM")
         if not shared:
             if not section.remote_root:
                 raise RuntimeError(
@@ -468,8 +477,13 @@ class SchedulerBackend:
             walltime = sum(walltimes)
         else:
             walltime = self.bundle_walltime
+        ntasks = largest("ntasks")
+        if ntasks is None and "ntasks" not in self.directives:
+            # Always ask for the cores, so the allocation's environment says
+            # how many it has.
+            ntasks = 1
         return {
-            "ntasks": largest("ntasks"),
+            "ntasks": ntasks,
             "cpus_per_task": largest("cpus_per_task") or 1,
             "mem_per_cpu": largest("mem_per_cpu"),
             "ngpus": largest("ngpus") or 0,
@@ -599,6 +613,9 @@ class SchedulerBackend:
         entry.reason = (
             f"job {entry.job_id} ended ({status.state}) before the task finished"
         )
+        tail = _log_tail(entry.bundle_dir)
+        if tail:
+            entry.reason += f"; its log ends: {tail}"
         return LOST
 
 
@@ -629,6 +646,14 @@ def default_root(python):
     if venv.parent.name == "venvs":
         return str(venv.parent.parent)
     return str(venv.parent)
+
+
+def _log_tail(bundle_dir):
+    """The last line of a bundle's scheduler log, if there is one."""
+    lines = []
+    for path in sorted(Path(bundle_dir).glob("*.out")):
+        lines = [x for x in _read_text(path).splitlines() if x.strip()] or lines
+    return lines[-1].strip()[:300] if lines else None
 
 
 def _read_text(path):

@@ -897,7 +897,10 @@ class TaskSet:
 
     def _collect(self, task, backend, backend_id, state):
         """Fetch a task's result, record it and mark it DONE if it finished."""
-        if state == FINISHED or state == FAILED:
+        # A back end that bundles can also say why a task was lost.
+        if state in (FINISHED, FAILED) or (
+            state == LOST and getattr(backend, "bundles", False)
+        ):
             result = backend.fetch(task, backend_id)
             if result.state == FINISHED:
                 problem = self._check_success(task, result)
@@ -974,7 +977,8 @@ class TaskSet:
         }
         marker = self.marker_directory(task.key)
         marker.mkdir(parents=True, exist_ok=True)
-        tmp = marker / "DONE.tmp"
+        # A name of its own, so two writers never trip over one temporary file
+        tmp = marker / f"DONE.{os.getpid()}.{threading.get_ident()}.tmp"
         tmp.write_text(json.dumps(done, indent=2))
         os.replace(tmp, marker / "DONE")
 

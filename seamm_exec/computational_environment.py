@@ -5,6 +5,7 @@ systems."""
 
 import os
 from pathlib import Path
+import re
 
 import psutil
 
@@ -91,21 +92,28 @@ def _slurm():
         elif item[0:7] == "SBATCH_":
             ce[item[7:]] = value
 
+    # Without --ntasks SLURM sets no SLURM_NTASKS: fall back to the cores
+    # allocated on this node.
+    if "NNODES" not in ce:
+        ce["NNODES"] = int(ce.get("JOB_NUM_NODES", 1) or 1)
+    if "NTASKS" not in ce:
+        cpus = ce.get("CPUS_ON_NODE", ce.get("JOB_CPUS_PER_NODE", 1))
+        try:
+            cpus = int(str(cpus).split("(")[0].split(",")[0])
+        except ValueError:
+            cpus = 1
+        per_task = int(ce.get("CPUS_PER_TASK", 1) or 1)
+        ce["NTASKS"] = max(1, cpus // per_task) * int(ce["NNODES"])
+
     if "NTASKS_PER_NODE" not in ce:
         ce["NTASKS_PER_NODE"] = int(ce["NTASKS"]) // int(ce["NNODES"])
 
-    # Expand `[i-k]` naming in nodelist, eg. SLURM_NODELIST=tc[053,059,183,200]
-    nodes = ce["NODELIST"].split(",")
+    # Expand the hostlist, e.g. SLURM_NODELIST=tc[053,059-061],tc200
     nodelist = []
     npernode = ce["NTASKS_PER_NODE"]
-    for node in nodes:
-        if "[" in node:
-            node, count = node.split("[")
-            first, last = count[0:-1].split("-")
-            for i in range(int(first), int(last) + 1):
-                nodelist.append(f"{node}{i}:{npernode}")
-        else:
-            nodelist.append(f"{node}:{npernode}")
+    nodelist_text = ce.get("NODELIST", ce.get("JOB_NODELIST", "localhost"))
+    for node in expand_hostlist(str(nodelist_text)):
+        nodelist.append(f"{node}:{npernode}")
     nodelist = ",".join(nodelist)
     ce["NODELIST"] = nodelist
 
@@ -194,3 +202,26 @@ def _pbs():
     ce["MEM_PER_NODE"] = available
     ce["MEM_PER_CPU"] = available // cores_per_node
     return ce
+
+
+def expand_hostlist(text):
+    """SLURM's compressed hostlist -> host names.
+
+    ``tc[053,059-061],gpu7`` -> ``tc053 tc059 tc060 tc061 gpu7``; zero padding
+    is kept.
+    """
+    hosts = []
+    for match in re.finditer(r"([^,\[]+)(?:\[([^\]]*)\])?", text):
+        prefix, ranges = match.group(1), match.group(2)
+        if ranges is None:
+            hosts.append(prefix)
+            continue
+        for part in ranges.split(","):
+            if "-" in part:
+                first, last = part.split("-", 1)
+                width = len(first)
+                for i in range(int(first), int(last) + 1):
+                    hosts.append(f"{prefix}{i:0{width}d}")
+            else:
+                hosts.append(f"{prefix}{part}")
+    return hosts

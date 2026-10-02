@@ -12,8 +12,8 @@ run it again: the second run adopts the bundles from the manifest and polls
 them instead of submitting again.
 
 The tasks name only the program ("orca") and a command template; ORCA is
-resolved on the cluster from its own <root>/orca.ini. On SLURM 20.11 hosts
-without ORCA, ``--program echo`` runs a trivial shell task instead.
+resolved on the cluster from its own <root>/orca.ini. ``--program mopac``
+runs PM6 single points instead (MolSSI10, SLURM 20.11).
 """
 
 import argparse
@@ -63,15 +63,19 @@ def orca_task(name, atoms, ntasks):
     )
 
 
-def echo_task(name, ntasks):
+def mopac_task(name, atoms):
+    lines = ["PM6 1SCF", name, ""]
+    lines += [f"{el} {x:.4f} 1 {y:.4f} 1 {z:.4f} 1" for el, x, y, z in atoms]
+    lines.append("")
     return Task(
         key=name,
-        program="echo",
-        cmd=["echo", name, "on", "$(hostname)", "{NTASKS}", ">", "out.txt"],
-        shell=True,
-        return_files=["out.txt"],
-        resources=Resources(ntasks=ntasks, walltime=120),
-        config={"installation": "local"},
+        program="mopac",
+        cmd=["{code}", "mopac.dat"],
+        shell=True,  # a conda installation is a "conda run ..." command line
+        files={"mopac.dat": "\n".join(lines)},
+        return_files=["mopac.out", "mopac.arc"],
+        resources=Resources(ntasks=1, walltime=120),
+        success_text={"mopac.out": "== MOPAC DONE =="},
     )
 
 
@@ -82,7 +86,7 @@ def main():
     parser.add_argument("--ini", help="the targets ini (default <root>/<host>.ini)")
     parser.add_argument("--bundle-tasks", type=int, default=4)
     parser.add_argument("--ntasks", type=int, default=4)
-    parser.add_argument("--program", default="orca", choices=["orca", "echo"])
+    parser.add_argument("--program", default="orca", choices=["orca", "mopac"])
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -105,17 +109,15 @@ def main():
         if args.program == "orca":
             ts.add(orca_task(name, atoms, args.ntasks))
         else:
-            ts.add(echo_task(name, args.ntasks))
+            ts.add(mopac_task(name, atoms))
 
     t0 = time.time()
     for result in ts.run():
         energy = ""
-        out = result.files.get("orca.out") or result.files.get("out.txt") or ""
+        out = result.files.get("orca.out") or result.files.get("mopac.out") or ""
         for line in out.splitlines():
-            if "FINAL SINGLE POINT ENERGY" in line:
-                energy = line.split()[-1]
-            elif args.program == "echo":
-                energy = line.strip()
+            if "FINAL SINGLE POINT ENERGY" in line or "HEAT OF FORMATION" in line:
+                energy = " ".join(line.split()[-3:])
         print(
             f"{time.time() - t0:7.1f} s  {result.key:8s} {result.state:9s} "
             f"restored={result.restored} attempts={result.attempts} {energy} "

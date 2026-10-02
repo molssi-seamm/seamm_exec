@@ -75,11 +75,16 @@ class FakeQueue:
         env["PYTHONPATH"] = os.pathsep.join(
             [source] + [p for p in [env.get("PYTHONPATH")] if p]
         )
+        log = subprocess.DEVNULL
+        for line in job["script"].splitlines():
+            if line.startswith("#SBATCH --output="):
+                path = line.split("=", 1)[1].replace("%j", job_id)
+                log = open(path, "w")
         job["proc"] = subprocess.Popen(
             ["bash", "-c", job["script"]],
             env=env,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+            stdout=log,
+            stderr=subprocess.STDOUT,
             start_new_session=True,
         )
         job["state"] = "RUNNING"
@@ -292,7 +297,10 @@ def test_restart_adopts_a_queued_bundle(job):
     queue = FakeQueue(hold=True)
 
     # The first evaluator submits and dies while the bundle waits in the queue.
-    ts = TaskSet(directory=job / "step", backend=make_backend(queue, job, root))
+    # (Its thread lives on, so it polls once at submission, then never again,
+    # as if it had been killed.)
+    first = make_backend(queue, job, root, poll_interval=10000)
+    ts = TaskSet(directory=job / "step", backend=first)
     for i in range(3):
         ts.add(fake_task(f"t{i}"))
     it = ts.run()
@@ -717,3 +725,49 @@ def test_transient_submit_failure_holds(job):
     threading.Thread(target=clear, daemon=True).start()
     (result,) = ts.run()
     assert result.ok
+
+
+def test_expand_hostlist():
+    from seamm_exec.computational_environment import expand_hostlist
+
+    assert expand_hostlist("tc[053,059-061],gpu7") == [
+        "tc053",
+        "tc059",
+        "tc060",
+        "tc061",
+        "gpu7",
+    ]
+    assert expand_hostlist("tc117") == ["tc117"]
+    assert expand_hostlist("a[1-2],b[08-10]") == ["a1", "a2", "b08", "b09", "b10"]
+
+
+def test_slurm_environment_without_ntasks(monkeypatch):
+    """A job submitted without --ntasks has no SLURM_NTASKS."""
+    from seamm_exec.computational_environment import computational_environment
+
+    for name in list(os.environ):
+        if name.startswith(("SLURM_", "SBATCH_", "PBS_")):
+            monkeypatch.delenv(name)
+    monkeypatch.setenv("SLURM_JOB_ID", "1")
+    monkeypatch.setenv("SLURM_CPUS_ON_NODE", "4")
+    monkeypatch.setenv("SLURM_JOB_NUM_NODES", "1")
+    monkeypatch.setenv("SLURM_NODELIST", "tc[053]")
+    monkeypatch.setenv("SLURM_MEM_PER_CPU", "1000")
+    ce = computational_environment()
+    assert ce["NTASKS"] == 4 and ce["NNODES"] == 1
+    assert ce["NODELIST"] == "tc053:4"
+    assert ce["MEM_PER_CPU"] == 1000 * 1024 * 1024
+
+
+def test_lost_reason_has_the_log_tail(job):
+    job, root = job
+    queue = FakeQueue()
+    ts = TaskSet(
+        directory=job / "step",
+        backend=make_backend(queue, job, root, python="/no/such/python"),
+        max_attempts=1,
+    )
+    ts.add(fake_task("t0"))
+    (result,) = ts.run()
+    assert result.state == "lost"
+    assert "ended (FAILED)" in result.reason

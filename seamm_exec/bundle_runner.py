@@ -19,7 +19,7 @@ from .tasks import TERMINAL_STATES, Resources, Task
 
 def _write_json(path, data):
     path = Path(path)
-    tmp = path.with_name(path.name + ".tmp")
+    tmp = path.with_name(f"{path.name}.{os.getpid()}.tmp")
     tmp.write_text(json.dumps(data, indent=2))
     os.replace(tmp, path)
 
@@ -116,7 +116,8 @@ def run_seamm_bundle(bundle):
                     if reason is not None:
                         break
             elif result.returncode is None:
-                reason = (result.stderr or "the task could not be run").strip()
+                lines = (result.stderr or "").strip().splitlines()
+                reason = "could not be run: " + (lines[-1] if lines else "unknown")
             else:
                 reason = f"return code {result.returncode}"
             marker = markers[task.key]

@@ -48,7 +48,7 @@ def find_target(target=None, *, job_directory=None, root=None):
     if isinstance(target, TargetSection):
         return target
     if target is not None:
-        return _from_ini(str(target), root)
+        return _from_ini(str(target), root, os.environ.get("SEAMM_TARGETS"))
 
     directory = Path(job_directory) if job_directory is not None else Path.cwd()
     path = directory / TARGET_FILE
