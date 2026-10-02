@@ -37,10 +37,32 @@ Found on the way
 - The plug-in installers update the codes' conda environments in place; the
   Python-based engines (xnn, the MOPAC MDI engine) import lazily too.
 
+The comparison harness (same day)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``seamm-manager compare <flowchart> -a <side> -b <side> [--work DIR] [-- args]``
+runs the flowchart with each side's ``run_flowchart`` (``--root`` set to the
+side's installation) in ``a/`` and ``b/`` and compares the trees: JSON, CSV and
+structure files with a numeric tolerance (``--rtol``, ``--atol``), text files
+after dropping lines with timestamps, durations, versions and hosts and
+replacing the working directories. Sides: ``current``, ``newest``,
+``previous``, a version name, an environment directory, an installation root.
+So the check before a switch is ``compare x.flow -a current -b newest``.
+Validated with ``Testing/harness_water.flow`` (FromSMILES + MOPAC energy)
+between the two SEAMM_DEV versions and between ~/SEAMM and SEAMM_DEV: every
+file identical or within tolerance once MOPAC's timing lines and the job
+uuid were treated as volatile.
+
+Found: ``seamm_util.root.installation_root`` keyed on a directory named
+``venv``, so anything run by hand from a versioned environment defaulted to
+``~/SEAMM`` (jobs were fine: the JobServer passes ``--root``). Fixed on
+``seamm_util`` ``dev``; **seamm_util must be released before seamm-manager's
+migration reaches a production installation.**
+
 Still to do in phase 0
 ~~~~~~~~~~~~~~~~~~~~~~
 
-- The comparison harness: run a flowchart in two installations and diff the
-  results files and tables.
-- Release seamm-manager and apply the migration to ~/SEAMM, paul.local, then
-  ChemAI (on an explicit ask) and ARC.
+- Release seamm_util (root fix), then seamm-manager; apply the migration to
+  ~/SEAMM, paul.local, then ChemAI (on an explicit ask) and ARC.
+- Broaden the harness's corpus: a loop with a table, an ORCA step, a
+  Write Structure step, so phase 4 (tables in the database) has its gate.
