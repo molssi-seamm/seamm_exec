@@ -342,9 +342,11 @@ class LocalPool:
         else:
             config = self.config_for(task)
             env = dict(task.env)
-            env.setdefault("OMP_NUM_THREADS", str(job.ce["CPUS_PER_TASK"]))
-            if concurrent and BINDING_ENV not in env:
-                env[BINDING_ENV] = "none"
+            if concurrent:
+                # Keep concurrent tasks off each other's cores. A lone task
+                # gets the environment it always had.
+                env.setdefault("OMP_NUM_THREADS", str(job.ce["CPUS_PER_TASK"]))
+                env.setdefault(BINDING_ENV, "none")
         return dict(
             config=config,
             cmd=task.cmd,
@@ -369,13 +371,15 @@ class LocalPool:
         job.state = _state_of(job.raw)
 
     def _run_threaded(self, job):
-        concurrent = len(self._jobs) > 1
-        context = self.executor._task_context
-        context.hooks = _Hooks(self, job)
-        # A task run in place in the step directory must not prune the tasks/
-        # bookkeeping that other tasks write while it runs.
-        keep = [] if job.directory is None else [Path(job.directory) / "tasks"]
+        context = None
         try:
+            concurrent = len(self._jobs) > 1
+            context = getattr(self.executor, "_task_context", None)
+            if context is not None:
+                context.hooks = _Hooks(self, job)
+            # A task run in place in the step directory must not prune the
+            # tasks/ bookkeeping that other tasks write while it runs.
+            keep = [] if job.directory is None else [Path(job.directory) / "tasks"]
             job.raw = self.executor._run_task(
                 **self._arguments(job, concurrent), set_umask=False, keep=keep
             )
@@ -389,7 +393,10 @@ class LocalPool:
                 if job.state != CANCELLED:
                     job.state = FAILED
         finally:
-            context.hooks = None
+            # Whatever happened, free the slot so the TaskSet is not left
+            # waiting on a task that will never finish.
+            if context is not None:
+                context.hooks = None
             self._release(job)
 
     def _started(self, job, process):

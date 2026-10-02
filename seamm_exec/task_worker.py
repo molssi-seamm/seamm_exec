@@ -22,7 +22,8 @@ small tasks. It is pure Python with no SEAMM imports, so it runs anywhere a
           "shell": true,
           "env": {"OMP_NUM_THREADS": "1"},
           "input": null,
-          "fingerprint": "sha256:..."
+          "fingerprint": "sha256:...",
+          "success_text": {"orca.out": "ORCA TERMINATED NORMALLY"}
         },
         ...
       ]
@@ -31,7 +32,9 @@ small tasks. It is pure Python with no SEAMM imports, so it runs anywhere a
 For each task, in order: if ``<directory>/DONE`` exists it is skipped;
 otherwise the command runs in the directory with its standard output and error
 in ``stdout.txt`` and ``stderr.txt``, the return code goes in ``returncode``,
-and a successful run writes ``DONE`` (JSON). A failure does not stop the bundle.
+and a successful run -- return code 0 and, if given, every ``success_text``
+file containing its text -- writes ``DONE`` (JSON). A failure does not stop the
+bundle.
 The worker exits 0 if every task succeeded and 1 otherwise.
 """
 
@@ -42,6 +45,20 @@ import shlex
 import subprocess
 import sys
 import time
+
+
+def _succeeded(directory, success_text):
+    """Whether every file in ``success_text`` contains its text."""
+    for name, text in (success_text or {}).items():
+        path = Path(directory) / name
+        try:
+            data = path.read_text(errors="replace")
+        except OSError:
+            return False
+        texts = [text] if isinstance(text, str) else text
+        if any(t not in data for t in texts):
+            return False
+    return True
 
 
 def run_bundle(bundle):
@@ -80,6 +97,11 @@ def run_bundle(bundle):
                 err.write(f"The task could not be started: {e}\n")
                 returncode = -1
         (directory / "returncode").write_text(f"{returncode}\n")
+
+        if returncode == 0 and not _succeeded(directory, task.get("success_text")):
+            with open(directory / "stderr.txt", "a") as err:
+                err.write("The task failed its success_text check.\n")
+            returncode = None
 
         if returncode == 0:
             done = {

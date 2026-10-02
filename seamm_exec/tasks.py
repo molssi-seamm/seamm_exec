@@ -121,6 +121,11 @@ class Task:
         Identifies the inputs for restart. None hashes ``cmd`` and ``files``;
         give one when the inputs carry run-dependent text (core counts,
         absolute paths).
+    success_text : {str: str or [str]} or None
+        For codes whose return code does not show failure (ORCA exits 0 after
+        an error termination): each file must contain its text (or all of its
+        texts), or the task failed, gets no ``DONE`` and is tried again on the
+        next run.
     """
 
     key: str
@@ -138,6 +143,7 @@ class Task:
     directory: str | Path | None = None
     config: dict | None = None
     fingerprint: str | None = None
+    success_text: dict | None = None
 
     def digest(self):
         """The fingerprint of the inputs, used to detect a changed task."""
@@ -177,6 +183,8 @@ class TaskResult:
         Where it actually ran (a scratch directory when not in situ).
     restored : bool
         True when the result came from an earlier run rather than this one.
+    reason : str or None
+        Why a task failed: its return code, a failed success check, ...
     archive : Path or None
         The tar holding the task's directory, once archived.
     raw : dict or None
@@ -196,6 +204,7 @@ class TaskResult:
     run_directory: str | None = None
     restored: bool = False
     archive: Path | None = None
+    reason: str | None = None
     raw: dict | None = None
 
     @property
@@ -590,7 +599,9 @@ class TaskSet:
                                 and record.get("attempts", 0) < self.max_attempts
                             ):
                                 lost_retries[task.key] = n + 1
-                                self._finish_attempt(task.key, LOST, None)
+                                self._finish_attempt(
+                                    task.key, LOST, None, reason="lost"
+                                )
                                 self._submit([task], inflight)
                                 continue
                         result = self._collect(task, backend, backend_id, state)
@@ -667,7 +678,7 @@ class TaskSet:
                 return
         time.sleep(self.poll_interval)
 
-    def _finish_attempt(self, key, state, returncode):
+    def _finish_attempt(self, key, state, returncode, reason=None):
         record = self.manifest.get(key) or {}
         history = list(record.get("history", []))
         history.append(
@@ -677,13 +688,19 @@ class TaskSet:
                 "id": record.get("id"),
                 "state": state,
                 "returncode": returncode,
+                "reason": reason,
                 "submitted": record.get("submitted"),
                 "started": record.get("started"),
                 "finished": _now(),
             }
         )
         self.manifest.update(
-            key, state=state, returncode=returncode, finished=_now(), history=history
+            key,
+            state=state,
+            returncode=returncode,
+            reason=reason,
+            finished=_now(),
+            history=history,
         )
         return history
 
@@ -691,12 +708,32 @@ class TaskSet:
         """Fetch a task's result, record it and mark it DONE if it finished."""
         if state == FINISHED or state == FAILED:
             result = backend.fetch(task, backend_id)
+            if result.state == FINISHED:
+                problem = self._check_success(task, result)
+                if problem is not None:
+                    result.state = FAILED
+                    result.reason = f"success check: {problem}"
+                    result.stderr = (
+                        result.stderr or ""
+                    ) + f"\nThe task failed: {problem}.\n"
+            elif result.state == FAILED and result.reason is None:
+                if result.returncode is None:
+                    result.reason = "the task could not be run"
+                else:
+                    result.reason = f"return code {result.returncode}"
             state = result.state
         else:
+            result = None
+        if result is None:
             result = TaskResult(
-                key=task.key, state=state, directory=self.task_directory(task)
+                key=task.key,
+                state=state,
+                directory=self.task_directory(task),
+                reason=state,
             )
-        history = self._finish_attempt(task.key, state, result.returncode)
+        history = self._finish_attempt(
+            task.key, state, result.returncode, reason=result.reason
+        )
         record = self.manifest.get(task.key)
         result.attempts = record.get("attempts", 0)
         result.history = history
@@ -707,6 +744,26 @@ class TaskSet:
             if done.exists():
                 done.unlink()
         return result
+
+    def _check_success(self, task, result):
+        """Apply ``task.success_text``: None if it passed, else the reason."""
+        if not task.success_text:
+            return None
+        directory = self.task_directory(task)
+        for name, text in task.success_text.items():
+            data = result.files.get(name)
+            if data is None and directory is not None:
+                path = directory / self._returned_path(name)
+                data = path.read_bytes() if path.exists() else None
+            if isinstance(data, bytes):
+                data = data.decode(errors="replace")
+            texts = [text] if isinstance(text, str) else list(text)
+            if data is None:
+                return f"{name} is missing"
+            for text in texts:
+                if text not in data:
+                    return f"'{text}' is not in {name}"
+        return None
 
     # ------------------------------------------------------------------
     # Restart
@@ -818,7 +875,9 @@ class TaskSet:
             states = backend.reattach(records)
             for key, state in states.items():
                 if state == LOST:
-                    self._finish_attempt(key, LOST, None)
+                    self._finish_attempt(
+                        key, LOST, None, reason="the evaluator stopped while it ran"
+                    )
         return pending
 
     def _backend_named(self, name):
@@ -927,6 +986,24 @@ class TaskSet:
         return counts
 
 
+def run_task(task, node=None, **kwargs):
+    """Run one task through a :class:`TaskSet` and return its result.
+
+    The convenience for a step that runs a single calculation: it gets the
+    manifest, restart and the pool's handling of the process like any other
+    task. ``kwargs`` go to :class:`TaskSet` (e.g. ``directory=`` when the task
+    runs somewhere other than ``node.directory``).
+
+    Returns
+    -------
+    TaskResult
+    """
+    task_set = TaskSet(node, **kwargs)
+    task_set.add(task)
+    results = list(task_set.run())
+    return results[0]
+
+
 def _decode(data):
     """Text if the bytes decode as UTF-8, else the bytes (as Base.run reads)."""
     if data is None:
@@ -948,5 +1025,6 @@ __all__ = [
     "TaskBackend",
     "TaskSet",
     "Manifest",
+    "run_task",
     "WORKER_SCRIPT",
 ]

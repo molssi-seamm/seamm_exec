@@ -27,6 +27,7 @@ def _off_scheduler(monkeypatch):
     """Run as on a workstation: in place, binding untouched."""
     monkeypatch.delenv("SLURM_JOB_ID", raising=False)
     monkeypatch.delenv(BINDING_ENV, raising=False)
+    monkeypatch.delenv("OMP_NUM_THREADS", raising=False)
 
 
 def pool(cores=4, memory=16 * GiB, executor=None, **kwargs):
@@ -169,7 +170,7 @@ def test_binding_disabled_only_when_concurrent(tmp_path):
     cmd = f"echo ${BINDING_ENV}:$OMP_NUM_THREADS > b.txt"
     one = TaskSet(directory=tmp_path / "one", backend=pool(), executor=Local())
     one.add(shell_task("a", cmd))
-    assert run_all(one)["a"].files["b.txt"] == ":1\n"
+    assert run_all(one)["a"].files["b.txt"] == ":\n"  # untouched
 
     many = TaskSet(directory=tmp_path / "many", backend=pool(), executor=Local())
     many.add(shell_task("a", cmd, resources=Resources(1, cpus_per_task=2)))
@@ -373,6 +374,7 @@ def test_failed_tasks_retry_across_runs_up_to_the_cap(tmp_path):
     r = run_all(make())["bad"]  # past the cap: reported, not run
     assert r.state == "failed" and r.attempts == 3
     assert [h["returncode"] for h in r.history] == [3, 3, 3]
+    assert {h["reason"] for h in r.history} == {"return code 3"}
     assert len(counter.read_text().split()) == 3
 
 
@@ -647,3 +649,105 @@ def test_worker_imports_nothing_from_seamm():
     text = Path(WORKER_SCRIPT).read_text()
     assert "import seamm" not in text and "from seamm" not in text
     assert "from ." not in text
+
+
+def test_broken_executor_fails_the_task_instead_of_hanging(tmp_path):
+    """An executor without _run_task (e.g. a test double) must not hang."""
+
+    class Broken:
+        name = "local"
+
+    ts = TaskSet(directory=tmp_path, backend=pool(executor=Broken()), executor=Broken())
+    ts.add(shell_task("a", "true"))
+    ts.add(shell_task("b", "true"))
+    results = run_all(ts)
+    assert results["a"].state == "failed" and results["a"].returncode is None
+    assert "_run_task" in results["a"].stderr
+
+
+def test_run_task_with_a_node(tmp_path):
+    """run_task takes the directory, executor and root from the node."""
+    from types import SimpleNamespace
+
+    from seamm_exec import run_task
+
+    node = SimpleNamespace(
+        directory=str(tmp_path),
+        flowchart=SimpleNamespace(executor=Local()),
+        global_options={"root": str(tmp_path)},
+    )
+    (tmp_path / "echo.ini").write_text("[local]\ninstallation = local\ncode = echo\n")
+    task = Task(
+        key="one",
+        program="echo",
+        cmd=["{code} hi > o.txt"],
+        shell=True,
+        directory=tmp_path,
+        return_files=["o.txt"],
+    )
+    result = run_task(task, node=node)
+    assert result.ok and result.files == {"o.txt": "hi\n"}
+    assert (tmp_path / "o.txt").exists()
+    assert (tmp_path / "tasks" / "one" / "DONE").exists()
+    assert run_task(task, node=node).restored
+
+
+def test_success_text_catches_a_zero_exit_failure(tmp_path):
+    """ORCA exits 0 after an error termination; success_text catches it."""
+    counter = tmp_path / "ran.log"
+
+    def make(text):
+        ts = TaskSet(directory=tmp_path / "step", backend=pool(), executor=Local())
+        ts.add(
+            shell_task(
+                "orca",
+                f"echo x >> {counter}; echo '{text}' > orca.txt",
+                success_text={"orca.txt": "TERMINATED NORMALLY"},
+            )
+        )
+        return ts
+
+    r = run_all(make("error termination"))["orca"]
+    assert r.state == "failed" and r.returncode == 0
+    assert "TERMINATED NORMALLY" in r.stderr
+    assert r.reason == "success check: 'TERMINATED NORMALLY' is not in orca.txt"
+    manifest = json.loads((tmp_path / "step" / "tasks" / "manifest.json").read_text())
+    assert manifest["tasks"]["orca"]["history"][0]["reason"] == r.reason
+    assert not (tmp_path / "step" / "tasks" / "orca" / "DONE").exists()
+    r = run_all(make("ORCA TERMINATED NORMALLY"))["orca"]  # rerun, and now passes
+    assert r.ok and r.attempts == 2
+    assert run_all(make("ORCA TERMINATED NORMALLY"))["orca"].restored
+    assert len(counter.read_text().split()) == 2
+
+
+def test_worker_applies_success_text(tmp_path):
+    bundle = {
+        "tasks": [
+            {
+                "key": k,
+                "directory": str(tmp_path / k),
+                "command": f"echo '{text}' > out.txt",
+                "shell": True,
+                "success_text": {"out.txt": "NORMALLY"},
+            }
+            for k, text in (("good", "ENDED NORMALLY"), ("bad", "error"))
+        ]
+    }
+    path = tmp_path / "bundle.json"
+    path.write_text(json.dumps(bundle))
+    p = subprocess.run([sys.executable, str(WORKER_SCRIPT), str(path)])
+    assert p.returncode == 1
+    assert (tmp_path / "good" / "DONE").exists()
+    assert not (tmp_path / "bad" / "DONE").exists()
+
+
+def test_success_text_list_needs_every_text(tmp_path):
+    ts = TaskSet(directory=tmp_path, backend=pool(), executor=Local())
+    check = {"o.txt": ["first", "second"]}
+    ts.add(shell_task("both", "echo first second > o.txt", success_text=check))
+    ts.add(shell_task("one", "echo first > o.txt", success_text=check))
+    ts.add(shell_task("none", "true", success_text=check, return_files=[]))
+    results = run_all(ts)
+    assert results["both"].ok
+    assert results["one"].reason == "success check: 'second' is not in o.txt"
+    assert results["none"].reason == "success check: o.txt is missing"
