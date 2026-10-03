@@ -1231,3 +1231,20 @@ def test_bundles_are_one_node(job, scheduler):
     else:
         select = [line for line in script.splitlines() if "select=" in line]
         assert select == ["#PBS -l select=1:ncpus=8:mpiprocs=8"]
+
+
+def test_bundle_walltime_from_estimates(job):
+    """Tasks without walltimes: the bundle's time is twice their estimates plus
+    ten minutes, within the bundle limit, instead of the queue's default."""
+    job, root = job
+    backend = make_backend(FakeQueue(), job, root)
+    tasks = [fake_task(k, estimated_seconds=480) for k in "abcdefgh"]
+    assert backend._bundle_resources(tasks)["walltime"] == 2 * 8 * 480 + 600
+    assert (
+        backend._bundle_resources(tasks, bundle_walltime=4 * 3600)["walltime"]
+        == 2 * 8 * 480 + 600
+    )
+    assert backend._bundle_resources(tasks, bundle_walltime=3600)["walltime"] == 3600
+    # The walltimes the tasks give are used as they are.
+    timed = [fake_task("t", resources=Resources(walltime=100))]
+    assert backend._bundle_resources(timed, bundle_walltime=50)["walltime"] == 100

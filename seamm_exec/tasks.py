@@ -870,6 +870,8 @@ class TaskSet:
             kwargs["bundle"] = bundle
             kwargs["markers"] = [self.marker_directory(t.key) for t in group]
             kwargs["on_prepared"] = self._on_prepared
+            # Bounds the bundle's time when its tasks give none.
+            kwargs["bundle_walltime"] = self.bundle_walltime
         try:
             ids = backend.submit(
                 group, [self.task_directory(t) for t in group], **kwargs
