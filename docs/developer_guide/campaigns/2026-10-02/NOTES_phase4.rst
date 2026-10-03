@@ -537,7 +537,7 @@ rollback, recipes, a results table) and the runs are in
   Geometry Analysis and summary CSVs byte-identical to A.
 - **Found and fixed:** "Set element" of the current row past the end of a table
   raised; it now appends the row, as ``store_results`` does (table_step
-  585dd9b).
+  f5b529e).
 - **Found, not phase 4:** the Properties step exports configuration property
   values as ``{sid, cid, value}`` dicts (A writes their Python repr, B JSON).
 - Corpus copies: "MOPAC from SMILES" and "MOPAC over database" work; the three
