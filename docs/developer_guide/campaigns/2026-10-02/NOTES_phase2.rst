@@ -394,3 +394,26 @@ Cleanup
   - ``tinkercliffs:/projects/seamm/psaxe/phase2/venv``
   - ``molssi10:~/phase2/venv``
   - ``~/SEAMM_DEV/venvs/phase2-{A,B}``, to be pruned once phase 2 is released.
+
+2026-10-02 -- release PRs
+-------------------------
+
+Paul created ``molssi-seamm/seamm_scheduler`` (public, empty); PyPI publishing
+uses the organization secret the shared Release workflow already uses. Its
+``main`` is an initial commit (LICENSE, README, .gitignore) and ``dev`` the work,
+joined by an ``ours`` merge so the PR applies cleanly.
+
+PRs, to be merged and released in this order:
+
+1. ``seamm_scheduler`` #1, 2026.10.2. CI green.
+2. ``seamm_exec`` #34, 2026.10.2.1. It pins ``seamm-scheduler>=2026.10.2``, so
+   its CI is red until (1) is on PyPI (the phase 1 lesson).
+3. ``seamm_slurm`` #9, 2026.10.2 (the shim). Same pin; CI on uv
+   (``test_env.yaml`` removed).
+4. ``seamm_jobserver`` #24, 2026.10.2. It needs ``seamm_scheduler>=2026.10.2``;
+   CI on uv (``test_env.yaml`` removed).
+
+After the first release of ``seamm_scheduler``, enable GitHub Pages for it
+(``gh api -X POST repos/molssi-seamm/seamm_scheduler/pages ...``), as for every
+new repository. If the merges happen after 2026-10-02, the versions in the
+HISTORY entries should follow the release date.
