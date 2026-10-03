@@ -324,3 +324,57 @@ An independent review of the six diffs. Fixed, each with a test unless noted:
    - the ``mopac`` resolver keeps a conda or modules installation whose
      ``code`` is empty;
    - DLPNO open-shell refused energy-only too, matching MDI (unchanged).
+
+Design session's review (2026-10-03)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A second independent read, at the heads with the fixes above. Fixed:
+
+1. **A refused structure on a queue target, with the code only on the cluster,**
+   went to a local MDI engine that could not start, and the error stopped every
+   other structure. Such a structure now gets a failed result, "cannot run
+   here: ...", and the rest finish (``_mdi_results(fallback=True)``).
+2. **NMS fell back to the finite difference on any engine failure,** so a
+   transient failure (a port, the environment) silently turned ORCA's analytic
+   Hessian into 6N tasks. It now falls back only when the code is not installed
+   here, says so through the step's printer, and closes the engine.
+3. **Tests.** A task with ``config`` never meets a registered resolver, in the
+   pool and in ``bundle_runner``; a config-less one does. The Energy step's
+   ``c<id>`` keys are stable on rerun, a duplicate selection is skipped,
+   failures are stored then raised, and the report says how the work ran. The
+   Dimer Builder maps out-of-order results back by key.
+4. **The stress is required for a periodic structure** (``check_properties(...,
+   periodic=True)``), so a future periodic batch program cannot return none.
+5. **This note and both design copies** now carry the contract as coded:
+   classmethods ``(configuration, model_chemistry, *, ...)``, no citations, the
+   stress as the program gives it, and ``can_run_task``.
+6. **One ``mdi_method_and_basis``:** ORCA's and MOPAC's ``get_task`` call
+   ``seamm_exec``'s, so the basis-wins rule lives in one place.
+7. **The resolver registry** is built under a lock; pool threads asked for it
+   at the same time and a second build dropped a ``register()``.
+8. **Wording:** MOPAC's refusal says the structure "runs on MOPAC's MDI engine
+   where one is available"; "Where ORCA runs" says ``code`` must be ORCA's full
+   path on module sites.
+
+Addendum, also fixed:
+
+a. **NMS rule: on a queue target, the target wins.** The finite difference runs
+   as tasks on the cluster, and no local engine is started, even to ask for
+   ``<HESSIAN``. Otherwise the analytic Hessian goes over MDI when the program
+   has one: ORCA now says so in its model-chemistry options
+   (``analytic_hessian``, from ``method_has_analytic_hessian``), so no live
+   probe is needed; other programs are still asked. Failing that, the finite
+   difference runs as tasks if the evaluator chose them, or over the warm
+   engine.
+b. NMS closes the engine on the fallback, catches only the "no code here" case,
+   and prints the reason.
+c. ``_can_run_task`` logs a provider's exception before treating it as False,
+   so a buggy hook does not reroute silently.
+d. orca_step's HISTORY records the MDI engine's behaviour change: a single
+   centre now runs without COSX, which moves lone-ion energies by about 5
+   kJ/mol from before.
+e. The Energy step's report says how a mixed run went: "X over MDI in N engine
+   session(s) and Y as separate calculations".
+f. The MOPAC batch == MDI test has a doublet, OH. Heats agree to 1e-3 kJ/mol;
+   the gradients to 0.06 kJ/mol/Å, because the MDI path (mopactools) gives
+   spurious components of about 0.03 kJ/mol/Å perpendicular to the bond.

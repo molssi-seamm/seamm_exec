@@ -1140,3 +1140,70 @@ def test_only_the_local_executor_goes_to_a_queue(job):
     job, root = job
     with pytest.raises(RuntimeError, match="local executor"):
         make_backend(FakeQueue(), job, root, executor="docker")
+
+
+def test_tasks_with_config_never_meet_a_resolver(tmp_path):
+    """Rule 2: a task that carries config (a step that configured its program,
+    every unconverted plug-in) is run exactly as given; only a config-less one
+    is resolved -- in the evaluator's pool and in the bundle worker alike."""
+    from seamm_exec.bundle_runner import run_seamm_bundle
+
+    calls = []
+
+    def hijack(config, cmd, env, ce, root):
+        calls.append(list(cmd))
+        return {"installation": "local"}, ["echo", "resolved", ">", "out.txt"], env
+
+    register("ruled", hijack)
+    (tmp_path / "ruled.ini").write_text("[local]\ninstallation = local\n")
+    pool = LocalPool(_executor(), root=tmp_path)
+    ts = TaskSet(directory=tmp_path / "s", backend=pool)
+    ts.add(
+        Task(
+            key="given",
+            program="ruled",
+            cmd=["echo", "given", ">", "out.txt"],
+            shell=True,
+            return_files=["out.txt"],
+            config={"installation": "local"},
+        )
+    )
+    ts.add(
+        Task(
+            key="bare",
+            program="ruled",
+            cmd=["echo", "bare", ">", "out.txt"],
+            shell=True,
+            return_files=["out.txt"],
+        )
+    )
+    results = {r.key: r for r in ts.run()}
+    assert results["given"].files["out.txt"] == "given\n"
+    assert results["bare"].files["out.txt"] == "resolved\n"
+    assert calls == [["echo", "bare", ">", "out.txt"]]
+
+    # The bundle worker (SEAMM mode) follows the same rule
+    calls.clear()
+    bundle = {"mode": "seamm", "root": str(tmp_path), "executor": "local", "tasks": []}
+    for key, config in (("given2", {"installation": "local"}), ("bare2", None)):
+        bundle["tasks"].append(
+            {
+                "key": key,
+                "directory": str(tmp_path / "b" / key),
+                "marker": str(tmp_path / "b" / key),
+                "program": "ruled",
+                "cmd": ["echo", key, ">", "out.txt"],
+                "files": [],
+                "return_files": ["out.txt"],
+                "resources": {"ntasks": 1},
+                "env": {},
+                "in_situ": True,
+                "shell": True,
+                "config": config,
+                "fingerprint": key,
+            }
+        )
+    assert run_seamm_bundle(bundle) == 0
+    assert (tmp_path / "b" / "given2" / "out.txt").read_text() == "given2\n"
+    assert (tmp_path / "b" / "bare2" / "out.txt").read_text() == "resolved\n"
+    assert calls == [["echo", "bare2", ">", "out.txt"]]

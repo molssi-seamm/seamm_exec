@@ -236,7 +236,7 @@ def test_structures_a_program_cannot_run_as_tasks(tmp_path, monkeypatch):
     evaluator = Evaluator(_node(tmp_path / "2", WithEngine), mc, path="batch")
     routed = {}
 
-    def fake_mdi(pending):
+    def fake_mdi(pending, fallback=False):
         from seamm_exec import EvaluatorResult
 
         for key in pending:
@@ -249,3 +249,44 @@ def test_structures_a_program_cannot_run_as_tasks(tmp_path, monkeypatch):
     results = {r.key: r for r in evaluator.results()}
     assert results["m"].path == "batch" and results["box"].path == "mdi"
     assert routed == {"box": True}
+
+
+# ---- from the design session's review ---------------------------------------
+
+
+def test_a_refused_structure_without_a_local_engine_fails_alone(tmp_path):
+    """On a queue target with the code only on the cluster, the structure the
+    program cannot run as a task has no engine here: a failed result, and the
+    others finish."""
+    mc = dict(MC, options={"mdi_capable": True})
+
+    class NoLocalCode(PickyProvider):
+        @staticmethod
+        def get_mdi_engine_command(*args, **kwargs):
+            raise RuntimeError("No orca.ini here")
+
+    evaluator = Evaluator(_node(tmp_path, NoLocalCode), mc, path="batch")
+    evaluator.submit(Geometry([1], [[1, 0, 0]]), key="m")
+    evaluator.submit(Geometry([1], [[0, 0, 0]], cell=np.eye(3) * 5), key="box")
+    results = {r.key: r for r in evaluator.results()}
+    assert results["m"].ok
+    assert not results["box"].ok
+    assert results["box"].reason.startswith("cannot run here")
+
+
+def test_periodic_results_need_stress(tmp_path):
+    class NoStress(FakeProvider):
+        @classmethod
+        def can_run_task(cls, configuration, model_chemistry, *, options):
+            return True
+
+    evaluator = Evaluator(
+        _node(tmp_path, NoStress), MC, properties=("energy", "gradients", "stress")
+    )
+    evaluator.submit(Geometry([1], [[0, 0, 0]], cell=np.eye(3) * 5), key="box")
+    evaluator.submit(Geometry([1], [[1, 0, 0]]), key="m")
+    results = {r.key: r for r in evaluator.results()}
+    assert not results["box"].ok and "no stress" in results["box"].reason
+    assert results["m"].ok  # a molecule has no stress
+    with pytest.raises(AnalysisError, match="has no stress"):
+        check_properties({"energy": 1.0}, ("energy", "stress"), "x", periodic=True)

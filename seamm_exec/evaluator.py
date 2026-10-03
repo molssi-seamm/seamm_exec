@@ -53,8 +53,9 @@ E_UNITS = "kJ/mol"
 G_UNITS = "kJ/mol/Å"
 S_UNITS = "GPa"
 
-#: Properties a result must have when requested. Stress is optional: it is
-#: returned where the program provides it (periodic systems, some codes).
+#: Properties a result must have when requested. Stress is required only for a
+#: periodic structure (``check_properties(..., periodic=True)``, and the
+#: Evaluator checks it for every task); a molecule has none.
 REQUIRED = ("energy", "gradients")
 
 
@@ -338,7 +339,7 @@ class Evaluator:
                 iterators.append(self._batch_results(batch))
             if mdi:
                 if self.mdi_capable:
-                    iterators.append(self._mdi_results(mdi))
+                    iterators.append(self._mdi_results(mdi, fallback=True))
                 else:
                     iterators.append(self._cannot_run(mdi))
         for iterator in iterators:
@@ -361,6 +362,11 @@ class Evaluator:
         try:
             return bool(check(configuration, self.model_chemistry, options=options))
         except Exception:
+            # A broken hook must not reroute silently
+            logger.exception(
+                f"can_run_task of '{self.model_chemistry.get('step')}' failed; "
+                "treating the structure as one it cannot run as a task"
+            )
             return False
 
     def _cannot_run(self, pending):
@@ -389,14 +395,28 @@ class Evaluator:
             int(getattr(configuration, "periodicity", 0) or 0),
         )
 
-    def _mdi_results(self, pending):
-        for key, (configuration, options) in pending.items():
+    def _mdi_results(self, pending, fallback=False):
+        """The MDI path. With ``fallback`` (structures the program cannot run as
+        tasks while the rest do), a structure the local engine cannot take, or an
+        engine that cannot start here (the code may live only on the job's
+        cluster), gives failed results instead of stopping the others."""
+        pending = dict(pending)
+        for key, (configuration, options) in list(pending.items()):
             for name in ("atom_indices", "ghost_atoms", "guess"):
                 if options.get(name) is not None:
-                    raise ValueError(
-                        f"The MDI path cannot take '{name}'; this model chemistry "
-                        "must run as tasks."
+                    if not fallback:
+                        raise ValueError(
+                            f"The MDI path cannot take '{name}'; this model "
+                            "chemistry must run as tasks."
+                        )
+                    del pending[key]
+                    yield EvaluatorResult(
+                        key=key,
+                        ok=False,
+                        reason=f"cannot run here: the MDI engine cannot take '{name}'",
+                        path="mdi",
                     )
+                    break
         groups = {}
         for key, (configuration, options) in pending.items():
             groups.setdefault(self.topology_key(configuration, options), []).append(
@@ -407,7 +427,20 @@ class Evaluator:
         for topology, members in groups.items():
             elements, charge, multiplicity, periodicity = topology
             periodic = periodicity != 0
-            with self._open_engine(members[0][1], charge, multiplicity) as engine:
+            try:
+                engine = self._open_engine(members[0][1], charge, multiplicity)
+            except Exception as e:
+                if not fallback:
+                    raise
+                for key, _ in members:
+                    yield EvaluatorResult(
+                        key=key,
+                        ok=False,
+                        reason=f"cannot run here: no MDI engine on this machine ({e})",
+                        path="mdi",
+                    )
+                continue
+            with engine:
                 if periodic and not engine.supports(">CELL"):
                     raise ValueError(
                         f"The model chemistry '{self.model_chemistry['level']}' MDI "
@@ -542,6 +575,16 @@ class Evaluator:
                     path="batch",
                 )
                 continue
+            periodic = int(getattr(configuration, "periodicity", 0) or 0) != 0
+            if periodic and "stress" in self.properties and data.get("stress") is None:
+                yield EvaluatorResult(
+                    key=result.key,
+                    ok=False,
+                    reason="the calculation of a periodic structure returned no stress",
+                    restored=result.restored,
+                    path="batch",
+                )
+                continue
             gradients = data.get("gradients")
             if gradients is not None:
                 gradients = np.asarray(gradients, dtype=float).reshape(-1, 3)
@@ -565,10 +608,12 @@ class Evaluator:
             )
 
 
-def check_properties(data, properties, what):
+def check_properties(data, properties, what, periodic=False):
     """Raise :class:`AnalysisError` unless ``data`` has every required property
-    in ``properties``. For programs' ``analyze_task``."""
-    missing = [p for p in properties if p in REQUIRED and data.get(p) is None]
+    in ``properties`` (and the stress, if requested, for a periodic structure).
+    For programs' ``analyze_task``."""
+    required = REQUIRED + (("stress",) if periodic else ())
+    missing = [p for p in properties if p in required and data.get(p) is None]
     if missing:
         raise AnalysisError(f"{what} has no {', '.join(missing)}")
 
