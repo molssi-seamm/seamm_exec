@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.exec_flowchart &#8212; SEAMM seamm-exec Plug-in 2026.10.3 documentation</title>
+    <title>seamm_exec.exec_flowchart &#8212; SEAMM seamm-exec Plug-in 2026.10.3.1 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=f64fa391"></script>
+    <script src="../../_static/documentation_options.js?v=0667127d"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.3" />
+  <meta name="docsearch:version" content="2026.10.3.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -590,6 +590,14 @@
         <span class="c1"># Correctly number the nodes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">set_ids</span><span class="p">()</span>
 
+        <span class="c1"># Tables live in the job database: refuse plug-ins too old for that before</span>
+        <span class="c1"># running anything, rather than failing part way through.</span>
+        <span class="n">problems</span> <span class="o">=</span> <span class="n">seamm</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">check_table_plugins</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">problems</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="s2">"This flowchart cannot run here:</span><span class="se">\n</span><span class="s2">    "</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">    "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">problems</span><span class="p">)</span>
+            <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
         <span class="c1"># Write out an initial summary of the flowchart before doing anything</span>
         <span class="c1"># Reset the visited flag for traversal</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">reset_visited</span><span class="p">()</span>
@@ -627,7 +635,9 @@
             <span class="n">next_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="s2">"1"</span><span class="p">)</span>
             <span class="k">while</span> <span class="n">next_node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
+                    <span class="n">node</span> <span class="o">=</span> <span class="n">next_node</span>
                     <span class="n">next_node</span> <span class="o">=</span> <span class="n">next_node</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+                    <span class="n">seamm</span><span class="o">.</span><span class="n">step_completed</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">DeprecationWarning</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Deprecation warning: "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
                     <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>

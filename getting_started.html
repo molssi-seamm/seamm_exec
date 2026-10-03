@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.3 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.3.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="_static/documentation_options.js?v=f64fa391"></script>
+    <script src="_static/documentation_options.js?v=0667127d"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="Welcome to SEAMM exec’s documentation!" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.3" />
+  <meta name="docsearch:version" content="2026.10.3.1" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -556,9 +556,22 @@ for ORCA or MOPAC) goes to its MDI engine; if there is none here it fails alone,
 with the reason. The batch path keeps the task layer’s restart, so a rerun
 reuses finished structures. <code class="docutils literal notranslate"><span class="pre">options</span></code> on <code class="docutils literal notranslate"><span class="pre">submit</span></code> carries what a fragment
 needs: <code class="docutils literal notranslate"><span class="pre">atom_indices</span></code>, <code class="docutils literal notranslate"><span class="pre">ghost_atoms</span></code>, <code class="docutils literal notranslate"><span class="pre">charge</span></code> and <code class="docutils literal notranslate"><span class="pre">multiplicity</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">resources</span></code> on the Evaluator (a <code class="xref py py-class docutils literal notranslate"><span class="pre">Resources</span></code>: ranks, memory
+per rank) sets the size of each calculation on the batch path; the provider’s
+<code class="docutils literal notranslate"><span class="pre">get_task</span></code> receives it. Without it the provider chooses.</p>
 <p>A program offers the batch path through three classmethods beside
 <code class="docutils literal notranslate"><span class="pre">get_model_chemistry_options</span></code>: <code class="docutils literal notranslate"><span class="pre">get_task</span></code>, <code class="docutils literal notranslate"><span class="pre">analyze_task</span></code> and, optionally,
 <code class="docutils literal notranslate"><span class="pre">can_run_task</span></code>; see <a class="reference internal" href="api/seamm_exec.html#module-seamm_exec.evaluator" title="seamm_exec.evaluator"><code class="xref py py-mod docutils literal notranslate"><span class="pre">seamm_exec.evaluator</span></code></a>.</p>
+<p><strong>The sign of the stress.</strong> The stress comes back as the program gives it, in
+GPa, and programs differ in its sign. A provider that returns a stress must
+therefore declare its convention in its <code class="docutils literal notranslate"><span class="pre">get_model_chemistry_options</span></code> entry:
+<code class="docutils literal notranslate"><span class="pre">options[&quot;stress_convention&quot;]</span></code> is <code class="docutils literal notranslate"><span class="pre">&quot;pressure&quot;</span></code> (positive when the system
+pushes outward: VASP’s <code class="docutils literal notranslate"><span class="pre">in</span> <span class="pre">kB</span></code> line, MDI’s <code class="docutils literal notranslate"><span class="pre">&lt;STRESS</span></code>) or <code class="docutils literal notranslate"><span class="pre">&quot;stress&quot;</span></code>
+(sigma = -P, as ASE and xnn use). The Evaluator passes the stress through
+unchanged; a consumer converts it with that declaration and refuses a level
+that lacks it. The declaration covers both paths, batch and MDI, so a provider
+whose two paths would give opposite signs must make them agree. Pinning one convention for every provider later would be a
+documented change of this contract.</p>
 </section>
 <section id="where-things-run">
 <h2>Where things run<a class="headerlink" href="#where-things-run" title="Link to this heading">#</a></h2>

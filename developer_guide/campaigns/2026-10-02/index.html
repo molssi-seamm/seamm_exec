@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops &#8212; SEAMM seamm-exec Plug-in 2026.10.3 documentation</title>
+    <title>2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops &#8212; SEAMM seamm-exec Plug-in 2026.10.3.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../../_static/documentation_options.js?v=f64fa391"></script>
+    <script src="../../../_static/documentation_options.js?v=0667127d"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="Campaigns" href="../index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.3" />
+  <meta name="docsearch:version" content="2026.10.3.1" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -993,11 +993,15 @@ needs no table serialization;</p></li>
 <li><p>the Dashboard, the web UI and the MCP server can read a job’s tables directly, and “save or lose it” goes
 away.</p></li>
 </ul>
-<p>Keep a DataFrame-shaped facade so existing code keeps working: a <code class="docutils literal notranslate"><span class="pre">Table</span></code> object backed by the SQL table,
-with cell writes (<code class="docutils literal notranslate"><span class="pre">store_results</span></code>’s <code class="docutils literal notranslate"><span class="pre">table.at[index,</span> <span class="pre">column]</span></code>) going straight through, a DataFrame view
-materialized on demand for printing, plotting and <code class="docutils literal notranslate"><span class="pre">$table</span></code> expressions, and the <code class="docutils literal notranslate"><span class="pre">current</span> <span class="pre">index</span></code> and
-<code class="docutils literal notranslate"><span class="pre">index</span> <span class="pre">column</span></code> stored in a <code class="docutils literal notranslate"><span class="pre">_tables</span></code> registry table. Column types map to SQLite’s dynamic typing;
-<code class="docutils literal notranslate"><span class="pre">molsystem</span></code> supplies the connection and the WAL settings. The Table step’s Save/Save as keep exporting
+<p><em>Revised 2026-10-03 (phase 4, see</em> <code class="docutils literal notranslate"><span class="pre">NOTES_phase4.rst</span></code> <em>in the campaign directory).</em> An explicit, small
+SEAMM <code class="docutils literal notranslate"><span class="pre">Table</span></code> API (<code class="docutils literal notranslate"><span class="pre">append_row(s)</span></code>, <code class="docutils literal notranslate"><span class="pre">set_cell</span></code>/<code class="docutils literal notranslate"><span class="pre">get_cell</span></code>, <code class="docutils literal notranslate"><span class="pre">add_column</span></code>, <code class="docutils literal notranslate"><span class="pre">rows(where=...)</span></code>,
+current row, <code class="docutils literal notranslate"><span class="pre">export</span></code>, and a read-only <code class="docutils literal notranslate"><span class="pre">to_dataframe()</span></code> for printing and plotting), not a facade that
+imitates a DataFrame: the four steps that touch tables directly rely on pandas idioms (<code class="docutils literal notranslate"><span class="pre">concat</span></code> and
+replace, column assignment, <code class="docutils literal notranslate"><span class="pre">.at</span></code> enlargement) that a facade would have to chase. The SQLite backend is
+built on <code class="docutils literal notranslate"><span class="pre">molsystem</span></code>’s <code class="docutils literal notranslate"><span class="pre">_Table</span></code>, which supplies the connection and the WAL settings; user tables have
+prefixed SQL names, a <code class="docutils literal notranslate"><span class="pre">_tables</span></code> registry holds each table’s declared column types, index column and
+current row, and a <code class="docutils literal notranslate"><span class="pre">_table_changes</span></code> journal records every change for the parallel Loop’s merge. Rows have
+an internal id; users see the index column or the position. The Table step’s Save/Save as keep exporting
 CSV, Excel and JSON. Rule, unchanged: one writer per database file, which is why children never write
 into the parent’s file (see the Loop).</p>
 <p><strong>Why not a multi-writer DBMS.</strong> PostgreSQL would allow concurrent writers but is a server to install,
@@ -1106,8 +1110,10 @@ parameter, off by default. No new migration follows the 3.0 one.</p></li>
 task keys) are added beside the existing ones; nothing existing is renamed or removed.</p></li>
 <li><p><strong>Unconverted plug-ins behave byte for byte as today.</strong> <code class="docutils literal notranslate"><span class="pre">Base.run()</span></code> is reimplemented on the task layer
 with a one-slot <code class="docutils literal notranslate"><span class="pre">LocalPool</span></code>; a plug-in that has not been converted cannot tell the difference.</p></li>
-<li><p><strong>Tables in the database ship behind a switch</strong> for one release cycle (in-memory default first, then
-flipped), so the highest-risk change has a rollback that is a single setting.</p></li>
+<li><p><strong>Tables in the database cut over in one release</strong> (revised 2026-10-03; originally a switch). Its
+rollback is the phase 0 venv rollback, <code class="docutils literal notranslate"><span class="pre">seamm-manager</span> <span class="pre">environment</span> <span class="pre">rollback</span></code>, and its soak and
+comparison run in <code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV</span></code> before release. A job started with the new version and then rolled
+back is simply rerun; old job directories are unaffected either way.</p></li>
 </ul>
 </section>
 <section id="three-rules">
@@ -1160,10 +1166,10 @@ Convert ORCA and MOPAC first, then other codes one at a time on their own merits
 </tr>
 <tr class="row-even"><td><p>4 tables in DB</p></td>
 <td><p>high</p></td>
-<td><p>Table step, <code class="docutils literal notranslate"><span class="pre">store_results</span></code> and every table-reading step. Facade keeps the
-DataFrame API; the switch keeps the old behaviour; the gate runs the whole local
-and Dropbox flowchart corpus through the comparison harness, with a soak period in
-<code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV</span></code> before the default is flipped.</p></td>
+<td><p>Table step, <code class="docutils literal notranslate"><span class="pre">store_results</span></code> and every table-reading step, converted to an
+explicit Table API. The gate runs the whole local and Dropbox flowchart corpus
+through the comparison harness, with a soak period in <code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV</span></code> before the
+release; rollback is the venv rollback.</p></td>
 </tr>
 <tr class="row-odd"><td><p>5 checkpointing</p></td>
 <td><p>low</p></td>
@@ -1198,7 +1204,8 @@ script. Validate ORCA fragments from this Mac to TinkerCliffs and from ChemAI to
 Start the PBS module as a compile-time proof of the interface, tested against a mocked <code class="docutils literal notranslate"><span class="pre">qstat</span></code>.</p></li>
 <li><p><strong>Model Chemistry batch contract</strong> for ORCA and MOPAC, the asynchronous facade, and the Energy step
 using it. Then the MBE step (its Phase 3) on this.</p></li>
-<li><p><strong>Tables in the database</strong> behind the DataFrame facade; Table step and <code class="docutils literal notranslate"><span class="pre">store_results</span></code> converted.</p></li>
+<li><p><strong>Tables in the database</strong> behind an explicit Table API; <code class="docutils literal notranslate"><span class="pre">store_results</span></code> and the Table, Loop,
+Properties and Geometry Analysis steps converted; one-release cutover.</p></li>
 <li><p><strong>Flowchart-level checkpointing</strong> in <code class="docutils literal notranslate"><span class="pre">exec_flowchart</span></code>, <code class="docutils literal notranslate"><span class="pre">Node.run()</span></code> and the Loop; node idempotence
 audit of the code steps; JobServer resubmission validated for real on ARC-alone.</p></li>
 <li><p><strong>Parallel Loop</strong> with the snapshot, merge and placement options; validate on the laptop (pool), on
@@ -1207,7 +1214,7 @@ ChemAI + ARC, and on ARC alone.</p></li>
 task view.</p></li>
 </ol>
 <p>Phase 0 protects every later phase. Phases 1 to 3 unblock the MBE step with low production exposure;
-4 and 5 are prerequisites of 6; 4 is the one that needs a soak period before its switch is flipped.</p>
+4 and 5 are prerequisites of 6; 4 is the one that needs a soak period before it is released.</p>
 </section>
 <section id="decisions-2026-10-02">
 <h1>Decisions (2026-10-02)<a class="headerlink" href="#decisions-2026-10-02" title="Link to this heading">#</a></h1>
@@ -1217,7 +1224,8 @@ task view.</p></li>
 <li><p>The queueing system or the TaskServer keeps task state; the evaluator keeps ids in a manifest.</p></li>
 <li><p>Steps request a program by name plus scheduler-neutral resources; the back end owns code configuration.</p></li>
 <li><p>Bundling is generic (worker script), not native job arrays.</p></li>
-<li><p>Tables move into the job database behind a DataFrame facade; SQLite stays, one writer per file,
+<li><p>Tables move into the job database behind an explicit Table API (revised 2026-10-03 from a DataFrame
+facade); SQLite stays, one writer per file,
 results from children return by staging and merge. No multi-writer DBMS.</p></li>
 <li><p>Batch contract on the Model Chemistry providers; MDI kept for local warm engines, chosen by the facade.</p></li>
 <li><p>Task-level restart first, flowchart-level checkpointing second.</p></li>
@@ -1251,6 +1259,7 @@ release or only the per-step task counts.</p></li>
 <li class="toctree-l1"><a class="reference internal" href="NOTES_phase1.html">Phase 1 notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NOTES_phase2.html">Phase 2 notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NOTES_phase3.html">Phase 3 notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NOTES_phase4.html">Phase 4 notes</a></li>
 </ul>
 </div>
 </section>

@@ -378,3 +378,42 @@ e. The Energy step's report says how a mixed run went: "X over MDI in N engine
 f. The MOPAC batch == MDI test has a doublet, OH. Heats agree to 1e-3 kJ/mol;
    the gradients to 0.06 kJ/mol/Å, because the MDI path (mopactools) gives
    spurious components of about 0.03 kJ/mol/Å perpendicular to the bond.
+
+Released (2026-10-03)
+~~~~~~~~~~~~~~~~~~~~~
+
+Paul merged the PRs and the design session created the releases, in order:
+
+=============================  ============  ======
+Package                        Version       PR
+=============================  ============  ======
+``seamm_exec``                 2026.10.3     #35
+``orca_step``                  2026.10.3.1   #38
+``mopac_step``                 2026.10.3.1   #159
+``energy_step``                2026.10.3     #1
+``dimer_builder_step``         2026.10.3     #9
+``normal_mode_sampling_step``  2026.10.3.1   #2
+=============================  ============  ======
+
+``energy_step`` and ``dimer_builder_step`` are 2026.10.3, not .1: neither had
+released earlier that day. Both moved to the uv CI (``test_env.yaml`` removed)
+in the same release. Nothing is rolled out to an installation yet.
+
+Lessons
+^^^^^^^
+
+- **A CI rerun can race PyPI.** The plug-ins' CI failed on the
+  ``seamm-exec>=2026.10.3`` pin until ``seamm_exec`` was published. A rerun
+  started right after the publish can still fail: the index (and its JSON API,
+  which lagged the uploads by minutes here) need not serve the new version yet.
+  Rerun again rather than look for a problem. Check a version with
+  ``https://pypi.org/pypi/<package>/<version>/json``, not the package's latest.
+- ``energy_step``'s Makefile predates the ``update`` target (a 2026-09
+  scaffold), so its checkout was synced by hand. Copy the current cookiecutter
+  Makefile targets into it, ``xnn_step`` and the other 2026-09 scaffolds at
+  their next change.
+
+Still open: the Dimer Builder's inward wall walk on the task path (one
+``TaskSet`` per point). The phase 3 test environments
+(``~/SEAMM_DEV/venvs/phase3-{A,B}``, ``tinkercliffs:/projects/seamm/psaxe/phase3``)
+were deleted on 2026-10-03.

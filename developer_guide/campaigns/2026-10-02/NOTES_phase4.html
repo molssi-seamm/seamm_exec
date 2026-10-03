@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Phase 4 notes &#8212; SEAMM seamm-exec Plug-in 2026.10.3.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+
+    <script src="../../../_static/documentation_options.js?v=0667127d"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'developer_guide/campaigns/2026-10-02/NOTES_phase4';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="prev" title="Phase 3 notes" href="NOTES_phase3.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.10.3.1" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/SEAMM logo.png" class="logo__image only-light" alt=""/>
+    <img src="../../../_static/SEAMM Inverted 288x181.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">SEAMM-EXEC</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/seamm-exec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/seamm-exec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">Campaigns</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html">2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Developer Documentation</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Campaigns</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Phase 4 notes</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="phase-4-notes">
+<h1>Phase 4 notes<a class="headerlink" href="#phase-4-notes" title="Link to this heading">#</a></h1>
+<section id="plan-and-decisions">
+<h2>2026-10-03 – plan and decisions<a class="headerlink" href="#plan-and-decisions" title="Link to this heading">#</a></h2>
+<p>Phase 4 moves flowchart tables from in-memory pandas DataFrames into the job’s
+SQLite file (<code class="docutils literal notranslate"><span class="pre">seamm.db</span></code>), beside the structures and properties.</p>
+<p>The design doc called for a DataFrame-shaped facade with cell writes going
+straight through to SQL. The survey below showed that the four steps that
+touch tables directly depend on pandas idioms a facade would have to imitate:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">pandas.concat</span></code> and then a <em>new</em> DataFrame put back into the handle;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">table[col]</span> <span class="pre">=</span> <span class="pre">default</span></code> to add a column;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.at</span></code> (including its enlargement, which creates rows), <code class="docutils literal notranslate"><span class="pre">.iat</span></code>,
+<code class="docutils literal notranslate"><span class="pre">.index.get_loc</span></code>, <code class="docutils literal notranslate"><span class="pre">.dtypes</span></code>, <code class="docutils literal notranslate"><span class="pre">.shape</span></code> and the <code class="docutils literal notranslate"><span class="pre">to_*</span></code> writers.</p></li>
+</ul>
+<p>Paul’s decisions:</p>
+<ul class="simple">
+<li><p><strong>Go the whole way now.</strong> The database is the only copy of a table. No
+facade that imitates pandas.</p></li>
+<li><p><strong>No mirror.</strong> The alternative considered was to keep the DataFrames as the
+truth and sync changed tables into <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code> after each node. Rejected as
+temporary and brittle: two copies of every table, and a sync layer that
+phases 5 and 6 would depend on.</p></li>
+<li><p><strong>Cut over in one release; no switch and no in-memory backend.</strong> The design
+doc’s switch predates phase 0. Rollback is now
+<code class="docutils literal notranslate"><span class="pre">seamm-manager</span> <span class="pre">environment</span> <span class="pre">rollback</span></code> to the previous venv, which is one
+command, covers every package in the release, and is what any other release
+relies on. The soak and the A/B comparison happen in <code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV</span></code> before
+the release, between two venvs, so they need no switch either. Dropping the
+switch removes the second backend, halves the test matrix, and removes the
+trap of a backend that runs serially but cannot checkpoint or merge.</p></li>
+<li><p><strong>A read-only structure database cannot hold tables.</strong> A flowchart run with
+<code class="docutils literal notranslate"><span class="pre">--read-only</span></code> that writes a table stops with a clear message saying so.
+Today such a run can build tables only because they live in memory. Reads,
+such as a Loop over rows, still work.</p></li>
+</ul>
+<p>The worker’s proposal, reviewed and refined by the design session:</p>
+<ul class="simple">
+<li><p><strong>An explicit, small SEAMM Table API</strong> (below), which the consumers are
+converted to once.</p></li>
+<li><p><strong>One backend:</strong> SQLite in <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code>. (The proposal had an in-memory
+DataFrame backend behind a switch as the rollback; Paul dropped it, above.)</p></li>
+<li><p><strong>A stable internal row id</strong> resolves today’s label-versus-position
+ambiguity of <code class="docutils literal notranslate"><span class="pre">current</span> <span class="pre">index</span></code>.</p></li>
+</ul>
+<p>The design session’s points, all adopted:</p>
+<ol class="arabic simple">
+<li><p>Build the SQLite backend on molsystem’s existing <code class="docutils literal notranslate"><span class="pre">_Table</span></code>
+(<code class="docutils literal notranslate"><span class="pre">molsystem/table.py</span></code>) rather than writing a second SQL table class.</p></li>
+<li><p>Iterations of a parallel Loop <em>update</em> existing rows, they do not only
+append. The commonest pattern is a Loop “For rows in table” with
+<code class="docutils literal notranslate"><span class="pre">store_results</span></code> writing into the current row. So the backend keeps a
+change journal, and phase 6 merges by replaying each child’s journal in
+iteration order. This answers the design doc’s open question 2 (two
+iterations writing the same cell): it becomes a policy on the journal.</p></li>
+<li><p>Row ids are internal and are not stable across a parallel-Loop merge
+(children’s appended rows collide and are renumbered). The user-visible key
+is the index column, or the 1-based position for a table without one.</p></li>
+<li><p>molsystem commits per operation, so a transaction per node is not free; do
+not try. The evaluator commits table writes before it writes
+<code class="docutils literal notranslate"><span class="pre">checkpoint.json</span></code> (phase 5), so after a crash the database is at most one
+node ahead of the checkpoint, never behind.</p></li>
+<li><p>The risk is in materialization fidelity, not the API: exports and
+<code class="docutils literal notranslate"><span class="pre">to_dataframe()</span></code> must reproduce today’s files (see <em>Fidelity</em>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">handle[&quot;table&quot;]</span></code> for unconverted code returns a <em>fresh</em> DataFrame on
+every read, with a logged warning that writes to it are not saved.</p></li>
+<li><p>Layering: the SQLite backend in molsystem (it owns the connection, WAL,
+ATTACH for the merge, copy and diff); the SEAMM-facing API (handles, the
+registry’s meaning, current row, exports, variables, <code class="docutils literal notranslate"><span class="pre">store_results</span></code>) in
+seamm. molsystem does not learn about flowchart variables.</p></li>
+<li><p>(Superseded by the cut-over decision.) The design session proposed
+removing the in-memory backend at the flip and gating the parallel Loop and
+checkpoint resume on SQLite meanwhile; with one backend there is nothing
+to gate.</p></li>
+<li><p>Creating the current row on first write is a requirement, not a quirk to
+reconsider: <code class="docutils literal notranslate"><span class="pre">get_table</span></code> makes an empty table with <code class="docutils literal notranslate"><span class="pre">current</span> <span class="pre">index</span></code> 0 and
+the first <code class="docutils literal notranslate"><span class="pre">store_results</span></code> creates row 0, the commonest table pattern in
+the corpus. <code class="docutils literal notranslate"><span class="pre">set_cell</span></code> on a current row one past the end appends it; a
+row further past the end is an error. (Today <code class="docutils literal notranslate"><span class="pre">.at</span></code> would create any
+label; only “Go to the next row” twice without a write reaches that.)</p></li>
+<li><p><strong>Prevent, don’t catch, mixed versions.</strong> At job start, before any node
+runs, the evaluator checks the flowchart’s step types against a small
+minimum-version table in seamm for the four converted plug-ins and refuses
+with “update X to &gt;= Y”. The run-time refusal of a plain pandas handle stays
+as the backstop. The other direction (new plug-in, old seamm) is handled by
+their <code class="docutils literal notranslate"><span class="pre">seamm&gt;=</span></code> pins.</p></li>
+<li><p>A job started with the new version and then rolled back is simply rerun;
+old job directories are unaffected either way.</p></li>
+</ol>
+</section>
+<section id="survey">
+<h2>Survey<a class="headerlink" href="#survey" title="Link to this heading">#</a></h2>
+<p>Who touches tables (workspace grep, 2026-10-03, excluding <code class="docutils literal notranslate"><span class="pre">old/</span></code>, <code class="docutils literal notranslate"><span class="pre">tmp/</span></code>
+and the cookiecutter):</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Code</p></th>
+<th class="head"><p>Use</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">seamm/node.py</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">get_table()</span></code> (creates on demand) and
+<code class="docutils literal notranslate"><span class="pre">store_results()</span></code>, which writes cells at
+<code class="docutils literal notranslate"><span class="pre">current</span> <span class="pre">index</span></code> with <code class="docutils literal notranslate"><span class="pre">.at</span></code>, adds columns
+with <code class="docutils literal notranslate"><span class="pre">table[col]</span> <span class="pre">=</span> <span class="pre">default</span></code> and records
+<code class="docutils literal notranslate"><span class="pre">defaults</span></code>. About 25 plug-ins write tables
+only through <code class="docutils literal notranslate"><span class="pre">store_results</span></code>; they need no
+change.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">table_step</span></code></p></td>
+<td><p>Create, Read (csv/json/xlsx/txt), Save, Save
+as, Print, Print the current row, Append a
+row, Go to the next row, Add columns, Get
+element, Set element.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">loop_step</span></code></p></td>
+<td><p>“For rows in table”: iterates the index
+labels (all rows, or a <code class="docutils literal notranslate"><span class="pre">where</span></code> test on one
+column using <code class="docutils literal notranslate"><span class="pre">dtype.type</span></code> for the value),
+sets <code class="docutils literal notranslate"><span class="pre">current</span> <span class="pre">index</span></code> to the label, sets
+<code class="docutils literal notranslate"><span class="pre">_row</span></code>, <code class="docutils literal notranslate"><span class="pre">_loop_index</span></code> and optionally one
+variable per column, names <code class="docutils literal notranslate"><span class="pre">iter_N</span></code>
+directories from the label.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">properties_step</span></code></p></td>
+<td><p>Creates the table if missing, appends rows
+by <code class="docutils literal notranslate"><span class="pre">concat</span></code>, adds columns, saves to a file.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">geometry_analysis_step</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">get_table()</span></code>, adds columns, appends rows
+by <code class="docutils literal notranslate"><span class="pre">concat</span></code>, sets <code class="docutils literal notranslate"><span class="pre">current</span> <span class="pre">index</span></code> to the
+last row, saves with its own copy of the
+export code.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The export code (csv/json/xlsx/txt with or without the index) is duplicated in
+three places; it becomes <code class="docutils literal notranslate"><span class="pre">Table.export()</span></code>. The Tk side only handles table
+<em>names</em>, never data. No <code class="docutils literal notranslate"><span class="pre">$variable</span></code> expression reaches into a table.</p>
+<p>Quirks of today’s behaviour that the conversion must keep or deliberately
+change (each one is a fidelity test):</p>
+<ul class="simple">
+<li><p>A new table’s <code class="docutils literal notranslate"><span class="pre">current</span> <span class="pre">index</span></code> is 0, and <code class="docutils literal notranslate"><span class="pre">store_results</span></code> creates row 0 by
+<code class="docutils literal notranslate"><span class="pre">.at</span></code> enlargement. Without a Loop or a Table “Append a row”/”Go to the
+next row”, every <code class="docutils literal notranslate"><span class="pre">store_results</span></code> writes the same row.</p></li>
+<li><p>Enlargement fills the <em>other</em> columns with NaN, not their defaults, so an
+integer or boolean column becomes float or object.</p></li>
+<li><p>“Append a row” fills unspecified columns from <code class="docutils literal notranslate"><span class="pre">defaults</span></code>, then sets
+<code class="docutils literal notranslate"><span class="pre">current</span> <span class="pre">index</span></code> to the new last row.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">current</span> <span class="pre">index</span></code> is a label in <code class="docutils literal notranslate"><span class="pre">store_results</span></code>, the Loop and “Print the
+current row”, and a position in “Get/Set element” (<code class="docutils literal notranslate"><span class="pre">iat</span></code>) and “Go to the
+next row” (<code class="docutils literal notranslate"><span class="pre">+=</span> <span class="pre">1</span></code>). The two coincide unless the table has an index column.</p></li>
+<li><p>Non-scalar results are stored as compact JSON text.</p></li>
+<li><p>Geometry analysis writes formatted strings (<code class="docutils literal notranslate"><span class="pre">&quot;1.0960&quot;</span></code>) into columns
+created with float defaults, which makes them object columns.</p></li>
+</ul>
+</section>
+<section id="architecture">
+<h2>Architecture<a class="headerlink" href="#architecture" title="Link to this heading">#</a></h2>
+<p>molsystem (backend):</p>
+<ul class="simple">
+<li><p>User tables are stored under a prefixed SQL name, <code class="docutils literal notranslate"><span class="pre">table_&lt;n&gt;</span></code>, never the
+display name. <code class="docutils literal notranslate"><span class="pre">SystemDB</span></code> keeps atom, bond, system, configuration, … in
+the same namespace and <code class="docutils literal notranslate"><span class="pre">create_table</span></code> raises on an existing name.</p></li>
+<li><p>Every identifier is quoted. Users name columns “Energy (kJ/mol)”.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_Table</span></code> gains: <code class="docutils literal notranslate"><span class="pre">set_cell(rowid,</span> <span class="pre">column,</span> <span class="pre">value)</span></code>, <code class="docutils literal notranslate"><span class="pre">get_cell</span></code>,
+<code class="docutils literal notranslate"><span class="pre">append_rows(list_of_dicts)</span> <span class="pre">-&gt;</span> <span class="pre">[rowid]</span></code>, ordered column listing,
+parameterized <code class="docutils literal notranslate"><span class="pre">where</span></code> (it has one in <code class="docutils literal notranslate"><span class="pre">rows</span></code>/<code class="docutils literal notranslate"><span class="pre">delete</span></code>), and the
+journal hook.</p></li>
+<li><p>Found in <code class="docutils literal notranslate"><span class="pre">_Table</span></code> while surveying: <code class="docutils literal notranslate"><span class="pre">add_attribute</span></code> interpolates a string
+<code class="docutils literal notranslate"><span class="pre">DEFAULT</span></code> into the SQL without escaping, so a default containing <code class="docutils literal notranslate"><span class="pre">'</span></code>
+breaks it (fixed); <code class="docutils literal notranslate"><span class="pre">to_dataframe()</span></code> uses the rowid as the index and ignores
+declared types (the user tables have their own). (An <code class="docutils literal notranslate"><span class="pre">append()</span></code> “undefined
+<code class="docutils literal notranslate"><span class="pre">result</span></code>” reported in the first draft was a misreading.)</p></li>
+</ul>
+<p>Two bookkeeping tables in <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code>:</p>
+<p><code class="docutils literal notranslate"><span class="pre">_tables</span></code> (the registry), one row per user table:</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (display name, unique), <code class="docutils literal notranslate"><span class="pre">sql_name</span></code>, <code class="docutils literal notranslate"><span class="pre">index_column</span></code>,
+<code class="docutils literal notranslate"><span class="pre">current_row</span></code> (a rowid), <code class="docutils literal notranslate"><span class="pre">filename</span></code>, <code class="docutils literal notranslate"><span class="pre">loop_index</span></code> (bool),
+<code class="docutils literal notranslate"><span class="pre">columns</span></code> (JSON: ordered list of <code class="docutils literal notranslate"><span class="pre">{name,</span> <span class="pre">type,</span> <span class="pre">default,</span> <span class="pre">null}</span></code>, where
+<code class="docutils literal notranslate"><span class="pre">type</span></code> is boolean/integer/float/string/json and <code class="docutils literal notranslate"><span class="pre">null</span></code> says how a
+missing value materializes: NaN, <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> or None).</p>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">_table_changes</span></code> (the journal):</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">seq</span></code>, <code class="docutils literal notranslate"><span class="pre">table</span></code>, <code class="docutils literal notranslate"><span class="pre">rowid</span></code>, <code class="docutils literal notranslate"><span class="pre">column</span></code>, <code class="docutils literal notranslate"><span class="pre">op</span></code> (<code class="docutils literal notranslate"><span class="pre">append</span></code>, <code class="docutils literal notranslate"><span class="pre">set</span></code>,
+<code class="docutils literal notranslate"><span class="pre">add_column</span></code>). Written by every mutating call. Phase 4 only writes it;
+phase 6 replays it. It also gives the Dashboard “what this step changed”.</p>
+</div></blockquote>
+<p>seamm (API): a <code class="docutils literal notranslate"><span class="pre">Table</span></code> class and <code class="docutils literal notranslate"><span class="pre">TableHandle</span></code>. The flowchart variable for
+a table stays a dict-like handle with <code class="docutils literal notranslate"><span class="pre">&quot;type&quot;</span></code>, so existing
+<code class="docutils literal notranslate"><span class="pre">variable_exists</span></code>/<code class="docutils literal notranslate"><span class="pre">get_variable</span></code> calls keep working; its <code class="docutils literal notranslate"><span class="pre">&quot;table&quot;</span></code> key
+materializes a fresh DataFrame (with the warning) and the rest of its keys
+map onto the registry.</p>
+</section>
+<section id="the-table-api">
+<h2>The Table API<a class="headerlink" href="#the-table-api" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 45.0%" />
+<col style="width: 55.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Call</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Node.get_table(name,</span> <span class="pre">create=True)</span></code></p></td>
+<td><p>Returns a <code class="docutils literal notranslate"><span class="pre">Table</span></code> (not a DataFrame).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Table.columns</span></code></p></td>
+<td><p>Ordered column names.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Table.add_column(name,</span> <span class="pre">type,</span> <span class="pre">default)</span></code></p></td>
+<td><p>No-op if it exists with the same type.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Table.append_row(**values)</span></code> / <code class="docutils literal notranslate"><span class="pre">append_rows([dict,</span> <span class="pre">...])</span></code></p></td>
+<td><p>Unspecified columns get their defaults. Moves the current row to the last appended. Returns row positions.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Table.current_row</span></code></p></td>
+<td><p>Get or set; the setter takes a position or an index-column value through <code class="docutils literal notranslate"><span class="pre">locate()</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Table.locate(key=...,</span> <span class="pre">position=...)</span></code></p></td>
+<td><p>Index-column value or 1-based position to an internal row.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Table.next_row()</span></code></p></td>
+<td><p>“Go to the next row”.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Table.set_cell(column,</span> <span class="pre">value,</span> <span class="pre">row=None)</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">row=None</span></code> means the current row; creates the row if it does not exist (today’s enlargement), filling the other columns with their defaults.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Table.get_cell(column,</span> <span class="pre">row=None)</span></code></p></td>
+<td><p>Same row rules.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Table.rows(where=None)</span></code></p></td>
+<td><p>Iterate rows as dicts, in order; <code class="docutils literal notranslate"><span class="pre">where</span></code> is <code class="docutils literal notranslate"><span class="pre">(column,</span> <span class="pre">op,</span> <span class="pre">value)</span></code> with the Loop’s operators.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Table.n_rows</span></code>, <code class="docutils literal notranslate"><span class="pre">Table.dtype(column)</span></code></p></td>
+<td><p>For the Loop’s messages and value conversion.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Table.to_dataframe()</span></code></p></td>
+<td><p>Read-only copy, with the declared types and the index column.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Table.export(filename,</span> <span class="pre">file_type)</span></code></p></td>
+<td><p>csv, json, xlsx, txt exactly as today.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Table.read(filename,</span> <span class="pre">file_type,</span> <span class="pre">index)</span></code></p></td>
+<td><p>Table step “Read” imports into the database.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Today’s idioms to API calls (the conversions are mechanical):</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 55.0%" />
+<col style="width: 45.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Today</p></th>
+<th class="head"><p>API</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">set_variable(name,</span> <span class="pre">{&quot;type&quot;:</span> <span class="pre">&quot;pandas&quot;,</span> <span class="pre">...})</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">get_table(name)</span></code> or <code class="docutils literal notranslate"><span class="pre">Table.create(...)</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">handle[&quot;table&quot;]</span> <span class="pre">=</span> <span class="pre">pandas.concat([t,</span> <span class="pre">rows])</span></code> and <code class="docutils literal notranslate"><span class="pre">handle[&quot;current</span> <span class="pre">index&quot;]</span> <span class="pre">=</span> <span class="pre">shape[0]</span> <span class="pre">-</span> <span class="pre">1</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">table.append_rows(rows)</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">table[col]</span> <span class="pre">=</span> <span class="pre">default</span></code> and <code class="docutils literal notranslate"><span class="pre">handle[&quot;defaults&quot;][col]</span> <span class="pre">=</span> <span class="pre">default</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">table.add_column(col,</span> <span class="pre">type,</span> <span class="pre">default)</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">table.at[handle[&quot;current</span> <span class="pre">index&quot;],</span> <span class="pre">col]</span> <span class="pre">=</span> <span class="pre">v</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">table.set_cell(col,</span> <span class="pre">v)</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">handle[&quot;current</span> <span class="pre">index&quot;]</span> <span class="pre">+=</span> <span class="pre">1</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">table.next_row()</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">handle[&quot;current</span> <span class="pre">index&quot;]</span> <span class="pre">=</span> <span class="pre">label</span></code> (Loop)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">table.current_row</span> <span class="pre">=</span> <span class="pre">table.locate(key=label)</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">table.iat[row,</span> <span class="pre">column]</span></code> (Get/Set element)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">get_cell</span></code>/<code class="docutils literal notranslate"><span class="pre">set_cell</span></code> with <code class="docutils literal notranslate"><span class="pre">locate()</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">{k:</span> <span class="pre">table.at[i,</span> <span class="pre">k]</span> <span class="pre">for</span> <span class="pre">k</span> <span class="pre">in</span> <span class="pre">table}</span></code> (Loop)</p></td>
+<td><p>the row dict from <code class="docutils literal notranslate"><span class="pre">rows()</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">table.dtypes[column].type(value)</span></code> (Loop)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">table.dtype(column)</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">to_csv</span></code>/<code class="docutils literal notranslate"><span class="pre">to_json</span></code>/<code class="docutils literal notranslate"><span class="pre">to_excel</span></code>/<code class="docutils literal notranslate"><span class="pre">to_string</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">table.export(...)</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">table.to_string(...)</span></code> for Print</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">to_dataframe().to_string(...)</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">table.columns</span></code>, <code class="docutils literal notranslate"><span class="pre">table.shape[0]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">table.columns</span></code>, <code class="docutils literal notranslate"><span class="pre">table.n_rows</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="row-identity">
+<h2>Row identity<a class="headerlink" href="#row-identity" title="Link to this heading">#</a></h2>
+<p>One internal rowid per row, held only by the backend; the registry’s
+<code class="docutils literal notranslate"><span class="pre">current_row</span></code> is a rowid. Users and flowcharts see:</p>
+<ul class="simple">
+<li><p>the index-column value, when the table has one (the Loop iterates these, and
+<code class="docutils literal notranslate"><span class="pre">store_results</span></code> writes at the matching row);</p></li>
+<li><p>otherwise the position, ordered by rowid. <code class="docutils literal notranslate"><span class="pre">iter_N</span></code> directory names,
+<code class="docutils literal notranslate"><span class="pre">_loop_index</span></code> and <code class="docutils literal notranslate"><span class="pre">_row</span></code> stay exactly as today (index-column value, or
+0-based position with <code class="docutils literal notranslate"><span class="pre">iter_{position</span> <span class="pre">+</span> <span class="pre">1}</span></code>).</p></li>
+</ul>
+</section>
+<section id="fidelity">
+<h2>Fidelity<a class="headerlink" href="#fidelity" title="Link to this heading">#</a></h2>
+<p>The comparison harness compares exported files and printed tables, so:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">to_dataframe()</span></code> is built from the registry’s declared types, not from
+SQLite’s dynamic typing; NULL in an integer column must not turn <code class="docutils literal notranslate"><span class="pre">1</span></code> into
+<code class="docutils literal notranslate"><span class="pre">1.0</span></code> (a row created by a write gets the defaults; Paul’s answer below).</p></li>
+<li><p>Empty string, NULL and NaN stay distinct (the property-units round-trip bug
+of 2026-09-20 was this).</p></li>
+<li><p>JSON cells stay TEXT.</p></li>
+<li><p>Column order is insertion order (<code class="docutils literal notranslate"><span class="pre">ALTER</span> <span class="pre">TABLE</span> <span class="pre">ADD</span> <span class="pre">COLUMN</span></code> appends).</p></li>
+<li><p>Index column in exports exactly as today (<code class="docutils literal notranslate"><span class="pre">index=True</span></code> only with one).</p></li>
+</ul>
+</section>
+<section id="commits-and-the-rest-of-the-campaign">
+<h2>Commits and the rest of the campaign<a class="headerlink" href="#commits-and-the-rest-of-the-campaign" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><strong>Commits:</strong> the evaluator loop in <code class="docutils literal notranslate"><span class="pre">seamm_exec/exec_flowchart.py</span></code> commits
+after each <code class="docutils literal notranslate"><span class="pre">node.run()</span></code>. Phase 5 writes <code class="docutils literal notranslate"><span class="pre">checkpoint.json</span></code> only after
+that commit.</p></li>
+<li><p><strong>Phase 5:</strong> the current row lives in the registry, per table, so a
+checkpoint needs nothing extra for tables.</p></li>
+<li><p><strong>Phase 6:</strong> a child’s <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code> is the selected configurations plus the
+tables (rows and registry) with an empty journal. Merge = replay the child
+journals in iteration order, renumbering appended rows.</p></li>
+<li><p><strong>Read-only and in-memory databases:</strong> <code class="docutils literal notranslate"><span class="pre">exec_flowchart</span></code> can open a
+<code class="docutils literal notranslate"><span class="pre">:memory:</span></code> or read-only (<code class="docutils literal notranslate"><span class="pre">?mode=ro</span></code>) structure database. Tables work in
+<code class="docutils literal notranslate"><span class="pre">:memory:</span></code> (not persistent). Writing a table to a read-only database stops
+the job with a clear message (Paul’s decision, above).</p></li>
+<li><p><strong>Mixed versions:</strong> an old <code class="docutils literal notranslate"><span class="pre">table_step</span></code> with the new seamm would put a
+plain pandas dict into the variables. The start-up check (point 10) refuses
+the job before it runs; as a backstop <code class="docutils literal notranslate"><span class="pre">store_results</span></code> and <code class="docutils literal notranslate"><span class="pre">get_table</span></code>
+refuse such a handle with a message naming the plug-ins to update, rather
+than silently writing to a DataFrame that is never saved.</p></li>
+</ul>
+</section>
+<section id="validation-and-release">
+<h2>Validation and release<a class="headerlink" href="#validation-and-release" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Unit tests for the API and backend; every quirk listed in the survey has a
+test, with today’s pandas output as the expected value.</p></li>
+<li><p>SEAMM_DEV A/B with the comparison harness (released venv vs the phase 4
+venv) over the Testing flowcharts and the local and Dropbox flowchart
+corpus, then a soak in SEAMM_DEV, then release. Rollback after release is
+<code class="docutils literal notranslate"><span class="pre">seamm-manager</span> <span class="pre">environment</span> <span class="pre">rollback</span></code>.</p></li>
+<li><p>Release order: molsystem, then seamm (pinned <code class="docutils literal notranslate"><span class="pre">molsystem&gt;=</span></code>), then
+table_step, loop_step, properties_step and geometry_analysis_step (each
+pinned <code class="docutils literal notranslate"><span class="pre">seamm&gt;=</span></code>).</p></li>
+</ul>
+</section>
+<section id="paul-s-answers-2026-10-03">
+<h2>Paul’s answers (2026-10-03)<a class="headerlink" href="#paul-s-answers-2026-10-03" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>No switch: cut over in one release. A read-only database cannot hold
+tables.</p></li>
+<li><p>A row created by a write gets its columns’ <strong>defaults</strong>, keeping the
+declared types (today: NaN, turning integer and boolean columns into float or
+object). Listed in HISTORY as an intended change; the harness diffs it shows
+are expected.</p></li>
+<li><p>Dashboard view of tables: deferred (phase 7, with the task view).</p></li>
+<li><p>Go ahead and code.</p></li>
+</ul>
+</section>
+<section id="implementation">
+<h2>2026-10-03 – implementation<a class="headerlink" href="#implementation" title="Link to this heading">#</a></h2>
+<p>Committed locally on each <code class="docutils literal notranslate"><span class="pre">dev</span></code> (not pushed):</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Package</p></th>
+<th class="head"><p>Commit</p></th>
+<th class="head"><p>Change</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">molsystem</span></code></p></td>
+<td><p>0ad3f75</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">user_tables.py</span></code>: <code class="docutils literal notranslate"><span class="pre">SystemDB.user_tables</span></code>,
+<code class="docutils literal notranslate"><span class="pre">UserTable</span></code>, registry and journal; quoted
+string <code class="docutils literal notranslate"><span class="pre">DEFAULT</span></code> in <code class="docutils literal notranslate"><span class="pre">add_attribute</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">seamm</span></code></p></td>
+<td><p>131646a</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">table.py</span></code>: <code class="docutils literal notranslate"><span class="pre">seamm.Table</span></code>,
+<code class="docutils literal notranslate"><span class="pre">check_table_plugins</span></code>; <code class="docutils literal notranslate"><span class="pre">get_table</span></code> and
+<code class="docutils literal notranslate"><span class="pre">store_results</span></code> converted.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code></p></td>
+<td><p>e487896</p></td>
+<td><p>Commit after each step; the start-up check.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">table_step</span></code></p></td>
+<td><p>e8a84e1</p></td>
+<td><p>All methods on <code class="docutils literal notranslate"><span class="pre">seamm.Table</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">loop_step</span></code></p></td>
+<td><p>6ba6156</p></td>
+<td><p>“For rows in table” on <code class="docutils literal notranslate"><span class="pre">seamm.Table</span></code>;
+commit after each body step.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">properties_step</span></code></p></td>
+<td><p>14359c8</p></td>
+<td><p>Export on <code class="docutils literal notranslate"><span class="pre">seamm.Table</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">geometry_analysis_step</span></code></p></td>
+<td><p>b9d04d0</p></td>
+<td><p>Tables on <code class="docutils literal notranslate"><span class="pre">seamm.Table</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Choices made while coding:</p>
+<ul class="simple">
+<li><p><strong>Columns have no SQL type.</strong> SQLite then stores exactly what was written
+(Geometry Analysis’s text <code class="docutils literal notranslate"><span class="pre">&quot;1.0960&quot;</span></code> stays text, so its CSVs are
+unchanged); the declared type in the registry decides how values are read
+back and how <code class="docutils literal notranslate"><span class="pre">to_dataframe()</span></code> types the column.</p></li>
+<li><p><strong>The current row is a rowid or NULL</strong>, NULL meaning “the row after the last”:
+the next write appends it. A new or empty table starts there, so the first
+<code class="docutils literal notranslate"><span class="pre">store_results</span></code> creates row 0 as before. <code class="docutils literal notranslate"><span class="pre">next_row()</span></code> past the last row
+goes there, and does nothing if already there, so “Go to the next row” works
+at either end of a loop body (today’s <code class="docutils literal notranslate"><span class="pre">+=</span> <span class="pre">1</span></code> twice would have left a gap in
+the labels).</p></li>
+<li><p><strong>Assigning a DataFrame to</strong> <code class="docutils literal notranslate"><span class="pre">handle[&quot;table&quot;]</span></code> replaces the table’s
+contents, keeping its name, index column and file, so unconverted code that
+does <code class="docutils literal notranslate"><span class="pre">concat</span></code> and replace still saves its rows. Reading it gives a copy,
+with a warning.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_table</span></code> adopts a table that is in the database but not yet a variable
+(a database given with <code class="docutils literal notranslate"><span class="pre">--database</span></code>; later, checkpoint restore).</p></li>
+<li><p>The plug-in check treats a development checkout (a version with a local part,
+<code class="docutils literal notranslate"><span class="pre">2026.9.30+3.g1234abc</span></code>) as current. The minimum versions in
+<code class="docutils literal notranslate"><span class="pre">seamm.table.table_plugins</span></code> are placeholders (2026.10.4) until the release.</p></li>
+</ul>
+<p><strong>Correction to the design (both sessions had it wrong):</strong> the Loop does <em>not</em>
+return its body’s steps to the evaluator’s loop; it runs them in its own
+<code class="docutils literal notranslate"><span class="pre">run()</span></code>. The per-step commit is therefore in both <code class="docutils literal notranslate"><span class="pre">exec_flowchart</span></code> and the
+Loop. Phase 5’s checkpoint hook must likewise be called from both, or moved to
+a shared helper.</p>
+<p>Pre-existing bugs fixed on the way (found by the A/B runs, where the released
+code failed):</p>
+<ul class="simple">
+<li><p>The Loop’s row selection converted the second value even when only
+<code class="docutils literal notranslate"><span class="pre">between</span></code> uses it, so any test on a numeric column with an empty second
+value raised <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>.</p></li>
+<li><p>The Table step’s Get/Set element by row always did <code class="docutils literal notranslate"><span class="pre">int(row)</span></code>, so a table
+with a text index column could not be addressed by its index.</p></li>
+</ul>
+<section id="validation-2026-10-03">
+<h3>Validation (2026-10-03)<a class="headerlink" href="#validation-2026-10-03" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Unit tests: molsystem 322 (23 new), seamm 251 (17 new), seamm_exec 102,
+table_step 17 with the flowchart tests (<code class="docutils literal notranslate"><span class="pre">--integration</span></code>), loop_step 4,
+properties_step 1, geometry_analysis_step 1.</p></li>
+<li><p>SEAMM_DEV A/B with <code class="docutils literal notranslate"><span class="pre">seamm-manager</span> <span class="pre">compare</span></code>: <code class="docutils literal notranslate"><span class="pre">venvs/phase4-A</span></code> (today’s
+releases, plus <code class="docutils literal notranslate"><span class="pre">properties-step</span></code> from PyPI, which SEAMM_DEV lacked) against
+<code class="docutils literal notranslate"><span class="pre">venvs/phase4-B</span></code> (A plus the seven checkouts, editable), on
+<code class="docutils literal notranslate"><span class="pre">Testing/phase4/</span></code>: <code class="docutils literal notranslate"><span class="pre">p4_rows</span></code> (append, loop over rows, a <code class="docutils literal notranslate"><span class="pre">where</span></code>
+selection, Set/Get element, Read with an index, csv/json/txt),
+<code class="docutils literal notranslate"><span class="pre">p4_results_only</span></code> (<code class="docutils literal notranslate"><span class="pre">store_results</span></code> with no Table step, “Go to the next
+row”), <code class="docutils literal notranslate"><span class="pre">p4_props_geom</span></code> (Properties, Geometry Analysis single and separate
+tables), <code class="docutils literal notranslate"><span class="pre">builder_loop</span></code>, and table_step’s <code class="docutils literal notranslate"><span class="pre">test1</span></code> and
+<code class="docutils literal notranslate"><span class="pre">append_text_rows</span></code>.</p>
+<ul>
+<li><p>Every CSV, the xlsx contents and every printed table are identical, except
+the intended changes: appended rows get their columns’ defaults (<code class="docutils literal notranslate"><span class="pre">x</span></code>
+where A left NaN), and “Get element” gives Python values (<code class="docutils literal notranslate"><span class="pre">4.0</span></code>, not
+<code class="docutils literal notranslate"><span class="pre">np.float64(4.0)</span></code>).</p></li>
+<li><p>In <code class="docutils literal notranslate"><span class="pre">p4_rows</span></code> A stopped at each of the two bugs above; B ran through.</p></li>
+<li><p>Otherwise only versions, timings, paths, reference wrapping and
+<code class="docutils literal notranslate"><span class="pre">seamm.db</span></code> differ.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="review-2026-10-03">
+<h3>Review (2026-10-03)<a class="headerlink" href="#review-2026-10-03" title="Link to this heading">#</a></h3>
+<p>The design session and a subagent read all seven commits, diffed each consumer
+against the released code and checked findings with probe scripts. Fixed
+(molsystem 5f642e6, seamm 3973343, seamm_exec 0c3b317, loop_step 8327ae6,
+properties_step 6cfb0e3):</p>
+<ol class="arabic simple">
+<li><p><strong>(must) Read-only databases.</strong> Setting the current row, the loop flag or
+the file wrote the registry, so a Loop over rows or a Save from a
+<code class="docutils literal notranslate"><span class="pre">--read-only</span></code> database raised. These three are navigation state; with a
+read-only database <code class="docutils literal notranslate"><span class="pre">seamm.Table</span></code> keeps them in the handle.</p></li>
+<li><p><strong>Text index lookups.</strong> Untyped columns stored the integer 3 written to a
+text column as INTEGER, which <code class="docutils literal notranslate"><span class="pre">WHERE</span> <span class="pre">col</span> <span class="pre">=</span> <span class="pre">'3'</span></code> does not match. Values
+written to string and json columns are now stored as text.</p></li>
+<li><p><strong>Create validated too late.</strong> A wrong index column raised after the
+previous table had been dropped and the new one created. Columns and the
+index column are now checked first. Replacing a table from a DataFrame keeps
+the declared types and defaults of the remaining columns.</p></li>
+<li><p><strong>Printing missing text.</strong> Missing text cells printed <code class="docutils literal notranslate"><span class="pre">None</span></code> where pandas
+printed <code class="docutils literal notranslate"><span class="pre">NaN</span></code>; text columns now materialize missing values as NaN.</p></li>
+<li><p><strong>Row tests on missing values</strong> raised <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>; they now fail every
+test except the negative ones (<code class="docutils literal notranslate"><span class="pre">!=</span></code>, “does not …”), as NaN did.</p></li>
+</ol>
+<p>Also fixed from the review’s notes: SQL column names are internal (<code class="docutils literal notranslate"><span class="pre">c1</span></code>,
+<code class="docutils literal notranslate"><span class="pre">c2</span></code>, …), because SQLite column names ignore case and pandas allowed <code class="docutils literal notranslate"><span class="pre">E</span></code>
+and <code class="docutils literal notranslate"><span class="pre">e</span></code> side by side; Properties maps the database’s <code class="docutils literal notranslate"><span class="pre">int</span></code>/<code class="docutils literal notranslate"><span class="pre">float</span></code>/
+<code class="docutils literal notranslate"><span class="pre">str</span></code>/<code class="docutils literal notranslate"><span class="pre">json</span></code> property types (it tested <code class="docutils literal notranslate"><span class="pre">integer</span></code>, so every int property
+became a text column); JSON files written by <code class="docutils literal notranslate"><span class="pre">export</span></code> read back
+(<code class="docutils literal notranslate"><span class="pre">orient=&quot;table&quot;</span></code>); defaults are stored as written values (a list default
+works); row ids use <code class="docutils literal notranslate"><span class="pre">AUTOINCREMENT</span></code> and are never reused; and a shared
+<code class="docutils literal notranslate"><span class="pre">seamm.step_completed(node)</span></code> (<code class="docutils literal notranslate"><span class="pre">seamm/checkpoint.py</span></code>) does the per-step
+commit for both the evaluator and the Loop, so phase 5 has one place to hook.</p>
+<p>Pins and versions for the release: seamm requires <code class="docutils literal notranslate"><span class="pre">molsystem&gt;=</span></code> the new
+molsystem (seamm’s tests fail against molsystem 2026.9.25); seamm_exec and the
+four steps require <code class="docutils literal notranslate"><span class="pre">seamm&gt;=</span></code> the new seamm; <code class="docutils literal notranslate"><span class="pre">table_plugins</span></code> gets the real
+versions. Release order: molsystem, seamm, seamm_exec, the four steps.</p>
+<p>For HISTORY (behaviour changes):</p>
+<ul class="simple">
+<li><p>Tables are stored in the job’s <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code>.</p></li>
+<li><p>New rows get their columns’ defaults, not NaN (appended rows and rows created
+by a write); integer and boolean columns keep their types.</p></li>
+<li><p>“Add columns” uses the evaluated column name and records its default.</p></li>
+<li><p>“Append a row” to a table with an index column works (concat used to drop the
+index).</p></li>
+<li><p>“Go to the next row” past the last row does nothing more.</p></li>
+<li><p>Get/Set element by a text index value works; the Loop’s <code class="docutils literal notranslate"><span class="pre">where</span></code> on a
+numeric column with an empty second value works.</p></li>
+<li><p>Loop <code class="docutils literal notranslate"><span class="pre">_row</span></code> values and “Get element” values are Python, not numpy, scalars.</p></li>
+<li><p>Properties: integer properties become integer columns; with nothing to export
+the current row is no longer set to -1.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">iter_N</span></code> directory names are unchanged.</p></li>
+</ul>
+<p>Notes for phases 5 and 6 (from the review):</p>
+<ul class="simple">
+<li><p>The journal records the operation, row and column only: no value, no step or
+iteration tag, no registry changes. That is enough to replay from a child’s
+database, but <code class="docutils literal notranslate"><span class="pre">drop</span></code> and <code class="docutils literal notranslate"><span class="pre">create</span></code> must be replayed too. The inherited
+<code class="docutils literal notranslate"><span class="pre">_Table.delete</span></code>/<code class="docutils literal notranslate"><span class="pre">clear</span></code> are not journaled; don’t use them on user tables.</p></li>
+<li><p>The Loop’s selected rows and its <code class="docutils literal notranslate"><span class="pre">self.table</span></code> live in memory; a checkpoint
+resume inside a Loop over rows must recompute them.</p></li>
+<li><p>molsystem commits per operation inside a step, so a crash mid-step leaves its
+earlier writes committed. <code class="docutils literal notranslate"><span class="pre">append_row</span></code> and <code class="docutils literal notranslate"><span class="pre">set_cell</span></code> on a NULL current
+row are not idempotent on re-entry: part of phase 5’s audit.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">check_table_plugins</span></code> runs once, at job start, in <code class="docutils literal notranslate"><span class="pre">exec_flowchart</span></code>.</p></li>
+</ul>
+</section>
+<section id="corpus-2026-10-03">
+<h3>Corpus (2026-10-03)<a class="headerlink" href="#corpus-2026-10-03" title="Link to this heading">#</a></h3>
+<p>85 of the local and Dropbox flowcharts use tables (<code class="docutils literal notranslate"><span class="pre">~/SEAMM/flowcharts</span></code> and
+Dropbox <code class="docutils literal notranslate"><span class="pre">Science/Flowcharts</span></code>, <code class="docutils literal notranslate"><span class="pre">Science/Thermochemistry/flowcharts</span></code>,
+<code class="docutils literal notranslate"><span class="pre">GM/flowcharts</span></code>, <code class="docutils literal notranslate"><span class="pre">GM/TrainingData</span></code>). Most run LAMMPS, VASP, ORCA, Gaussian
+or DFTB+ for minutes to hours or need input files, so the A/B ran the cheap
+MOPAC ones, copied into <code class="docutils literal notranslate"><span class="pre">Testing/phase4</span></code> as <code class="docutils literal notranslate"><span class="pre">dbx_*.flow</span></code>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">MOPAC</span> <span class="pre">SMILES</span> <span class="pre">table</span></code> (<code class="docutils literal notranslate"><span class="pre">C</span> <span class="pre">CC</span> <span class="pre">O</span> <span class="pre">--hamiltonians</span> <span class="pre">PM6</span> <span class="pre">PM7</span></code>: append in a loop,
+a nested loop storing into a column named by <code class="docutils literal notranslate"><span class="pre">$H</span></code>, Save inside the loop,
+Print the current row) and <code class="docutils literal notranslate"><span class="pre">MOPAC</span> <span class="pre">SMILES</span> <span class="pre">table</span> <span class="pre">new</span></code> (Read a CSV, loop over
+rows with <code class="docutils literal notranslate"><span class="pre">$_row[&quot;SMILES&quot;]</span></code>, Save as): <strong>identical</strong> in A and B, tables,
+printed rows and every other output.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">geometry</span></code> fails identically in A and B before any table (Read Structure:
+<code class="docutils literal notranslate"><span class="pre">'PosixPath'</span> <span class="pre">object</span> <span class="pre">has</span> <span class="pre">no</span> <span class="pre">attribute</span> <span class="pre">'format'</span></code> when the system name is the
+<code class="docutils literal notranslate"><span class="pre">file</span></code> parameter). Not phase 4; Geometry Analysis tables are covered by
+<code class="docutils literal notranslate"><span class="pre">p4_props_geom</span></code>.</p></li>
+</ul>
+<p>Both SMILES flowcharts first failed identically in A and B, also not phase 4:
+their MOPAC Optimization has <code class="docutils literal notranslate"><span class="pre">structure</span> <span class="pre">handling:</span> <span class="pre">be</span> <span class="pre">put</span> <span class="pre">in</span> <span class="pre">a</span> <span class="pre">new</span>
+<span class="pre">configuration</span></code>, an old spelling that <code class="docutils literal notranslate"><span class="pre">structure_handling_description</span></code> no
+longer accepts, so every iteration raised. The copies were changed to “Create a
+new configuration” to exercise the tables; the Dropbox originals are untouched.
+Both pre-existing problems are filed, not fixed in phase 4: <a class="reference external" href="https://github.com/molssi-seamm/seamm/issues/220">seamm#220</a> (the <code class="docutils literal notranslate"><span class="pre">Path</span></code> system name)
+and <a class="reference external" href="https://github.com/molssi-seamm/seamm/issues/221">seamm#221</a> (the legacy
+structure-handling spellings).</p>
+<p>The remaining table flowcharts are for the soak in SEAMM_DEV.</p>
+</section>
+<section id="soak-2026-10-03">
+<h3>Soak (2026-10-03)<a class="headerlink" href="#soak-2026-10-03" title="Link to this heading">#</a></h3>
+<p>Paul’s decision: soak in <code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV</span></code> before the PRs. At his request it was
+switched to <code class="docutils literal notranslate"><span class="pre">venvs/phase4-B</span></code> (after adding the <code class="docutils literal notranslate"><span class="pre">seamm_bsse</span></code>,
+<code class="docutils literal notranslate"><span class="pre">seamm_packaging</span></code> and <code class="docutils literal notranslate"><span class="pre">xnn_step</span></code> editables it lacked), and the JobServer and
+web UI were restarted from it at 12:49. The soak set, its README (switch and
+rollback, recipes, a results table) and the runs are in
+<code class="docutils literal notranslate"><span class="pre">~/Work/SEAMM/Testing/phase4/soak/</span></code>. Results so far:</p>
+<ul class="simple">
+<li><p><strong>Timing</strong> (300 iterations of a loop over rows, each a MOPAC energy storing
+four columns and saving the table): A 357.6 s (1.19 s/iteration), B 343.7 s
+(1.15 s/iteration). Tables in the database and the commit after each step
+cost nothing measurable; the CSVs are byte-identical.</p></li>
+<li><p><strong>Kill test:</strong> <code class="docutils literal notranslate"><span class="pre">kill</span> <span class="pre">-9</span></code> of the evaluator during iteration 41 left exactly
+40 complete rows, the current row NULL (the next write appends iteration 41)
+and a consistent journal.</p></li>
+<li><p><strong>Read-only:</strong> reading, looping and exporting work; creating a table stops
+with the <code class="docutils literal notranslate"><span class="pre">PermissionError</span></code>.</p></li>
+<li><p>Loops over rows with a string index column, Read CSV/xlsx, Add columns,
+Get/Set element by index value, row number and column number, nested loops
+writing two tables, Properties and Geometry Analysis: all as expected;
+Geometry Analysis and summary CSVs byte-identical to A.</p></li>
+<li><p><strong>Found and fixed:</strong> “Set element” of the current row past the end of a table
+raised; it now appends the row, as <code class="docutils literal notranslate"><span class="pre">store_results</span></code> does (table_step
+f5b529e).</p></li>
+<li><p><strong>Found, not phase 4:</strong> the Properties step exports configuration property
+values as <code class="docutils literal notranslate"><span class="pre">{sid,</span> <span class="pre">cid,</span> <span class="pre">value}</span></code> dicts (A writes their Python repr, B JSON).</p></li>
+<li><p>Corpus copies: “MOPAC from SMILES” and “MOPAC over database” work; the three
+SMILES-table flowcharts fail every iteration on seamm#221, as released.</p></li>
+</ul>
+<p>Paul then asked for three fixes to ride in this release, each its own commit:
+seamm a37c2af fixes seamm#221 (<code class="docutils literal notranslate"><span class="pre">Parameters.update</span></code> translates the old
+structure-handling spellings when the parameter’s choices have the new spelling
+and not the old, so strain_step, which still uses the old ones, is untouched)
+and seamm#220 (<code class="docutils literal notranslate"><span class="pre">safe_format</span></code> converts with <code class="docutils literal notranslate"><span class="pre">str()</span></code>); properties_step 3a778b5
+exports the property values rather than their <code class="docutils literal notranslate"><span class="pre">{sid,</span> <span class="pre">cid,</span> <span class="pre">value}</span></code> records.
+The three legacy SMILES-table flowcharts now run cleanly unchanged, and
+<code class="docutils literal notranslate"><span class="pre">geometry.flow</span></code> runs to the end. table_step’s soak commit was amended to drop a
+stray reformat of <code class="docutils literal notranslate"><span class="pre">_version.py</span></code>: it is now f5b529e.</p>
+<p>Still to do: soak in SEAMM_DEV,
+then the release (molsystem, seamm, seamm_exec, the four steps; minimum
+versions in <code class="docutils literal notranslate"><span class="pre">table_plugins</span></code> and the pins set then).</p>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="NOTES_phase3.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Phase 3 notes</p>
+      </div>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plan-and-decisions">2026-10-03 – plan and decisions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#survey">Survey</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#architecture">Architecture</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-table-api">The Table API</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#row-identity">Row identity</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fidelity">Fidelity</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#commits-and-the-rest-of-the-campaign">Commits and the rest of the campaign</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#validation-and-release">Validation and release</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#paul-s-answers-2026-10-03">Paul’s answers (2026-10-03)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation">2026-10-03 – implementation</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#validation-2026-10-03">Validation (2026-10-03)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#review-2026-10-03">Review (2026-10-03)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#corpus-2026-10-03">Corpus (2026-10-03)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#soak-2026-10-03">Soak (2026-10-03)</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../../_sources/developer_guide/campaigns/2026-10-02/NOTES_phase4.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

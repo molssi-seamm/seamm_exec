@@ -546,11 +546,15 @@ structures and properties. Reasons:
 - the Dashboard, the web UI and the MCP server can read a job's tables directly, and "save or lose it" goes
   away.
 
-Keep a DataFrame-shaped facade so existing code keeps working: a ``Table`` object backed by the SQL table,
-with cell writes (``store_results``'s ``table.at[index, column]``) going straight through, a DataFrame view
-materialized on demand for printing, plotting and ``$table`` expressions, and the ``current index`` and
-``index column`` stored in a ``_tables`` registry table. Column types map to SQLite's dynamic typing;
-``molsystem`` supplies the connection and the WAL settings. The Table step's Save/Save as keep exporting
+*Revised 2026-10-03 (phase 4, see* ``NOTES_phase4.rst`` *in the campaign directory).* An explicit, small
+SEAMM ``Table`` API (``append_row(s)``, ``set_cell``/``get_cell``, ``add_column``, ``rows(where=...)``,
+current row, ``export``, and a read-only ``to_dataframe()`` for printing and plotting), not a facade that
+imitates a DataFrame: the four steps that touch tables directly rely on pandas idioms (``concat`` and
+replace, column assignment, ``.at`` enlargement) that a facade would have to chase. The SQLite backend is
+built on ``molsystem``'s ``_Table``, which supplies the connection and the WAL settings; user tables have
+prefixed SQL names, a ``_tables`` registry holds each table's declared column types, index column and
+current row, and a ``_table_changes`` journal records every change for the parallel Loop's merge. Rows have
+an internal id; users see the index column or the position. The Table step's Save/Save as keep exporting
 CSV, Excel and JSON. Rule, unchanged: one writer per database file, which is why children never write
 into the parent's file (see the Loop).
 
@@ -669,8 +673,10 @@ Through every phase:
   task keys) are added beside the existing ones; nothing existing is renamed or removed.
 - **Unconverted plug-ins behave byte for byte as today.** ``Base.run()`` is reimplemented on the task layer
   with a one-slot ``LocalPool``; a plug-in that has not been converted cannot tell the difference.
-- **Tables in the database ship behind a switch** for one release cycle (in-memory default first, then
-  flipped), so the highest-risk change has a rollback that is a single setting.
+- **Tables in the database cut over in one release** (revised 2026-10-03; originally a switch). Its
+  rollback is the phase 0 venv rollback, ``seamm-manager environment rollback``, and its soak and
+  comparison run in ``~/SEAMM_DEV`` before release. A job started with the new version and then rolled
+  back is simply rerun; old job directories are unaffected either way.
 
 Three rules
 -----------
@@ -703,10 +709,10 @@ Phase            Risk     Containment
 2 scheduler pkg  low      ``seamm_slurm`` becomes a shim; the JobServer does not change. Validate from
                           ``~/SEAMM_DEV`` to MolSSI10 and TinkerCliffs.
 3 batch + MBE    low      New provider methods, a new step; Energy keeps MDI as its default.
-4 tables in DB   high     Table step, ``store_results`` and every table-reading step. Facade keeps the
-                          DataFrame API; the switch keeps the old behaviour; the gate runs the whole local
-                          and Dropbox flowchart corpus through the comparison harness, with a soak period in
-                          ``~/SEAMM_DEV`` before the default is flipped.
+4 tables in DB   high     Table step, ``store_results`` and every table-reading step, converted to an
+                          explicit Table API. The gate runs the whole local and Dropbox flowchart corpus
+                          through the comparison harness, with a soak period in ``~/SEAMM_DEV`` before the
+                          release; rollback is the venv rollback.
 5 checkpointing  low      New files only; resume runs only when the JobServer asks for it on a new job.
                           The node idempotence audit is the real work.
 6 parallel Loop  none     Opt-in parameter.
@@ -730,7 +736,8 @@ Phases
    Start the PBS module as a compile-time proof of the interface, tested against a mocked ``qstat``.
 3. **Model Chemistry batch contract** for ORCA and MOPAC, the asynchronous facade, and the Energy step
    using it. Then the MBE step (its Phase 3) on this.
-4. **Tables in the database** behind the DataFrame facade; Table step and ``store_results`` converted.
+4. **Tables in the database** behind an explicit Table API; ``store_results`` and the Table, Loop,
+   Properties and Geometry Analysis steps converted; one-release cutover.
 5. **Flowchart-level checkpointing** in ``exec_flowchart``, ``Node.run()`` and the Loop; node idempotence
    audit of the code steps; JobServer resubmission validated for real on ARC-alone.
 6. **Parallel Loop** with the snapshot, merge and placement options; validate on the laptop (pool), on
@@ -739,7 +746,7 @@ Phases
    task view.
 
 Phase 0 protects every later phase. Phases 1 to 3 unblock the MBE step with low production exposure;
-4 and 5 are prerequisites of 6; 4 is the one that needs a soak period before its switch is flipped.
+4 and 5 are prerequisites of 6; 4 is the one that needs a soak period before it is released.
 
 
 Decisions (2026-10-02)
@@ -751,7 +758,8 @@ Settled with Paul, in the order the open questions were discussed:
 - The queueing system or the TaskServer keeps task state; the evaluator keeps ids in a manifest.
 - Steps request a program by name plus scheduler-neutral resources; the back end owns code configuration.
 - Bundling is generic (worker script), not native job arrays.
-- Tables move into the job database behind a DataFrame facade; SQLite stays, one writer per file,
+- Tables move into the job database behind an explicit Table API (revised 2026-10-03 from a DataFrame
+  facade); SQLite stays, one writer per file,
   results from children return by staging and merge. No multi-writer DBMS.
 - Batch contract on the Model Chemistry providers; MDI kept for local warm engines, chosen by the facade.
 - Task-level restart first, flowchart-level checkpointing second.

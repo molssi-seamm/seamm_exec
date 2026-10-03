@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Phase 3 notes &#8212; SEAMM seamm-exec Plug-in 2026.10.3 documentation</title>
+    <title>Phase 3 notes &#8212; SEAMM seamm-exec Plug-in 2026.10.3.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../../_static/documentation_options.js?v=f64fa391"></script>
+    <script src="../../../_static/documentation_options.js?v=0667127d"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -50,10 +50,11 @@
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Phase 4 notes" href="NOTES_phase4.html" />
     <link rel="prev" title="Phase 2 notes" href="NOTES_phase2.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.3" />
+  <meta name="docsearch:version" content="2026.10.3.1" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -887,6 +888,67 @@ the gradients to 0.06 kJ/mol/Å, because the MDI path (mopactools) gives
 spurious components of about 0.03 kJ/mol/Å perpendicular to the bond.</p></li>
 </ol>
 </section>
+<section id="released-2026-10-03">
+<h3>Released (2026-10-03)<a class="headerlink" href="#released-2026-10-03" title="Link to this heading">#</a></h3>
+<p>Paul merged the PRs and the design session created the releases, in order:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Package</p></th>
+<th class="head"><p>Version</p></th>
+<th class="head"><p>PR</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code></p></td>
+<td><p>2026.10.3</p></td>
+<td><p>#35</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">orca_step</span></code></p></td>
+<td><p>2026.10.3.1</p></td>
+<td><p>#38</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">mopac_step</span></code></p></td>
+<td><p>2026.10.3.1</p></td>
+<td><p>#159</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">energy_step</span></code></p></td>
+<td><p>2026.10.3</p></td>
+<td><p>#1</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dimer_builder_step</span></code></p></td>
+<td><p>2026.10.3</p></td>
+<td><p>#9</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">normal_mode_sampling_step</span></code></p></td>
+<td><p>2026.10.3.1</p></td>
+<td><p>#2</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">energy_step</span></code> and <code class="docutils literal notranslate"><span class="pre">dimer_builder_step</span></code> are 2026.10.3, not .1: neither had
+released earlier that day. Both moved to the uv CI (<code class="docutils literal notranslate"><span class="pre">test_env.yaml</span></code> removed)
+in the same release. Nothing is rolled out to an installation yet.</p>
+<section id="lessons">
+<h4>Lessons<a class="headerlink" href="#lessons" title="Link to this heading">#</a></h4>
+<ul class="simple">
+<li><p><strong>A CI rerun can race PyPI.</strong> The plug-ins’ CI failed on the
+<code class="docutils literal notranslate"><span class="pre">seamm-exec&gt;=2026.10.3</span></code> pin until <code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code> was published. A rerun
+started right after the publish can still fail: the index (and its JSON API,
+which lagged the uploads by minutes here) need not serve the new version yet.
+Rerun again rather than look for a problem. Check a version with
+<code class="docutils literal notranslate"><span class="pre">https://pypi.org/pypi/&lt;package&gt;/&lt;version&gt;/json</span></code>, not the package’s latest.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">energy_step</span></code>’s Makefile predates the <code class="docutils literal notranslate"><span class="pre">update</span></code> target (a 2026-09
+scaffold), so its checkout was synced by hand. Copy the current cookiecutter
+Makefile targets into it, <code class="docutils literal notranslate"><span class="pre">xnn_step</span></code> and the other 2026-09 scaffolds at
+their next change.</p></li>
+</ul>
+<p>Still open: the Dimer Builder’s inward wall walk on the task path (one
+<code class="docutils literal notranslate"><span class="pre">TaskSet</span></code> per point). The phase 3 test environments
+(<code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV/venvs/phase3-{A,B}</span></code>, <code class="docutils literal notranslate"><span class="pre">tinkercliffs:/projects/seamm/psaxe/phase3</span></code>)
+were deleted on 2026-10-03.</p>
+</section>
+</section>
 </section>
 </section>
 
@@ -908,6 +970,15 @@ spurious components of about 0.03 kJ/mol/Å perpendicular to the bond.</p></li>
         <p class="prev-next-subtitle">previous</p>
         <p class="prev-next-title">Phase 2 notes</p>
       </div>
+    </a>
+    <a class="right-next"
+       href="NOTES_phase4.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Phase 4 notes</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div>
                 </footer>
@@ -941,6 +1012,10 @@ spurious components of about 0.03 kJ/mol/Å perpendicular to the bond.</p></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#validation">Validation</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#review-2026-10-03">Review (2026-10-03)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#design-session-s-review-2026-10-03">Design session’s review (2026-10-03)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#released-2026-10-03">Released (2026-10-03)</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lessons">Lessons</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
