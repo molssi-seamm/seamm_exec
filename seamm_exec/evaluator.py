@@ -191,7 +191,7 @@ def mdi_method_and_basis(model_chemistry):
 
 
 def choose_path(model_chemistry, provider, target=None):
-    """"mdi" or "batch" for a model chemistry, a program and the job's target.
+    """ "mdi" or "batch" for a model chemistry, a program and the job's target.
 
     Raises
     ------
@@ -481,6 +481,13 @@ class Evaluator:
             gradients = data.get("gradients")
             if gradients is not None:
                 gradients = np.asarray(gradients, dtype=float).reshape(-1, 3)
+            elapsed = 0.0
+            if not result.restored and result.history:
+                last = result.history[-1]
+                if last.get("started") and last.get("finished"):
+                    elapsed = last["finished"] - last["started"]
+                elif last.get("submitted") and last.get("finished"):
+                    elapsed = last["finished"] - last["submitted"]
             yield EvaluatorResult(
                 key=result.key,
                 ok=True,
@@ -490,6 +497,7 @@ class Evaluator:
                 restored=result.restored,
                 path="batch",
                 data=data,
+                elapsed=elapsed,
             )
 
 
