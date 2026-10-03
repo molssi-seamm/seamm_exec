@@ -84,6 +84,24 @@ def register(program, function):
     resolvers()[program] = function
 
 
+def has_resolver(program):
+    """Whether ``program`` has a registered resolver."""
+    return bool(program) and program in resolvers()
+
+
+def available(program, root):
+    """Whether ``program`` can run here without an ini file: its resolver says
+    so through an optional ``available(root)`` attribute."""
+    function = resolvers().get(program)
+    check = getattr(function, "available", None)
+    if check is None:
+        return False
+    try:
+        return bool(check(root))
+    except Exception:
+        return False
+
+
 def resolve(program, config, cmd, env, ce, root):
     """Apply the program's resolver, if it has one.
 

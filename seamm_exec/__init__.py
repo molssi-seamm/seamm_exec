@@ -11,6 +11,16 @@ from .tasks import run_task  # noqa: F401
 from .local_pool import LocalPool  # noqa: F401
 from .scheduler_backend import SchedulerBackend  # noqa: F401
 from .targets import find_target, write_target  # noqa: F401
+from .evaluator import (  # noqa: F401
+    AnalysisError,
+    Evaluator,
+    EvaluatorResult,
+    Geometry,
+    check_properties,
+    choose_path,
+    mdi_method_and_basis,
+    structure_data,
+)
 from ._version import __version__  # noqa: F401
 
 # List of executors corresponding to imports above.
