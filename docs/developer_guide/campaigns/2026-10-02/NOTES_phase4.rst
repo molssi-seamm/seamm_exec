@@ -512,6 +512,37 @@ structure-handling spellings).
 
 The remaining table flowcharts are for the soak in SEAMM_DEV.
 
+Soak (2026-10-03)
+~~~~~~~~~~~~~~~~~
+
+Paul's decision: soak in ``~/SEAMM_DEV`` before the PRs. At his request it was
+switched to ``venvs/phase4-B`` (after adding the ``seamm_bsse``,
+``seamm_packaging`` and ``xnn_step`` editables it lacked), and the JobServer and
+web UI were restarted from it at 12:49. The soak set, its README (switch and
+rollback, recipes, a results table) and the runs are in
+``~/Work/SEAMM/Testing/phase4/soak/``. Results so far:
+
+- **Timing** (300 iterations of a loop over rows, each a MOPAC energy storing
+  four columns and saving the table): A 357.6 s (1.19 s/iteration), B 343.7 s
+  (1.15 s/iteration). Tables in the database and the commit after each step
+  cost nothing measurable; the CSVs are byte-identical.
+- **Kill test:** ``kill -9`` of the evaluator during iteration 41 left exactly
+  40 complete rows, the current row NULL (the next write appends iteration 41)
+  and a consistent journal.
+- **Read-only:** reading, looping and exporting work; creating a table stops
+  with the ``PermissionError``.
+- Loops over rows with a string index column, Read CSV/xlsx, Add columns,
+  Get/Set element by index value, row number and column number, nested loops
+  writing two tables, Properties and Geometry Analysis: all as expected;
+  Geometry Analysis and summary CSVs byte-identical to A.
+- **Found and fixed:** "Set element" of the current row past the end of a table
+  raised; it now appends the row, as ``store_results`` does (table_step
+  585dd9b).
+- **Found, not phase 4:** the Properties step exports configuration property
+  values as ``{sid, cid, value}`` dicts (A writes their Python repr, B JSON).
+- Corpus copies: "MOPAC from SMILES" and "MOPAC over database" work; the three
+  SMILES-table flowcharts fail every iteration on seamm#221, as released.
+
 Still to do: soak in SEAMM_DEV,
 then the release (molsystem, seamm, seamm_exec, the four steps; minimum
 versions in ``table_plugins`` and the pins set then).
