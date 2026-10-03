@@ -29,7 +29,7 @@ dependencies = [
    "py-cpuinfo",
    "pyuca",
    "reference-handler",
-   "seamm",
+   "seamm>=2026.10.3",
    "seamm-datastore",
    "seamm-scheduler>=2026.10.2",
    "seamm-util",
