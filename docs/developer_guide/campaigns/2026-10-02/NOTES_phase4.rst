@@ -543,6 +543,16 @@ rollback, recipes, a results table) and the runs are in
 - Corpus copies: "MOPAC from SMILES" and "MOPAC over database" work; the three
   SMILES-table flowcharts fail every iteration on seamm#221, as released.
 
+Paul then asked for three fixes to ride in this release, each its own commit:
+seamm a37c2af fixes seamm#221 (``Parameters.update`` translates the old
+structure-handling spellings when the parameter's choices have the new spelling
+and not the old, so strain_step, which still uses the old ones, is untouched)
+and seamm#220 (``safe_format`` converts with ``str()``); properties_step 3a778b5
+exports the property values rather than their ``{sid, cid, value}`` records.
+The three legacy SMILES-table flowcharts now run cleanly unchanged, and
+``geometry.flow`` runs to the end. table_step's soak commit was amended to drop a
+stray reformat of ``_version.py``: it is now f5b529e.
+
 Still to do: soak in SEAMM_DEV,
 then the release (molsystem, seamm, seamm_exec, the four steps; minimum
 versions in ``table_plugins`` and the pins set then).
