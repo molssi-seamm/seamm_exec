@@ -1,6 +1,18 @@
 =======
 History
 =======
+2026.10.3.2 -- Bugfix: task bundles: one node, enough time; inline only tasks that fit
+    * A bundle of tasks always runs on one node: a task's ranks share the node and
+      its node-local scratch. Before, a bundle of 8-rank VASP tasks could be spread
+      over several nodes, and ranks without the inputs failed (#37).
+    * A cheap task runs in the evaluator itself only if its cores fit the
+      evaluator's allocation; otherwise it goes to the queue. Before, a 4-rank ORCA
+      calculation could run in a 1-core evaluator and fail for lack of slots (#38).
+    * A bundle whose tasks give no walltime now asks for twice their estimated time
+      plus ten minutes, within the bundle limit (the step's ``bundle_walltime``),
+      instead of the queue's default. Before, a bundle of eight 8-minute VASP
+      fragments got a one-hour default and was killed in its last task.
+
 2026.10.3.1 -- Tables in the job database; resources for batch calculations
     * The flowchart's database is committed after every step, which is part of
       keeping tables in the job's database (seamm 2026.10.3).

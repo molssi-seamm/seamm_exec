@@ -1207,3 +1207,44 @@ def test_tasks_with_config_never_meet_a_resolver(tmp_path):
     assert (tmp_path / "b" / "given2" / "out.txt").read_text() == "given2\n"
     assert (tmp_path / "b" / "bare2" / "out.txt").read_text() == "resolved\n"
     assert calls == [["echo", "bare2", ">", "out.txt"]]
+
+
+@pytest.mark.parametrize("scheduler", ["slurm", "pbs"])
+def test_bundles_are_one_node(job, scheduler):
+    """A bundle runs a local pool in one allocation: always one node, even if a
+    task or the target section asks for more (seamm_exec#37)."""
+    from seamm_scheduler import get_scheduler
+
+    job, root = job
+    queue = FakeQueue()
+    queue.scheduler = get_scheduler(scheduler)
+    backend = make_backend(queue, job, root, directives={"nodes": "2"})
+    tasks = [
+        fake_task("a", resources=Resources(ntasks=8)),
+        fake_task("b", resources=Resources(ntasks=4, nodes=2)),
+    ]
+    assert backend._bundle_resources(tasks)["nodes"] == 1
+    script = backend._script(tasks, job / "tasks" / "_bundles" / "b0")
+    if scheduler == "slurm":
+        assert "#SBATCH --nodes=1" in script.splitlines()
+        assert "#SBATCH --nodes=2" not in script
+    else:
+        select = [line for line in script.splitlines() if "select=" in line]
+        assert select == ["#PBS -l select=1:ncpus=8:mpiprocs=8"]
+
+
+def test_bundle_walltime_from_estimates(job):
+    """Tasks without walltimes: the bundle's time is twice their estimates plus
+    ten minutes, within the bundle limit, instead of the queue's default."""
+    job, root = job
+    backend = make_backend(FakeQueue(), job, root)
+    tasks = [fake_task(k, estimated_seconds=480) for k in "abcdefgh"]
+    assert backend._bundle_resources(tasks)["walltime"] == 2 * 8 * 480 + 600
+    assert (
+        backend._bundle_resources(tasks, bundle_walltime=4 * 3600)["walltime"]
+        == 2 * 8 * 480 + 600
+    )
+    assert backend._bundle_resources(tasks, bundle_walltime=3600)["walltime"] == 3600
+    # The walltimes the tasks give are used as they are.
+    timed = [fake_task("t", resources=Resources(walltime=100))]
+    assert backend._bundle_resources(timed, bundle_walltime=50)["walltime"] == 100

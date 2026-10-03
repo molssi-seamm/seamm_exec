@@ -300,8 +300,12 @@ class SchedulerBackend:
         bundle=None,
         markers=None,
         on_prepared=None,
+        bundle_walltime=None,
     ):
         """Submit ``tasks`` as one bundle: one batch job. Returns their ids.
+
+        ``bundle_walltime`` (seconds) is the caller's limit on a bundle, used to
+        bound its time when the tasks give none.
 
         ``on_prepared(tasks, info)`` is called before ``sbatch`` with the
         bundle's unique job name and directory, so the caller can record them:
@@ -318,7 +322,9 @@ class SchedulerBackend:
         key = (bundle, tuple(t.key for t in tasks))
         prepared = self._prepared.get(key)
         if prepared is None:
-            prepared = self._prepare(bundle, tasks, directories, markers)
+            prepared = self._prepare(
+                bundle, tasks, directories, markers, bundle_walltime=bundle_walltime
+            )
             self._prepared[key] = prepared
         if on_prepared is not None:
             on_prepared(
@@ -384,7 +390,7 @@ class SchedulerBackend:
         )
         return self._register(tasks, directories, markers, prepared.bundle_dir, job_id)
 
-    def _prepare(self, bundle, tasks, directories, markers):
+    def _prepare(self, bundle, tasks, directories, markers, bundle_walltime=None):
         """Write a bundle: its directory, the tasks' inputs, bundle.json, run.sh."""
         # <step dir>/tasks/_bundles/<bundle>.<n>
         bundles_dir = markers[0].parent / "_bundles"
@@ -423,7 +429,7 @@ class SchedulerBackend:
             "tasks": entries,
         }
         (bundle_dir / "bundle.json").write_text(json.dumps(bundle_json, indent=2))
-        script = self._script(tasks, bundle_dir)
+        script = self._script(tasks, bundle_dir, bundle_walltime=bundle_walltime)
         (bundle_dir / "run.sh").write_text(script)
         # Unique, so the queue can be asked whether it has this very bundle
         job_name = f"{self.job_name_prefix}-{bundle_dir.name}-{secrets.token_hex(3)}"
@@ -656,8 +662,14 @@ class SchedulerBackend:
             "success_text": task.success_text,
         }
 
-    def _bundle_resources(self, tasks):
-        """One allocation big enough for the largest task in the bundle."""
+    def _bundle_resources(self, tasks, bundle_walltime=None):
+        """One allocation big enough for the largest task in the bundle.
+
+        A bundle is one batch job running the task worker and a local pool in
+        its allocation, so it is always one node: a task's ranks must share the
+        node, and its node-local scratch (seamm_exec#37). Tasks spanning nodes
+        are not supported.
+        """
 
         def largest(name):
             values = [getattr(t.resources, name) for t in tasks]
@@ -671,11 +683,29 @@ class SchedulerBackend:
                     return value
             return None
 
+        if (largest("nodes") or 1) > 1:
+            logger.warning(
+                "A task asked for more than one node; task bundles run on one "
+                "node, so it gets one."
+            )
         walltimes = [t.resources.walltime for t in tasks]
+        limit = bundle_walltime or self.bundle_walltime
         if all(w is not None for w in walltimes):
             walltime = sum(walltimes)
         else:
-            walltime = self.bundle_walltime
+            # Without the tasks' walltimes the queue's default would apply (an
+            # hour on some partitions) and kill a long bundle: use their
+            # estimates with a margin, within the bundle limit.
+            estimate = sum(
+                w if w is not None else (t.estimated_seconds or 0.0)
+                for t, w in zip(tasks, walltimes)
+            )
+            if estimate > 0:
+                walltime = 2.0 * estimate + 600.0
+                if limit:
+                    walltime = min(walltime, limit)
+            else:
+                walltime = limit
         ntasks = largest("ntasks")
         if ntasks is None and "ntasks" not in self.directives:
             # Always ask for the cores, so the allocation's environment says
@@ -687,19 +717,20 @@ class SchedulerBackend:
             "mem_per_cpu": largest("mem_per_cpu"),
             "ngpus": largest("ngpus") or 0,
             "walltime": walltime,
-            "nodes": largest("nodes"),
+            "nodes": 1,
             "partition": first("partition"),
             "account": first("account"),
             "qos": first("qos"),
         }
 
-    def _script(self, tasks, bundle_dir):
+    def _script(self, tasks, bundle_dir, bundle_walltime=None):
         from seamm_scheduler import build_script
 
         scheduler = self.queue.scheduler
         where = self.where(bundle_dir)
         directives = scheduler.directives(
-            self._bundle_resources(tasks), extra=self.directives
+            self._bundle_resources(tasks, bundle_walltime=bundle_walltime),
+            extra=self.directives,
         )
         directives.update(scheduler.log_directives(where))
         lines = []
