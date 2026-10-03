@@ -1,6 +1,29 @@
 =======
 History
 =======
+2026.10.2.1 -- Tasks on a queue: SLURM and PBS back ends for the task layer
+    * A job's tasks can now run as batch jobs of a queueing system. The job's target
+      (a section of the JobServer's ``<root>/<jobserver-name>.ini`` with
+      ``tasks = queue``, which the JobServer writes into the job directory as
+      ``target.json``) sends them to SLURM or PBS on this machine or, over ssh, on a
+      cluster, with the task directories copied there and back when the filesystem
+      is not shared. Small tasks share an allocation in bundles (``bundle_tasks``,
+      ``bundle_walltime``), and ``max_queued_tasks`` respects per-user queue limits.
+    * Each program is configured where it runs, from that machine's
+      ``<root>/<program>.ini``, so a code need not be installed where the flowchart
+      runs. Plug-ins can register a resolver for their program (entry-point group
+      ``org.molssi.seamm.exec.resolvers``).
+    * A rerun polls bundles still in the queue instead of submitting them again, a
+      bundle that ran out of time leaves its finished tasks done, and a network
+      outage on the evaluator's side (a laptop asleep, a VPN) never turns running
+      tasks into lost ones.
+    * Without a target, or with ``tasks = pool``, nothing changes. Steps that
+      configure their program themselves (ORCA and MOPAC today) keep running on the
+      flowchart's machine when the target is a remote cluster.
+    * ``computational_environment()`` no longer fails in a SLURM job submitted
+      without ``--ntasks``, expands node lists such as ``tc[053,059-061]``
+      correctly, and recognizes PBS jobs.
+    * Requires ``seamm-scheduler`` 2026.10.2.
 2026.10.2 -- The task layer: external codes as tasks, with restart
     * Steps can now hand their external calculations to ``seamm_exec`` as *tasks*: the
       program's name, its input files, the command, what it needs (cores, memory) and

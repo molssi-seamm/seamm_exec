@@ -31,7 +31,7 @@ dependencies = [
    "reference-handler",
    "seamm",
    "seamm-datastore",
-   "seamm-scheduler",
+   "seamm-scheduler>=2026.10.2",
    "seamm-util",
 ]
 

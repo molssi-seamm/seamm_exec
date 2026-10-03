@@ -389,6 +389,7 @@ def test_a_partially_done_bundle_runs_only_what_is_left(job):
         cwd=bundle_json.parent,
         capture_output=True,
         text=True,
+        env={**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parents[1])},
     )
     assert p.returncode == 0, p.stderr
     assert "a: already done" in p.stdout
