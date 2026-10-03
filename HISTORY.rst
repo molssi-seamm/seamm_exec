@@ -1,6 +1,23 @@
 =======
 History
 =======
+2026.10.3 -- One model chemistry, many structures: over MDI or as tasks
+    * A new ``Evaluator`` gives a step the energies, gradients and stress of many
+      structures with the flowchart's model chemistry, and chooses how they are
+      computed: as tasks on a queue target, otherwise a warm MDI engine, unless the
+      program prefers tasks (ORCA). Both ways give the same numbers, and the task
+      way reuses finished structures when a job is rerun. The Energy step, the Dimer
+      Builder, Normal Mode Sampling and ORCA's counterpoise correction use it.
+    * A structure that a program cannot run as a task (a periodic system for ORCA or
+      MOPAC) goes to its MDI engine; if there is none here, that structure fails
+      with the reason and the others finish.
+    * A task that names only its program is now configured on this machine too, from
+      ``<root>/<program>.ini`` and the program's resolver, as it already was on a
+      cluster. Tasks that carry their own configuration run exactly as before.
+    * Sub-calculations that run one at a time on the whole machine, such as the
+      parts of a counterpoise correction, now get every core's threads instead of
+      one each.
+
 2026.10.2.1 -- Tasks on a queue: SLURM and PBS back ends for the task layer
     * A job's tasks can now run as batch jobs of a queueing system. The job's target
       (a section of the JobServer's ``<root>/<jobserver-name>.ini`` with

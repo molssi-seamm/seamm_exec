@@ -99,10 +99,10 @@ class LocalPool:
     max_concurrent : int, optional
         At most this many tasks at once.
     resolve_programs : bool = False
-        Apply the program's resolver (see :mod:`seamm_exec.resolve`) to each
-        task's configuration, command and environment. The task worker in a
-        scheduler's allocation does; the evaluator's own pool does not, since
-        the steps that set ``Task.config`` have resolved it already.
+        Kept for compatibility; it changes nothing now. A task without
+        ``config`` is always configured here, from ``<root>/<program>.ini`` and
+        the program's resolver (see :mod:`seamm_exec.resolve`); a task with
+        ``config`` is run with it exactly as given.
     """
 
     name = "local"
@@ -156,7 +156,11 @@ class LocalPool:
         """Whether the task's program can run here."""
         if task.config is not None:
             return True
-        return self._read_config(task.program) is not None
+        if self._read_config(task.program) is not None:
+            return True
+        from .resolve import available
+
+        return available(task.program, self.root)
 
     def config_for(self, task):
         """The program's configuration: ``task.config``, else ``<program>.ini``.
@@ -175,14 +179,36 @@ class LocalPool:
                     f"and there is no [{self.executor.name}] section in "
                     f"{self._ini_path(task.program)}."
                 )
-        if "code_dir" not in config and config.get("code"):
-            # Only when ``code`` is a path: a bare name is found on the PATH
-            # (in a conda environment, a container, ...), and so are its
-            # companions, so a command must then name them bare too.
-            code = Path(config["code"]).expanduser()
-            if code.parent != Path("."):
-                config["code_dir"] = str(code.parent)
-        return config
+        return _with_code_dir(config)
+
+    def _configure(self, task, ce):
+        """``(config, cmd, env)`` for a task, resolved on this machine.
+
+        A task with ``config`` -- a step that configured its program itself, and
+        every unconverted plug-in -- keeps it, its command and its environment
+        exactly. Otherwise the configuration is the ``[<executor>]`` section of
+        ``<root>/<program>.ini`` (if any), passed through the program's resolver
+        (if it has one) with the task's share of the machine, ``ce``.
+        """
+        if task.config is not None:
+            return self.config_for(task), task.cmd, dict(task.env)
+        from .resolve import has_resolver, resolve
+
+        config = self._read_config(task.program)
+        cmd, env = list(task.cmd), dict(task.env)
+        if has_resolver(task.program):
+            config, cmd, env = resolve(
+                task.program, config or {}, cmd, env, ce, self.root
+            )
+        elif config is None:
+            raise RuntimeError(
+                f"No configuration for '{task.program}': the task has no config, "
+                f"there is no [{self.executor.name}] section in "
+                f"{self._ini_path(task.program)}, and no resolver for "
+                f"'{task.program}' is installed in this Python (the plug-in that "
+                "provides it must be installed where the task runs)."
+            )
+        return _with_code_dir(config), cmd, env
 
     def _ini_path(self, program):
         if self.root is None:
@@ -351,8 +377,12 @@ class LocalPool:
                 job = self._queue.pop(0)
                 # Concurrent if any other task is queued or running now: it may
                 # share the machine with this one for some or all of its run.
+                # A task that takes the whole pool never shares it.
                 job.concurrent = (
-                    sum(1 for j in self._jobs.values() if j.state in (QUEUED, RUNNING))
+                    job.cores < self.cores
+                    and sum(
+                        1 for j in self._jobs.values() if j.state in (QUEUED, RUNNING)
+                    )
                     > 1
                 )
                 job.state = RUNNING
@@ -385,14 +415,7 @@ class LocalPool:
             config = task.config
             env = task.env
         else:
-            config = self.config_for(task)
-            env = dict(task.env)
-            if self.resolve_programs:
-                from .resolve import resolve
-
-                config, cmd, env = resolve(
-                    task.program, config, cmd, env, job.ce, self.root
-                )
+            config, cmd, env = self._configure(task, job.ce)
             if concurrent:
                 # Keep concurrent tasks off each other's cores. A lone task
                 # gets the environment it always had.
@@ -473,6 +496,20 @@ class LocalPool:
 
     def _process_finished(self, job, process):
         _unregister(process.pid)
+
+
+def _with_code_dir(config):
+    """Add ``code_dir``, the directory holding ``code``, when ``code`` is a path.
+
+    A bare name is found on the PATH (in a conda environment, a container, ...),
+    and so are its companions, so a command must then name them bare too.
+    """
+    config = dict(config)
+    if "code_dir" not in config and config.get("code"):
+        code = Path(config["code"]).expanduser()
+        if code.parent != Path("."):
+            config["code_dir"] = str(code.parent)
+    return config
 
 
 def _state_of(raw):

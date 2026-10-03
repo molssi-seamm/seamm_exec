@@ -34,6 +34,7 @@ task without it is resolved where it runs, here. On the local transport
 
 import configparser
 import logging
+import threading
 from pathlib import Path
 
 logger = logging.getLogger("seamm-exec")
@@ -41,6 +42,7 @@ logger = logging.getLogger("seamm-exec")
 RESOLVER_GROUP = "org.molssi.seamm.exec.resolvers"
 
 _resolvers = None
+_lock = threading.RLock()
 
 
 def read_config(program, root, section="local"):
@@ -58,10 +60,15 @@ def read_config(program, root, section="local"):
 
 
 def resolvers():
-    """The registered resolvers, ``{program: callable}``."""
+    """The registered resolvers, ``{program: callable}``.
+
+    Built once, under a lock: pool worker threads may ask at the same time,
+    and a second build must not replace the dict (dropping a ``register()``)."""
     global _resolvers
-    if _resolvers is None:
-        _resolvers = {}
+    with _lock:
+        if _resolvers is not None:
+            return _resolvers
+        found = {}
         try:
             from importlib.metadata import entry_points
 
@@ -71,17 +78,37 @@ def resolvers():
                 eps = entry_points().get(RESOLVER_GROUP, [])
             for ep in eps:
                 try:
-                    _resolvers[ep.name] = ep.load()
+                    found[ep.name] = ep.load()
                 except Exception:
                     logger.exception(f"Could not load the resolver for '{ep.name}'")
         except Exception:
             logger.exception("Could not read the program resolvers")
-    return _resolvers
+        _resolvers = found
+        return _resolvers
 
 
 def register(program, function):
     """Register a resolver by hand (tests, or a program without a plug-in)."""
-    resolvers()[program] = function
+    with _lock:
+        resolvers()[program] = function
+
+
+def has_resolver(program):
+    """Whether ``program`` has a registered resolver."""
+    return bool(program) and program in resolvers()
+
+
+def available(program, root):
+    """Whether ``program`` can run here without an ini file: its resolver says
+    so through an optional ``available(root)`` attribute."""
+    function = resolvers().get(program)
+    check = getattr(function, "available", None)
+    if check is None:
+        return False
+    try:
+        return bool(check(root))
+    except Exception:
+        return False
 
 
 def resolve(program, config, cmd, env, ce, root):

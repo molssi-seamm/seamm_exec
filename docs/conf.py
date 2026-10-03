@@ -53,6 +53,10 @@ extensions = [
     'sphinx.ext.todo',
 ]
 
+# Dataclass fields described under "Attributes" are also documented by autodoc;
+# render the section as :ivar: fields so they are not described twice.
+napoleon_use_ivar = True
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
