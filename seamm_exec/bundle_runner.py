@@ -39,6 +39,11 @@ def _log(message):
 
 def run_seamm_bundle(bundle):
     """Run a SEAMM-mode bundle through a LocalPool. Returns the number failed."""
+    executor = bundle.get("executor") or "local"
+    if executor != "local":
+        raise RuntimeError(
+            f"Bundles run with the local executor only, not '{executor}'."
+        )
     pool = LocalPool(Local(), root=bundle.get("root"), resolve_programs=True)
     _log(f"Capacity: {pool.capacity()}")
 
@@ -92,6 +97,7 @@ def run_seamm_bundle(bundle):
     def started(task, info):
         _log(f"{task.key}: started")
 
+    submitted = time.time()
     ids = pool.submit(tasks, directories, on_start=started)
     by_id = dict(zip(ids, tasks))
     failures = 0
@@ -110,8 +116,14 @@ def run_seamm_bundle(bundle):
                 directory = Path(task.directory)
                 for name, text in (task.success_text or {}).items():
                     data = result.files.get(name)
-                    if data is None and (directory / name).exists():
-                        data = (directory / name).read_text(errors="replace")
+                    path = directory / name
+                    # A file on disk counts only if this run wrote it
+                    if (
+                        data is None
+                        and path.exists()
+                        and path.stat().st_mtime >= submitted - 1
+                    ):
+                        data = path.read_text(errors="replace")
                     if isinstance(data, bytes):
                         data = data.decode(errors="replace")
                     texts = [text] if isinstance(text, str) else list(text)

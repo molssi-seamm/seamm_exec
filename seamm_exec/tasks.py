@@ -848,30 +848,52 @@ class TaskSet:
                 directory=self._relative(self.task_directory(task)),
                 pgid=None,
                 host=None,
+                id=None,
+                job_name=None,
+                bundle_dir=None,
             )
         kwargs = {"on_start": self._on_start}
         if bundle is not None:
             kwargs["bundle"] = bundle
             kwargs["markers"] = [self.marker_directory(t.key) for t in group]
+            kwargs["on_prepared"] = self._on_prepared
         try:
             ids = backend.submit(
                 group, [self.task_directory(t) for t in group], **kwargs
             )
-        except Exception:
-            # Not submitted: the attempt does not count.
+        except Exception as e:
+            # Not submitted: the attempt does not count. A bundle that may have
+            # reached the queue stays recorded as queued, with its job name, so
+            # that a restart looks for it rather than submitting it again.
+            maybe = getattr(e, "maybe_submitted", False)
             for task in group:
                 record = previous[task.key]
-                self.manifest.update(
-                    task.key,
-                    attempts=record.get("attempts", 0),
-                    state=record.get("state"),
-                )
+                if maybe:
+                    self.manifest.update(task.key, attempts=record.get("attempts", 0))
+                else:
+                    self.manifest.update(
+                        task.key,
+                        attempts=record.get("attempts", 0),
+                        state=record.get("state"),
+                        job_name=record.get("job_name"),
+                        bundle_dir=record.get("bundle_dir"),
+                        id=record.get("id"),
+                    )
+            self.manifest.flush(force=True)
             raise
         for task, backend_id in zip(group, ids):
             self.manifest.update(task.key, id=backend_id)
             inflight[(backend, backend_id)] = task
         # At once: a restart must find these ids even if the evaluator dies
         # while later bundles are still being submitted.
+        self.manifest.flush(force=True)
+
+    def _on_prepared(self, tasks, info):
+        """Called by a back end just before it submits a bundle: its job name
+        and directory are written at once, so that an evaluator that dies
+        during the submission leaves enough to find the job."""
+        for task in tasks:
+            self.manifest.update(task.key, **info)
         self.manifest.flush(force=True)
 
     def _on_start(self, task, info):

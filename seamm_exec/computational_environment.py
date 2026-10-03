@@ -208,20 +208,45 @@ def expand_hostlist(text):
     """SLURM's compressed hostlist -> host names.
 
     ``tc[053,059-061],gpu7`` -> ``tc053 tc059 tc060 tc061 gpu7``; zero padding
-    is kept.
+    is kept; a suffix after the brackets (``tc[01-02]-ib``) and several
+    bracket groups (``r[1-2]n[1-2]``, the product) are expanded as SLURM does.
     """
+    # Split on the commas that are not inside brackets
+    tokens = []
+    depth = 0
+    current = ""
+    for c in text:
+        if c == "[":
+            depth += 1
+        elif c == "]":
+            depth -= 1
+        if c == "," and depth == 0:
+            tokens.append(current)
+            current = ""
+        else:
+            current += c
+    tokens.append(current)
+
     hosts = []
-    for match in re.finditer(r"([^,\[]+)(?:\[([^\]]*)\])?", text):
-        prefix, ranges = match.group(1), match.group(2)
-        if ranges is None:
-            hosts.append(prefix)
+    for token in tokens:
+        token = token.strip()
+        if not token:
             continue
-        for part in ranges.split(","):
-            if "-" in part:
-                first, last = part.split("-", 1)
-                width = len(first)
-                for i in range(int(first), int(last) + 1):
-                    hosts.append(f"{prefix}{i:0{width}d}")
+        names = [""]
+        for part in re.split(r"(\[[^\]]*\])", token):
+            if part.startswith("[") and part.endswith("]"):
+                values = []
+                for item in part[1:-1].split(","):
+                    if "-" in item:
+                        first, last = item.split("-", 1)
+                        width = len(first)
+                        values.extend(
+                            f"{i:0{width}d}" for i in range(int(first), int(last) + 1)
+                        )
+                    else:
+                        values.append(item)
+                names = [n + v for n in names for v in values]
             else:
-                hosts.append(f"{prefix}{part}")
+                names = [n + part for n in names]
+        hosts.extend(names)
     return hosts

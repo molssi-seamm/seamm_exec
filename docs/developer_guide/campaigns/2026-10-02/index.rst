@@ -362,11 +362,11 @@ The program is resolved there: the ``[local]`` section of ``<root>/<program>.ini
 the program's **resolver**, an entry point in the group ``org.molssi.seamm.exec.resolvers`` named after
 the program, ``hook(config, cmd, env, ce, root) -> (config, cmd, env)``, which adjusts the configuration,
 command and environment for that machine and the task's share of it. ``<python>`` is the evaluator's own
-on the local transport and the target's ``remote_python`` on ssh. On an ssh target ``Task.config`` is
-ignored, because it was resolved on the evaluator's machine and names its paths; a task that carries one
-stays in the evaluator's pool, with a warning, until its step names only the program (ORCA and MOPAC
-today; their resolvers come with ``get_task`` in phase 3). On the local transport ``Task.config`` is used
-as the ``LocalPool`` uses it.
+on the local transport and the target's ``remote_python`` on ssh. ``Task.config`` is never sent to an
+ssh target, because it was resolved on the evaluator's machine and names its paths: a task that carries
+one is kept in the evaluator's pool, with a warning, until its step names only the program (ORCA and
+MOPAC today; their resolvers come with ``get_task`` in phase 3). On the local transport ``Task.config``
+is sent and used as the ``LocalPool`` uses it.
 
 
 Scheduler abstraction
@@ -380,7 +380,8 @@ a shared interface. ``seamm_slurm`` remains as a thin compatibility shim re-expo
 
     class Scheduler(Protocol):
         name: str                                   # "slurm", "pbs", ...
-        def directives(self, resources: Resources, extra: dict) -> list[str]: ...  # "#SBATCH ..." lines
+        def directives(self, resources: Resources, extra: dict) -> dict: ...  # this scheduler's directives
+        def directive_lines(self, directives: dict) -> list[str]: ...  # "#SBATCH ..." lines
         def submit_cmd(self, script_path) -> list[str]: ...     # ["sbatch", "--parsable", ...]
         def parse_submit(self, stdout) -> str: ...              # job id
         def status_cmd(self, ids) -> list[str]: ...             # squeue/sacct or qstat
@@ -471,7 +472,9 @@ and ``export = NONE`` is what makes ``module load`` work in jobs submitted over 
 dir>/target.json`` when it starts the job (before staging), so an evaluator that is itself a batch job on a
 cluster that cannot read the JobServer's ini file still finds it. The evaluator takes, in order: an
 explicit target, ``target.json``, ``$SEAMM_TARGET`` (a section of ``<root>/<hostname>.ini`` or of
-``$SEAMM_TARGETS``, for runs by hand), else its own ``LocalPool``.
+``$SEAMM_TARGETS``, for runs by hand), else its own ``LocalPool``. ``target.json`` is a copy of the
+section, ``setup`` text included, in a directory the Dashboard shows, so a section must never hold
+secrets (none does today).
 
 A job's ``parameters["queue"]`` already selects a section; its meaning becomes "this job's target". The Tk
 submit dialog's queue picker and the ``GET /api/queues`` route need no conceptual change. A step may

@@ -117,14 +117,10 @@ class FakeQueue:
             job["state"] = "CANCELLED"
 
     def find_jobs(self, name):
+        """By name, in any state, as squeue + sacct find them."""
         if getattr(self, "unreachable", False):
             return None
-        self.poll_many(list(self.jobs))
-        return [
-            i
-            for i, j in self.jobs.items()
-            if j["name"] == name and j["state"] in ("PENDING", "RUNNING")
-        ]
+        return [i for i, j in self.jobs.items() if j["name"] == name]
 
     def count_jobs(self):
         self.poll_many(list(self.jobs))  # as squeue would see them now
@@ -982,3 +978,165 @@ def test_staged_task_outside_the_job_fails_before_anything_is_submitted(job, tmp
     with pytest.raises(RuntimeError, match="not inside the job directory"):
         list(ts.run())
     assert queue.scripts == []
+
+
+# ---- from the design session's review ------------------------------------
+
+
+def test_death_between_sbatch_and_the_manifest_is_one_submission(job):
+    job, root = job
+    queue = FakeQueue(hold=True)
+    backend = make_backend(queue, job, root)
+    real_register = backend._register
+
+    def die(*args, **kwargs):
+        raise SystemExit("killed right after sbatch")
+
+    backend._register = die
+    ts = TaskSet(directory=job / "step", backend=backend)
+    ts.add(fake_task("t0"))
+    with pytest.raises(SystemExit):
+        list(ts.run())
+    backend._register = real_register
+    assert len(queue.scripts) == 1
+    record = json.loads((job / "step" / "tasks" / "manifest.json").read_text())[
+        "tasks"
+    ]["t0"]
+    assert record["state"] == "queued" and record["id"] is None
+    assert record["job_name"].startswith("seamm-bundle_0000.1-")
+
+    # The job runs (and here even finishes) while no evaluator watches.
+    (job_id,) = queue.jobs
+    queue.release(job_id)
+    queue.hold = False
+    ts = TaskSet(directory=job / "step", backend=make_backend(queue, job, root))
+    ts.add(fake_task("t0"))
+    (result,) = ts.run()
+    assert result.ok
+    assert len(queue.scripts) == 1
+
+
+def test_death_before_sbatch_resubmits_once(job):
+    job, root = job
+    queue = FakeQueue()
+    backend = make_backend(queue, job, root)
+
+    def die(*args, **kwargs):
+        raise SystemExit("killed just before sbatch")
+
+    queue_submit = queue.submit
+    queue.submit = die
+    ts = TaskSet(directory=job / "step", backend=backend)
+    ts.add(fake_task("t0"))
+    with pytest.raises(SystemExit):
+        list(ts.run())
+    queue.submit = queue_submit
+    assert queue.scripts == []
+
+    ts = TaskSet(directory=job / "step", backend=make_backend(queue, job, root))
+    ts.add(fake_task("t0"))
+    (result,) = ts.run()
+    assert result.ok
+    assert len(queue.scripts) == 1
+    record = json.loads((job / "step" / "tasks" / "manifest.json").read_text())[
+        "tasks"
+    ]["t0"]
+    assert "never reached the queue" in record["history"][0]["reason"]
+
+
+def test_queue_full_retries_reuse_one_bundle(job, tmp_path):
+    job, root = job
+    queue = FakeQueue(fail_submit="sbatch: error: QOSMaxSubmitJobPerUserLimit")
+    stager = CopyStager()
+    backend = make_backend(
+        queue,
+        job,
+        root,
+        stager=stager,
+        remote_job_directory=str(tmp_path / "remote" / "Job_000007"),
+        poll_interval=0.1,
+    )
+    ts = TaskSet(directory=job / "step", backend=backend)
+    ts.add(fake_task("t0"))
+
+    def clear():
+        time.sleep(1.0)
+        queue.fail_submit = None
+
+    threading.Thread(target=clear, daemon=True).start()
+    (result,) = ts.run()
+    assert result.ok
+    bundles = sorted(p.name for p in (job / "step" / "tasks" / "_bundles").iterdir())
+    assert bundles == ["bundle_0000.1"]
+    assert len(stager.pushes) == 1
+
+
+def test_expand_hostlist_suffix_and_product():
+    from seamm_exec.computational_environment import expand_hostlist
+
+    assert expand_hostlist("tc[01-02]-ib") == ["tc01-ib", "tc02-ib"]
+    assert expand_hostlist("r[1-2]n[1-2]") == ["r1n1", "r1n2", "r2n1", "r2n2"]
+    assert expand_hostlist("a[1,3],b") == ["a1", "a3", "b"]
+
+
+def test_whitespace_in_paths_is_refused(tmp_path):
+    job = tmp_path / "My Jobs" / "Job_000001"
+    (job / "step").mkdir(parents=True)
+    backend = make_backend(FakeQueue(), job, tmp_path)
+    ts = TaskSet(directory=job / "step", backend=backend)
+    ts.add(fake_task("t0"))
+    with pytest.raises(RuntimeError, match="contains whitespace"):
+        list(ts.run())
+
+
+def test_an_earlier_attempts_output_does_not_pass_the_success_check(job):
+    job, root = job
+    queue = FakeQueue()
+    marker = job / "step" / "tasks" / "t0"
+    marker.mkdir(parents=True)
+    (marker / "out.txt").write_text("TERMINATED NORMALLY\n")  # stale
+    ts = TaskSet(directory=job / "step", backend=make_backend(queue, job, root))
+    ts.add(
+        Task(
+            key="t0",
+            program="fake",
+            cmd=["true"],  # writes nothing this time
+            shell=True,
+            return_files=["out.txt"],
+            success_text={"out.txt": "TERMINATED NORMALLY"},
+        )
+    )
+    (result,) = ts.run()
+    assert result.state == "failed"
+    assert "out.txt is missing" in result.reason
+
+
+def test_abandon_waits_for_the_jobs_to_end(job):
+    job, root = job
+    queue = FakeQueue(hold=True)
+    backend = make_backend(queue, job, root, poll_interval=0.1)
+    job_id = queue.submit("#!/bin/bash\n", job_name="old")
+
+    def slow_cancel(ids):
+        queue.cancelled.extend(ids)
+        for i in ids:
+            queue.jobs[i]["state"] = "COMPLETING"
+
+        def finish():
+            time.sleep(0.5)
+            for i in ids:
+                queue.jobs[i]["state"] = "CANCELLED"
+
+        threading.Thread(target=finish, daemon=True).start()
+
+    queue.cancel_many = slow_cancel
+    t0 = time.time()
+    backend.abandon([{"id": f"{job_id}#bundle_0000.1#t0"}])
+    assert queue.jobs[job_id]["state"] == "CANCELLED"
+    assert time.time() - t0 >= 0.4
+
+
+def test_only_the_local_executor_goes_to_a_queue(job):
+    job, root = job
+    with pytest.raises(RuntimeError, match="local executor"):
+        make_backend(FakeQueue(), job, root, executor="docker")

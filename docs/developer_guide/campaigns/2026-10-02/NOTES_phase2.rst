@@ -57,7 +57,7 @@ What was built
       (``load_slurm_config`` is an alias) and ``list_sections``.
     - ``script.py``: ``build_script(directives, payload, scheduler="slurm")``.
 
-    167 tests: the 112 ported from ``seamm_slurm`` plus the interface, PBS,
+    171 tests: the 112 ported from ``seamm_slurm`` plus the interface, PBS,
     the task keys, staging, and SLURM 25.11 JSON captured on TinkerCliffs.
 
 ``seamm_slurm`` (the shim)
@@ -128,7 +128,7 @@ What was built
     - ``computational_environment()``: the job variables come from
       ``seamm_scheduler`` (SLURM, then PBS), and a ``_pbs()`` reader was
       added. ``Base``'s in-situ check uses the same variables.
-    - 83 tests: 51 from phase 1, 32 new. The new ones run with a fake queue
+    - 91 tests: 51 from phase 1, 40 new. The new ones run with a fake queue
       that executes each real batch script with bash, so the real worker,
       pool and markers are exercised.
 
@@ -180,9 +180,10 @@ Decisions made with the design session
 
    - The bundle runs with ``remote_python`` (ssh) or ``sys.executable`` (local
      transport), so the semantics are identical to the ``LocalPool``.
-   - On ssh targets ``Task.config`` is ignored and the program is resolved
-     where it runs. On the local transport ``Task.config`` is used as the pool
-     uses it.
+   - ``Task.config`` is never sent to an ssh target: a task that carries it
+     is kept in the evaluator's pool with a warning, and a task without it is
+     resolved where it runs. On the local transport ``Task.config`` is sent
+     and used as the pool uses it.
    - The pure worker path stays, for machines without ``seamm_exec``.
 3. **The protocol has ``poll(run, ids)``**, with the SLURM override.
    Bundling and throttling live in the ``TaskSet``.
@@ -376,8 +377,12 @@ Deferred
 - ``max_queued_tasks`` counts the user's jobs on the cluster, but two
   evaluators can still race for the last slots. A rejected ``sbatch`` is held
   and retried, so this is harmless.
-- PBS has no ``count_cmd`` (``qselect -u`` needs the remote user name), so
-  ``max_queued_tasks`` is ignored for PBS.
+- PBS counts and finds jobs with ``qselect -u "$USER"`` (``-N`` for a name),
+  implemented but untested on a real site.
+- Remote staging directories (``<remote_root>/<Job>-<hash>/``) are never
+  removed. MolSSI10's home has no purge, so they accumulate there until
+  removed by hand. Cleanup once a ``TaskSet`` has collected everything, or
+  when the job is deleted, is left for later.
 - TinkerCliffs's production venv is not versioned yet. That is a later rollout
   step.
 
@@ -394,6 +399,60 @@ Cleanup
   - ``tinkercliffs:/projects/seamm/psaxe/phase2/venv``
   - ``molssi10:~/phase2/venv``
   - ``~/SEAMM_DEV/venvs/phase2-{A,B}``, to be pruned once phase 2 is released.
+
+Design session's review (2026-10-02)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A second, independent review. Each item is fixed, with a test.
+
+1. **The squeue JSON path never flagged a transient failure.** With
+   ``rc=255`` ("ssh: timed out"), ``poll_failed`` stayed False. Any squeue
+   error other than "invalid job id" now marks squeue failed, and
+   ``poll_failed`` is set when squeue failed and a job is still missing
+   after ``sacct`` (sacct may not have recorded a new job yet), with or
+   without accounting.
+2. **A restart could still duplicate a submission.** The record said
+   *queued* with no id if the evaluator died between ``sbatch`` and the
+   manifest write, or while a bundle was parked during an outage.
+
+   - Each bundle's unique job name and directory are now written to its
+     tasks' records, flushed, *before* ``sbatch`` (``on_prepared``).
+   - A record without an id is adopted by name. ``find`` is ``squeue --me
+     --name``, then ``sacct --name`` for a job that already finished.
+   - If neither knows the job, the bundle never reached the queue: lost, and
+     submitted again.
+   - A bundle that may have reached the queue stays recorded as queued.
+   - Live: TinkerCliffs refuses a 30-day ``sacct`` range ("Too wide of a date
+     range"), so it uses 14 days, then 2. Checked on TinkerCliffs and MolSSI10
+     with names of earlier bundles.
+3. **QOS-full churn.** Each retry made a new ``bundle.<n+1>``, rewrote the
+   inputs and restaged them. A held bundle is now prepared once
+   (``_Prepared``: directory, job name, script, staged, maybe-submitted) and
+   reused until it is queued.
+4. ``expand_hostlist`` follows SLURM's grammar: a suffix (``tc[01-02]-ib``) and
+   several bracket groups (``r[1-2]n[1-2]``, the product).
+5. Paths with whitespace are refused up front with a clear message (batch
+   directives and rsync's remote paths cannot carry them safely).
+6. An earlier attempt's output can no longer pass a success check. The
+   ``success_text`` files are removed from the task directory, locally and on
+   the cluster, at submission, and the worker trusts a file on disk only if
+   this run wrote it (its mtime).
+7. Abandoned jobs (inputs changed) are polled until they have ended,
+   ``COMPLETING`` included (two minutes at most), before the new inputs are
+   submitted into the same directories.
+8. Remote staging directories are not cleaned up: recorded under Deferred.
+
+Also:
+
+- ``Task.config`` is described as *kept local*, not *ignored*.
+- ``directives()`` returns a dict in the design's protocol.
+- A section must hold no secrets, since it is copied to ``target.json``; this
+  is in the design, the config module and the JobServer guide.
+- Bundles refuse a non-local executor instead of silently running locally.
+- ``SLURM_CONF`` survives the dropping of the evaluator's ``SLURM_*``.
+- The task digest is computed once per backend entry, not on every poll.
+- There are tests for bare ``.limits`` times (minutes). A local and queued
+  mix in flight is covered by ``test_inline_rule_with_a_real_scheduler_backend``.
 
 2026-10-02 -- release PRs
 -------------------------

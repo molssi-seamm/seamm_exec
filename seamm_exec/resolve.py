@@ -25,9 +25,10 @@ task's computational environment (``NTASKS``, ``MEM_PER_CPU``, ...) and
 ``root`` the SEAMM root holding the ini files. The command is formatted with
 ``config`` and ``ce`` afterwards, by the executor, exactly as before.
 
-On a remote back end (``transport = ssh``) ``Task.config`` is ignored: it was
-resolved on the evaluator's machine and names that machine's paths, so the task
-is resolved again, here, from the files where it runs. On the local transport
+``Task.config`` is never sent to a remote back end (``transport = ssh``): it was
+resolved on the evaluator's machine and names that machine's paths, so the
+``TaskSet`` keeps such a task in the evaluator's own pool, with a warning. A
+task without it is resolved where it runs, here. On the local transport
 ``Task.config``, when given, is used as it is, as in the ``LocalPool``.
 """
 

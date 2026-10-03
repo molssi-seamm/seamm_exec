@@ -60,18 +60,42 @@ _TRANSIENT = re.compile(
 
 class QueueFull(RuntimeError):
     """The queue will not take more jobs now (it is full, or cannot be reached);
-    the TaskSet holds the bundle and tries again later."""
+    the TaskSet holds the bundle and tries again later.
+
+    ``maybe_submitted`` is True when the bundle may have reached the queue
+    (the connection dropped during ``sbatch``): its tasks must then stay
+    recorded as queued, so that a restart looks for the job by name.
+    """
+
+    def __init__(self, message, maybe_submitted=False):
+        super().__init__(message)
+        self.maybe_submitted = maybe_submitted
+
+
+class _Prepared:
+    """A bundle written, and perhaps staged, but not yet known to be queued."""
+
+    def __init__(self, bundle_dir, job_name, script):
+        self.bundle_dir = bundle_dir
+        self.job_name = job_name
+        self.script = script
+        self.staged = False
+        self.maybe_submitted = False
 
 
 class _Entry:
     """What the backend knows of one submitted task."""
 
-    def __init__(self, task, directory, marker, bundle_dir, job_id):
+    def __init__(self, task, directory, marker, bundle_dir, job_id, job_name=None):
         self.task = task
+        self.digest = task.digest()  # once: it hashes every input file
         self.directory = Path(directory)
         self.marker = Path(marker)
         self.bundle_dir = Path(bundle_dir)
-        self.job_id = str(job_id)
+        # None until a job adopted by name is found in the queue
+        self.job_id = None if job_id is None else str(job_id)
+        self.job_name = job_name
+        self.never_queued = False
         self.reason = None
 
 
@@ -145,10 +169,16 @@ class SchedulerBackend:
         self.root = root
         self.executor = executor
         self.accepts_config = accepts_config
+        if executor != "local":
+            raise RuntimeError(
+                f"Tasks can go to a queue only with the local executor, not "
+                f"'{executor}'."
+            )
         self.bundle_walltime = bundle_walltime
         self.max_queued = max_queued
         self.poll_interval = poll_interval
         self.job_name_prefix = job_name_prefix
+        self.abandon_timeout = 120.0
 
         self._entries = {}  # backend id -> _Entry
         self._jobs = {}  # job id -> last JobStatus (or None if not seen)
@@ -157,7 +187,8 @@ class SchedulerBackend:
         self._ended_polls = {}  # job id -> polls since it was seen ended
         self._pull_failures = {}  # job id -> failed pulls, not counting outages
         self._unpullable = {}  # job id -> why its files cannot come back
-        self._unconfirmed = {}  # (bundle, keys) -> (bundle_dir, job name, script)
+        self._prepared = {}  # (bundle, keys) -> _Prepared, until it is queued
+        self._resolved_at = 0.0
         self._polled_at = 0.0
         self._count = None
         self._counted_at = 0.0
@@ -261,34 +292,100 @@ class SchedulerBackend:
             self._counted_at = now
         return self.max_queued - self._count
 
-    def submit(self, tasks, directories, on_start=None, bundle=None, markers=None):
-        """Submit ``tasks`` as one bundle: one batch job. Returns their ids."""
+    def submit(
+        self,
+        tasks,
+        directories,
+        on_start=None,
+        bundle=None,
+        markers=None,
+        on_prepared=None,
+    ):
+        """Submit ``tasks`` as one bundle: one batch job. Returns their ids.
+
+        ``on_prepared(tasks, info)`` is called before ``sbatch`` with the
+        bundle's unique job name and directory, so the caller can record them:
+        a restart that finds no job id looks the job up by that name.
+        """
         if not tasks:
             return []
         directories = [Path(d) for d in directories]
         markers = [Path(m) for m in (markers or directories)]
         bundle = bundle or "bundle"
 
-        # A submission whose outcome was unknown (the connection dropped): find
-        # out whether the queue has it before submitting it again.
+        # A bundle held earlier (queue full, cluster unreachable) is the same
+        # bundle when it is tried again: same directory, same job name.
         key = (bundle, tuple(t.key for t in tasks))
-        if key in self._unconfirmed:
-            bundle_dir, job_name, script = self._unconfirmed[key]
-            found = self.queue.find_jobs(job_name)
-            if found is None:
-                raise QueueFull(
-                    f"cannot yet tell whether {bundle_dir.name} reached the queue"
-                )
-            if found:
-                del self._unconfirmed[key]
-                logger.info(
-                    f"{bundle_dir.name} had reached the queue as job {found[0]}"
-                )
-                return self._register(tasks, directories, markers, bundle_dir, found[0])
-            return self._submit_script(
-                key, tasks, directories, markers, bundle_dir, job_name, script
+        prepared = self._prepared.get(key)
+        if prepared is None:
+            prepared = self._prepare(bundle, tasks, directories, markers)
+            self._prepared[key] = prepared
+        if on_prepared is not None:
+            on_prepared(
+                tasks,
+                {
+                    "job_name": prepared.job_name,
+                    "bundle_dir": prepared.bundle_dir.name,
+                },
             )
 
+        if prepared.maybe_submitted:
+            # The connection dropped during sbatch: does the queue have it?
+            found = self.queue.find_jobs(prepared.job_name)
+            if found is None:
+                raise QueueFull(
+                    f"cannot yet tell whether {prepared.bundle_dir.name} reached "
+                    "the queue",
+                    maybe_submitted=True,
+                )
+            if found:
+                del self._prepared[key]
+                logger.info(
+                    f"{prepared.bundle_dir.name} had reached the queue as job "
+                    f"{found[0]}"
+                )
+                return self._register(
+                    tasks, directories, markers, prepared.bundle_dir, found[0]
+                )
+            prepared.maybe_submitted = False
+
+        if not self.shared and not prepared.staged:
+            paths = {str(self.relative(prepared.bundle_dir))}
+            for directory, marker in zip(directories, markers):
+                paths.add(str(self.relative(directory)))
+                paths.add(str(self.relative(marker)))
+            try:
+                self._clear_remote_markers(tasks, directories, markers)
+                self.stager.push(
+                    str(self.job_directory), self.remote_job_directory, sorted(paths)
+                )
+            except Exception as e:
+                if _TRANSIENT.search(str(e)):
+                    raise QueueFull(f"cannot stage to the cluster: {e}") from e
+                raise
+            prepared.staged = True
+
+        try:
+            job_id = self.queue.submit(prepared.script, job_name=prepared.job_name)
+        except Exception as e:
+            if _QUEUE_FULL.search(str(e)):
+                raise QueueFull(str(e)) from e
+            if _TRANSIENT.search(str(e)):
+                prepared.maybe_submitted = True
+                raise QueueFull(str(e), maybe_submitted=True) from e
+            del self._prepared[key]
+            raise
+        del self._prepared[key]
+        if self._count is not None:
+            self._count += 1
+        logger.info(
+            f"Submitted {prepared.bundle_dir.name} ({len(tasks)} tasks) as job "
+            f"{job_id}"
+        )
+        return self._register(tasks, directories, markers, prepared.bundle_dir, job_id)
+
+    def _prepare(self, bundle, tasks, directories, markers):
+        """Write a bundle: its directory, the tasks' inputs, bundle.json, run.sh."""
         # <step dir>/tasks/_bundles/<bundle>.<n>
         bundles_dir = markers[0].parent / "_bundles"
         bundles_dir.mkdir(parents=True, exist_ok=True)
@@ -305,6 +402,10 @@ class SchedulerBackend:
             for stale in ("DONE", "FAILED"):
                 if (marker / stale).exists():
                     (marker / stale).unlink()
+            # An earlier attempt's output must not pass this one's success check
+            for name in task.success_text or {}:
+                if (directory / name).is_file():
+                    (directory / name).unlink()
             for filename, data in (task.files or {}).items():
                 path = directory / filename
                 path.parent.mkdir(parents=True, exist_ok=True)
@@ -324,48 +425,9 @@ class SchedulerBackend:
         (bundle_dir / "bundle.json").write_text(json.dumps(bundle_json, indent=2))
         script = self._script(tasks, bundle_dir)
         (bundle_dir / "run.sh").write_text(script)
-
-        if not self.shared:
-            paths = {str(self.relative(bundle_dir))}
-            for directory, marker in zip(directories, markers):
-                paths.add(str(self.relative(directory)))
-                paths.add(str(self.relative(marker)))
-            try:
-                self._clear_remote_markers(markers)
-                self.stager.push(
-                    str(self.job_directory), self.remote_job_directory, sorted(paths)
-                )
-            except Exception as e:
-                if _TRANSIENT.search(str(e)):
-                    raise QueueFull(f"cannot stage to the cluster: {e}") from e
-                raise
-
         # Unique, so the queue can be asked whether it has this very bundle
         job_name = f"{self.job_name_prefix}-{bundle_dir.name}-{secrets.token_hex(3)}"
-        return self._submit_script(
-            key, tasks, directories, markers, bundle_dir, job_name, script
-        )
-
-    def _submit_script(
-        self, key, tasks, directories, markers, bundle_dir, job_name, script
-    ):
-        try:
-            job_id = self.queue.submit(script, job_name=job_name)
-        except Exception as e:
-            if _QUEUE_FULL.search(str(e)):
-                self._unconfirmed.pop(key, None)
-                raise QueueFull(str(e)) from e
-            if _TRANSIENT.search(str(e)):
-                # It may or may not have reached the queue.
-                self._unconfirmed[key] = (bundle_dir, job_name, script)
-                raise QueueFull(str(e)) from e
-            self._unconfirmed.pop(key, None)
-            raise
-        self._unconfirmed.pop(key, None)
-        if self._count is not None:
-            self._count += 1
-        logger.info(f"Submitted {bundle_dir.name} ({len(tasks)} tasks) as job {job_id}")
-        return self._register(tasks, directories, markers, bundle_dir, job_id)
+        return _Prepared(bundle_dir, job_name, script)
 
     def _register(self, tasks, directories, markers, bundle_dir, job_id):
         ids = []
@@ -381,6 +443,13 @@ class SchedulerBackend:
     def check(self, task, directory, marker):
         """Fail early, before anything is submitted, for a task this back end
         cannot run (a directory outside the job, without shared storage)."""
+        for path in (directory, marker, self.job_directory):
+            if any(c.isspace() for c in str(Path(path).resolve())):
+                raise RuntimeError(
+                    f"'{path}' contains whitespace, which batch scripts and "
+                    "rsync cannot carry safely. Use a directory without spaces "
+                    "for jobs whose tasks go to a queue."
+                )
         if not self.shared:
             self.relative(directory)
             self.relative(marker)
@@ -390,14 +459,27 @@ class SchedulerBackend:
         record. Returns its id, or None if the record is not one of ours."""
         backend_id = record.get("id")
         parsed = parse_id(backend_id)
+        if parsed is None and record.get("job_name") and record.get("bundle_dir"):
+            # Prepared, perhaps submitted, but its id was never recorded (the
+            # evaluator died during sbatch, or the connection dropped): find
+            # it by its unique job name.
+            backend_id = f"?{record['job_name']}#{record['bundle_dir']}#{task.key}"
+            parsed = parse_id(backend_id)
         if parsed is None:
             return None
         job_id, bundle_name, key = parsed
         if key != task.key:
             return None
         bundle_dir = Path(marker).parent / "_bundles" / bundle_name
-        self._entries[backend_id] = _Entry(task, directory, marker, bundle_dir, job_id)
-        self._jobs.setdefault(job_id, None)
+        if job_id.startswith("?"):
+            self._entries[backend_id] = _Entry(
+                task, directory, marker, bundle_dir, None, job_name=job_id[1:]
+            )
+        else:
+            self._entries[backend_id] = _Entry(
+                task, directory, marker, bundle_dir, job_id
+            )
+            self._jobs.setdefault(job_id, None)
         return backend_id
 
     def abandon(self, records, keep=()):
@@ -409,18 +491,47 @@ class SchedulerBackend:
             parsed = parse_id(record.get("id"))
             if parsed is not None and parsed[0] not in kept:
                 jobs.add(parsed[0])
+            elif parsed is None and record.get("job_name"):
+                found = self.queue.find_jobs(record["job_name"]) or []
+                jobs.update(j for j in found if j not in kept)
         if not jobs:
             return
-        logger.info(f"Cancelling jobs running earlier inputs: {sorted(jobs)}")
+        jobs = sorted(jobs)
+        logger.info(f"Cancelling jobs running earlier inputs: {jobs}")
         try:
-            self.queue.cancel_many(sorted(jobs))
+            self.queue.cancel_many(jobs)
         except Exception as e:
-            # Harmless: DONE carries the fingerprint, so their results are
+            # Not fatal: DONE carries the fingerprint, so their results are
             # never taken for the new inputs.
-            logger.warning(f"Could not cancel {sorted(jobs)}: {e}")
+            logger.warning(f"Could not cancel {jobs}: {e}")
+            return
+        # Wait for them to end (COMPLETING can take a while), so they cannot
+        # write into the task directories the new inputs will use.
+        deadline = time.time() + self.abandon_timeout
+        while time.time() < deadline:
+            try:
+                statuses = self.queue.poll_many(jobs)
+            except Exception:
+                statuses = None
+            if statuses is not None and not getattr(
+                self.queue.scheduler, "poll_failed", False
+            ):
+                if all(
+                    statuses.get(j) is None or statuses[j].is_terminal for j in jobs
+                ):
+                    return
+            time.sleep(min(5.0, self.poll_interval))
+        logger.warning(f"Jobs {jobs} had not ended after cancelling them")
 
     def status(self, ids):
-        self._poll([self._entries[i].job_id for i in ids if i in self._entries])
+        self._resolve_names([self._entries[i] for i in ids if i in self._entries])
+        self._poll(
+            [
+                self._entries[i].job_id
+                for i in ids
+                if i in self._entries and self._entries[i].job_id is not None
+            ]
+        )
         result = {}
         for backend_id in ids:
             entry = self._entries.get(backend_id)
@@ -429,6 +540,26 @@ class SchedulerBackend:
                 continue
             result[backend_id] = self._state(entry)
         return result
+
+    def _resolve_names(self, entries):
+        """Find the jobs of entries adopted by name, at most once a poll."""
+        pending = {}
+        for entry in entries:
+            if entry.job_id is None and not entry.never_queued:
+                pending.setdefault(entry.job_name, []).append(entry)
+        if not pending or time.time() - self._resolved_at < self.poll_interval / 2:
+            return
+        self._resolved_at = time.time()
+        for job_name, group in pending.items():
+            found = self.queue.find_jobs(job_name)
+            if found is None:
+                continue  # cannot tell yet
+            for entry in group:
+                if found:
+                    entry.job_id = found[0]
+                    self._jobs.setdefault(found[0], None)
+                else:
+                    entry.never_queued = True
 
     def wait(self, ids, timeout=None):
         """Sleep until the next poll is due."""
@@ -580,12 +711,15 @@ class SchedulerBackend:
         )
         return build_script(directives, "\n".join(lines), scheduler=scheduler)
 
-    def _clear_remote_markers(self, markers):
-        """Remove stale DONE/FAILED on the cluster, which rsync would keep."""
+    def _clear_remote_markers(self, tasks, directories, markers):
+        """Remove on the cluster what rsync would keep: stale DONE/FAILED, and
+        an earlier attempt's files that a success check reads."""
         paths = []
-        for marker in markers:
+        for task, directory, marker in zip(tasks, directories, markers):
             remote = self.where(marker)
             paths += [f"{remote}/DONE", f"{remote}/FAILED"]
+            for name in task.success_text or {}:
+                paths.append(f"{self.where(directory)}/{name}")
         rc, out, err = self.queue._run(
             ["xargs", "-0", "rm", "-f"], input_text="\0".join(paths) + "\0"
         )
@@ -684,7 +818,7 @@ class SchedulerBackend:
             names = set(os.listdir(entry.marker))
         except OSError:
             return None
-        digest = entry.task.digest()
+        digest = entry.digest
         for name in ("DONE", "FAILED"):
             if name in names:
                 data = _read_json(entry.marker / name)
@@ -696,6 +830,17 @@ class SchedulerBackend:
         return None
 
     def _state(self, entry):
+        if entry.job_id is None:
+            # Adopted by name and not found yet
+            if entry.never_queued:
+                entry.reason = (
+                    f"bundle {entry.bundle_dir.name} never reached the queue "
+                    f"(no job named {entry.job_name})"
+                )
+                return LOST
+            if self.shared and self._marker(entry) == "DONE":
+                return FINISHED
+            return QUEUED
         # The worker's markers decide, whenever they can be seen: on a shared
         # filesystem even while the bundle still runs.
         if self.shared or entry.job_id in self._pulled:
