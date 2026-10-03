@@ -1,8 +1,8 @@
 Phase 4 notes
 =============
 
-2026-10-03 -- plan and decisions 
--------------------------------------
+2026-10-03 -- plan and decisions
+--------------------------------
 
 Phase 4 moves flowchart tables from in-memory pandas DataFrames into the job's
 SQLite file (``seamm.db``), beside the structures and properties.
@@ -159,11 +159,11 @@ molsystem (backend):
   ``append_rows(list_of_dicts) -> [rowid]``, ordered column listing,
   parameterized ``where`` (it has one in ``rows``/``delete``), and the
   journal hook.
-- Bugs found in ``_Table`` while surveying, to fix here: ``append()`` returns
-  the undefined name ``result`` when the table has no ``id`` column (latent
-  ``NameError``); ``add_attribute`` interpolates a string ``DEFAULT`` into the
-  SQL without escaping, so a default containing ``'`` breaks it;
-  ``to_dataframe()`` uses the rowid as the index and ignores declared types.
+- Found in ``_Table`` while surveying: ``add_attribute`` interpolates a string
+  ``DEFAULT`` into the SQL without escaping, so a default containing ``'``
+  breaks it (fixed); ``to_dataframe()`` uses the rowid as the index and ignores
+  declared types (the user tables have their own). (An ``append()`` "undefined
+  ``result``" reported in the first draft was a misreading.)
 
 Two bookkeeping tables in ``seamm.db``:
 

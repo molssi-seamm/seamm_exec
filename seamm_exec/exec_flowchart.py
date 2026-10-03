@@ -157,6 +157,14 @@ class ExecFlowchart(object):
         # Correctly number the nodes
         self.flowchart.set_ids()
 
+        # Tables live in the job database: refuse plug-ins too old for that before
+        # running anything, rather than failing part way through.
+        problems = seamm.table.check_table_plugins(self.flowchart)
+        if len(problems) > 0:
+            message = "This flowchart cannot run here:\n    " + "\n    ".join(problems)
+            printer.job(message)
+            raise RuntimeError(message)
+
         # Write out an initial summary of the flowchart before doing anything
         # Reset the visited flag for traversal
         self.flowchart.reset_visited()
@@ -195,6 +203,9 @@ class ExecFlowchart(object):
             while next_node is not None:
                 try:
                     next_node = next_node.run()
+                    # Commit the step's table and structure changes (phase 5 will
+                    # write its checkpoint only after this).
+                    seamm.flowchart_variables.get_variable("_system_db").db.commit()
                 except DeprecationWarning as e:
                     print("\nDeprecation warning: " + str(e))
                     traceback.print_exc(file=sys.stderr)
