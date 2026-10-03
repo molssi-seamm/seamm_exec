@@ -414,6 +414,6 @@ Lessons
   their next change.
 
 Still open: the Dimer Builder's inward wall walk on the task path (one
-``TaskSet`` per point), and pruning the phase 3 test environments
+``TaskSet`` per point). The phase 3 test environments
 (``~/SEAMM_DEV/venvs/phase3-{A,B}``, ``tinkercliffs:/projects/seamm/psaxe/phase3``)
-with Paul's OK.
+were deleted on 2026-10-03.
