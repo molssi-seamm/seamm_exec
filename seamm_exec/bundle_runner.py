@@ -48,9 +48,17 @@ def run_seamm_bundle(bundle):
     for entry in bundle.get("tasks", []):
         marker = Path(entry["marker"])
         marker.mkdir(parents=True, exist_ok=True)
-        if (marker / "DONE").exists():
-            _log(f"{entry['key']}: already done")
-            continue
+        done = marker / "DONE"
+        if done.exists():
+            try:
+                fingerprint = json.loads(done.read_text()).get("fingerprint")
+            except Exception:
+                fingerprint = None
+            if fingerprint in (None, entry.get("fingerprint")):
+                _log(f"{entry['key']}: already done")
+                continue
+            _log(f"{entry['key']}: DONE is for other inputs; running it again")
+            done.unlink()
         if (marker / "FAILED").exists():
             (marker / "FAILED").unlink()
         directory = Path(entry["directory"])

@@ -450,6 +450,7 @@ class TaskSet:
         self._bundle_count = 0
         self._bundle_seconds = 0.0
         self._held = []  # [(backend, bundle, [tasks])] waiting for room
+        self._held_since = {}  # bundle -> when it was first held
         self._config_warned = False
 
         self._backend = backend
@@ -744,13 +745,17 @@ class TaskSet:
             if inflight:
                 by_backend = {}
                 for (backend, backend_id), task in inflight.items():
-                    by_backend.setdefault(backend, []).append(backend_id)
-                    self.manifest.update(task.key, state=CANCELLED)
-                for backend, ids in by_backend.items():
+                    by_backend.setdefault(backend, []).append((backend_id, task))
+                for backend, entries in by_backend.items():
                     try:
-                        backend.cancel(ids)
+                        backend.cancel([i for i, _ in entries])
                     except Exception:
+                        # Left as they were, so a restart adopts them rather
+                        # than submitting duplicates.
                         logger.exception("Error cancelling tasks")
+                        continue
+                    for _, task in entries:
+                        self.manifest.update(task.key, state=CANCELLED)
             self.manifest.flush(force=True)
             self._close_tars()
 
@@ -777,6 +782,14 @@ class TaskSet:
                 self._submit_group(backend, group, inflight)
                 continue
             # A back end that bundles gets one call per bundle, while it has room.
+            if hasattr(backend, "check"):
+                # Before anything is submitted
+                for task in group:
+                    backend.check(
+                        task,
+                        self.task_directory(task),
+                        self.marker_directory(task.key),
+                    )
             by_bundle = {}
             for task in group:
                 by_bundle.setdefault(self._bundles[task.key], []).append(task)
@@ -801,8 +814,17 @@ class TaskSet:
                 continue
             try:
                 self._submit_group(backend, members, inflight, bundle=bundle)
+                self._held_since.pop(bundle, None)
             except QueueFull as e:
-                logger.info(f"The queue is full, holding {bundle}: {e}")
+                since = self._held_since.setdefault(bundle, _now())
+                minutes = (_now() - since) / 60
+                if minutes > 15:
+                    logger.warning(
+                        f"{bundle} has waited {minutes:.0f} minutes to be submitted: "
+                        f"{e}"
+                    )
+                else:
+                    logger.info(f"Holding {bundle}: {e}")
                 full.add(backend)
                 still_held.append((backend, bundle, members))
         if still_held and not inflight and len(still_held) == len(self._held):
@@ -848,6 +870,9 @@ class TaskSet:
         for task, backend_id in zip(group, ids):
             self.manifest.update(task.key, id=backend_id)
             inflight[(backend, backend_id)] = task
+        # At once: a restart must find these ids even if the evaluator dies
+        # while later bundles are still being submitted.
+        self.manifest.flush(force=True)
 
     def _on_start(self, task, info):
         """Called by a back end when a task's process starts.
@@ -1068,13 +1093,24 @@ class TaskSet:
         """
         by_backend = {}
         remaining = []
+        abandoned = {}  # backend -> [records whose inputs changed]
         for task in pending:
             record = self.manifest.get(task.key)
             if record is None or record.get("state") not in (QUEUED, RUNNING):
                 remaining.append(task)
                 continue
             backend = self._backend_named(record.get("backend"))
-            if backend is not None and hasattr(backend, "adopt"):
+            if (
+                backend is not None
+                and hasattr(backend, "abandon")
+                and record.get("fingerprint") != task.digest()
+            ):
+                abandoned.setdefault(backend, []).append(record)
+            if (
+                backend is not None
+                and hasattr(backend, "adopt")
+                and record.get("fingerprint") == task.digest()
+            ):
                 backend_id = backend.adopt(
                     task,
                     self.task_directory(task),
@@ -1099,6 +1135,11 @@ class TaskSet:
                     self._finish_attempt(
                         key, LOST, None, reason="the evaluator stopped while it ran"
                     )
+        # Jobs still running old inputs, which no adopted task needs, are
+        # cancelled so they cannot write into the tasks' directories.
+        for backend, records in abandoned.items():
+            adopted = [i for (b, i) in inflight if b is backend]
+            backend.abandon(records, keep=adopted)
         return remaining
 
     def _backend_named(self, name):

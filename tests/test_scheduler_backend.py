@@ -60,7 +60,7 @@ class FakeQueue:
             self.n += 1
             job_id = str(self.n)
             self.scripts.append(script)
-            job = {"proc": None, "state": "PENDING", "script": script}
+            job = {"proc": None, "state": "PENDING", "script": script, "name": job_name}
             self.jobs[job_id] = job
         if self.start and not self.hold:
             self.release(job_id)
@@ -116,6 +116,16 @@ class FakeQueue:
                 os.killpg(job["proc"].pid, 9)
             job["state"] = "CANCELLED"
 
+    def find_jobs(self, name):
+        if getattr(self, "unreachable", False):
+            return None
+        self.poll_many(list(self.jobs))
+        return [
+            i
+            for i, j in self.jobs.items()
+            if j["name"] == name and j["state"] in ("PENDING", "RUNNING")
+        ]
+
     def count_jobs(self):
         self.poll_many(list(self.jobs))  # as squeue would see them now
         live = [j for j in self.jobs.values() if j["state"] in ("PENDING", "RUNNING")]
@@ -162,7 +172,8 @@ def run_all(task_set):
 def test_ids_and_names():
     assert parse_id("123#bundle_0000.1#frag-1") == ("123", "bundle_0000.1", "frag-1")
     assert parse_id("123") is None
-    assert remote_name("/a/b/Job_000123") == "Job_000123"
+    assert remote_name("/a/b/Job_000123").startswith("Job_000123-")
+    assert remote_name("/a/b/Job_000123") != remote_name("/c/Job_000123")
     name = remote_name("/a/b/tmp")
     assert name.startswith("tmp-") and len(name) == 14
     assert remote_name("/a/b/tmp") == name
@@ -556,11 +567,11 @@ def test_ssh_target_needs_remote_python_and_root(tmp_path):
         SchedulerBackend.from_target(section, job_directory=tmp_path)
     section.remote_python = "/projects/seamm/SEAMM/venv/bin/python"
     backend = SchedulerBackend.from_target(section, job_directory=tmp_path / "Job_1")
-    assert backend.remote_job_directory == "/projects/x/Job_1"
+    assert backend.remote_job_directory.startswith("/projects/x/Job_1-")
     assert backend.root == "/projects/seamm/SEAMM"
     assert not backend.accepts_config
     assert backend.where(tmp_path / "Job_1" / "s" / "tasks" / "a") == (
-        "/projects/x/Job_1/s/tasks/a"
+        backend.remote_job_directory + "/s/tasks/a"
     )
     with pytest.raises(RuntimeError, match="not inside the job directory"):
         backend.where(tmp_path / "elsewhere")
@@ -807,3 +818,166 @@ def test_inline_rule_with_a_real_scheduler_backend(job):
     assert results["tiny"].ok and results["big"].ok
     assert results["elsewhere"].state == "failed"
     assert "No configuration for 'notinstalled'" in results["elsewhere"].reason
+
+
+# ---- from the review --------------------------------------------------------
+
+
+def test_a_failed_pull_is_retried_without_spinning(job, tmp_path):
+    job, root = job
+    remote = tmp_path / "remote" / "Job_000007"
+
+    class FlakyStager(CopyStager):
+        fails = 1
+
+        def pull(self, *a, **k):
+            if self.fails:
+                self.fails -= 1
+                raise RuntimeError("rsync failed (255): ssh: Network is unreachable")
+            return super().pull(*a, **k)
+
+    queue = FakeQueue()
+    stager = FlakyStager()
+    backend = make_backend(
+        queue, job, root, stager=stager, remote_job_directory=str(remote)
+    )
+    calls = {"n": 0}
+    real = backend.status
+
+    def counting(ids):
+        calls["n"] += 1
+        return real(ids)
+
+    backend.status = counting
+    ts = TaskSet(directory=job / "step", backend=backend)
+    ts.add(fake_task("t0"))
+    (result,) = ts.run()
+    assert result.ok
+    assert len(stager.pulls) == 1  # the second, successful pull
+    assert calls["n"] < 100  # it slept between polls
+
+
+def test_unpullable_files_end_as_lost(job, tmp_path):
+    job, root = job
+    remote = tmp_path / "remote" / "Job_000007"
+
+    class BrokenStager(CopyStager):
+        def pull(self, *a, **k):
+            raise RuntimeError("rsync failed (23): some files vanished")
+
+    backend = make_backend(
+        FakeQueue(),
+        job,
+        root,
+        stager=BrokenStager(),
+        remote_job_directory=str(remote),
+        poll_interval=0.05,
+    )
+    ts = TaskSet(directory=job / "step", backend=backend, max_attempts=1)
+    ts.add(fake_task("t0"))
+    (result,) = ts.run()
+    assert result.state == "lost"
+    assert "could not be staged back" in result.reason
+
+
+def test_changed_inputs_are_not_adopted(job):
+    job, root = job
+    queue = FakeQueue(hold=True)
+    first = make_backend(queue, job, root, poll_interval=10000)
+    ts = TaskSet(directory=job / "step", backend=first)
+    ts.add(fake_task("t0", text="OLD"))
+    with pytest.raises(TimeoutError):
+        _first_with_timeout(ts.run(), 1.0)
+    (job_id,) = queue.jobs
+    queue.release(job_id)
+    queue.hold = False
+
+    ts = TaskSet(directory=job / "step", backend=make_backend(queue, job, root))
+    new = fake_task("t0", text="NEW")
+    ts.add(new)
+    (result,) = ts.run()
+    assert len(queue.scripts) == 2
+    assert result.files["out.txt"].split()[0] == "NEW"
+    done = json.loads((job / "step" / "tasks" / "t0" / "DONE").read_text())
+    assert done["fingerprint"] == new.digest()
+
+
+def test_an_ambiguous_submission_is_found_not_repeated(job):
+    job, root = job
+    queue = FakeQueue()
+    real_submit = queue.submit
+    state = {"n": 0}
+
+    def submit_then_drop(script, *, job_name=None):
+        # The job reaches the queue, but the connection drops before the id
+        # comes back.
+        job_id = real_submit(script, job_name=job_name)
+        state["n"] += 1
+        if state["n"] == 1:
+            raise RuntimeError("ssh: Connection reset by peer")
+        return job_id
+
+    queue.submit = submit_then_drop
+    ts = TaskSet(directory=job / "step", backend=make_backend(queue, job, root))
+    ts.add(fake_task("t0"))
+    (result,) = ts.run()
+    assert result.ok
+    assert len(queue.scripts) == 1  # found by name, not submitted again
+
+
+def test_cancel_failure_leaves_tasks_adoptable(job):
+    job, root = job
+    queue = FakeQueue(hold=True)
+
+    def broken_cancel(ids):
+        raise RuntimeError("ssh: connect to host tc port 22: Operation timed out")
+
+    queue.cancel_many = broken_cancel
+    ts = TaskSet(directory=job / "step", backend=make_backend(queue, job, root))
+    ts.add(fake_task("t0"))
+    it = ts.run()
+    thread = threading.Thread(target=lambda: next(it, None), daemon=True)
+    thread.start()
+    time.sleep(1.0)
+    with pytest.raises(Exception):
+        it.throw(KeyboardInterrupt)
+    manifest = json.loads((job / "step" / "tasks" / "manifest.json").read_text())
+    assert manifest["tasks"]["t0"]["state"] == "queued"
+
+
+def test_worker_reruns_a_done_left_by_other_inputs(job):
+    job, root = job
+    queue = FakeQueue()
+    ts = TaskSet(directory=job / "step", backend=make_backend(queue, job, root))
+    ts.add(fake_task("a"))
+    run_all(ts)
+    marker = job / "step" / "tasks" / "a"
+    done = json.loads((marker / "DONE").read_text())
+    done["fingerprint"] = "sha256:someone-else"
+    (marker / "DONE").write_text(json.dumps(done))
+    bundle_json = job / "step" / "tasks" / "_bundles" / "bundle_0000.1" / "bundle.json"
+    p = subprocess.run(
+        [sys.executable, "-m", "seamm_exec.task_worker", str(bundle_json)],
+        cwd=bundle_json.parent,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parents[1])},
+    )
+    assert "DONE is for other inputs" in p.stdout
+    assert json.loads((marker / "DONE").read_text())["fingerprint"] != (
+        "sha256:someone-else"
+    )
+
+
+def test_staged_task_outside_the_job_fails_before_anything_is_submitted(job, tmp_path):
+    job, root = job
+    queue = FakeQueue()
+    backend = make_backend(
+        queue, job, root, stager=CopyStager(), remote_job_directory="/r/Job_7"
+    )
+    ts = TaskSet(directory=job / "step", backend=backend, bundle_tasks=1)
+    ts.add(fake_task("inside"))
+    ts.add(fake_task("outside", directory=tmp_path / "elsewhere"))
+    with pytest.raises(RuntimeError, match="not inside the job directory"):
+        list(ts.run())
+    assert queue.scripts == []
