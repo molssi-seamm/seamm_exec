@@ -413,6 +413,74 @@ Validation (2026-10-03)
   - Otherwise only versions, timings, paths, reference wrapping and
     ``seamm.db`` differ.
 
+Review (2026-10-03)
+~~~~~~~~~~~~~~~~~~~
+
+The design session and a subagent read all seven commits, diffed each consumer
+against the released code and checked findings with probe scripts. Fixed
+(molsystem 5f642e6, seamm 3973343, seamm_exec 0c3b317, loop_step 8327ae6,
+properties_step 6cfb0e3):
+
+1. **(must) Read-only databases.** Setting the current row, the loop flag or
+   the file wrote the registry, so a Loop over rows or a Save from a
+   ``--read-only`` database raised. These three are navigation state; with a
+   read-only database ``seamm.Table`` keeps them in the handle.
+2. **Text index lookups.** Untyped columns stored the integer 3 written to a
+   text column as INTEGER, which ``WHERE col = '3'`` does not match. Values
+   written to string and json columns are now stored as text.
+3. **Create validated too late.** A wrong index column raised after the
+   previous table had been dropped and the new one created. Columns and the
+   index column are now checked first. Replacing a table from a DataFrame keeps
+   the declared types and defaults of the remaining columns.
+4. **Printing missing text.** Missing text cells printed ``None`` where pandas
+   printed ``NaN``; text columns now materialize missing values as NaN.
+5. **Row tests on missing values** raised ``TypeError``; they now fail every
+   test except the negative ones (``!=``, "does not ..."), as NaN did.
+
+Also fixed from the review's notes: SQL column names are internal (``c1``,
+``c2``, ...), because SQLite column names ignore case and pandas allowed ``E``
+and ``e`` side by side; Properties maps the database's ``int``/``float``/
+``str``/``json`` property types (it tested ``integer``, so every int property
+became a text column); JSON files written by ``export`` read back
+(``orient="table"``); defaults are stored as written values (a list default
+works); row ids use ``AUTOINCREMENT`` and are never reused; and a shared
+``seamm.step_completed(node)`` (``seamm/checkpoint.py``) does the per-step
+commit for both the evaluator and the Loop, so phase 5 has one place to hook.
+
+Pins and versions for the release: seamm requires ``molsystem>=`` the new
+molsystem (seamm's tests fail against molsystem 2026.9.25); seamm_exec and the
+four steps require ``seamm>=`` the new seamm; ``table_plugins`` gets the real
+versions. Release order: molsystem, seamm, seamm_exec, the four steps.
+
+For HISTORY (behaviour changes):
+
+- Tables are stored in the job's ``seamm.db``.
+- New rows get their columns' defaults, not NaN (appended rows and rows created
+  by a write); integer and boolean columns keep their types.
+- "Add columns" uses the evaluated column name and records its default.
+- "Append a row" to a table with an index column works (concat used to drop the
+  index).
+- "Go to the next row" past the last row does nothing more.
+- Get/Set element by a text index value works; the Loop's ``where`` on a
+  numeric column with an empty second value works.
+- Loop ``_row`` values and "Get element" values are Python, not numpy, scalars.
+- Properties: integer properties become integer columns; with nothing to export
+  the current row is no longer set to -1.
+- ``iter_N`` directory names are unchanged.
+
+Notes for phases 5 and 6 (from the review):
+
+- The journal records the operation, row and column only: no value, no step or
+  iteration tag, no registry changes. That is enough to replay from a child's
+  database, but ``drop`` and ``create`` must be replayed too. The inherited
+  ``_Table.delete``/``clear`` are not journaled; don't use them on user tables.
+- The Loop's selected rows and its ``self.table`` live in memory; a checkpoint
+  resume inside a Loop over rows must recompute them.
+- molsystem commits per operation inside a step, so a crash mid-step leaves its
+  earlier writes committed. ``append_row`` and ``set_cell`` on a NULL current
+  row are not idempotent on re-entry: part of phase 5's audit.
+- ``check_table_plugins`` runs once, at job start, in ``exec_flowchart``.
+
 Still to do: the Dropbox corpus through the harness, review, soak in SEAMM_DEV,
 then the release (molsystem, seamm, seamm_exec, the four steps; minimum
 versions in ``table_plugins`` and the pins set then).
