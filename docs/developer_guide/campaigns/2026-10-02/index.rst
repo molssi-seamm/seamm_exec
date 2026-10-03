@@ -743,7 +743,13 @@ Phases
 6. **Parallel Loop** with the snapshot, merge and placement options; validate on the laptop (pool), on
    ChemAI + ARC, and on ARC alone.
 7. **TaskServer** and its client; **PBS** validated on a real PBS site when one is available; Dashboard
-   task view.
+   task view. *PBS done 2026-10-03:* MolSSI10 (test-only) replaced SLURM with OpenPBS 23.06.06; the PBS
+   back end was fixed against it (``-W depend``, ``cd`` into the job directory, ``-V``, ``qselect -x``)
+   and its output recorded as test fixtures, as was SLURM 20.11's before removal; JobServer sections
+   gained ``type = queue`` + ``scheduler = pbs|slurm``; a flowchart ran as a PBS job, and with its
+   calculations as PBS tasks, from SEAMM_DEV over ssh. See seamm_scheduler
+   ``docs/developer_guide/campaigns/2026-10-03/``. (OpenPBS's last release is 2023; it stands in for PBS
+   Professional sites.)
 
 Phase 0 protects every later phase. Phases 1 to 3 unblock the MBE step with low production exposure;
 4 and 5 are prerequisites of 6; 4 is the one that needs a soak period before it is released.
