@@ -481,6 +481,34 @@ Notes for phases 5 and 6 (from the review):
   row are not idempotent on re-entry: part of phase 5's audit.
 - ``check_table_plugins`` runs once, at job start, in ``exec_flowchart``.
 
-Still to do: the Dropbox corpus through the harness, review, soak in SEAMM_DEV,
+Corpus (2026-10-03)
+~~~~~~~~~~~~~~~~~~~
+
+85 of the local and Dropbox flowcharts use tables (``~/SEAMM/flowcharts`` and
+Dropbox ``Science/Flowcharts``, ``Science/Thermochemistry/flowcharts``,
+``GM/flowcharts``, ``GM/TrainingData``). Most run LAMMPS, VASP, ORCA, Gaussian
+or DFTB+ for minutes to hours or need input files, so the A/B ran the cheap
+MOPAC ones, copied into ``Testing/phase4`` as ``dbx_*.flow``:
+
+- ``MOPAC SMILES table`` (``C CC O --hamiltonians PM6 PM7``: append in a loop,
+  a nested loop storing into a column named by ``$H``, Save inside the loop,
+  Print the current row) and ``MOPAC SMILES table new`` (Read a CSV, loop over
+  rows with ``$_row["SMILES"]``, Save as): **identical** in A and B, tables,
+  printed rows and every other output.
+- ``geometry`` fails identically in A and B before any table (Read Structure:
+  ``'PosixPath' object has no attribute 'format'`` when the system name is the
+  ``file`` parameter). Not phase 4; Geometry Analysis tables are covered by
+  ``p4_props_geom``.
+
+Both SMILES flowcharts first failed identically in A and B, also not phase 4:
+their MOPAC Optimization has ``structure handling: be put in a new
+configuration``, an old spelling that ``structure_handling_description`` no
+longer accepts, so every iteration raised. The copies were changed to "Create a
+new configuration" to exercise the tables; the Dropbox originals are untouched.
+Both pre-existing problems are for Paul to decide on.
+
+The remaining table flowcharts are for the soak in SEAMM_DEV.
+
+Still to do: soak in SEAMM_DEV,
 then the release (molsystem, seamm, seamm_exec, the four steps; minimum
 versions in ``table_plugins`` and the pins set then).
