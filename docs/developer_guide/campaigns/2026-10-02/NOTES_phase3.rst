@@ -121,3 +121,145 @@ Lesson
 invariant was written to protect a design decision. Its first run found a units
 bug that had been in production for three months, because nothing had compared
 the MOPAC engine's forces with anything else.
+
+2026-10-03 -- what was built
+----------------------------
+
+Committed locally on ``dev`` in each package; nothing pushed except the
+bugfix releases above.
+
+``seamm_exec``
+    ``evaluator.py`` holds :class:`Evaluator`, :func:`choose_path`,
+    :class:`Geometry`, :func:`structure_data`, :func:`check_properties` and
+    :func:`mdi_method_and_basis`.
+
+    - ``submit(configuration, key=None, options=None)`` and ``results()``
+      yield ``EvaluatorResult`` objects: ``ok``, ``energy`` (kJ/mol),
+      ``gradients`` ((n, 3) kJ/mol/Å), ``stress``, ``reason``, ``restored``,
+      ``path`` and ``elapsed``.
+    - The MDI path is the Energy step's old loop, moved: one engine per
+      (elements, charge, multiplicity, periodicity), stress only where the
+      engine supports it. ``seamm_mdi`` is imported only there.
+    - The batch path is a ``TaskSet`` of the provider's tasks, read back by its
+      ``analyze_task``; a failed or partial task gives ``ok=False`` with the
+      reason.
+    - The local pool now configures every task without ``config`` from that
+      machine's ini file and the program's resolver (``_configure``). Tasks
+      with ``config`` are untouched; ``resolve_programs`` is kept but no
+      longer changes anything.
+
+``orca_step``
+    - ``batch.py``: ``get_task`` writes the MDI engine's own input: the
+      helpers are loaded from ``data/orca_mdi.py``. That covers the keyword
+      plus AutoAux, the ``bse:`` basis file, the DLPNO block and ``EnGrad``.
+      ``options`` gives ``atom_indices``, ``ghost_atoms`` (written ``O:``),
+      ``charge`` and ``multiplicity``. Defaults: 1 rank, ``%maxcore 2000``;
+      ``resources`` overrides them.
+    - ``analyze_task`` uses the engine's parsers, with the same pint
+      conversions as ``seamm_mdi``. Methods without an MDI engine (CCSD(T)
+      and the like) get their real keyword and can run energy-only as tasks.
+    - ``resolver.py``: the ``orca`` resolver (full path, ``mpi_env``,
+      ``{orca_2aim}``, PATH fallback), registered in
+      ``org.molssi.seamm.exec.resolvers``. ``_mpi_env`` became the module
+      function ``mpi_env``.
+    - The ORCA step's own tasks no longer carry ``config``, so ORCA steps can
+      now go to remote targets.
+    - ``run_orca_job`` is split: ``orca_job_task`` builds the task.
+    - BSSE builds all its sub-jobs and runs them as one ``TaskSet``.
+    - Every ORCA offering declares ``prefers_batch``.
+
+``mopac_step``
+    - ``batch.py``: a single SCF with gradients and ``AUX(PRECISION=9)``. The
+      energy is the heat of formation (Paul's decision). Only the lowest spin
+      state, and molecules only; open-shell and periodic MOPAC stay on MDI,
+      where equality has not been shown.
+    - ``resolver.py``: the ``mopac`` resolver (ini, else ``which mopac``; it
+      never writes files, unlike the MOPAC step).
+    - The MOPAC step's own runs keep their ``config`` this phase (its
+      configuration code writes default ini files). Consider each code
+      separately.
+
+``energy_step``
+    ``run()`` is on the Evaluator, with keys ``c<configuration id>``.
+    Properties, ``store_results`` and ``energies.csv`` are unchanged. The
+    MDI-capable requirement is dropped. Failures are listed and raised after
+    the successful structures are stored. The report says "N engine sessions"
+    (MDI) or "N separate calculations, M finished in an earlier run" (tasks).
+
+``dimer_builder_step``
+    ``_open_energy_engine`` returns ``_MDIEnergies`` (the engine plus
+    ``energies``) or ``_TaskEnergies`` (the Evaluator). Grids -- the 11-point
+    minimum search, the outward profile, the interpolation points -- are
+    evaluated together. The inward wall walk stays one point at a time, since
+    it is sequential by nature. The van der Waals radii are now cached, and
+    mendeleev's SQLAlchemy sessions are collected on the main thread. Left
+    to the garbage collector inside a pool worker thread, SQLite refused to
+    close them and logged frightening, harmless errors.
+
+``normal_mode_sampling_step``
+    The Hessian is analytic over MDI when the engine offers ``<HESSIAN``.
+    Otherwise it is the finite difference: as tasks
+    (``_fd_hessian_tasks``, 6N displaced structures, keys
+    ``c<id>-fd<j><p|m>``) when the Evaluator chooses the batch path, else
+    over the warm engine as before. A model chemistry without an MDI engine
+    now works through the tasks.
+
+Validation
+~~~~~~~~~~
+
+- Unit and integration tests:
+
+  ======================== ===== ===================================================
+  Package                  Tests New
+  ======================== ===== ===================================================
+  ``seamm_exec``           98    the Evaluator: path rule, batch path, failures,
+                                 restart, helpers
+  ``orca_step``            178   resolver equivalence (4 cases), batch == MDI, ghost
+                                 atoms, partial results, BSSE on a TaskSet
+  ``mopac_step``           39    batch == MDI (heat of formation), refusals,
+                                 ``.aux`` parsing, forces vs finite difference
+  ``energy_step``          21
+  ``dimer_builder_step``   59
+  ``normal_mode_sampling`` 42    FD-by-tasks assembly on a quadratic potential
+  ======================== ===== ===================================================
+- **The resolver** reproduces the old command, environment and configuration:
+  serial and parallel, with and without ``orca_2aim``.
+- **ORCA batch == MDI** for water at def2-SVP and ``bse:def2-SVP``: exact (1e-6
+  kJ/mol) on the first geometry; within the SCF convergence on later ones,
+  where the engine reuses the previous orbitals (3e-3 kJ/mol, 1e-2
+  kJ/mol/Å; observed 2.5e-4).
+- **MOPAC batch == MDI**: heats to 1e-4 kJ/mol (observed 2e-7), gradients to
+  0.3% (see the force bug above).
+- **Live flowcharts** on this Mac (``Testing/phase3_*.flow``):
+
+  - the Energy step over six molecules with ORCA (tasks, 5.9 s; a rerun
+    restored them all) and MOPAC (MDI);
+  - ``bsse.flow`` with its sub-jobs on one TaskSet;
+  - the Dimer Builder with energy contacts: ORCA as tasks, 69 evaluations in
+    76 s, and MOPAC over MDI.
+- **The NMS Hessian** of HF/def2-SVP water by finite difference as tasks
+  against ORCA's analytic one: frequencies 1790.2 / 3972.5 / 4062.3 against
+  1790.9 / 3972.9 / 4062.4 cm⁻¹; the largest Hessian element difference is
+  1.1e-4 Eh/bohr².
+- **Remote ORCA through the resolver, Mac -> TinkerCliffs.**
+
+  - The Energy step over six molecules with ``SEAMM_TARGET=tc`` and
+    ``inline_below = 0`` sent config-less ORCA tasks in two bundles. Without
+    that setting, the inline rule rightly kept water's 1 s estimates local.
+  - TinkerCliffs' ``orca.ini`` (``installation = modules``) resolved them
+    through the ``orca`` resolver, in a development venv in
+    ``/projects/seamm/psaxe/phase3``.
+  - Energies are identical to the local run to all printed digits; forces
+    agree to 1e-4 kJ/mol/Å.
+- **The SEAMM_DEV A/B comparison** (``venvs/phase3-A``: today's releases;
+  ``phase3-B``: plus the six checkouts) on ``test``, ``bsse``,
+  ``harness_water``, ``builder_loop``, ``phase3_energy_mopac`` and
+  ``phase3_energy_orca``:
+
+  - ORCA's final energies, the BSSE energies and the MOPAC results are
+    identical.
+  - The ORCA Energy step over MDI (A) and as tasks (B) agrees to every
+    printed digit.
+  - The only differences are versions, pids and timings, plus the new
+    ``tasks/`` layouts (BSSE's sub-jobs share one manifest in the step
+    directory; the ORCA Energy step runs as tasks).
