@@ -57,7 +57,7 @@ What was built
       (``load_slurm_config`` is an alias) and ``list_sections``.
     - ``script.py``: ``build_script(directives, payload, scheduler="slurm")``.
 
-    162 tests: the 112 ported from ``seamm_slurm`` plus the interface, PBS,
+    167 tests: the 112 ported from ``seamm_slurm`` plus the interface, PBS,
     the task keys, staging, and SLURM 25.11 JSON captured on TinkerCliffs.
 
 ``seamm_slurm`` (the shim)
@@ -128,14 +128,14 @@ What was built
     - ``computational_environment()``: the job variables come from
       ``seamm_scheduler`` (SLURM, then PBS), and a ``_pbs()`` reader was
       added. ``Base``'s in-situ check uses the same variables.
-    - 76 tests: 51 from phase 1, 25 new. The new ones run with a fake queue
+    - 83 tests: 51 from phase 1, 32 new. The new ones run with a fake queue
       that executes each real batch script with bash, so the real worker,
       pool and markers are exercised.
 
 ``seamm_jobserver``
     It imports ``seamm_scheduler``. A section with ``tasks =`` is written as
     ``<job dir>/target.json`` before the job starts (and so before staging);
-    sections without it write nothing. 86 tests.
+    sections without it write nothing. 87 tests.
 
 Target keys (all optional; a section without ``tasks =`` means what it did)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -285,6 +285,63 @@ Validation
       timings, timestamps, ``tasks/`` manifest ids and chargemol's last-digit
       noise, the same as in phase 1.
   - ``test.flow`` with ``SEAMM_TARGET=tc`` was likewise clean (above).
+
+Review (2026-10-02)
+~~~~~~~~~~~~~~~~~~~
+
+An independent review of the four diffs reproduced five bugs and found nine
+plausible ones. All are fixed except where noted. The scripts are in
+``/private/tmp/claude-502/review/``; each fixed bug now has a test.
+
+1. **A pull-back that failed once was never retried**, and the evaluator spun
+   at 100% CPU (the job was terminal, so it was no longer polled). Jobs that
+   ended but are not back are now worked out from every tracked job, the
+   poll time is set on every pass, outages do not count as failures, and five
+   real failures (e.g. purged scratch) make the tasks lost with that reason.
+2. **The JobServer could not start the design's** ``[arc]`` (``type = local``,
+   ``transport = ssh``): ``_build_cmd`` used the remote ``run_from_jobserver``
+   for a local evaluator. Only ``type = slurm`` with ``transport = ssh`` now
+   means a remote evaluator.
+3. **A restart with changed inputs adopted the old bundle** and recorded its
+   output under the new fingerprint. Adoption now requires the same
+   fingerprint, ``DONE``/``FAILED`` are honoured only if their fingerprint
+   matches (in the backend and in the worker), and the old job is cancelled
+   when no adopted task still runs in it.
+4. **Unparseable ``squeue``/``sacct`` output** (a banner, a schema change) read
+   as "every job is gone". It now sets ``poll_failed``.
+5. **PBS**: ``F`` without an exit status (deleted while queued) never ended;
+   it is now cancelled (lost). SLURM spellings in a section are dropped with a
+   warning; ``qselect`` counts and finds jobs.
+6. **A submission whose outcome was unknown** (the connection dropped after
+   ``sbatch`` ran) was submitted again as a new bundle. Each bundle's job name
+   is unique (``seamm-<bundle>.<n>-<nonce>``), and the next attempt asks the
+   queue for that name first.
+7. The manifest was written only after all bundles were submitted. It is now
+   written after each.
+8. ``finally`` marked tasks cancelled even when ``scancel`` failed (an outage),
+   so a restart resubmitted them. They are marked only when the cancel worked.
+9. On a shared filesystem a just-written ``DONE`` hidden by attribute caching
+   could make a task lost. A job gets one more poll after it ends, and markers
+   are read from a fresh ``os.listdir``.
+10. Remote job directories could collide across installations sharing a
+    ``remote_root`` (job numbers are per datastore). The remote name now always
+    carries a hash of the local path.
+11. Clusters without SLURM accounting would have had ``poll_failed`` forever.
+    "accounting storage is disabled" is recognised and ``squeue`` trusted.
+12. Bundles submitted from inside an evaluator job inherited its ``SLURM_*``
+    variables. The local task transport drops ``SLURM_*`` and ``PBS_*``.
+13. Behaviour changes, kept and recorded in HISTORY: ``Base``'s in-situ default
+    and ``computational_environment()`` now recognise PBS jobs (no SEAMM
+    installation runs under PBS today); a bare ``.limits`` time is minutes; a
+    bad task key in a section raises when the file is read, as a bad ``type``
+    always did.
+14. Minor: ``xargs -0`` for the remote marker cleanup; a bundle held for more
+    than 15 minutes logs a warning; a staged task outside the job directory
+    fails before anything is submitted. Not changed: ``_list_returned`` keeps
+    ``Base``'s flat file names.
+
+After the fixes, the live Mac -> TinkerCliffs and Mac -> MolSSI10 runs were
+repeated: both clean, with the same energies.
 
 Found on the way
 ~~~~~~~~~~~~~~~~
