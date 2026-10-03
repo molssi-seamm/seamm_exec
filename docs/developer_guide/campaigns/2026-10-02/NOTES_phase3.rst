@@ -81,3 +81,43 @@ choice.** A program advertises a few example bases so the list stays short.
 Anything carried along with an example must be re-derived from the user's
 selection when it is matched, not copied. The bug was silent: no error, just
 the wrong basis, found only by reading the code.
+
+2026-10-03 -- the MOPAC MDI engine's forces (bugfix release)
+------------------------------------------------------------
+
+Found by the first run of the MOPAC batch == MDI test. The heats of formation
+agreed to 2e-7 kJ/mol, but the MDI gradients were 3.57 times the batch ones.
+
+- A central difference of the MOPAC binary's heat of formation (O z of water:
+  6.951 kcal/mol/Å) matched the batch path (6.959).
+- The factor is (bohr/Å)². ``mopac_mdi.py`` converted kcal/mol/Å to
+  hartree/bohr with ``* BOHR_PER_ANG`` instead of ``* ANG_PER_BOHR``, so every
+  MOPAC force over MDI has been 3.57 times too large since 2026-06-23
+  (992909f). Energies were right.
+- Affected: the Energy step's MOPAC gradients, LAMMPS QM/MD with a MOPAC model
+  chemistry, and Normal Mode Sampling's finite-difference Hessian with MOPAC
+  (frequencies about 1.89 times too high). xTB's engine works in atomic units
+  throughout and is unaffected; ORCA's agrees with the batch path.
+- Fixed in ``mopac_step`` 2026.10.3 (PR #158). A regression test compares the
+  engine's forces with a finite difference of its own energies.
+
+After the fix, MOPAC's batch and MDI gradients differ by about 0.1%: the
+single-SCF gradient depends on where the SCF stops. On water's O z it is 29.116
+(binary default), 29.082 (``SCFCRT=1e-12``), 29.072 (mopactools) and 29.084
+kJ/mol/Å (a finite difference). The invariant test states 0.3% + 0.02 kJ/mol/Å
+for MOPAC gradients and 1e-4 kJ/mol for heats.
+
+Also found: a ``conda run -n <env> python`` engine command runs whichever
+``python`` is first on the PATH. With a SEAMM venv's ``bin`` ahead of conda's,
+the MOPAC engine started the wrong Python and could not import mopactools.
+This is a pre-existing fragility of the MOPAC (and other ``conda run``) engine
+launchers. It showed up here only because of how the tests were started.
+Recorded, not fixed.
+
+Lesson
+~~~~~~
+
+**Two independent paths to the same number are a test.** The batch == MDI
+invariant was written to protect a design decision. Its first run found a units
+bug that had been in production for three months, because nothing had compared
+the MOPAC engine's forces with anything else.
