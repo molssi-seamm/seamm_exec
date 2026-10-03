@@ -202,9 +202,11 @@ class LocalPool:
             )
         elif config is None:
             raise RuntimeError(
-                f"No configuration for '{task.program}': the task has no config "
-                f"and there is no [{self.executor.name}] section in "
-                f"{self._ini_path(task.program)}."
+                f"No configuration for '{task.program}': the task has no config, "
+                f"there is no [{self.executor.name}] section in "
+                f"{self._ini_path(task.program)}, and no resolver for "
+                f"'{task.program}' is installed in this Python (the plug-in that "
+                "provides it must be installed where the task runs)."
             )
         return _with_code_dir(config), cmd, env
 
@@ -375,8 +377,12 @@ class LocalPool:
                 job = self._queue.pop(0)
                 # Concurrent if any other task is queued or running now: it may
                 # share the machine with this one for some or all of its run.
+                # A task that takes the whole pool never shares it.
                 job.concurrent = (
-                    sum(1 for j in self._jobs.values() if j.state in (QUEUED, RUNNING))
+                    job.cores < self.cores
+                    and sum(
+                        1 for j in self._jobs.values() if j.state in (QUEUED, RUNNING)
+                    )
                     > 1
                 )
                 job.state = RUNNING

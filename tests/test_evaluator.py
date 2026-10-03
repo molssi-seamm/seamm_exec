@@ -188,3 +188,64 @@ def test_check_properties():
     check_properties({"energy": 1.0}, ("energy", "stress"), "x")  # stress optional
     with pytest.raises(AnalysisError, match="x has no gradients"):
         check_properties({"energy": 1.0}, ("energy", "gradients"), "x")
+
+
+# ---- from the phase 3 review -------------------------------------------------
+
+
+class PickyProvider(FakeProvider):
+    """Runs only molecules as tasks; refuses 'bad' inputs outright."""
+
+    @classmethod
+    def can_run_task(cls, configuration, model_chemistry, *, options):
+        return configuration.periodicity == 0
+
+    @classmethod
+    def get_task(cls, configuration, model_chemistry, *, key, properties, options):
+        if options.get("refuse"):
+            raise ValueError("cannot make this one")
+        return super().get_task(
+            configuration,
+            model_chemistry,
+            key=key,
+            properties=properties,
+            options=options,
+        )
+
+
+def test_structures_a_program_cannot_run_as_tasks(tmp_path, monkeypatch):
+    box = Geometry([1], [[0, 0, 0]], cell=np.eye(3) * 5)
+    molecule = Geometry([1], [[1, 0, 0]])
+
+    # Without an MDI engine: a failed result, the rest still runs
+    evaluator = Evaluator(_node(tmp_path, PickyProvider), MC)
+    evaluator.submit(molecule, key="m")
+    evaluator.submit(box, key="box")
+    evaluator.submit(molecule, key="r", options={"refuse": 1})
+    results = {r.key: r for r in evaluator.results()}
+    assert results["m"].ok and results["m"].energy == 1.0
+    assert not results["box"].ok and "has no MDI engine" in results["box"].reason
+    assert not results["r"].ok and "cannot make this one" in results["r"].reason
+
+    # With an MDI engine: the periodic structure goes there
+    mc = dict(MC, options={"mdi_capable": True})
+
+    class WithEngine(PickyProvider):
+        get_mdi_engine_command = staticmethod(lambda *a, **k: None)
+
+    evaluator = Evaluator(_node(tmp_path / "2", WithEngine), mc, path="batch")
+    routed = {}
+
+    def fake_mdi(pending):
+        from seamm_exec import EvaluatorResult
+
+        for key in pending:
+            routed[key] = True
+            yield EvaluatorResult(key=key, ok=True, energy=-1.0, path="mdi")
+
+    monkeypatch.setattr(evaluator, "_mdi_results", fake_mdi)
+    evaluator.submit(molecule, key="m")
+    evaluator.submit(box, key="box")
+    results = {r.key: r for r in evaluator.results()}
+    assert results["m"].path == "batch" and results["box"].path == "mdi"
+    assert routed == {"box": True}

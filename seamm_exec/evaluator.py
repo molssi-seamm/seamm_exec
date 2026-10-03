@@ -26,6 +26,12 @@ The program's contract (classmethods beside ``get_model_chemistry_options``)::
         -> seamm_exec.Task
     analyze_task(result, model_chemistry, configuration, *, properties, options)
         -> {"energy": kJ/mol, "gradients": (n, 3) kJ/mol/Å, "stress": GPa, ...}
+    can_run_task(configuration, model_chemistry, *, options) -> bool   (optional)
+
+A structure for which ``can_run_task`` is False (e.g. a periodic system for
+ORCA or MOPAC) goes to the program's MDI engine, if it has one, even when the
+others run as tasks; a ``get_task`` that raises gives that structure a failed
+result without stopping the rest.
 
 ``analyze_task`` raises :class:`AnalysisError` when a required property is
 missing; it never returns partial numbers. ``options`` passes what a consumer
@@ -317,12 +323,57 @@ class Evaluator:
         if not pending:
             return
         if self.path == "mdi":
-            iterator = self._mdi_results(pending)
+            iterators = [self._mdi_results(pending)]
         else:
-            iterator = self._batch_results(pending)
-        for result in iterator:
-            self._done.add(result.key)
-            yield result
+            # A structure the program cannot run as a task (e.g. periodic MOPAC)
+            # goes to its MDI engine, if it has one, whatever the target.
+            batch, mdi = {}, {}
+            for key, (configuration, options) in pending.items():
+                if self._can_run_task(configuration, options):
+                    batch[key] = (configuration, options)
+                else:
+                    mdi[key] = (configuration, options)
+            iterators = []
+            if batch:
+                iterators.append(self._batch_results(batch))
+            if mdi:
+                if self.mdi_capable:
+                    iterators.append(self._mdi_results(mdi))
+                else:
+                    iterators.append(self._cannot_run(mdi))
+        for iterator in iterators:
+            for result in iterator:
+                self._done.add(result.key)
+                yield result
+
+    @property
+    def mdi_capable(self):
+        """Whether the program has an MDI engine for this model chemistry."""
+        return bool(self.options.get("mdi_capable", False)) and hasattr(
+            self.provider, "get_mdi_engine_command"
+        )
+
+    def _can_run_task(self, configuration, options):
+        """The program's ``can_run_task`` hook: True if it has none."""
+        check = getattr(self.provider, "can_run_task", None)
+        if check is None:
+            return True
+        try:
+            return bool(check(configuration, self.model_chemistry, options=options))
+        except Exception:
+            return False
+
+    def _cannot_run(self, pending):
+        for key in pending:
+            yield EvaluatorResult(
+                key=key,
+                ok=False,
+                reason=(
+                    f"'{self.model_chemistry.get('level')}' cannot evaluate this "
+                    "structure as a task and has no MDI engine"
+                ),
+                path="batch",
+            )
 
     # ------------------------------------------------------------------
     # MDI
@@ -441,15 +492,28 @@ class Evaluator:
             directory=self.directory,
             **self.task_set_options,
         )
+        refused = []
         for key, (configuration, options) in pending.items():
-            task = self.provider.get_task(
-                configuration,
-                self.model_chemistry,
-                key=key,
-                properties=self.properties,
-                options=options,
-            )
+            try:
+                task = self.provider.get_task(
+                    configuration,
+                    self.model_chemistry,
+                    key=key,
+                    properties=self.properties,
+                    options=options,
+                )
+            except Exception as e:
+                # One structure the program refuses must not stop the others.
+                refused.append(
+                    EvaluatorResult(
+                        key=key, ok=False, reason=f"no task: {e}", path="batch"
+                    )
+                )
+                continue
             task_set.add(task)
+        yield from refused
+        if not task_set.tasks:
+            return
         for result in task_set.run():
             configuration, options = pending[result.key]
             if not result.ok:
