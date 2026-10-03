@@ -2,10 +2,11 @@
 ===============================================================================
 
 Status: design complete and all six open questions settled with Paul on
-2026-10-02. Phase 0 is done and released. Phase 1 (the task layer in
-``seamm_exec`` with ``LocalPool``, the manifest, bundling, pruning and
-archiving, plus the ``orca_step`` and ``mopac_step`` conversions) is
-implemented and tested on ``dev``, not yet released; see ``NOTES_phase1.rst``. The canonical copy of this design is
+2026-10-02. Phases 0 and 1 are done and released (``NOTES_phase0.rst``,
+``NOTES_phase1.rst``). Phase 2 (``seamm_scheduler``, the ``seamm_slurm`` shim,
+the ``SchedulerBackend``, targets and the resolver hook) is implemented and
+validated live from this Mac to TinkerCliffs and MolSSI10 and on TinkerCliffs
+alone, committed locally, not released; see ``NOTES_phase2.rst``. The canonical copy of this design is
 ``~/Work/SEAMM/Parallel_execution_design.rst`` at the workspace root; this is
 the campaign copy, to be kept in sync while the design changes and to gain
 ``NOTES*`` files as the work proceeds. It continues the JobServer SLURM
@@ -235,6 +236,12 @@ Objects
         def cancel(self, ids: list[str]) -> None: ...
         def fetch(self, task: Task, backend_id: str) -> TaskResult: ...
         # optional: wait(ids, timeout), reattach(records) -> {key: state}, capacity(), has_program(task)
+        # a back end that bundles (the SchedulerBackend, phase 2) also has:
+        #   bundles = True        -> one submit() per bundle, with bundle=<name>, markers=[tasks/<key>]
+        #   room() -> int | None  -> how many more bundles the queue takes now (max_queued_tasks)
+        #   adopt(task, directory, marker, record) -> id | None   -> poll it after a restart
+        #   reason(id) -> str     -> why a task was lost (job state, the tail of its log)
+        #   accepts_config: bool  -> False on an ssh target: Task.config stays on this machine
 
     class TaskSet:
         """What a step uses: submit many, wait, iterate results as they finish."""
@@ -348,6 +355,19 @@ target section's ``setup`` text and the remote ini files. The command template k
 ``{code}``/``{NTASKS}`` placeholders. This is the one refactor every code step shares, and it is done once
 in ``seamm_exec``; a step's change is limited to replacing its ``executor.run(...)`` call with a ``Task``.
 
+**As built (phase 2).** A bundle runs on the compute node as ``<python> -m seamm_exec.task_worker
+bundle.json``, which pushes its tasks through a ``LocalPool`` sized to the allocation, so ``{code}``,
+``{NTASKS}``, conda/modules, ``$TMPDIR`` scratch and ``return_files`` behave exactly as in the evaluator.
+The program is resolved there: the ``[local]`` section of ``<root>/<program>.ini`` on that machine, then
+the program's **resolver**, an entry point in the group ``org.molssi.seamm.exec.resolvers`` named after
+the program, ``hook(config, cmd, env, ce, root) -> (config, cmd, env)``, which adjusts the configuration,
+command and environment for that machine and the task's share of it. ``<python>`` is the evaluator's own
+on the local transport and the target's ``remote_python`` on ssh. ``Task.config`` is never sent to an
+ssh target, because it was resolved on the evaluator's machine and names its paths: a task that carries
+one is kept in the evaluator's pool, with a warning, until its step names only the program (ORCA and
+MOPAC today; their resolvers come with ``get_task`` in phase 3). On the local transport ``Task.config``
+is sent and used as the ``LocalPool`` uses it.
+
 
 Scheduler abstraction
 =====================
@@ -360,13 +380,20 @@ a shared interface. ``seamm_slurm`` remains as a thin compatibility shim re-expo
 
     class Scheduler(Protocol):
         name: str                                   # "slurm", "pbs", ...
-        def directives(self, resources: Resources, extra: dict) -> list[str]: ...  # "#SBATCH ..." lines
+        def directives(self, resources: Resources, extra: dict) -> dict: ...  # this scheduler's directives
+        def directive_lines(self, directives: dict) -> list[str]: ...  # "#SBATCH ..." lines
         def submit_cmd(self, script_path) -> list[str]: ...     # ["sbatch", "--parsable", ...]
         def parse_submit(self, stdout) -> str: ...              # job id
         def status_cmd(self, ids) -> list[str]: ...             # squeue/sacct or qstat
         def parse_status(self, stdout, ids) -> dict[str, str]: ...  # id -> queued|running|finished|failed|lost
         def cancel_cmd(self, ids) -> list[str]: ...
         env_names: dict[str, str]                   # {"ntasks": "SLURM_NTASKS", ...} for computational_environment
+        # as built (phase 2):
+        def poll(self, run, ids) -> dict[str, JobStatus]: ...  # composes the above; SLURM: squeue, then
+                                                    # sacct for the rest; --json probed, text fallback
+        poll_failed: bool                           # the queue could not be asked: "missing" is not "gone"
+        def count_cmd(self) -> list[str] | None: ...  # the user's own jobs (squeue --me -r), for room()
+        def log_directives(self, directory) -> dict: ...  # where the job's own output goes
 
 What is SLURM-specific in ``seamm_slurm`` today is exactly this set: the directive syntax, the submit and
 status commands, the state vocabulary and the ``--json`` versus text parsing. The transports, the stager,
@@ -413,6 +440,8 @@ flowchart evaluator may run and where its tasks run. New keys are additive; curr
     partition = normal_q
     max_queued_tasks = 800
     setup = module load ORCA/6.1.1
+    remote_python = /projects/seamm/SEAMM/venv/bin/python   ; runs the tasks there (phase 2)
+    export = NONE                ; a login environment for jobs submitted over ssh
 
     [arc-all]
     type = slurm                 ; evaluator itself is a one-core job on ARC (today's path)
@@ -425,6 +454,27 @@ flowchart evaluator may run and where its tasks run. New keys are additive; curr
     type = local
     tasks = taskserver
     url = https://workstation.local:5500
+
+**Task keys, as built (phase 2).** All optional; a section without ``tasks =`` means what it always did.
+``tasks`` (``pool``, ``queue``, ``taskserver``), ``scheduler`` (``slurm`` default, ``pbs``),
+``shared_filesystem`` (default yes for the local task transport, no for ssh), ``bundle_tasks``,
+``bundle_walltime`` (SLURM time syntax; also a bundle's ``--time`` when its tasks give none),
+``max_queued_tasks``, ``inline_below`` (default 60 s), ``poll_interval`` (default 30 s), ``remote_root``
+(where task directories are staged), ``remote_python`` (ssh: a Python with ``seamm_exec`` on the
+cluster), ``remote_seamm_root`` (its ``<program>.ini`` files; default the venv's root) and ``url``
+(TaskServer). The section's directive keys (``partition``, ``account``, ``qos``, ``export``, ...) are the
+bundles' site defaults; each bundle's resources override them, and ``setup`` runs before the worker. For
+``type = slurm`` (the evaluator is itself a batch job) tasks always use the local transport and a shared
+filesystem, since the evaluator is inside the cluster. On ``[arc]`` above, ``remote_python`` is required
+and ``export = NONE`` is what makes ``module load`` work in jobs submitted over ssh.
+
+**How the evaluator finds its target.** The JobServer writes the job's section as ``<job
+dir>/target.json`` when it starts the job (before staging), so an evaluator that is itself a batch job on a
+cluster that cannot read the JobServer's ini file still finds it. The evaluator takes, in order: an
+explicit target, ``target.json``, ``$SEAMM_TARGET`` (a section of ``<root>/<hostname>.ini`` or of
+``$SEAMM_TARGETS``, for runs by hand), else its own ``LocalPool``. ``target.json`` is a copy of the
+section, ``setup`` text included, in a directory the Dashboard shows, so a section must never hold
+secrets (none does today).
 
 A job's ``parameters["queue"]`` already selects a section; its meaning becomes "this job's target". The Tk
 submit dialog's queue picker and the ``GET /api/queues`` route need no conceptual change. A step may
@@ -589,7 +639,8 @@ Through every phase:
 - **Old ini files keep their meaning.** A JobServer target section without the new keys behaves as today;
   ``<code>.ini`` files are still read where the code runs.
 - **Old job directories stay readable.** New files (``tasks/manifest.json``, ``checkpoint.json``, the
-  ``_tables`` registry) are added beside the existing ones; nothing existing is renamed or removed.
+  ``_tables`` registry, and ``<job dir>/target.json``, written by the JobServer only for a target with the
+  task keys) are added beside the existing ones; nothing existing is renamed or removed.
 - **Unconverted plug-ins behave byte for byte as today.** ``Base.run()`` is reimplemented on the task layer
   with a one-slot ``LocalPool``; a plug-in that has not been converted cannot tell the difference.
 - **Tables in the database ship behind a switch** for one release cycle (in-memory default first, then

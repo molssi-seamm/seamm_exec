@@ -96,7 +96,49 @@ the program and ``{code_dir}`` its directory, when it has one.
 Where things run
 ----------------
 
-This release runs tasks on the local machine or inside the current allocation.
-Scheduler back ends (SLURM, PBS) that submit tasks, or bundles of tasks, as queue
-jobs are the next phase of the parallel-execution campaign; see the developer
-guide. The ``Task`` and ``TaskSet`` interfaces will not change for them.
+Tasks go to the job's *target*, a section of the JobServer's
+``<root>/<jobserver-name>.ini`` (see ``seamm_scheduler.config``). The JobServer
+writes the job's section into the job directory as ``target.json``; for a run by
+hand, ``SEAMM_TARGET=<section>`` (with ``SEAMM_TARGETS=<ini file>`` if it is not
+``<root>/<hostname>.ini``) does the same. Without a target, or with
+``tasks = pool``, tasks run on this machine or inside the current allocation, as
+before.
+
+With ``tasks = queue`` the ``TaskSet`` submits them, in bundles, as batch jobs:
+
+.. code-block:: ini
+
+    [arc]
+    type = local
+    tasks = queue
+    scheduler = slurm
+    transport = ssh
+    host = tinkercliffs
+    remote_root = /projects/seamm/psaxe/tasks       ; task directories, staged
+    remote_python = /projects/seamm/SEAMM/venv/bin/python
+    account = seamm
+    partition = normal_q
+    qos = tc_normal_short
+    export = NONE
+    bundle_tasks = 8                 ; or bundle_walltime = 04:00:00
+    max_queued_tasks = 800
+
+- Each bundle is one job that runs ``python -m seamm_exec.task_worker
+  bundle.json`` on the cluster, which runs the bundle's tasks through a pool
+  sized to the allocation. The program is configured *there*, from that
+  machine's ``<root>/<program>.ini`` and the program's resolver (an entry point
+  in ``org.molssi.seamm.exec.resolvers``), so the code need not be installed
+  where the evaluator runs.
+- Without a shared filesystem the task directories are copied to
+  ``remote_root`` with ``rsync`` before the job and back after it; with
+  ``shared_filesystem = yes`` (or the local transport) nothing is copied.
+- A rerun of the step polls bundles still in the queue rather than submitting
+  them again, and a bundle that ran out of time leaves its finished tasks done.
+- Tasks estimated to take less than ``inline_below`` seconds (default 60) run on
+  the evaluator's machine when their program is installed there.
+- A task that carries its own ``config`` was configured for the evaluator's
+  machine, so on an ssh target it runs there instead, with a warning. ORCA and
+  MOPAC do this until they name only their program.
+
+Bundle files are in ``<step>/tasks/_bundles/<bundle>.<n>/``: ``bundle.json``,
+``run.sh`` and the scheduler's log.

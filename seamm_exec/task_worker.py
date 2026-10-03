@@ -36,6 +36,27 @@ and a successful run -- return code 0 and, if given, every ``success_text``
 file containing its text -- writes ``DONE`` (JSON). A failure does not stop the
 bundle.
 The worker exits 0 if every task succeeded and 1 otherwise.
+
+The SEAMM mode
+--------------
+
+A bundle with ``"mode": "seamm"`` is run by a Python that has ``seamm_exec``
+(``python -m seamm_exec.task_worker bundle.json``). Each task is then given as
+the task layer describes it -- ``program``, the ``cmd`` template, the names of
+its input ``files`` (already in its directory), ``return_files``,
+``resources``, ``in_situ`` -- and runs through a
+:class:`~seamm_exec.local_pool.LocalPool` sized to the allocation, exactly as
+the evaluator's own pool would run it: the program resolved from
+``<root>/<program>.ini`` on this machine (and its resolver, see
+:mod:`seamm_exec.resolve`), ``{code}``/``{NTASKS}`` from the task's share of the
+allocation, scratch in ``$TMPDIR``, and only ``return_files`` kept. Tasks that
+fit side by side in the allocation run concurrently.
+
+Each task's ``marker`` directory (``<step dir>/tasks/<key>``) receives
+``DONE`` (JSON, in the task layer's own form, including the list of returned
+``files``) or ``FAILED`` (JSON, with the ``reason``). A task whose ``DONE``
+exists is skipped, so a bundle that is submitted again -- after a walltime
+limit, say -- runs only what is left.
 """
 
 import json
@@ -126,7 +147,16 @@ def main(argv=None):
         print("Usage: task_worker.py bundle.json", file=sys.stderr)
         return 2
     bundle = json.loads(Path(argv[0]).read_text())
-    return 0 if run_bundle(bundle) == 0 else 1
+    if bundle.get("mode") == "seamm":
+        # Only a SEAMM-mode bundle needs seamm_exec, loaded by name so that this
+        # script stays runnable where SEAMM is not installed.
+        import importlib
+
+        runner = importlib.import_module("seamm_exec.bundle_runner")
+        failures = runner.run_seamm_bundle(bundle)
+    else:
+        failures = run_bundle(bundle)
+    return 0 if failures == 0 else 1
 
 
 if __name__ == "__main__":
