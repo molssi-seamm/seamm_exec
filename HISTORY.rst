@@ -1,6 +1,19 @@
 =======
 History
 =======
+2026.10.3.1 -- Tables in the job database; resources for batch calculations
+    * The flowchart's database is committed after every step, which is part of
+      keeping tables in the job's database (seamm 2026.10.3).
+    * Before a flowchart starts, steps too old to work with tables in the database
+      (table_step, loop_step, properties_step, geometry_analysis_step before
+      2026.10.3) are refused with a message saying what to update.
+    * The ``Evaluator`` takes ``resources`` (ranks, memory per rank) for each
+      calculation on the batch path and passes them to the program's ``get_task``,
+      so e.g. ORCA fragments can run on 4 ranks. Without it, nothing changes.
+    * Documented the stress contract: a program that returns a stress declares
+      whether it is a pressure or a stress (``stress_convention``), for both the batch
+      and MDI paths.
+
 2026.10.3 -- One model chemistry, many structures: over MDI or as tasks
     * A new ``Evaluator`` gives a step the energies, gradients and stress of many
       structures with the flowchart's model chemistry, and chooses how they are
