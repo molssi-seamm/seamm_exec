@@ -1014,3 +1014,37 @@ def test_failed_tasks_are_not_archived(tmp_path):
         names = {n.split("/")[0] for n in tar.getnames()}
     assert names == {"good"}
     assert (tmp_path / "tasks" / "bad").is_dir()
+
+
+def test_inline_only_if_the_task_fits(tmp_path):
+    """A cheap task needing more cores than the evaluator has goes to the back
+    end: its input may already say how many ranks to use (seamm_exec#38)."""
+    remote = FakeRemote()
+    ts = TaskSet(
+        directory=tmp_path / "step",
+        backend=remote,
+        local=pool(cores=1, root=tmp_path),
+        executor=Local(),
+        inline_below=60,
+    )
+    ts.add(
+        shell_task(
+            "four",
+            "echo x > x.txt",
+            estimated_seconds=0.1,
+            resources=Resources(ntasks=4),
+        )
+    )
+    ts.add(
+        shell_task(
+            "one",
+            "echo x > x.txt",
+            estimated_seconds=0.1,
+            resources=Resources(ntasks=1),
+        )
+    )
+    ts.add(shell_task("any", "echo x > x.txt", estimated_seconds=0.1))
+    results = run_all(ts)
+    assert remote.submitted == ["four"]
+    assert results["one"].files == {"x.txt": "x\n"}
+    assert results["any"].files == {"x.txt": "x\n"}

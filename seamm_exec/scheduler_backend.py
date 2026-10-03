@@ -657,7 +657,13 @@ class SchedulerBackend:
         }
 
     def _bundle_resources(self, tasks):
-        """One allocation big enough for the largest task in the bundle."""
+        """One allocation big enough for the largest task in the bundle.
+
+        A bundle is one batch job running the task worker and a local pool in
+        its allocation, so it is always one node: a task's ranks must share the
+        node, and its node-local scratch (seamm_exec#37). Tasks spanning nodes
+        are not supported.
+        """
 
         def largest(name):
             values = [getattr(t.resources, name) for t in tasks]
@@ -671,6 +677,11 @@ class SchedulerBackend:
                     return value
             return None
 
+        if (largest("nodes") or 1) > 1:
+            logger.warning(
+                "A task asked for more than one node; task bundles run on one "
+                "node, so it gets one."
+            )
         walltimes = [t.resources.walltime for t in tasks]
         if all(w is not None for w in walltimes):
             walltime = sum(walltimes)
@@ -687,7 +698,7 @@ class SchedulerBackend:
             "mem_per_cpu": largest("mem_per_cpu"),
             "ngpus": largest("ngpus") or 0,
             "walltime": walltime,
-            "nodes": largest("nodes"),
+            "nodes": 1,
             "partition": first("partition"),
             "account": first("account"),
             "qos": first("qos"),

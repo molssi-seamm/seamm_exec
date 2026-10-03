@@ -585,7 +585,10 @@ class TaskSet:
 
         The inline rule: a task whose ``estimated_seconds`` is below
         ``inline_below`` runs in the evaluator's own pool instead of a remote
-        back end, provided its program is installed here.
+        back end, provided its program is installed here and the task fits the
+        pool: a task asking for more cores than the evaluator has goes to the
+        back end however cheap it is, since its input may already say how many
+        ranks to use (seamm_exec#38).
         """
         from .local_pool import LocalPool
 
@@ -606,10 +609,20 @@ class TaskSet:
         if (
             task.estimated_seconds is not None
             and task.estimated_seconds < self.inline_below
+            and self._fits_locally(task)
             and self.local.has_program(task)
         ):
             return self.local
         return backend
+
+    def _fits_locally(self, task):
+        """Whether the task's cores fit the evaluator's own pool."""
+        ntasks = task.resources.ntasks
+        if ntasks is None:
+            # "all of the back end's capacity": whatever the pool has
+            return True
+        cores = int(ntasks) * int(task.resources.cpus_per_task or 1)
+        return cores <= self.local.cores
 
     # ------------------------------------------------------------------
     # Running
