@@ -497,11 +497,23 @@ split. Add to the provider interface, next to ``get_model_chemistry_options()`` 
     def analyze_task(self, result: TaskResult, level) -> dict: ...
         # {"energy": kJ/mol, "gradients": (n, 3) kJ/mol/Å, "stress": (3, 3) GPa, ... , "citations": [...]}
 
-Consumers (Energy, MBE, N-fragment counterpoise, dimer builder) use a facade in ``seamm`` with the same
-calls as ``seamm_mdi.MDIEngine`` but asynchronous: ``submit(configuration) -> key`` and ``results() ->
-iterator``. **The facade, not the user or the step, chooses the path:** MDI when the job's target runs
-tasks in the local pool and the provider has an MDI engine (so MLFF and MOPAC stay at milliseconds per
-structure), the batch path otherwise (ORCA and VASP fan out). Energy, MBE and the counterpoise code
+``analyze_task`` raises a clear error, never returns partial numbers, when a result lacks a requested
+property. For a given model chemistry the batch path and the MDI path return the same numbers (for MOPAC
+the "energy" is the heat of formation, as its MDI engine reports it; Paul, 2026-10-03), and a test of ORCA
+and MOPAC water protects that to a stated tolerance.
+
+Consumers (Energy, MBE, N-fragment counterpoise, dimer builder, the finite-difference Hessian of normal-mode
+sampling) use a facade in ``seamm_exec`` with the same calls as ``seamm_mdi.MDIEngine`` but asynchronous:
+``submit(configuration) -> key`` and ``results() -> iterator``. It lives in ``seamm_exec``, not ``seamm``,
+because ``seamm_exec`` already depends on ``seamm`` (a facade in ``seamm`` would need lazy imports to dodge
+the circle) and how things run is ``seamm_exec``'s job; ``seamm_mdi`` is imported only on the MDI path, so a
+machine without pymdi still runs the batch path. **The facade, not the user or the step, chooses the
+path:** the batch path when the job's target sends tasks to a queue (or a TaskServer) and the provider has
+``get_task``; MDI when the tasks stay local and the provider has an MDI engine (so MLFF, MOPAC and xTB stay
+at milliseconds per structure), unless the provider declares ``prefers_batch`` in its options (ORCA does:
+its MDI engine runs a subprocess per evaluation, so the pool's concurrency beats a sequential warm engine
+for many structures); otherwise the batch path in the local pool. A ``path=`` argument exists for tests
+only. Energy, MBE and the counterpoise code
 inherit the rule with no per-step logic, and the Energy step keeps its MDI path. Order of implementation: ORCA (its MDI engine already contains the analyze
 half), MOPAC (tests the whole chain on a laptop in seconds), then the VASP registered-fragment mode the MBE
 step needs. Options a consumer must be able to pass through: ghost atoms (counterpoise), point charges, an
