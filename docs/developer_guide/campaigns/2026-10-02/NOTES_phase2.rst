@@ -476,3 +476,70 @@ After the first release of ``seamm_scheduler``, enable GitHub Pages for it
 (``gh api -X POST repos/molssi-seamm/seamm_scheduler/pages ...``), as for every
 new repository. If the merges happen after 2026-10-02, the versions in the
 HISTORY entries should follow the release date.
+
+2026-10-03 -- released
+----------------------
+
+Merged in order and released with the 2026.10.2 dates (Paul's call). The
+checkouts are synced with ``make update`` (``dev == main``).
+
+=================== ============== ===============================================
+Package             Version        PR
+=================== ============== ===============================================
+``seamm_scheduler`` 2026.10.2      #1 (new repository; GitHub Pages enabled)
+``seamm_exec``      2026.10.2.1    #34 (requires ``seamm-scheduler>=2026.10.2``)
+``seamm_slurm``     2026.10.2      #9 (the shim)
+``seamm_jobserver`` 2026.10.2      #24
+=================== ============== ===============================================
+
+Nothing is rolled out to an installation yet; that is a separate step.
+
+Lesson (again)
+~~~~~~~~~~~~~~
+
+**A package that pins an unreleased library is red in CI, and cannot even be
+installed locally, until the library is on PyPI.**
+
+- Phase 1 learned this when ``orca_step`` was pushed before ``seamm_exec``.
+- Phase 2 met it on purpose. The PRs for ``seamm_exec``, ``seamm_slurm`` and
+  ``seamm_jobserver`` carried ``seamm-scheduler>=2026.10.2`` and said "red
+  until #1 is released".
+- Locally, ``make install`` uninstalled ``seamm_exec`` and then could not
+  resolve the pin, which left the development environment without it.
+  ``pip install --no-deps .`` (and ``uv pip install --no-deps`` on TinkerCliffs)
+  was the way through.
+- The rule stays the same: release the library first, merge the dependants
+  after, and expect red CI only in between. Say so in each dependant PR.
+
+Two more points:
+
+- Live runs keep finding what tests cannot. TinkerCliffs refuses a 30-day
+  ``sacct`` range, and ``computational_environment()`` crashed in jobs without
+  ``--ntasks``. Each code path that talks to a real scheduler was exercised at
+  least once against TinkerCliffs (SLURM 25.11) and MolSSI10 (20.11) before
+  release.
+- Two independent reviews (a subagent, then the design session) found 14 and
+  8 + misc issues. Most were state-machine holes around restarts and outages
+  that the first round of tests did not reach. Converting every repro into a
+  test was worth it.
+
+Still deferred
+~~~~~~~~~~~~~~
+
+- **ORCA and MOPAC:** their resolvers (``orca``: full path, OpenMPI
+  ``library-path``, binding; ``mopac``) and a bare command, with ``get_task``,
+  in phase 3. Until then their tasks stay on the evaluator's machine for ssh
+  targets.
+- **Partial progress without a shared filesystem:** results arrive when a
+  bundle ends. A periodic pull of the markers would give them sooner.
+- **Remote staging directories** (``<remote_root>/<Job>-<hash>/``) are never
+  removed. MolSSI10's home has no purge.
+- **PBS** has been tested against recorded output only (``qsub``/``qstat``/
+  ``qselect``). Validate it on a real site (phase 7).
+- **Several evaluators on one machine** each think they own it (from phase 1),
+  and ``max_queued_tasks`` counts are racy between evaluators. Rejected
+  submissions are held and retried.
+- **TinkerCliffs's production venv** is not versioned, and has none of these
+  releases. Rolling out is a separate step.
+- **``seamm_webui``** still imports ``seamm_slurm`` (fine through the shim).
+  Move it to ``seamm_scheduler`` when it is next released.
