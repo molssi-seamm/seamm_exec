@@ -543,3 +543,16 @@ Still deferred
   releases. Rolling out is a separate step.
 - **``seamm_webui``** still imports ``seamm_slurm`` (fine through the shim).
   Move it to ``seamm_scheduler`` when it is next released.
+
+Cleanup (2026-10-03, with Paul's agreement)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Deleted:
+
+- ``tinkercliffs:/projects/seamm/psaxe/phase2`` (the development venv,
+  sources, staged tasks and test jobs; 1.5 GB);
+- ``molssi10:~/phase2`` (1 GB);
+- ``~/SEAMM_DEV/venvs/phase2-{A,B}``.
+
+SEAMM_DEV's current version is untouched. ``~/Work/SEAMM/Testing/phase2``
+(``targets.ini`` and the local test jobs) is kept as a record.
