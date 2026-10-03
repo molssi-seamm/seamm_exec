@@ -747,7 +747,8 @@ Phases
    back end was fixed against it (``-W depend``, ``cd`` into the job directory, ``-V``, ``qselect -x``)
    and its output recorded as test fixtures, as was SLURM 20.11's before removal; JobServer sections
    gained ``type = queue`` + ``scheduler = pbs|slurm``; a flowchart ran as a PBS job, and with its
-   calculations as PBS tasks, from SEAMM_DEV over ssh. See seamm_scheduler
+   calculations as PBS tasks, from SEAMM_DEV over ssh; after the review fixes, job 4008 (the validation record)
+   ran its bundles with the queue's ``select`` memory and brought ``pbs.out`` back. See seamm_scheduler
    ``docs/developer_guide/campaigns/2026-10-03/``. (OpenPBS's last release is 2023; it stands in for PBS
    Professional sites.)
 
