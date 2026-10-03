@@ -36,6 +36,14 @@ seamm\_exec.docker module
    :show-inheritance:
    :undoc-members:
 
+seamm\_exec.evaluator module
+----------------------------
+
+.. automodule:: seamm_exec.evaluator
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 seamm\_exec.exec\_flowchart module
 ----------------------------------
 

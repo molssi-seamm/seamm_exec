@@ -88,10 +88,47 @@ A step with a single calculation uses the same machinery through
 
     result = run_task(task, self, directory=self.directory)
 
-Converted steps keep their own handling of ``<program>.ini`` by passing the
-program's ``config`` (and ``env``) on the task; a task without ``config`` is
-configured by the pool from ``<root>/<program>.ini``. In the command, ``{code}`` is
-the program and ``{code_dir}`` its directory, when it has one.
+A step that handles ``<program>.ini`` itself passes the program's ``config``
+(and ``env``) on the task, and the pool uses them as they are. A task without
+``config`` is configured where it runs, from that machine's
+``<root>/<program>.ini`` and the program's resolver (an entry point in
+``org.molssi.seamm.exec.resolvers``; ORCA's adds its full path and the OpenMPI
+paths). In the command, ``{code}`` is the program and ``{code_dir}`` its
+directory, when it has one.
+
+Many structures, one model chemistry
+------------------------------------
+
+A step that needs the energy (and gradients, and stress) of many structures
+with the flowchart's model chemistry uses an :class:`~seamm_exec.Evaluator`
+rather than tasks or MDI directly:
+
+.. code-block:: python
+
+    from seamm_exec import Evaluator
+
+    with Evaluator(self, properties=("energy", "gradients")) as evaluator:
+        for configuration in configurations:
+            evaluator.submit(configuration, key=f"c{configuration.id}")
+        for result in evaluator.results():
+            if result.ok:
+                store(result.key, result.energy, result.gradients)  # kJ/mol, kJ/mol/Å
+            else:
+                print(f"{result.key} failed: {result.reason}")
+
+The evaluator chooses the path, not the step or the user. On a queue target a
+program that can make tasks runs as tasks there; otherwise a warm MDI engine
+evaluates the structures one after another, unless the program prefers tasks
+(ORCA, whose engine starts ORCA for each structure anyway). Both paths give the
+same numbers. A structure the program cannot run as a task (a periodic system
+for ORCA or MOPAC) goes to its MDI engine; if there is none here it fails alone,
+with the reason. The batch path keeps the task layer's restart, so a rerun
+reuses finished structures. ``options`` on ``submit`` carries what a fragment
+needs: ``atom_indices``, ``ghost_atoms``, ``charge`` and ``multiplicity``.
+
+A program offers the batch path through three classmethods beside
+``get_model_chemistry_options``: ``get_task``, ``analyze_task`` and, optionally,
+``can_run_task``; see :mod:`seamm_exec.evaluator`.
 
 Where things run
 ----------------
@@ -137,8 +174,9 @@ With ``tasks = queue`` the ``TaskSet`` submits them, in bundles, as batch jobs:
 - Tasks estimated to take less than ``inline_below`` seconds (default 60) run on
   the evaluator's machine when their program is installed there.
 - A task that carries its own ``config`` was configured for the evaluator's
-  machine, so on an ssh target it runs there instead, with a warning. ORCA and
-  MOPAC do this until they name only their program.
+  machine, so on an ssh target it runs there instead, with a warning. Steps that
+  still configure their program themselves do this; ORCA (from orca_step
+  2026.10.3.1) and the Evaluator's tasks name only their program.
 
 Bundle files are in ``<step>/tasks/_bundles/<bundle>.<n>/``: ``bundle.json``,
 ``run.sh`` and the scheduler's log.

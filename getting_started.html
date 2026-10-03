@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.2.1 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.3 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="_static/documentation_options.js?v=77b25824"></script>
+    <script src="_static/documentation_options.js?v=f64fa391"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="Welcome to SEAMM exec’s documentation!" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.2.1" />
+  <meta name="docsearch:version" content="2026.10.3" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -522,10 +522,43 @@ tar per bundle, so a step with thousands of tasks leaves a handful of files.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">run_task</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Converted steps keep their own handling of <code class="docutils literal notranslate"><span class="pre">&lt;program&gt;.ini</span></code> by passing the
-program’s <code class="docutils literal notranslate"><span class="pre">config</span></code> (and <code class="docutils literal notranslate"><span class="pre">env</span></code>) on the task; a task without <code class="docutils literal notranslate"><span class="pre">config</span></code> is
-configured by the pool from <code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/&lt;program&gt;.ini</span></code>. In the command, <code class="docutils literal notranslate"><span class="pre">{code}</span></code> is
-the program and <code class="docutils literal notranslate"><span class="pre">{code_dir}</span></code> its directory, when it has one.</p>
+<p>A step that handles <code class="docutils literal notranslate"><span class="pre">&lt;program&gt;.ini</span></code> itself passes the program’s <code class="docutils literal notranslate"><span class="pre">config</span></code>
+(and <code class="docutils literal notranslate"><span class="pre">env</span></code>) on the task, and the pool uses them as they are. A task without
+<code class="docutils literal notranslate"><span class="pre">config</span></code> is configured where it runs, from that machine’s
+<code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/&lt;program&gt;.ini</span></code> and the program’s resolver (an entry point in
+<code class="docutils literal notranslate"><span class="pre">org.molssi.seamm.exec.resolvers</span></code>; ORCA’s adds its full path and the OpenMPI
+paths). In the command, <code class="docutils literal notranslate"><span class="pre">{code}</span></code> is the program and <code class="docutils literal notranslate"><span class="pre">{code_dir}</span></code> its
+directory, when it has one.</p>
+</section>
+<section id="many-structures-one-model-chemistry">
+<h2>Many structures, one model chemistry<a class="headerlink" href="#many-structures-one-model-chemistry" title="Link to this heading">#</a></h2>
+<p>A step that needs the energy (and gradients, and stress) of many structures
+with the flowchart’s model chemistry uses an <code class="xref py py-class docutils literal notranslate"><span class="pre">Evaluator</span></code>
+rather than tasks or MDI directly:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">seamm_exec</span><span class="w"> </span><span class="kn">import</span> <span class="n">Evaluator</span>
+
+<span class="k">with</span> <span class="n">Evaluator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">(</span><span class="s2">"energy"</span><span class="p">,</span> <span class="s2">"gradients"</span><span class="p">))</span> <span class="k">as</span> <span class="n">evaluator</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">configuration</span> <span class="ow">in</span> <span class="n">configurations</span><span class="p">:</span>
+        <span class="n">evaluator</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">configuration</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="sa">f</span><span class="s2">"c</span><span class="si">{</span><span class="n">configuration</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">evaluator</span><span class="o">.</span><span class="n">results</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
+            <span class="n">store</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">gradients</span><span class="p">)</span>  <span class="c1"># kJ/mol, kJ/mol/Å</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">reason</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The evaluator chooses the path, not the step or the user. On a queue target a
+program that can make tasks runs as tasks there; otherwise a warm MDI engine
+evaluates the structures one after another, unless the program prefers tasks
+(ORCA, whose engine starts ORCA for each structure anyway). Both paths give the
+same numbers. A structure the program cannot run as a task (a periodic system
+for ORCA or MOPAC) goes to its MDI engine; if there is none here it fails alone,
+with the reason. The batch path keeps the task layer’s restart, so a rerun
+reuses finished structures. <code class="docutils literal notranslate"><span class="pre">options</span></code> on <code class="docutils literal notranslate"><span class="pre">submit</span></code> carries what a fragment
+needs: <code class="docutils literal notranslate"><span class="pre">atom_indices</span></code>, <code class="docutils literal notranslate"><span class="pre">ghost_atoms</span></code>, <code class="docutils literal notranslate"><span class="pre">charge</span></code> and <code class="docutils literal notranslate"><span class="pre">multiplicity</span></code>.</p>
+<p>A program offers the batch path through three classmethods beside
+<code class="docutils literal notranslate"><span class="pre">get_model_chemistry_options</span></code>: <code class="docutils literal notranslate"><span class="pre">get_task</span></code>, <code class="docutils literal notranslate"><span class="pre">analyze_task</span></code> and, optionally,
+<code class="docutils literal notranslate"><span class="pre">can_run_task</span></code>; see <a class="reference internal" href="api/seamm_exec.html#module-seamm_exec.evaluator" title="seamm_exec.evaluator"><code class="xref py py-mod docutils literal notranslate"><span class="pre">seamm_exec.evaluator</span></code></a>.</p>
 </section>
 <section id="where-things-run">
 <h2>Where things run<a class="headerlink" href="#where-things-run" title="Link to this heading">#</a></h2>
@@ -568,8 +601,9 @@ them again, and a bundle that ran out of time leaves its finished tasks done.</p
 <li><p>Tasks estimated to take less than <code class="docutils literal notranslate"><span class="pre">inline_below</span></code> seconds (default 60) run on
 the evaluator’s machine when their program is installed there.</p></li>
 <li><p>A task that carries its own <code class="docutils literal notranslate"><span class="pre">config</span></code> was configured for the evaluator’s
-machine, so on an ssh target it runs there instead, with a warning. ORCA and
-MOPAC do this until they name only their program.</p></li>
+machine, so on an ssh target it runs there instead, with a warning. Steps that
+still configure their program themselves do this; ORCA (from orca_step
+2026.10.3.1) and the Evaluator’s tasks name only their program.</p></li>
 </ul>
 <p>Bundle files are in <code class="docutils literal notranslate"><span class="pre">&lt;step&gt;/tasks/_bundles/&lt;bundle&gt;.&lt;n&gt;/</span></code>: <code class="docutils literal notranslate"><span class="pre">bundle.json</span></code>,
 <code class="docutils literal notranslate"><span class="pre">run.sh</span></code> and the scheduler’s log.</p>
@@ -625,6 +659,7 @@ MOPAC do this until they name only their program.</p></li>
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-a-code-executor-run">Running a code: <code class="docutils literal notranslate"><span class="pre">executor.run()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-codes-as-tasks">Running codes as tasks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#many-structures-one-model-chemistry">Many structures, one model chemistry</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#where-things-run">Where things run</a></li>
 </ul>
   </nav></div>

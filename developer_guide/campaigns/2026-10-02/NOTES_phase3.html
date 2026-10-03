@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Phase 3 notes &#8212; SEAMM seamm-exec Plug-in 2026.10.3 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+
+    <script src="../../../_static/documentation_options.js?v=f64fa391"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'developer_guide/campaigns/2026-10-02/NOTES_phase3';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="prev" title="Phase 2 notes" href="NOTES_phase2.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.10.3" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/SEAMM logo.png" class="logo__image only-light" alt=""/>
+    <img src="../../../_static/SEAMM Inverted 288x181.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">SEAMM-EXEC</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/seamm-exec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/seamm-exec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">Campaigns</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html">2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Developer Documentation</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Campaigns</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Phase 3 notes</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="phase-3-notes">
+<h1>Phase 3 notes<a class="headerlink" href="#phase-3-notes" title="Link to this heading">#</a></h1>
+<section id="plan-and-decisions">
+<h2>2026-10-03 – plan and decisions<a class="headerlink" href="#plan-and-decisions" title="Link to this heading">#</a></h2>
+<p>Phase 3 is the Model Chemistry batch contract (<code class="docutils literal notranslate"><span class="pre">get_task</span></code>/<code class="docutils literal notranslate"><span class="pre">analyze_task</span></code>) for
+ORCA and MOPAC, the facade that chooses MDI or batch, and the consumers on it.</p>
+<p>Paul’s decisions:</p>
+<ul class="simple">
+<li><p>Fix the MDI basis bug first, as separate bugfix releases (below).</p></li>
+<li><p>MOPAC’s batch “energy” is the heat of formation, as its MDI engine reports
+it, so the facade’s choice of path never changes results.</p></li>
+<li><p>Convert four consumers: the Energy step, ORCA’s counterpoise (BSSE, as a
+fan-out with ghost atoms), the Dimer Builder, and the finite-difference
+Hessian of Normal Mode Sampling.</p></li>
+</ul>
+<p>The design session’s decisions:</p>
+<ul class="simple">
+<li><p>The facade lives in <code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code>, not <code class="docutils literal notranslate"><span class="pre">seamm</span></code>. <code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code> already
+depends on <code class="docutils literal notranslate"><span class="pre">seamm</span></code>, and how things run is its job. <code class="docutils literal notranslate"><span class="pre">seamm_mdi</span></code> is
+imported only on the MDI path.</p></li>
+<li><p>A provider may set <code class="docutils literal notranslate"><span class="pre">prefers_batch</span></code> in its options. ORCA sets it: its MDI
+engine runs a subprocess per evaluation, so the pool’s concurrency beats a
+sequential warm engine. MLFFs, MOPAC and xTB stay on MDI locally.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">analyze_task</span></code> raises on a missing property; it never returns partial
+numbers.</p></li>
+<li><p>A test checks that the batch path equals the MDI path for ORCA and MOPAC
+water; it also protects the heat-of-formation decision.</p></li>
+<li><p>The local pool applies resolvers only to tasks without <code class="docutils literal notranslate"><span class="pre">config</span></code>. The
+command must be exactly today’s; the SEAMM_DEV A/B on <code class="docutils literal notranslate"><span class="pre">test.flow</span></code> and
+<code class="docutils literal notranslate"><span class="pre">bsse.flow</span></code> is the proof, before <code class="docutils literal notranslate"><span class="pre">orca_step</span></code> is released.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">options.ghost_atoms</span></code> must be enough for <code class="docutils literal notranslate"><span class="pre">seamm_bsse</span></code>’s N-fragment SSFC
+inputs (ghosts plus per-fragment charge and multiplicity), which is also the
+MBE step’s counterpoise path.</p></li>
+<li><p>Release order: <code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code>, then <code class="docutils literal notranslate"><span class="pre">orca_step</span></code> and <code class="docutils literal notranslate"><span class="pre">mopac_step</span></code> with
+pins, then the consumers.</p></li>
+</ul>
+</section>
+<section id="the-mdi-basis-bug-bugfix-releases">
+<h2>2026-10-03 – the MDI basis bug (bugfix releases)<a class="headerlink" href="#the-mdi-basis-bug-bugfix-releases" title="Link to this heading">#</a></h2>
+<p>Found by the phase 3 survey and reproduced. ORCA, driven as an MDI engine by
+the Energy step, ran def2-SVP whatever basis was chosen.</p>
+<ul class="simple">
+<li><p>Cause: <code class="docutils literal notranslate"><span class="pre">match_model_chemistry</span></code> built the published <code class="docutils literal notranslate"><span class="pre">_model_chemistry</span></code>
+from the first matching offering, user’s basis substituted. But it kept the
+offering’s <code class="docutils literal notranslate"><span class="pre">options</span></code> – and <code class="docutils literal notranslate"><span class="pre">options[&quot;mdi_basis_arg&quot;]</span></code> was the advertised
+example basis, which the Energy step and the Dimer Builder pass to the
+engine ahead of <code class="docutils literal notranslate"><span class="pre">mc[&quot;basis&quot;]</span></code>.</p></li>
+<li><p>Normal Mode Sampling and LAMMPS passed <code class="docutils literal notranslate"><span class="pre">method=mc[&quot;method&quot;]</span></code> alone: no
+basis (so ORCA’s default def2-SVP), and the model-chemistry spelling rather
+than ORCA’s keyword.</p></li>
+<li><p>The ORCA MDI engine could not take a <code class="docutils literal notranslate"><span class="pre">bse:NAME</span></code> basis at all.</p></li>
+</ul>
+<p>Fixes, each with a test:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model_chemistry_step</span></code>: the match copies the options and puts the user’s
+basis in <code class="docutils literal notranslate"><span class="pre">mdi_basis_arg</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">orca_step</span></code>: the MDI engine fetches a <code class="docutils literal notranslate"><span class="pre">bse:</span></code> basis from the Basis Set
+Exchange into <code class="docutils literal notranslate"><span class="pre">basis.bas</span></code> (<code class="docutils literal notranslate"><span class="pre">%basis</span> <span class="pre">GTOName</span></code>), as the ORCA step does. With
+the real binary, the energy matches ORCA’s own def2-SVP to 1e-6.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">normal_mode_sampling_step</span></code> and <code class="docutils literal notranslate"><span class="pre">lammps_step</span></code>: <code class="docutils literal notranslate"><span class="pre">mdi_method_arg</span></code> and
+<code class="docutils literal notranslate"><span class="pre">mdi_basis_arg</span></code>, like the Energy step.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">energy_step</span></code> (test only): a regression test through the real chain
+(match, method/basis rule, engine command, MDI engine, ORCA). It asserts the
+generated input’s basis, for <code class="docutils literal notranslate"><span class="pre">def2-TZVP</span></code> and <code class="docutils literal notranslate"><span class="pre">bse:def2-TZVP</span></code>, and that
+the energy equals ORCA run directly (-76.4258395903 Eh, to 1e-8).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dimer_builder_step</span></code> (test only): its method/basis rule takes the user’s
+basis. Its code was already right once the match was fixed.</p></li>
+</ul>
+<p>PRs: model_chemistry_step #7, orca_step #37, normal_mode_sampling_step #1
+(CI moved to uv) and lammps_step #114, all 2026.10.3, independent of each
+other.</p>
+<section id="lesson">
+<h3>Lesson<a class="headerlink" href="#lesson" title="Link to this heading">#</a></h3>
+<p><strong>An advertised offering’s options must never override a user’s explicit
+choice.</strong> A program advertises a few example bases so the list stays short.
+Anything carried along with an example must be re-derived from the user’s
+selection when it is matched, not copied. The bug was silent: no error, just
+the wrong basis, found only by reading the code.</p>
+</section>
+</section>
+<section id="the-mopac-mdi-engine-s-forces-bugfix-release">
+<h2>2026-10-03 – the MOPAC MDI engine’s forces (bugfix release)<a class="headerlink" href="#the-mopac-mdi-engine-s-forces-bugfix-release" title="Link to this heading">#</a></h2>
+<p>Found by the first run of the MOPAC batch == MDI test. The heats of formation
+agreed to 2e-7 kJ/mol, but the MDI gradients were 3.57 times the batch ones.</p>
+<ul class="simple">
+<li><p>A central difference of the MOPAC binary’s heat of formation (O z of water:
+6.951 kcal/mol/Å) matched the batch path (6.959).</p></li>
+<li><p>The factor is (bohr/Å)². <code class="docutils literal notranslate"><span class="pre">mopac_mdi.py</span></code> converted kcal/mol/Å to
+hartree/bohr with <code class="docutils literal notranslate"><span class="pre">*</span> <span class="pre">BOHR_PER_ANG</span></code> instead of <code class="docutils literal notranslate"><span class="pre">*</span> <span class="pre">ANG_PER_BOHR</span></code>, so every
+MOPAC force over MDI has been 3.57 times too large since 2026-06-23
+(992909f). Energies were right.</p></li>
+<li><p>Affected: the Energy step’s MOPAC gradients, LAMMPS QM/MD with a MOPAC model
+chemistry, and Normal Mode Sampling’s finite-difference Hessian with MOPAC
+(frequencies about 1.89 times too high). xTB’s engine works in atomic units
+throughout and is unaffected; ORCA’s agrees with the batch path.</p></li>
+<li><p>Fixed in <code class="docutils literal notranslate"><span class="pre">mopac_step</span></code> 2026.10.3 (PR #158). A regression test compares the
+engine’s forces with a finite difference of its own energies.</p></li>
+</ul>
+<p>After the fix, MOPAC’s batch and MDI gradients differ by about 0.1%: the
+single-SCF gradient depends on where the SCF stops. On water’s O z it is 29.116
+(binary default), 29.082 (<code class="docutils literal notranslate"><span class="pre">SCFCRT=1e-12</span></code>), 29.072 (mopactools) and 29.084
+kJ/mol/Å (a finite difference). The invariant test states 0.3% + 0.02 kJ/mol/Å
+for MOPAC gradients and 1e-4 kJ/mol for heats.</p>
+<p>Also found: a <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">run</span> <span class="pre">-n</span> <span class="pre">&lt;env&gt;</span> <span class="pre">python</span></code> engine command runs whichever
+<code class="docutils literal notranslate"><span class="pre">python</span></code> is first on the PATH. With a SEAMM venv’s <code class="docutils literal notranslate"><span class="pre">bin</span></code> ahead of conda’s,
+the MOPAC engine started the wrong Python and could not import mopactools.
+This is a pre-existing fragility of the MOPAC (and other <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">run</span></code>) engine
+launchers. It showed up here only because of how the tests were started.
+Recorded, not fixed.</p>
+<section id="id1">
+<h3>Lesson<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<p><strong>Two independent paths to the same number are a test.</strong> The batch == MDI
+invariant was written to protect a design decision. Its first run found a units
+bug that had been in production for three months, because nothing had compared
+the MOPAC engine’s forces with anything else.</p>
+</section>
+</section>
+<section id="what-was-built">
+<h2>2026-10-03 – what was built<a class="headerlink" href="#what-was-built" title="Link to this heading">#</a></h2>
+<p>Committed locally on <code class="docutils literal notranslate"><span class="pre">dev</span></code> in each package; nothing pushed except the
+bugfix releases above.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code></dt><dd><p><code class="docutils literal notranslate"><span class="pre">evaluator.py</span></code> holds <code class="xref py py-class docutils literal notranslate"><span class="pre">Evaluator</span></code>, <code class="xref py py-func docutils literal notranslate"><span class="pre">choose_path()</span></code>,
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Geometry</span></code>, <code class="xref py py-func docutils literal notranslate"><span class="pre">structure_data()</span></code>, <code class="xref py py-func docutils literal notranslate"><span class="pre">check_properties()</span></code> and
+<code class="xref py py-func docutils literal notranslate"><span class="pre">mdi_method_and_basis()</span></code>.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">submit(configuration,</span> <span class="pre">key=None,</span> <span class="pre">options=None)</span></code> and <code class="docutils literal notranslate"><span class="pre">results()</span></code>
+yield <code class="docutils literal notranslate"><span class="pre">EvaluatorResult</span></code> objects: <code class="docutils literal notranslate"><span class="pre">ok</span></code>, <code class="docutils literal notranslate"><span class="pre">energy</span></code> (kJ/mol),
+<code class="docutils literal notranslate"><span class="pre">gradients</span></code> ((n, 3) kJ/mol/Å), <code class="docutils literal notranslate"><span class="pre">stress</span></code>, <code class="docutils literal notranslate"><span class="pre">reason</span></code>, <code class="docutils literal notranslate"><span class="pre">restored</span></code>,
+<code class="docutils literal notranslate"><span class="pre">path</span></code> and <code class="docutils literal notranslate"><span class="pre">elapsed</span></code>.</p></li>
+<li><p>The MDI path is the Energy step’s old loop, moved: one engine per
+(elements, charge, multiplicity, periodicity), stress only where the
+engine supports it. <code class="docutils literal notranslate"><span class="pre">seamm_mdi</span></code> is imported only there.</p></li>
+<li><p>The batch path is a <code class="docutils literal notranslate"><span class="pre">TaskSet</span></code> of the provider’s tasks, read back by its
+<code class="docutils literal notranslate"><span class="pre">analyze_task</span></code>; a failed or partial task gives <code class="docutils literal notranslate"><span class="pre">ok=False</span></code> with the
+reason.</p></li>
+<li><p>The local pool now configures every task without <code class="docutils literal notranslate"><span class="pre">config</span></code> from that
+machine’s ini file and the program’s resolver (<code class="docutils literal notranslate"><span class="pre">_configure</span></code>). Tasks
+with <code class="docutils literal notranslate"><span class="pre">config</span></code> are untouched; <code class="docutils literal notranslate"><span class="pre">resolve_programs</span></code> is kept but no
+longer changes anything.</p></li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">orca_step</span></code></dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">batch.py</span></code>: <code class="docutils literal notranslate"><span class="pre">get_task</span></code> writes the MDI engine’s own input: the
+helpers are loaded from <code class="docutils literal notranslate"><span class="pre">data/orca_mdi.py</span></code>. That covers the keyword
+plus AutoAux, the <code class="docutils literal notranslate"><span class="pre">bse:</span></code> basis file, the DLPNO block and <code class="docutils literal notranslate"><span class="pre">EnGrad</span></code>.
+<code class="docutils literal notranslate"><span class="pre">options</span></code> gives <code class="docutils literal notranslate"><span class="pre">atom_indices</span></code>, <code class="docutils literal notranslate"><span class="pre">ghost_atoms</span></code> (written <code class="docutils literal notranslate"><span class="pre">O:</span></code>),
+<code class="docutils literal notranslate"><span class="pre">charge</span></code> and <code class="docutils literal notranslate"><span class="pre">multiplicity</span></code>. Defaults: 1 rank, <code class="docutils literal notranslate"><span class="pre">%maxcore</span> <span class="pre">2000</span></code>;
+<code class="docutils literal notranslate"><span class="pre">resources</span></code> overrides them.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">analyze_task</span></code> uses the engine’s parsers, with the same pint
+conversions as <code class="docutils literal notranslate"><span class="pre">seamm_mdi</span></code>. Methods without an MDI engine (CCSD(T)
+and the like) get their real keyword and can run energy-only as tasks.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">resolver.py</span></code>: the <code class="docutils literal notranslate"><span class="pre">orca</span></code> resolver (full path, <code class="docutils literal notranslate"><span class="pre">mpi_env</span></code>,
+<code class="docutils literal notranslate"><span class="pre">{orca_2aim}</span></code>, PATH fallback), registered in
+<code class="docutils literal notranslate"><span class="pre">org.molssi.seamm.exec.resolvers</span></code>. <code class="docutils literal notranslate"><span class="pre">_mpi_env</span></code> became the module
+function <code class="docutils literal notranslate"><span class="pre">mpi_env</span></code>.</p></li>
+<li><p>The ORCA step’s own tasks no longer carry <code class="docutils literal notranslate"><span class="pre">config</span></code>, so ORCA steps can
+now go to remote targets.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">run_orca_job</span></code> is split: <code class="docutils literal notranslate"><span class="pre">orca_job_task</span></code> builds the task.</p></li>
+<li><p>BSSE builds all its sub-jobs and runs them as one <code class="docutils literal notranslate"><span class="pre">TaskSet</span></code>.</p></li>
+<li><p>Every ORCA offering declares <code class="docutils literal notranslate"><span class="pre">prefers_batch</span></code>.</p></li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mopac_step</span></code></dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">batch.py</span></code>: a single SCF with gradients and <code class="docutils literal notranslate"><span class="pre">AUX(PRECISION=9)</span></code>. The
+energy is the heat of formation (Paul’s decision). Only the lowest spin
+state, and molecules only; open-shell and periodic MOPAC stay on MDI,
+where equality has not been shown.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">resolver.py</span></code>: the <code class="docutils literal notranslate"><span class="pre">mopac</span></code> resolver (ini, else <code class="docutils literal notranslate"><span class="pre">which</span> <span class="pre">mopac</span></code>; it
+never writes files, unlike the MOPAC step).</p></li>
+<li><p>The MOPAC step’s own runs keep their <code class="docutils literal notranslate"><span class="pre">config</span></code> this phase (its
+configuration code writes default ini files). Consider each code
+separately.</p></li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">energy_step</span></code></dt><dd><p><code class="docutils literal notranslate"><span class="pre">run()</span></code> is on the Evaluator, with keys <code class="docutils literal notranslate"><span class="pre">c&lt;configuration</span> <span class="pre">id&gt;</span></code>.
+Properties, <code class="docutils literal notranslate"><span class="pre">store_results</span></code> and <code class="docutils literal notranslate"><span class="pre">energies.csv</span></code> are unchanged. The
+MDI-capable requirement is dropped. Failures are listed and raised after
+the successful structures are stored. The report says “N engine sessions”
+(MDI) or “N separate calculations, M finished in an earlier run” (tasks).</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">dimer_builder_step</span></code></dt><dd><p><code class="docutils literal notranslate"><span class="pre">_open_energy_engine</span></code> returns <code class="docutils literal notranslate"><span class="pre">_MDIEnergies</span></code> (the engine plus
+<code class="docutils literal notranslate"><span class="pre">energies</span></code>) or <code class="docutils literal notranslate"><span class="pre">_TaskEnergies</span></code> (the Evaluator). Grids – the 11-point
+minimum search, the outward profile, the interpolation points – are
+evaluated together. The inward wall walk stays one point at a time, since
+it is sequential by nature. The van der Waals radii are now cached, and
+mendeleev’s SQLAlchemy sessions are collected on the main thread. Left
+to the garbage collector inside a pool worker thread, SQLite refused to
+close them and logged frightening, harmless errors.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">normal_mode_sampling_step</span></code></dt><dd><p>The Hessian is analytic over MDI when the engine offers <code class="docutils literal notranslate"><span class="pre">&lt;HESSIAN</span></code>.
+Otherwise it is the finite difference: as tasks
+(<code class="docutils literal notranslate"><span class="pre">_fd_hessian_tasks</span></code>, 6N displaced structures, keys
+<code class="docutils literal notranslate"><span class="pre">c&lt;id&gt;-fd&lt;j&gt;&lt;p|m&gt;</span></code>) when the Evaluator chooses the batch path, else
+over the warm engine as before. A model chemistry without an MDI engine
+now works through the tasks.</p>
+</dd>
+</dl>
+<section id="validation">
+<h3>Validation<a class="headerlink" href="#validation" title="Link to this heading">#</a></h3>
+<ul>
+<li><p>Unit and integration tests:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Package</p></th>
+<th class="head"><p>Tests</p></th>
+<th class="head"><p>New</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code></p></td>
+<td><p>98</p></td>
+<td><p>the Evaluator: path rule, batch path, failures,
+restart, helpers</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">orca_step</span></code></p></td>
+<td><p>178</p></td>
+<td><p>resolver equivalence (4 cases), batch == MDI, ghost
+atoms, partial results, BSSE on a TaskSet</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">mopac_step</span></code></p></td>
+<td><p>39</p></td>
+<td><p>batch == MDI (heat of formation), refusals,
+<code class="docutils literal notranslate"><span class="pre">.aux</span></code> parsing, forces vs finite difference</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">energy_step</span></code></p></td>
+<td><p>21</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dimer_builder_step</span></code></p></td>
+<td><p>59</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">normal_mode_sampling</span></code></p></td>
+<td><p>42</p></td>
+<td><p>FD-by-tasks assembly on a quadratic potential</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</li>
+<li><p><strong>The resolver</strong> reproduces the old command, environment and configuration:
+serial and parallel, with and without <code class="docutils literal notranslate"><span class="pre">orca_2aim</span></code>.</p></li>
+<li><p><strong>ORCA batch == MDI</strong> for water at def2-SVP and <code class="docutils literal notranslate"><span class="pre">bse:def2-SVP</span></code>: exact (1e-6
+kJ/mol) on the first geometry; within the SCF convergence on later ones,
+where the engine reuses the previous orbitals (3e-3 kJ/mol, 1e-2
+kJ/mol/Å; observed 2.5e-4).</p></li>
+<li><p><strong>MOPAC batch == MDI</strong>: heats to 1e-4 kJ/mol (observed 2e-7), gradients to
+0.3% (see the force bug above).</p></li>
+<li><p><strong>Live flowcharts</strong> on this Mac (<code class="docutils literal notranslate"><span class="pre">Testing/phase3_*.flow</span></code>):</p>
+<ul class="simple">
+<li><p>the Energy step over six molecules with ORCA (tasks, 5.9 s; a rerun
+restored them all) and MOPAC (MDI);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bsse.flow</span></code> with its sub-jobs on one TaskSet;</p></li>
+<li><p>the Dimer Builder with energy contacts: ORCA as tasks, 69 evaluations in
+76 s, and MOPAC over MDI.</p></li>
+</ul>
+</li>
+<li><p><strong>The NMS Hessian</strong> of HF/def2-SVP water by finite difference as tasks
+against ORCA’s analytic one: frequencies 1790.2 / 3972.5 / 4062.3 against
+1790.9 / 3972.9 / 4062.4 cm⁻¹; the largest Hessian element difference is
+1.1e-4 Eh/bohr².</p></li>
+<li><p><strong>Remote ORCA through the resolver, Mac -&gt; TinkerCliffs.</strong></p>
+<ul class="simple">
+<li><p>The Energy step over six molecules with <code class="docutils literal notranslate"><span class="pre">SEAMM_TARGET=tc</span></code> and
+<code class="docutils literal notranslate"><span class="pre">inline_below</span> <span class="pre">=</span> <span class="pre">0</span></code> sent config-less ORCA tasks in two bundles. Without
+that setting, the inline rule rightly kept water’s 1 s estimates local.</p></li>
+<li><p>TinkerCliffs’ <code class="docutils literal notranslate"><span class="pre">orca.ini</span></code> (<code class="docutils literal notranslate"><span class="pre">installation</span> <span class="pre">=</span> <span class="pre">modules</span></code>) resolved them
+through the <code class="docutils literal notranslate"><span class="pre">orca</span></code> resolver, in a development venv in
+<code class="docutils literal notranslate"><span class="pre">/projects/seamm/psaxe/phase3</span></code>.</p></li>
+<li><p>Energies are identical to the local run to all printed digits; forces
+agree to 1e-4 kJ/mol/Å.</p></li>
+</ul>
+</li>
+<li><p><strong>The SEAMM_DEV A/B comparison</strong> (<code class="docutils literal notranslate"><span class="pre">venvs/phase3-A</span></code>: today’s releases;
+<code class="docutils literal notranslate"><span class="pre">phase3-B</span></code>: plus the six checkouts) on <code class="docutils literal notranslate"><span class="pre">test</span></code>, <code class="docutils literal notranslate"><span class="pre">bsse</span></code>,
+<code class="docutils literal notranslate"><span class="pre">harness_water</span></code>, <code class="docutils literal notranslate"><span class="pre">builder_loop</span></code>, <code class="docutils literal notranslate"><span class="pre">phase3_energy_mopac</span></code> and
+<code class="docutils literal notranslate"><span class="pre">phase3_energy_orca</span></code>:</p>
+<ul class="simple">
+<li><p>ORCA’s final energies, the BSSE energies and the MOPAC results are
+identical.</p></li>
+<li><p>The ORCA Energy step over MDI (A) and as tasks (B) agrees to every
+printed digit.</p></li>
+<li><p>The only differences are versions, pids and timings, plus the new
+<code class="docutils literal notranslate"><span class="pre">tasks/</span></code> layouts (BSSE’s sub-jobs share one manifest in the step
+directory; the ORCA Energy step runs as tasks).</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="review-2026-10-03">
+<h3>Review (2026-10-03)<a class="headerlink" href="#review-2026-10-03" title="Link to this heading">#</a></h3>
+<p>An independent review of the six diffs. Fixed, each with a test unless noted:</p>
+<ol class="arabic">
+<li><p><strong>ORCA’s batch path accepted periodic structures.</strong> With <code class="docutils literal notranslate"><span class="pre">prefers_batch</span></code> the
+Energy step would have stored a gas-phase cluster energy for a periodic
+configuration; the MDI path had refused it.</p>
+<ul class="simple">
+<li><p>Programs now offer <code class="docutils literal notranslate"><span class="pre">can_run_task(configuration,</span> <span class="pre">model_chemistry,</span>
+<span class="pre">options)</span></code>. A structure for which it is False goes to the program’s MDI
+engine, if it has one, even when the rest run as tasks; otherwise it gets a
+failed result.</p></li>
+<li><p>ORCA’s <code class="docutils literal notranslate"><span class="pre">get_task</span></code> refuses periodic structures and initial guesses (not
+supported yet), and <code class="docutils literal notranslate"><span class="pre">can_run_task</span></code> refuses open-shell DLPNO.</p></li>
+</ul>
+</li>
+<li><p><strong>A queue target forced MOPAC’s periodic and open-shell structures onto tasks
+it cannot run.</strong> Same mechanism: MOPAC’s <code class="docutils literal notranslate"><span class="pre">can_run_task</span></code> keeps them on MDI.
+A <code class="docutils literal notranslate"><span class="pre">get_task</span></code> that raises now fails that structure alone, instead of
+stopping the whole <code class="docutils literal notranslate"><span class="pre">results()</span></code>.</p></li>
+<li><p><strong>Pins.</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">orca_step</span></code> and <code class="docutils literal notranslate"><span class="pre">mopac_step</span></code> require <code class="docutils literal notranslate"><span class="pre">seamm-exec&gt;=2026.10.3</span></code>. The
+released 2026.10.2.1 never resolves config-less tasks in the evaluator’s
+pool, so a new <code class="docutils literal notranslate"><span class="pre">orca_step</span></code> on it would lose ORCA’s full path, the OpenMPI
+paths and <code class="docutils literal notranslate"><span class="pre">{orca_2aim}</span></code>.</p></li>
+<li><p>The three consumers now list <code class="docutils literal notranslate"><span class="pre">seamm-exec&gt;=2026.10.3</span></code>.</p></li>
+<li><p>The pool’s error names the missing resolver when a plug-in is not
+installed where a task runs (no test).</p></li>
+</ul>
+</li>
+<li><p><strong>Lone atoms.</strong> <code class="docutils literal notranslate"><span class="pre">get_task</span></code> lacked the ORCA step’s one-center <code class="docutils literal notranslate"><span class="pre">NoCOSX</span></code>
+guard, so <code class="docutils literal notranslate"><span class="pre">seamm_bsse</span></code>/MBE jobs for a bare Li⁺ or Na⁺ would get the ~5
+kJ/mol RIJCOSX artifact. It is added to both <code class="docutils literal notranslate"><span class="pre">get_task</span></code> and the MDI engine
+(<code class="docutils literal notranslate"><span class="pre">single_center_method</span></code>), so the two paths still agree. Real ORCA, Na⁺:
+batch == MDI exactly.</p>
+<p>This is a behaviour change of the ORCA MDI engine for single atoms (a fix),
+and goes in orca_step’s HISTORY.</p>
+</li>
+<li><p><strong>NMS imported ``seamm_mdi`` unconditionally</strong>, and failed when no engine
+could start, e.g. on a queue target with ORCA installed only on the cluster.
+It now imports lazily and falls back to the finite difference as tasks.</p></li>
+<li><p><strong>The Dimer Builder’s single points are slow on the task path. Deferred.</strong></p>
+<ul class="simple">
+<li><p>Each point of the inward wall walk is its own one-task <code class="docutils literal notranslate"><span class="pre">TaskSet</span></code> (the
+manifest is re-read and re-written per point). On a queue target, a point
+above <code class="docutils literal notranslate"><span class="pre">inline_below</span></code> would be its own batch job.</p></li>
+<li><p>Small ORCA dimers stay local by the inline rule. The rest needs
+speculative blocks of inward points, or one long-lived <code class="docutils literal notranslate"><span class="pre">TaskSet</span></code> per
+<code class="docutils literal notranslate"><span class="pre">_TaskEnergies</span></code>.</p></li>
+</ul>
+</li>
+<li><p><strong>MOPAC’s ``.aux`` gradients</strong> stop at the next <code class="docutils literal notranslate"><span class="pre">KEY=</span></code> line and must be
+exactly 3n values (<code class="docutils literal notranslate"><span class="pre">AnalysisError</span></code> otherwise).</p></li>
+<li><p><strong>BSSE sub-jobs were treated as “concurrent”</strong>, so the pool set
+<code class="docutils literal notranslate"><span class="pre">OMP_NUM_THREADS=1</span></code> and binding <code class="docutils literal notranslate"><span class="pre">none</span></code> on them, under SLURM too. They
+run one at a time anyway, each taking every core. A task that takes the
+whole pool is no longer “concurrent”. Old per-sub-job restart records are
+not reused: one recompute after upgrading.</p></li>
+<li><p>Minor:</p>
+<ul class="simple">
+<li><p>a configuration selected twice is evaluated once by the Energy step;</p></li>
+<li><p>the <code class="docutils literal notranslate"><span class="pre">mopac</span></code> resolver keeps a conda or modules installation whose
+<code class="docutils literal notranslate"><span class="pre">code</span></code> is empty;</p></li>
+<li><p>DLPNO open-shell refused energy-only too, matching MDI (unchanged).</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="design-session-s-review-2026-10-03">
+<h3>Design session’s review (2026-10-03)<a class="headerlink" href="#design-session-s-review-2026-10-03" title="Link to this heading">#</a></h3>
+<p>A second independent read, at the heads with the fixes above. Fixed:</p>
+<ol class="arabic simple">
+<li><p><strong>A refused structure on a queue target, with the code only on the cluster,</strong>
+went to a local MDI engine that could not start, and the error stopped every
+other structure. Such a structure now gets a failed result, “cannot run
+here: …”, and the rest finish (<code class="docutils literal notranslate"><span class="pre">_mdi_results(fallback=True)</span></code>).</p></li>
+<li><p><strong>NMS fell back to the finite difference on any engine failure,</strong> so a
+transient failure (a port, the environment) silently turned ORCA’s analytic
+Hessian into 6N tasks. It now falls back only when the code is not installed
+here, says so through the step’s printer, and closes the engine.</p></li>
+<li><p><strong>Tests.</strong> A task with <code class="docutils literal notranslate"><span class="pre">config</span></code> never meets a registered resolver, in the
+pool and in <code class="docutils literal notranslate"><span class="pre">bundle_runner</span></code>; a config-less one does. The Energy step’s
+<code class="docutils literal notranslate"><span class="pre">c&lt;id&gt;</span></code> keys are stable on rerun, a duplicate selection is skipped,
+failures are stored then raised, and the report says how the work ran. The
+Dimer Builder maps out-of-order results back by key.</p></li>
+<li><p><strong>The stress is required for a periodic structure</strong> (<code class="docutils literal notranslate"><span class="pre">check_properties(...,</span>
+<span class="pre">periodic=True)</span></code>), so a future periodic batch program cannot return none.</p></li>
+<li><p><strong>This note and both design copies</strong> now carry the contract as coded:
+classmethods <code class="docutils literal notranslate"><span class="pre">(configuration,</span> <span class="pre">model_chemistry,</span> <span class="pre">*,</span> <span class="pre">...)</span></code>, no citations, the
+stress as the program gives it, and <code class="docutils literal notranslate"><span class="pre">can_run_task</span></code>.</p></li>
+<li><p><strong>One ``mdi_method_and_basis``:</strong> ORCA’s and MOPAC’s <code class="docutils literal notranslate"><span class="pre">get_task</span></code> call
+<code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code>’s, so the basis-wins rule lives in one place.</p></li>
+<li><p><strong>The resolver registry</strong> is built under a lock; pool threads asked for it
+at the same time and a second build dropped a <code class="docutils literal notranslate"><span class="pre">register()</span></code>.</p></li>
+<li><p><strong>Wording:</strong> MOPAC’s refusal says the structure “runs on MOPAC’s MDI engine
+where one is available”; “Where ORCA runs” says <code class="docutils literal notranslate"><span class="pre">code</span></code> must be ORCA’s full
+path on module sites.</p></li>
+</ol>
+<p>Addendum, also fixed:</p>
+<ol class="loweralpha simple">
+<li><p><strong>NMS rule: on a queue target, the target wins.</strong> The finite difference runs
+as tasks on the cluster, and no local engine is started, even to ask for
+<code class="docutils literal notranslate"><span class="pre">&lt;HESSIAN</span></code>. Otherwise the analytic Hessian goes over MDI when the program
+has one: ORCA now says so in its model-chemistry options
+(<code class="docutils literal notranslate"><span class="pre">analytic_hessian</span></code>, from <code class="docutils literal notranslate"><span class="pre">method_has_analytic_hessian</span></code>), so no live
+probe is needed; other programs are still asked. Failing that, the finite
+difference runs as tasks if the evaluator chose them, or over the warm
+engine.</p></li>
+<li><p>NMS closes the engine on the fallback, catches only the “no code here” case,
+and prints the reason.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_can_run_task</span></code> logs a provider’s exception before treating it as False,
+so a buggy hook does not reroute silently.</p></li>
+<li><p>orca_step’s HISTORY records the MDI engine’s behaviour change: a single
+centre now runs without COSX, which moves lone-ion energies by about 5
+kJ/mol from before.</p></li>
+<li><p>The Energy step’s report says how a mixed run went: “X over MDI in N engine
+session(s) and Y as separate calculations”.</p></li>
+<li><p>The MOPAC batch == MDI test has a doublet, OH. Heats agree to 1e-3 kJ/mol;
+the gradients to 0.06 kJ/mol/Å, because the MDI path (mopactools) gives
+spurious components of about 0.03 kJ/mol/Å perpendicular to the bond.</p></li>
+</ol>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="NOTES_phase2.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Phase 2 notes</p>
+      </div>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plan-and-decisions">2026-10-03 – plan and decisions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-mdi-basis-bug-bugfix-releases">2026-10-03 – the MDI basis bug (bugfix releases)</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lesson">Lesson</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-mopac-mdi-engine-s-forces-bugfix-release">2026-10-03 – the MOPAC MDI engine’s forces (bugfix release)</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Lesson</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-was-built">2026-10-03 – what was built</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#validation">Validation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#review-2026-10-03">Review (2026-10-03)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#design-session-s-review-2026-10-03">Design session’s review (2026-10-03)</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../../_sources/developer_guide/campaigns/2026-10-02/NOTES_phase3.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

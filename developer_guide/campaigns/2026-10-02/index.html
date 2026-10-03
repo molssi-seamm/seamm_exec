@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops &#8212; SEAMM seamm-exec Plug-in 2026.10.2.1 documentation</title>
+    <title>2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops &#8212; SEAMM seamm-exec Plug-in 2026.10.3 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../../_static/documentation_options.js?v=77b25824"></script>
+    <script src="../../../_static/documentation_options.js?v=f64fa391"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="Campaigns" href="../index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.2.1" />
+  <meta name="docsearch:version" content="2026.10.3" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -941,18 +941,43 @@ target.</p>
 <p>MDI remains the right interface for a warm engine on one machine. Farming out needs the prepare/analyze
 split. Add to the provider interface, next to <code class="docutils literal notranslate"><span class="pre">get_model_chemistry_options()</span></code> and
 <code class="docutils literal notranslate"><span class="pre">get_mdi_engine_command()</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">get_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">(</span><span class="s2">"energy"</span><span class="p">,</span> <span class="s2">"gradients"</span><span class="p">),</span>
-             <span class="n">resources</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Task</span><span class="p">:</span> <span class="o">...</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">analyze_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="n">TaskResult</span><span class="p">,</span> <span class="n">level</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span> <span class="o">...</span>
-    <span class="c1"># {"energy": kJ/mol, "gradients": (n, 3) kJ/mol/Å, "stress": (3, 3) GPa, ... , "citations": [...]}</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># classmethods of the program's plug-in class, beside get_model_chemistry_options</span>
+<span class="nd">@classmethod</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_task</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">model_chemistry</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span>
+             <span class="n">properties</span><span class="o">=</span><span class="p">(</span><span class="s2">"energy"</span><span class="p">,</span> <span class="s2">"gradients"</span><span class="p">),</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">resources</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Task</span><span class="p">:</span> <span class="o">...</span>
+<span class="nd">@classmethod</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">analyze_task</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="n">TaskResult</span><span class="p">,</span> <span class="n">model_chemistry</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                 <span class="n">properties</span><span class="o">=</span><span class="p">(</span><span class="s2">"energy"</span><span class="p">,</span> <span class="s2">"gradients"</span><span class="p">),</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span> <span class="o">...</span>
+    <span class="c1"># {"energy": kJ/mol, "gradients": (n, 3) kJ/mol/Å, "stress": GPa as the program gives it}</span>
+<span class="nd">@classmethod</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">can_run_task</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">model_chemistry</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span> <span class="o">...</span>  <span class="c1"># optional</span>
 </pre></div>
 </div>
-<p>Consumers (Energy, MBE, N-fragment counterpoise, dimer builder) use a facade in <code class="docutils literal notranslate"><span class="pre">seamm</span></code> with the same
-calls as <code class="docutils literal notranslate"><span class="pre">seamm_mdi.MDIEngine</span></code> but asynchronous: <code class="docutils literal notranslate"><span class="pre">submit(configuration)</span> <span class="pre">-&gt;</span> <span class="pre">key</span></code> and <code class="docutils literal notranslate"><span class="pre">results()</span> <span class="pre">-&gt;</span>
-<span class="pre">iterator</span></code>. <strong>The facade, not the user or the step, chooses the path:</strong> MDI when the job’s target runs
-tasks in the local pool and the provider has an MDI engine (so MLFF and MOPAC stay at milliseconds per
-structure), the batch path otherwise (ORCA and VASP fan out). Energy, MBE and the counterpoise code
-inherit the rule with no per-step logic, and the Energy step keeps its MDI path. Order of implementation: ORCA (its MDI engine already contains the analyze
+<p><code class="docutils literal notranslate"><span class="pre">options</span></code> carries what fragments need: <code class="docutils literal notranslate"><span class="pre">atom_indices</span></code>, <code class="docutils literal notranslate"><span class="pre">ghost_atoms</span></code>, <code class="docutils literal notranslate"><span class="pre">charge</span></code>, <code class="docutils literal notranslate"><span class="pre">multiplicity</span></code>
+(enough for <code class="docutils literal notranslate"><span class="pre">seamm_bsse</span></code>’s N-fragment counterpoise jobs). A structure for which <code class="docutils literal notranslate"><span class="pre">can_run_task</span></code> is
+False (a periodic system for ORCA or MOPAC, an open-shell one for MOPAC) goes to the program’s MDI engine,
+if there is one here, even when the rest run as tasks; otherwise it fails alone. <code class="docutils literal notranslate"><span class="pre">analyze_task</span></code> raises a
+clear error, never returns partial numbers, when a result lacks a requested property (the stress is
+required only for a periodic structure). For a given model chemistry the batch path and the MDI path return the same numbers (for MOPAC
+the “energy” is the heat of formation, as its MDI engine reports it; Paul, 2026-10-03), and a test of ORCA
+and MOPAC water protects that to a stated tolerance.</p>
+<p>Consumers (Energy, MBE, N-fragment counterpoise, dimer builder, the finite-difference Hessian of normal-mode
+sampling) use a facade in <code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code> with the same calls as <code class="docutils literal notranslate"><span class="pre">seamm_mdi.MDIEngine</span></code> but asynchronous:
+<code class="docutils literal notranslate"><span class="pre">submit(configuration)</span> <span class="pre">-&gt;</span> <span class="pre">key</span></code> and <code class="docutils literal notranslate"><span class="pre">results()</span> <span class="pre">-&gt;</span> <span class="pre">iterator</span></code>. It lives in <code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code>, not <code class="docutils literal notranslate"><span class="pre">seamm</span></code>,
+because <code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code> already depends on <code class="docutils literal notranslate"><span class="pre">seamm</span></code> (a facade in <code class="docutils literal notranslate"><span class="pre">seamm</span></code> would need lazy imports to dodge
+the circle) and how things run is <code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code>’s job; <code class="docutils literal notranslate"><span class="pre">seamm_mdi</span></code> is imported only on the MDI path, so a
+machine without pymdi still runs the batch path. <strong>The facade, not the user or the step, chooses the
+path:</strong> the batch path when the job’s target sends tasks to a queue (or a TaskServer) and the provider has
+<code class="docutils literal notranslate"><span class="pre">get_task</span></code>; MDI when the tasks stay local and the provider has an MDI engine (so MLFF, MOPAC and xTB stay
+at milliseconds per structure), unless the provider declares <code class="docutils literal notranslate"><span class="pre">prefers_batch</span></code> in its options (ORCA does:
+its MDI engine runs a subprocess per evaluation, so the pool’s concurrency beats a sequential warm engine
+for many structures); otherwise the batch path in the local pool. A <code class="docutils literal notranslate"><span class="pre">path=</span></code> argument exists for tests
+only. Energy, MBE and the counterpoise code
+inherit the rule with no per-step logic, and the Energy step keeps its MDI path. <strong>The Hessian for
+normal-mode sampling:</strong> on a queue target the target wins – the finite difference as tasks on the
+cluster, with no local engine started even to ask; otherwise the analytic Hessian over MDI when the
+program has one (its <code class="docutils literal notranslate"><span class="pre">analytic_hessian</span></code> option, else the engine’s <code class="docutils literal notranslate"><span class="pre">&lt;HESSIAN</span></code>), else the finite
+difference as tasks if the evaluator chose them, or over the warm engine. Order of implementation: ORCA (its MDI engine already contains the analyze
 half), MOPAC (tests the whole chain on a laptop in seconds), then the VASP registered-fragment mode the MBE
 step needs. Options a consumer must be able to pass through: ghost atoms (counterpoise), point charges, an
 initial guess file, and the registered-box parameters for VASP.</p>
@@ -1225,6 +1250,7 @@ release or only the per-step task counts.</p></li>
 <li class="toctree-l1"><a class="reference internal" href="NOTES_phase0.html">Phase 0 notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NOTES_phase1.html">Phase 1 notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NOTES_phase2.html">Phase 2 notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NOTES_phase3.html">Phase 3 notes</a></li>
 </ul>
 </div>
 </section>
