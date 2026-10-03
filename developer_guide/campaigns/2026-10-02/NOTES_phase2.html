@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Phase 2 notes &#8212; SEAMM seamm-exec Plug-in 2026.10.2.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+
+    <script src="../../../_static/documentation_options.js?v=77b25824"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'developer_guide/campaigns/2026-10-02/NOTES_phase2';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="prev" title="Phase 1 notes" href="NOTES_phase1.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.10.2.1" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/SEAMM logo.png" class="logo__image only-light" alt=""/>
+    <img src="../../../_static/SEAMM Inverted 288x181.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">SEAMM-EXEC</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/seamm-exec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/seamm-exec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">Campaigns</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html">2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Developer Documentation</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Campaigns</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Phase 2 notes</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="phase-2-notes">
+<h1>Phase 2 notes<a class="headerlink" href="#phase-2-notes" title="Link to this heading">#</a></h1>
+<section id="the-scheduler-abstraction-and-the-slurm-back-end-for-tasks">
+<h2>2026-10-02 – the scheduler abstraction and the SLURM back end for tasks<a class="headerlink" href="#the-scheduler-abstraction-and-the-slurm-back-end-for-tasks" title="Link to this heading">#</a></h2>
+<p>Done locally, on <code class="docutils literal notranslate"><span class="pre">main</span></code> of a new local repository, <code class="docutils literal notranslate"><span class="pre">seamm_scheduler</span></code> (no
+GitHub repository yet), and on <code class="docutils literal notranslate"><span class="pre">dev</span></code> in <code class="docutils literal notranslate"><span class="pre">seamm_slurm</span></code>, <code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code> and
+<code class="docutils literal notranslate"><span class="pre">seamm_jobserver</span></code>. Committed locally; not pushed and not released.</p>
+<section id="what-was-built">
+<h3>What was built<a class="headerlink" href="#what-was-built" title="Link to this heading">#</a></h3>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">seamm_scheduler</span></code> (new package, decision Q1)</dt><dd><p>One module per queueing system behind a <code class="docutils literal notranslate"><span class="pre">Scheduler</span></code> class. Copied from
+the layout of <code class="docutils literal notranslate"><span class="pre">seamm_slurm</span></code>: versioningit, devops workflows, docs,
+HISTORY, uv CI with no <code class="docutils literal notranslate"><span class="pre">test_env.yaml</span></code>.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">scheduler.py</span></code>: the interface.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">directives(resources,</span> <span class="pre">extra)</span></code>, <code class="docutils literal notranslate"><span class="pre">directive_lines</span></code>,
+<code class="docutils literal notranslate"><span class="pre">submit_cmd</span></code>/<code class="docutils literal notranslate"><span class="pre">parse_submit</span></code>, <code class="docutils literal notranslate"><span class="pre">status_cmd</span></code>/<code class="docutils literal notranslate"><span class="pre">parse_status</span></code>,
+<code class="docutils literal notranslate"><span class="pre">cancel_cmd</span></code>, <code class="docutils literal notranslate"><span class="pre">count_cmd</span></code> (the user’s own queued jobs) and
+<code class="docutils literal notranslate"><span class="pre">log_directives</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">poll(run,</span> <span class="pre">ids)</span></code> composes these. SLURM overrides it, because it
+needs <code class="docutils literal notranslate"><span class="pre">squeue</span></code> and then <code class="docutils literal notranslate"><span class="pre">sacct</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">poll_failed</span></code> (see “Outages” below) and <code class="docutils literal notranslate"><span class="pre">env_names</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">JobStatus</span></code> with <code class="docutils literal notranslate"><span class="pre">task_state</span></code>, <code class="docutils literal notranslate"><span class="pre">TASK_STATES</span></code> (pending -&gt;
+queued, completed -&gt; finished, cancelled -&gt; lost, …) and
+<code class="docutils literal notranslate"><span class="pre">get_scheduler(name)</span></code>.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">slurm.py</span></code>: SLURM.</p>
+<ul>
+<li><p>The directive syntax and the state vocabulary.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">--json</span></code> probe with text fallback, and SLURM 25.11’s nested
+<code class="docutils literal notranslate"><span class="pre">return_code</span></code>.</p></li>
+<li><p>The historical <code class="docutils literal notranslate"><span class="pre">SlurmBackend</span></code>/<code class="docutils literal notranslate"><span class="pre">LocalSlurm</span></code>/<code class="docutils literal notranslate"><span class="pre">SshSlurm</span></code> and
+their error classes.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pbs.py</span></code>: PBS Professional / OpenPBS, tested only against mocked
+<code class="docutils literal notranslate"><span class="pre">qsub</span></code>/<code class="docutils literal notranslate"><span class="pre">qstat</span></code>/<code class="docutils literal notranslate"><span class="pre">qdel</span></code> output (no PBS site).</p>
+<ul>
+<li><p>Resources become one <code class="docutils literal notranslate"><span class="pre">select</span></code> statement, and <code class="docutils literal notranslate"><span class="pre">partition</span></code> is
+the queue.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">qstat</span> <span class="pre">-x</span> <span class="pre">-f</span> <span class="pre">-F</span> <span class="pre">json</span></code>, falling back to the <code class="docutils literal notranslate"><span class="pre">qstat</span> <span class="pre">-x</span></code> table plus
+<code class="docutils literal notranslate"><span class="pre">qstat</span> <span class="pre">-x</span> <span class="pre">-f</span></code> for exit statuses.</p></li>
+<li><p>Exit 271 (a <code class="docutils literal notranslate"><span class="pre">qdel</span></code>) means cancelled.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">backend.py</span></code>: <code class="docutils literal notranslate"><span class="pre">QueueBackend(scheduler,</span> <span class="pre">transport)</span></code>: <code class="docutils literal notranslate"><span class="pre">submit</span></code>,
+<code class="docutils literal notranslate"><span class="pre">poll_many</span></code>, <code class="docutils literal notranslate"><span class="pre">cancel</span></code>/<code class="docutils literal notranslate"><span class="pre">cancel_many</span></code>, <code class="docutils literal notranslate"><span class="pre">count_jobs</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">local.py</span></code>/<code class="docutils literal notranslate"><span class="pre">ssh.py</span></code>: <code class="docutils literal notranslate"><span class="pre">LocalTransport</span></code>/<code class="docutils literal notranslate"><span class="pre">SshTransport</span></code>.
+<code class="docutils literal notranslate"><span class="pre">TASK_SSH_OPTIONS</span></code> and a command timeout are opt-in, so the
+JobServer’s argv is unchanged.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stage.py</span></code>: as before, plus <code class="docutils literal notranslate"><span class="pre">push</span></code>/<code class="docutils literal notranslate"><span class="pre">pull</span></code> of many relative paths in
+one <code class="docutils literal notranslate"><span class="pre">rsync</span> <span class="pre">--files-from=-</span></code>, which openrsync on macOS supports. The
+ssh options and the timeout are opt-in here too.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">config.py</span></code>: <code class="docutils literal notranslate"><span class="pre">TargetSection</span></code> (<code class="docutils literal notranslate"><span class="pre">SlurmSection</span></code> is an alias) with the
+task keys (below), <code class="docutils literal notranslate"><span class="pre">build_task_backend</span></code>/<code class="docutils literal notranslate"><span class="pre">build_task_stager</span></code>,
+<code class="docutils literal notranslate"><span class="pre">task_settings</span></code>/<code class="docutils literal notranslate"><span class="pre">from_settings</span></code> for <code class="docutils literal notranslate"><span class="pre">target.json</span></code>, <code class="docutils literal notranslate"><span class="pre">load_target</span></code>
+(<code class="docutils literal notranslate"><span class="pre">load_slurm_config</span></code> is an alias) and <code class="docutils literal notranslate"><span class="pre">list_sections</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">script.py</span></code>: <code class="docutils literal notranslate"><span class="pre">build_script(directives,</span> <span class="pre">payload,</span> <span class="pre">scheduler=&quot;slurm&quot;)</span></code>.</p></li>
+</ul>
+<p>171 tests: the 112 ported from <code class="docutils literal notranslate"><span class="pre">seamm_slurm</span></code> plus the interface, PBS,
+the task keys, staging, and SLURM 25.11 JSON captured on TinkerCliffs.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">seamm_slurm</span></code> (the shim)</dt><dd><p>Every module re-exports from <code class="docutils literal notranslate"><span class="pre">seamm_scheduler</span></code>. <code class="docutils literal notranslate"><span class="pre">local</span></code>, <code class="docutils literal notranslate"><span class="pre">ssh</span></code> and
+<code class="docutils literal notranslate"><span class="pre">stage</span></code> keep an <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">subprocess</span></code>, because callers patch
+<code class="docutils literal notranslate"><span class="pre">seamm_slurm.&lt;module&gt;.subprocess.run</span></code>. Its own 112 tests pass
+unchanged, as do <code class="docutils literal notranslate"><span class="pre">seamm_jobserver</span></code>’s.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code></dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">scheduler_backend.py</span></code>: <code class="docutils literal notranslate"><span class="pre">SchedulerBackend</span></code>, the <code class="docutils literal notranslate"><span class="pre">TaskBackend</span></code> for
+<code class="docutils literal notranslate"><span class="pre">tasks</span> <span class="pre">=</span> <span class="pre">queue</span></code>.</p>
+<ul>
+<li><p>Each <code class="docutils literal notranslate"><span class="pre">submit</span></code> call is one bundle: one batch job that runs
+<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">seamm_exec.task_worker</span> <span class="pre">bundle.json</span></code> in SEAMM mode.</p></li>
+<li><p>Backend ids are <code class="docutils literal notranslate"><span class="pre">&lt;job</span> <span class="pre">id&gt;#&lt;bundle&gt;.&lt;n&gt;#&lt;key&gt;</span></code>, so a restarted
+evaluator can rebuild everything from the manifest record
+(<code class="docutils literal notranslate"><span class="pre">adopt</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">room()</span></code> is <code class="docutils literal notranslate"><span class="pre">max_queued_tasks</span></code> less the user’s <code class="docutils literal notranslate"><span class="pre">squeue</span> <span class="pre">--me</span> <span class="pre">-r</span></code>
+count, refreshed once per poll interval.</p></li>
+<li><p>A QOS submit-limit error, or a failure to reach the cluster, raises
+<code class="docutils literal notranslate"><span class="pre">QueueFull</span></code>, so the bundle is held, not failed.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bundle_runner.py</span></code>: the SEAMM-mode bundle.</p>
+<ul>
+<li><p>It runs the tasks through a <code class="docutils literal notranslate"><span class="pre">LocalPool</span></code> sized to the allocation,
+with <code class="docutils literal notranslate"><span class="pre">resolve_programs=True</span></code>. Programs come from the
+<code class="docutils literal notranslate"><span class="pre">&lt;program&gt;.ini</span></code> files where the bundle runs, then the resolver hook.</p></li>
+<li><p>So <code class="docutils literal notranslate"><span class="pre">{code}</span></code>/<code class="docutils literal notranslate"><span class="pre">{NTASKS}</span></code>, conda/modules, <code class="docutils literal notranslate"><span class="pre">$TMPDIR</span></code> scratch and
+<code class="docutils literal notranslate"><span class="pre">return_files</span></code> behave exactly as in the evaluator’s pool, and tasks
+that fit side by side in the allocation run concurrently.</p></li>
+<li><p>It writes <code class="docutils literal notranslate"><span class="pre">DONE</span></code> (in the task layer’s own form, with the
+<code class="docutils literal notranslate"><span class="pre">files</span></code> list) or <code class="docutils literal notranslate"><span class="pre">FAILED</span></code> (with the reason) in
+<code class="docutils literal notranslate"><span class="pre">tasks/&lt;key&gt;/</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">task_worker.py</span></code> only loads it by name for <code class="docutils literal notranslate"><span class="pre">&quot;mode&quot;:</span> <span class="pre">&quot;seamm&quot;</span></code>,
+so the pure path still imports nothing from SEAMM (phase 1’s test
+enforces this).</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">resolve.py</span></code>: the per-program resolver hook (phase 1 requirement a).</p>
+<ul>
+<li><p>Entry-point group <code class="docutils literal notranslate"><span class="pre">org.molssi.seamm.exec.resolvers</span></code>, named after
+the program.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hook(config,</span> <span class="pre">cmd,</span> <span class="pre">env,</span> <span class="pre">ce,</span> <span class="pre">root)</span> <span class="pre">-&gt;</span> <span class="pre">(config,</span> <span class="pre">cmd,</span> <span class="pre">env)</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">read_config</span></code> and <code class="docutils literal notranslate"><span class="pre">register</span></code> (for tests).</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">targets.py</span></code>: <code class="docutils literal notranslate"><span class="pre">find_target</span></code> (explicit, then <code class="docutils literal notranslate"><span class="pre">&lt;job&gt;/target.json</span></code>,
+then <code class="docutils literal notranslate"><span class="pre">$SEAMM_TARGET</span></code> with <code class="docutils literal notranslate"><span class="pre">$SEAMM_TARGETS</span></code>, then none) and
+<code class="docutils literal notranslate"><span class="pre">write_target</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TaskSet</span></code>:</p>
+<ul>
+<li><p>It picks its back end from the target, and takes <code class="docutils literal notranslate"><span class="pre">bundle_tasks</span></code>,
+<code class="docutils literal notranslate"><span class="pre">bundle_walltime</span></code> and <code class="docutils literal notranslate"><span class="pre">inline_below</span></code> from it. On a queue with
+neither bundling setting, each task is its own bundle.</p></li>
+<li><p>Bundling is by count and by summed walltime (or estimate).</p></li>
+<li><p>A back end with <code class="docutils literal notranslate"><span class="pre">bundles</span> <span class="pre">=</span> <span class="pre">True</span></code> gets one <code class="docutils literal notranslate"><span class="pre">submit</span></code> per bundle
+(with <code class="docutils literal notranslate"><span class="pre">bundle=</span></code> and <code class="docutils literal notranslate"><span class="pre">markers=</span></code>), while it has <code class="docutils literal notranslate"><span class="pre">room()</span></code>. The
+rest wait in <code class="docutils literal notranslate"><span class="pre">_held</span></code>.</p></li>
+<li><p>A failed <code class="docutils literal notranslate"><span class="pre">submit</span></code> restores the attempt count.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_reattach</span></code> adopts queued/running tasks from a back end with
+<code class="docutils literal notranslate"><span class="pre">adopt()</span></code>.</p></li>
+<li><p>Lost tasks of one pass go back together, so a bundle’s lost tasks
+return as one bundle.</p></li>
+<li><p>A lost task’s reason comes from the back end (with the tail of the
+bundle’s log).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">route()</span></code> keeps a task that carries <code class="docutils literal notranslate"><span class="pre">Task.config</span></code> on this machine
+when the back end does not accept it (an ssh target), with one
+warning.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_restore</span></code> lists the returned files for a pure-worker <code class="docutils literal notranslate"><span class="pre">DONE</span></code>
+without a <code class="docutils literal notranslate"><span class="pre">files</span></code> list (phase 1 requirement b; the SEAMM-mode
+worker writes the list itself, and the TaskSet rewrites <code class="docutils literal notranslate"><span class="pre">DONE</span></code> on
+collection).</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">computational_environment()</span></code>: the job variables come from
+<code class="docutils literal notranslate"><span class="pre">seamm_scheduler</span></code> (SLURM, then PBS), and a <code class="docutils literal notranslate"><span class="pre">_pbs()</span></code> reader was
+added. <code class="docutils literal notranslate"><span class="pre">Base</span></code>’s in-situ check uses the same variables.</p></li>
+<li><p>91 tests: 51 from phase 1, 40 new. The new ones run with a fake queue
+that executes each real batch script with bash, so the real worker,
+pool and markers are exercised.</p></li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">seamm_jobserver</span></code></dt><dd><p>It imports <code class="docutils literal notranslate"><span class="pre">seamm_scheduler</span></code>. A section with <code class="docutils literal notranslate"><span class="pre">tasks</span> <span class="pre">=</span></code> is written as
+<code class="docutils literal notranslate"><span class="pre">&lt;job</span> <span class="pre">dir&gt;/target.json</span></code> before the job starts (and so before staging);
+sections without it write nothing. 87 tests.</p>
+</dd>
+</dl>
+</section>
+<section id="target-keys-all-optional-a-section-without-tasks-means-what-it-did">
+<h3>Target keys (all optional; a section without <code class="docutils literal notranslate"><span class="pre">tasks</span> <span class="pre">=</span></code> means what it did)<a class="headerlink" href="#target-keys-all-optional-a-section-without-tasks-means-what-it-did" title="Link to this heading">#</a></h3>
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">tasks</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">pool</span></code> | <code class="docutils literal notranslate"><span class="pre">queue</span></code> | <code class="docutils literal notranslate"><span class="pre">taskserver</span></code> (phase 7; refused for now)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">scheduler</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">slurm</span></code> (default) | <code class="docutils literal notranslate"><span class="pre">pbs</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">shared_filesystem</span></code></p></td>
+<td><p>default: yes for the local task transport, no for ssh</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">bundle_tasks</span></code></p></td>
+<td><p>tasks per bundle</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">bundle_walltime</span></code></p></td>
+<td><p>SLURM time syntax; also the bundle’s <code class="docutils literal notranslate"><span class="pre">--time</span></code> when its tasks
+give no walltime</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">max_queued_tasks</span></code></p></td>
+<td><p>the user’s queued + running jobs, counted with <code class="docutils literal notranslate"><span class="pre">squeue</span> <span class="pre">--me</span> <span class="pre">-r</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">inline_below</span></code></p></td>
+<td><p>seconds (default 60)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">remote_python</span></code></p></td>
+<td><p>ssh targets: a Python with <code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code> on the cluster</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">remote_seamm_root</span></code></p></td>
+<td><p>its <code class="docutils literal notranslate"><span class="pre">&lt;program&gt;.ini</span></code> files; default: the venv’s root</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">poll_interval</span></code></p></td>
+<td><p>seconds (default 30)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">url</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">tasks</span> <span class="pre">=</span> <span class="pre">taskserver</span></code> (phase 7)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The other keys of a section (<code class="docutils literal notranslate"><span class="pre">partition</span></code>, <code class="docutils literal notranslate"><span class="pre">account</span></code>, <code class="docutils literal notranslate"><span class="pre">qos</span></code>, <code class="docutils literal notranslate"><span class="pre">export</span></code>,
+<code class="docutils literal notranslate"><span class="pre">constraint</span></code>, …) are the bundles’ site defaults, and each bundle’s resources
+override them. <code class="docutils literal notranslate"><span class="pre">setup</span></code> lines run before the worker. For <code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">slurm</span></code> (the
+evaluator is itself a batch job) tasks always use the local transport with a
+shared filesystem, because the evaluator is already inside the cluster.</p>
+<p><code class="docutils literal notranslate"><span class="pre">bundle_walltime</span></code> is parsed with SLURM’s rules: a bare number is minutes.
+<code class="docutils literal notranslate"><span class="pre">config._parse_time</span></code> used to read a bare number as seconds. This only matters
+for a <code class="docutils literal notranslate"><span class="pre">.limits</span></code> bound written as a bare number, which no deployed file has.</p>
+</section>
+<section id="decisions-made-with-the-design-session">
+<h3>Decisions made with the design session<a class="headerlink" href="#decisions-made-with-the-design-session" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p><strong>How the evaluator finds its target.</strong></p>
+<ul class="simple">
+<li><p>The JobServer writes <code class="docutils literal notranslate"><span class="pre">&lt;job</span> <span class="pre">dir&gt;/target.json</span></code>, a new job-level file
+(added to the rollout promise in the design).</p></li>
+<li><p>It works for an evaluator that is itself a batch job on a cluster that
+cannot read the JobServer’s ini file, and it survives resubmission.</p></li>
+<li><p>The order is: explicit, <code class="docutils literal notranslate"><span class="pre">target.json</span></code>, <code class="docutils literal notranslate"><span class="pre">$SEAMM_TARGET</span></code> (for hand runs
+with <code class="docutils literal notranslate"><span class="pre">run_flowchart</span></code>), then the <code class="docutils literal notranslate"><span class="pre">LocalPool</span></code>.</p></li>
+</ul>
+</li>
+<li><p><strong>Tasks run on the compute node through seamm_exec’s own ``_run_task``.</strong></p>
+<ul class="simple">
+<li><p>The bundle runs with <code class="docutils literal notranslate"><span class="pre">remote_python</span></code> (ssh) or <code class="docutils literal notranslate"><span class="pre">sys.executable</span></code> (local
+transport), so the semantics are identical to the <code class="docutils literal notranslate"><span class="pre">LocalPool</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Task.config</span></code> is never sent to an ssh target: a task that carries it
+is kept in the evaluator’s pool with a warning, and a task without it is
+resolved where it runs. On the local transport <code class="docutils literal notranslate"><span class="pre">Task.config</span></code> is sent
+and used as the pool uses it.</p></li>
+<li><p>The pure worker path stays, for machines without <code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code>.</p></li>
+</ul>
+</li>
+<li><p><strong>The protocol has ``poll(run, ids)``</strong>, with the SLURM override.
+Bundling and throttling live in the <code class="docutils literal notranslate"><span class="pre">TaskSet</span></code>.</p></li>
+</ol>
+<p><strong>Consequence for ORCA.</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">orca_step</span></code> resolves its own configuration in the evaluator: it passes
+<code class="docutils literal notranslate"><span class="pre">Task.config</span></code>, the Mac’s <code class="docutils literal notranslate"><span class="pre">library-path</span></code> export prefix in <code class="docutils literal notranslate"><span class="pre">cmd</span></code> and the
+OpenMPI binding in <code class="docutils literal notranslate"><span class="pre">env</span></code>.</p></li>
+<li><p>Those paths mean nothing on another cluster, so on an ssh target the
+<code class="docutils literal notranslate"><span class="pre">TaskSet</span></code> keeps ORCA (and MOPAC, which also passes <code class="docutils literal notranslate"><span class="pre">config</span></code>) on the
+evaluator’s machine, exactly as today.</p></li>
+<li><p>Sending them out needs an <code class="docutils literal notranslate"><span class="pre">orca</span></code> resolver hook in <code class="docutils literal notranslate"><span class="pre">orca_step</span></code> and a bare
+command. That comes with <code class="docutils literal notranslate"><span class="pre">get_task</span></code> in phase 3.</p></li>
+<li><p>Verified with <code class="docutils literal notranslate"><span class="pre">Testing/test.flow</span></code> and the job’s target set to TinkerCliffs:
+both tasks ran locally, the warning was logged, and nothing was submitted.</p></li>
+</ul>
+</section>
+<section id="how-a-bundle-s-partial-completion-is-handled">
+<h3>How a bundle’s partial completion is handled<a class="headerlink" href="#how-a-bundle-s-partial-completion-is-handled" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>The worker skips any task whose <code class="docutils literal notranslate"><span class="pre">tasks/&lt;key&gt;/DONE</span></code> exists. So running
+the same <code class="docutils literal notranslate"><span class="pre">bundle.json</span></code> again, after a walltime limit or a node failure,
+runs only what is left (tested). When a bundle’s job ends, a task without
+<code class="docutils literal notranslate"><span class="pre">DONE</span></code> or <code class="docutils literal notranslate"><span class="pre">FAILED</span></code> is <em>lost</em>, and its reason names the job’s state and
+the last line of its log.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">TaskSet</span></code> resubmits the lost tasks of one pass together. They keep
+their bundle name, so they become <code class="docutils literal notranslate"><span class="pre">_bundles/&lt;bundle&gt;.&lt;n+1&gt;/</span></code> with a
+<code class="docutils literal notranslate"><span class="pre">bundle.json</span></code> of just those tasks, and the finished ones are never rerun.</p></li>
+<li><p>Each lost resubmission counts an attempt (<code class="docutils literal notranslate"><span class="pre">max_lost_retries</span></code> 2 per run,
+<code class="docutils literal notranslate"><span class="pre">max_attempts</span></code> 3 overall).</p></li>
+<li><p>On a shared filesystem, results are yielded as the worker writes each
+<code class="docutils literal notranslate"><span class="pre">DONE</span></code>, while the bundle still runs. Without one, they come back when the
+bundle’s job ends and its directories are pulled.</p></li>
+</ul>
+</section>
+<section id="outages-the-laptop-case">
+<h3>Outages (the laptop case)<a class="headerlink" href="#outages-the-laptop-case" title="Link to this heading">#</a></h3>
+<p>Paul’s laptop sleeps, changes networks and needs a VPN at home, so the evaluator
+may lose the cluster for minutes to an hour.</p>
+<ul class="simple">
+<li><p>A job counts as missing (three polls in a row) only when the queue actually
+answered. <code class="docutils literal notranslate"><span class="pre">Scheduler.poll_failed</span></code> is set when <code class="docutils literal notranslate"><span class="pre">sacct</span></code> (or <code class="docutils literal notranslate"><span class="pre">qstat</span></code>)
+could not be asked, and then nothing counts.</p></li>
+<li><p>A failed poll or a failed pull is logged and retried at the next poll.</p></li>
+<li><p>An ssh or rsync failure at submission holds the bundle (<code class="docutils literal notranslate"><span class="pre">QueueFull</span></code>)
+instead of failing it.</p></li>
+<li><p>The task layer’s ssh uses <code class="docutils literal notranslate"><span class="pre">BatchMode</span></code>, <code class="docutils literal notranslate"><span class="pre">ConnectTimeout=30</span></code>,
+<code class="docutils literal notranslate"><span class="pre">ServerAliveInterval=15</span></code>/<code class="docutils literal notranslate"><span class="pre">CountMax=4</span></code> (a connection dead after sleep is
+given up within about a minute) and <code class="docutils literal notranslate"><span class="pre">ClearAllForwardings</span></code>. The
+<code class="docutils literal notranslate"><span class="pre">tinkercliffs</span></code> alias has a <code class="docutils literal notranslate"><span class="pre">LocalForward</span></code>, which otherwise fails to bind
+on every command. Commands time out after 300 s and rsync after an hour.</p></li>
+<li><p>The JobServer’s ssh is unchanged.</p></li>
+</ul>
+</section>
+<section id="validation">
+<h3>Validation<a class="headerlink" href="#validation" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>This Mac -&gt; TinkerCliffs (ssh, rsync staging, SLURM 25.11).</strong></p>
+<ul>
+<li><p>Setup:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">phase2_driver.py</span></code> (here) with eight B3LYP/def2-SVP single points,
+four MPI ranks each, bundled four to a job.</p></li>
+<li><p>Target <code class="docutils literal notranslate"><span class="pre">[tc]</span></code> in <code class="docutils literal notranslate"><span class="pre">Testing/phase2/targets.ini</span></code>: <code class="docutils literal notranslate"><span class="pre">account</span> <span class="pre">=</span> <span class="pre">seamm</span></code>,
+<code class="docutils literal notranslate"><span class="pre">normal_q</span></code>, <code class="docutils literal notranslate"><span class="pre">tc_normal_short</span></code>, <code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">=</span> <span class="pre">NONE</span></code>.</p></li>
+<li><p>A development venv in <code class="docutils literal notranslate"><span class="pre">/projects/seamm/psaxe/phase2/venv</span></code>: the frozen
+production stack plus these checkouts. <code class="docutils literal notranslate"><span class="pre">/projects/seamm/SEAMM/venv</span></code>
+was not touched, and ORCA comes from the production <code class="docutils literal notranslate"><span class="pre">orca.ini</span></code>
+(<code class="docutils literal notranslate"><span class="pre">installation</span> <span class="pre">=</span> <span class="pre">modules</span></code>).</p></li>
+</ul>
+</li>
+<li><p>The evaluator was killed with <code class="docutils literal notranslate"><span class="pre">kill</span> <span class="pre">-9</span></code> while both bundles were queued.
+The second run logged “still with queue:tc … polling it rather than
+submitting again” for all eight tasks, staged back, and finished with
+<code class="docutils literal notranslate"><span class="pre">attempts=1</span></code> and no new jobs.</p></li>
+<li><p>ORCA ran with “4 parallel MPI-processes” in <code class="docutils literal notranslate"><span class="pre">/localscratch/&lt;jobid&gt;</span></code>
+(node-local, from <code class="docutils literal notranslate"><span class="pre">$TMPDIR</span></code>).</p></li>
+<li><p>The script carried <code class="docutils literal notranslate"><span class="pre">--ntasks=4</span> <span class="pre">--mem-per-cpu=1200M</span> <span class="pre">--time=00:40:00</span></code>
+(the tasks’ walltimes summed).</p></li>
+</ul>
+</li>
+<li><p><strong>This Mac -&gt; MolSSI10 (ssh, rsync, SLURM 20.11, no ``–json``).</strong> Eight
+PM6 MOPAC single points (conda installation) in three bundles, all finished.
+<code class="docutils literal notranslate"><span class="pre">squeue</span> <span class="pre">--json</span></code>/<code class="docutils literal notranslate"><span class="pre">sacct</span> <span class="pre">--json</span></code> are “unrecognized” there, so status came
+from the text path.</p></li>
+<li><p><strong>Cluster alone (an evaluator on TinkerCliffs, ``type = slurm``, so local
+transport, shared filesystem, no staging).</strong> The driver on the login node
+gave the same eight ORCA energies as from the Mac, to the last digit.
+Results arrived while bundles were still running.</p></li>
+<li><p><strong>The SEAMM_DEV A/B comparison.</strong></p>
+<ul>
+<li><p>The sides:</p>
+<ul>
+<li><p>A: the current freeze with the released <code class="docutils literal notranslate"><span class="pre">seamm-exec</span></code> 2026.10.2,
+<code class="docutils literal notranslate"><span class="pre">orca-step</span></code> 2026.10.2.1, <code class="docutils literal notranslate"><span class="pre">mopac-step</span></code> 2026.10.2 and
+<code class="docutils literal notranslate"><span class="pre">seamm-util</span></code> 2026.10.2.</p></li>
+<li><p>B: A plus the four checkouts.</p></li>
+<li><p>Both were built beside the current version, as
+<code class="docutils literal notranslate"><span class="pre">venvs/phase2-A</span></code>/<code class="docutils literal notranslate"><span class="pre">-B</span></code>, without switching.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">seamm-manager</span> <span class="pre">--root</span> <span class="pre">~/SEAMM_DEV</span> <span class="pre">compare</span></code> on <code class="docutils literal notranslate"><span class="pre">test.flow</span></code>,
+<code class="docutils literal notranslate"><span class="pre">harness_water</span></code>, <code class="docutils literal notranslate"><span class="pre">builder_loop</span></code> and <code class="docutils literal notranslate"><span class="pre">bsse</span></code>:</p>
+<ul>
+<li><p>identical energies, charges and tables;</p></li>
+<li><p>the only differences were versions and citation wrapping, pids,
+timings, timestamps, <code class="docutils literal notranslate"><span class="pre">tasks/</span></code> manifest ids and chargemol’s last-digit
+noise, the same as in phase 1.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">test.flow</span></code> with <code class="docutils literal notranslate"><span class="pre">SEAMM_TARGET=tc</span></code> was likewise clean (above).</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="review-2026-10-02">
+<h3>Review (2026-10-02)<a class="headerlink" href="#review-2026-10-02" title="Link to this heading">#</a></h3>
+<p>An independent review of the four diffs reproduced five bugs and found nine
+plausible ones. All are fixed except where noted. The scripts are in
+<code class="docutils literal notranslate"><span class="pre">/private/tmp/claude-502/review/</span></code>; each fixed bug now has a test.</p>
+<ol class="arabic simple">
+<li><p><strong>A pull-back that failed once was never retried</strong>, and the evaluator spun
+at 100% CPU (the job was terminal, so it was no longer polled). Jobs that
+ended but are not back are now worked out from every tracked job, the
+poll time is set on every pass, outages do not count as failures, and five
+real failures (e.g. purged scratch) make the tasks lost with that reason.</p></li>
+<li><p><strong>The JobServer could not start the design’s</strong> <code class="docutils literal notranslate"><span class="pre">[arc]</span></code> (<code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">local</span></code>,
+<code class="docutils literal notranslate"><span class="pre">transport</span> <span class="pre">=</span> <span class="pre">ssh</span></code>): <code class="docutils literal notranslate"><span class="pre">_build_cmd</span></code> used the remote <code class="docutils literal notranslate"><span class="pre">run_from_jobserver</span></code>
+for a local evaluator. Only <code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">slurm</span></code> with <code class="docutils literal notranslate"><span class="pre">transport</span> <span class="pre">=</span> <span class="pre">ssh</span></code> now
+means a remote evaluator.</p></li>
+<li><p><strong>A restart with changed inputs adopted the old bundle</strong> and recorded its
+output under the new fingerprint. Adoption now requires the same
+fingerprint, <code class="docutils literal notranslate"><span class="pre">DONE</span></code>/<code class="docutils literal notranslate"><span class="pre">FAILED</span></code> are honoured only if their fingerprint
+matches (in the backend and in the worker), and the old job is cancelled
+when no adopted task still runs in it.</p></li>
+<li><p><strong>Unparseable ``squeue``/``sacct`` output</strong> (a banner, a schema change) read
+as “every job is gone”. It now sets <code class="docutils literal notranslate"><span class="pre">poll_failed</span></code>.</p></li>
+<li><p><strong>PBS</strong>: <code class="docutils literal notranslate"><span class="pre">F</span></code> without an exit status (deleted while queued) never ended;
+it is now cancelled (lost). SLURM spellings in a section are dropped with a
+warning; <code class="docutils literal notranslate"><span class="pre">qselect</span></code> counts and finds jobs.</p></li>
+<li><p><strong>A submission whose outcome was unknown</strong> (the connection dropped after
+<code class="docutils literal notranslate"><span class="pre">sbatch</span></code> ran) was submitted again as a new bundle. Each bundle’s job name
+is unique (<code class="docutils literal notranslate"><span class="pre">seamm-&lt;bundle&gt;.&lt;n&gt;-&lt;nonce&gt;</span></code>), and the next attempt asks the
+queue for that name first.</p></li>
+<li><p>The manifest was written only after all bundles were submitted. It is now
+written after each.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">finally</span></code> marked tasks cancelled even when <code class="docutils literal notranslate"><span class="pre">scancel</span></code> failed (an outage),
+so a restart resubmitted them. They are marked only when the cancel worked.</p></li>
+<li><p>On a shared filesystem a just-written <code class="docutils literal notranslate"><span class="pre">DONE</span></code> hidden by attribute caching
+could make a task lost. A job gets one more poll after it ends, and markers
+are read from a fresh <code class="docutils literal notranslate"><span class="pre">os.listdir</span></code>.</p></li>
+<li><p>Remote job directories could collide across installations sharing a
+<code class="docutils literal notranslate"><span class="pre">remote_root</span></code> (job numbers are per datastore). The remote name now always
+carries a hash of the local path.</p></li>
+<li><p>Clusters without SLURM accounting would have had <code class="docutils literal notranslate"><span class="pre">poll_failed</span></code> forever.
+“accounting storage is disabled” is recognised and <code class="docutils literal notranslate"><span class="pre">squeue</span></code> trusted.</p></li>
+<li><p>Bundles submitted from inside an evaluator job inherited its <code class="docutils literal notranslate"><span class="pre">SLURM_*</span></code>
+variables. The local task transport drops <code class="docutils literal notranslate"><span class="pre">SLURM_*</span></code> and <code class="docutils literal notranslate"><span class="pre">PBS_*</span></code>.</p></li>
+<li><p>Behaviour changes, kept and recorded in HISTORY: <code class="docutils literal notranslate"><span class="pre">Base</span></code>’s in-situ default
+and <code class="docutils literal notranslate"><span class="pre">computational_environment()</span></code> now recognise PBS jobs (no SEAMM
+installation runs under PBS today); a bare <code class="docutils literal notranslate"><span class="pre">.limits</span></code> time is minutes; a
+bad task key in a section raises when the file is read, as a bad <code class="docutils literal notranslate"><span class="pre">type</span></code>
+always did.</p></li>
+<li><p>Minor: <code class="docutils literal notranslate"><span class="pre">xargs</span> <span class="pre">-0</span></code> for the remote marker cleanup; a bundle held for more
+than 15 minutes logs a warning; a staged task outside the job directory
+fails before anything is submitted. Not changed: <code class="docutils literal notranslate"><span class="pre">_list_returned</span></code> keeps
+<code class="docutils literal notranslate"><span class="pre">Base</span></code>’s flat file names.</p></li>
+</ol>
+<p>After the fixes, the live Mac -&gt; TinkerCliffs and Mac -&gt; MolSSI10 runs were
+repeated: both clean, with the same energies.</p>
+</section>
+<section id="found-on-the-way">
+<h3>Found on the way<a class="headerlink" href="#found-on-the-way" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>``computational_environment()`` crashed in any SLURM job without
+``–ntasks``</strong> (no <code class="docutils literal notranslate"><span class="pre">SLURM_NTASKS</span></code>: <code class="docutils literal notranslate"><span class="pre">KeyError</span></code>). Its hostlist expansion
+crashed on <code class="docutils literal notranslate"><span class="pre">tc[053,059]</span></code> and dropped the zero padding of <code class="docutils literal notranslate"><span class="pre">tc[053-055]</span></code>.
+Both are fixed. The first was found when a probe bundle without <code class="docutils literal notranslate"><span class="pre">ntasks</span></code>
+died before the worker started. Bundles now always request <code class="docutils literal notranslate"><span class="pre">ntasks</span></code>.</p></li>
+<li><p>The first cluster-alone run had no evaluator root (no flowchart), so the
+worker had no <code class="docutils literal notranslate"><span class="pre">orca.ini</span></code>. The local transport now falls back to
+<code class="docutils literal notranslate"><span class="pre">seamm_util.root.current_root()</span></code>.</p></li>
+<li><p>A conda-installed code needs <code class="docutils literal notranslate"><span class="pre">shell=True</span></code>, since <code class="docutils literal notranslate"><span class="pre">Local.exec</span></code> makes it a
+<code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">run</span> <span class="pre">...</span></code> string. Without it the whole string is taken as a program
+name. This is pre-existing and was hit by the driver, not by a plug-in.</p></li>
+<li><p>SLURM 25.11’s <code class="docutils literal notranslate"><span class="pre">squeue</span> <span class="pre">--json</span></code> reports <code class="docutils literal notranslate"><span class="pre">[&quot;TIMEOUT&quot;,</span> <span class="pre">&quot;COMPLETING&quot;]</span></code>:
+the first flag is the state.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">arc_pick.py</span></code> (the arc-slurm-submit skill) could not read
+TinkerCliffs’s state during a short network outage on this side; its
+choice was made by hand (<code class="docutils literal notranslate"><span class="pre">sbatch</span> <span class="pre">--test-only</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV/PaulsPersonal.local.ini</span></code> is orphaned again: this Mac is now
+<code class="docutils literal notranslate"><span class="pre">PaulVT.local</span></code>. Reported to the design session; left alone.</p></li>
+</ul>
+</section>
+<section id="deferred">
+<h3>Deferred<a class="headerlink" href="#deferred" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">orca</span></code> (and <code class="docutils literal notranslate"><span class="pre">mopac</span></code>) resolver hooks and a bare command, with
+<code class="docutils literal notranslate"><span class="pre">get_task</span></code>, in phase 3. Until then those steps’ tasks stay local on ssh
+targets.</p></li>
+<li><p>Partial progress without a shared filesystem: results come back only when a
+bundle ends. A periodic pull of the markers would give them earlier.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_queued_tasks</span></code> counts the user’s jobs on the cluster, but two
+evaluators can still race for the last slots. A rejected <code class="docutils literal notranslate"><span class="pre">sbatch</span></code> is held
+and retried, so this is harmless.</p></li>
+<li><p>PBS counts and finds jobs with <code class="docutils literal notranslate"><span class="pre">qselect</span> <span class="pre">-u</span> <span class="pre">&quot;$USER&quot;</span></code> (<code class="docutils literal notranslate"><span class="pre">-N</span></code> for a name),
+implemented but untested on a real site.</p></li>
+<li><p>Remote staging directories (<code class="docutils literal notranslate"><span class="pre">&lt;remote_root&gt;/&lt;Job&gt;-&lt;hash&gt;/</span></code>) are never
+removed. MolSSI10’s home has no purge, so they accumulate there until
+removed by hand. Cleanup once a <code class="docutils literal notranslate"><span class="pre">TaskSet</span></code> has collected everything, or
+when the job is deleted, is left for later.</p></li>
+<li><p>TinkerCliffs’s production venv is not versioned yet. That is a later rollout
+step.</p></li>
+</ul>
+</section>
+<section id="cleanup">
+<h3>Cleanup<a class="headerlink" href="#cleanup" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Test directories:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">~/Work/SEAMM/Testing/phase2/</span></code> (Job_9000xx)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tinkercliffs:/projects/seamm/psaxe/phase2/{tasks,Job_9000xx}</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">molssi10:~/phase2/tasks</span></code></p></li>
+</ul>
+</li>
+<li><p>Development venvs:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">tinkercliffs:/projects/seamm/psaxe/phase2/venv</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">molssi10:~/phase2/venv</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV/venvs/phase2-{A,B}</span></code>, to be pruned once phase 2 is released.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="design-session-s-review-2026-10-02">
+<h3>Design session’s review (2026-10-02)<a class="headerlink" href="#design-session-s-review-2026-10-02" title="Link to this heading">#</a></h3>
+<p>A second, independent review. Each item is fixed, with a test.</p>
+<ol class="arabic simple">
+<li><p><strong>The squeue JSON path never flagged a transient failure.</strong> With
+<code class="docutils literal notranslate"><span class="pre">rc=255</span></code> (“ssh: timed out”), <code class="docutils literal notranslate"><span class="pre">poll_failed</span></code> stayed False. Any squeue
+error other than “invalid job id” now marks squeue failed, and
+<code class="docutils literal notranslate"><span class="pre">poll_failed</span></code> is set when squeue failed and a job is still missing
+after <code class="docutils literal notranslate"><span class="pre">sacct</span></code> (sacct may not have recorded a new job yet), with or
+without accounting.</p></li>
+<li><p><strong>A restart could still duplicate a submission.</strong> The record said
+<em>queued</em> with no id if the evaluator died between <code class="docutils literal notranslate"><span class="pre">sbatch</span></code> and the
+manifest write, or while a bundle was parked during an outage.</p>
+<ul class="simple">
+<li><p>Each bundle’s unique job name and directory are now written to its
+tasks’ records, flushed, <em>before</em> <code class="docutils literal notranslate"><span class="pre">sbatch</span></code> (<code class="docutils literal notranslate"><span class="pre">on_prepared</span></code>).</p></li>
+<li><p>A record without an id is adopted by name. <code class="docutils literal notranslate"><span class="pre">find</span></code> is <code class="docutils literal notranslate"><span class="pre">squeue</span> <span class="pre">--me</span>
+<span class="pre">--name</span></code>, then <code class="docutils literal notranslate"><span class="pre">sacct</span> <span class="pre">--name</span></code> for a job that already finished.</p></li>
+<li><p>If neither knows the job, the bundle never reached the queue: lost, and
+submitted again.</p></li>
+<li><p>A bundle that may have reached the queue stays recorded as queued.</p></li>
+<li><p>Live: TinkerCliffs refuses a 30-day <code class="docutils literal notranslate"><span class="pre">sacct</span></code> range (“Too wide of a date
+range”), so it uses 14 days, then 2. Checked on TinkerCliffs and MolSSI10
+with names of earlier bundles.</p></li>
+</ul>
+</li>
+<li><p><strong>QOS-full churn.</strong> Each retry made a new <code class="docutils literal notranslate"><span class="pre">bundle.&lt;n+1&gt;</span></code>, rewrote the
+inputs and restaged them. A held bundle is now prepared once
+(<code class="docutils literal notranslate"><span class="pre">_Prepared</span></code>: directory, job name, script, staged, maybe-submitted) and
+reused until it is queued.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">expand_hostlist</span></code> follows SLURM’s grammar: a suffix (<code class="docutils literal notranslate"><span class="pre">tc[01-02]-ib</span></code>) and
+several bracket groups (<code class="docutils literal notranslate"><span class="pre">r[1-2]n[1-2]</span></code>, the product).</p></li>
+<li><p>Paths with whitespace are refused up front with a clear message (batch
+directives and rsync’s remote paths cannot carry them safely).</p></li>
+<li><p>An earlier attempt’s output can no longer pass a success check. The
+<code class="docutils literal notranslate"><span class="pre">success_text</span></code> files are removed from the task directory, locally and on
+the cluster, at submission, and the worker trusts a file on disk only if
+this run wrote it (its mtime).</p></li>
+<li><p>Abandoned jobs (inputs changed) are polled until they have ended,
+<code class="docutils literal notranslate"><span class="pre">COMPLETING</span></code> included (two minutes at most), before the new inputs are
+submitted into the same directories.</p></li>
+<li><p>Remote staging directories are not cleaned up: recorded under Deferred.</p></li>
+</ol>
+<p>Also:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Task.config</span></code> is described as <em>kept local</em>, not <em>ignored</em>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">directives()</span></code> returns a dict in the design’s protocol.</p></li>
+<li><p>A section must hold no secrets, since it is copied to <code class="docutils literal notranslate"><span class="pre">target.json</span></code>; this
+is in the design, the config module and the JobServer guide.</p></li>
+<li><p>Bundles refuse a non-local executor instead of silently running locally.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SLURM_CONF</span></code> survives the dropping of the evaluator’s <code class="docutils literal notranslate"><span class="pre">SLURM_*</span></code>.</p></li>
+<li><p>The task digest is computed once per backend entry, not on every poll.</p></li>
+<li><p>There are tests for bare <code class="docutils literal notranslate"><span class="pre">.limits</span></code> times (minutes). A local and queued
+mix in flight is covered by <code class="docutils literal notranslate"><span class="pre">test_inline_rule_with_a_real_scheduler_backend</span></code>.</p></li>
+</ul>
+</section>
+</section>
+<section id="release-prs">
+<h2>2026-10-02 – release PRs<a class="headerlink" href="#release-prs" title="Link to this heading">#</a></h2>
+<p>Paul created <code class="docutils literal notranslate"><span class="pre">molssi-seamm/seamm_scheduler</span></code> (public, empty); PyPI publishing
+uses the organization secret the shared Release workflow already uses. Its
+<code class="docutils literal notranslate"><span class="pre">main</span></code> is an initial commit (LICENSE, README, .gitignore) and <code class="docutils literal notranslate"><span class="pre">dev</span></code> the work,
+joined by an <code class="docutils literal notranslate"><span class="pre">ours</span></code> merge so the PR applies cleanly.</p>
+<p>PRs, to be merged and released in this order:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">seamm_scheduler</span></code> #1, 2026.10.2. CI green.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code> #34, 2026.10.2.1. It pins <code class="docutils literal notranslate"><span class="pre">seamm-scheduler&gt;=2026.10.2</span></code>, so
+its CI is red until (1) is on PyPI (the phase 1 lesson).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">seamm_slurm</span></code> #9, 2026.10.2 (the shim). Same pin; CI on uv
+(<code class="docutils literal notranslate"><span class="pre">test_env.yaml</span></code> removed).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">seamm_jobserver</span></code> #24, 2026.10.2. It needs <code class="docutils literal notranslate"><span class="pre">seamm_scheduler&gt;=2026.10.2</span></code>;
+CI on uv (<code class="docutils literal notranslate"><span class="pre">test_env.yaml</span></code> removed).</p></li>
+</ol>
+<p>After the first release of <code class="docutils literal notranslate"><span class="pre">seamm_scheduler</span></code>, enable GitHub Pages for it
+(<code class="docutils literal notranslate"><span class="pre">gh</span> <span class="pre">api</span> <span class="pre">-X</span> <span class="pre">POST</span> <span class="pre">repos/molssi-seamm/seamm_scheduler/pages</span> <span class="pre">...</span></code>), as for every
+new repository. If the merges happen after 2026-10-02, the versions in the
+HISTORY entries should follow the release date.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="NOTES_phase1.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Phase 1 notes</p>
+      </div>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-scheduler-abstraction-and-the-slurm-back-end-for-tasks">2026-10-02 – the scheduler abstraction and the SLURM back end for tasks</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-was-built">What was built</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#target-keys-all-optional-a-section-without-tasks-means-what-it-did">Target keys (all optional; a section without <code class="docutils literal notranslate"><span class="pre">tasks</span> <span class="pre">=</span></code> means what it did)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#decisions-made-with-the-design-session">Decisions made with the design session</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-a-bundle-s-partial-completion-is-handled">How a bundle’s partial completion is handled</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#outages-the-laptop-case">Outages (the laptop case)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#validation">Validation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#review-2026-10-02">Review (2026-10-02)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#found-on-the-way">Found on the way</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deferred">Deferred</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cleanup">Cleanup</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#design-session-s-review-2026-10-02">Design session’s review (2026-10-02)</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#release-prs">2026-10-02 – release PRs</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../../_sources/developer_guide/campaigns/2026-10-02/NOTES_phase2.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

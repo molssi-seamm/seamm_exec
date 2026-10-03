@@ -12,6 +12,14 @@ seamm\_exec.base module
    :show-inheritance:
    :undoc-members:
 
+seamm\_exec.bundle\_runner module
+---------------------------------
+
+.. automodule:: seamm_exec.bundle_runner
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 seamm\_exec.computational\_environment module
 ---------------------------------------------
 
@@ -52,10 +60,34 @@ seamm\_exec.local\_pool module
    :show-inheritance:
    :undoc-members:
 
+seamm\_exec.resolve module
+--------------------------
+
+.. automodule:: seamm_exec.resolve
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+seamm\_exec.scheduler\_backend module
+-------------------------------------
+
+.. automodule:: seamm_exec.scheduler_backend
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 seamm\_exec.seamm\_exec module
 ------------------------------
 
 .. automodule:: seamm_exec.seamm_exec
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+seamm\_exec.targets module
+--------------------------
+
+.. automodule:: seamm_exec.targets
    :members:
    :show-inheritance:
    :undoc-members:

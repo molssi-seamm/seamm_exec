@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.2 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.2.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="_static/documentation_options.js?v=52372788"></script>
+    <script src="_static/documentation_options.js?v=77b25824"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="Welcome to SEAMM exec’s documentation!" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.2" />
+  <meta name="docsearch:version" content="2026.10.2.1" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -529,10 +529,50 @@ the program and <code class="docutils literal notranslate"><span class="pre">{co
 </section>
 <section id="where-things-run">
 <h2>Where things run<a class="headerlink" href="#where-things-run" title="Link to this heading">#</a></h2>
-<p>This release runs tasks on the local machine or inside the current allocation.
-Scheduler back ends (SLURM, PBS) that submit tasks, or bundles of tasks, as queue
-jobs are the next phase of the parallel-execution campaign; see the developer
-guide. The <code class="docutils literal notranslate"><span class="pre">Task</span></code> and <code class="docutils literal notranslate"><span class="pre">TaskSet</span></code> interfaces will not change for them.</p>
+<p>Tasks go to the job’s <em>target</em>, a section of the JobServer’s
+<code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/&lt;jobserver-name&gt;.ini</span></code> (see <code class="docutils literal notranslate"><span class="pre">seamm_scheduler.config</span></code>). The JobServer
+writes the job’s section into the job directory as <code class="docutils literal notranslate"><span class="pre">target.json</span></code>; for a run by
+hand, <code class="docutils literal notranslate"><span class="pre">SEAMM_TARGET=&lt;section&gt;</span></code> (with <code class="docutils literal notranslate"><span class="pre">SEAMM_TARGETS=&lt;ini</span> <span class="pre">file&gt;</span></code> if it is not
+<code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/&lt;hostname&gt;.ini</span></code>) does the same. Without a target, or with
+<code class="docutils literal notranslate"><span class="pre">tasks</span> <span class="pre">=</span> <span class="pre">pool</span></code>, tasks run on this machine or inside the current allocation, as
+before.</p>
+<p>With <code class="docutils literal notranslate"><span class="pre">tasks</span> <span class="pre">=</span> <span class="pre">queue</span></code> the <code class="docutils literal notranslate"><span class="pre">TaskSet</span></code> submits them, in bundles, as batch jobs:</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[arc]</span>
+<span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">local</span>
+<span class="na">tasks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">queue</span>
+<span class="na">scheduler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">slurm</span>
+<span class="na">transport</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ssh</span>
+<span class="na">host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">tinkercliffs</span>
+<span class="na">remote_root</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">/projects/seamm/psaxe/tasks</span><span class="w">       </span><span class="c1">; task directories, staged</span>
+<span class="na">remote_python</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">/projects/seamm/SEAMM/venv/bin/python</span>
+<span class="na">account</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">seamm</span>
+<span class="na">partition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">normal_q</span>
+<span class="na">qos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">tc_normal_short</span>
+<span class="na">export</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">NONE</span>
+<span class="na">bundle_tasks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span><span class="w">                 </span><span class="c1">; or bundle_walltime = 04:00:00</span>
+<span class="na">max_queued_tasks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">800</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Each bundle is one job that runs <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">seamm_exec.task_worker</span>
+<span class="pre">bundle.json</span></code> on the cluster, which runs the bundle’s tasks through a pool
+sized to the allocation. The program is configured <em>there</em>, from that
+machine’s <code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/&lt;program&gt;.ini</span></code> and the program’s resolver (an entry point
+in <code class="docutils literal notranslate"><span class="pre">org.molssi.seamm.exec.resolvers</span></code>), so the code need not be installed
+where the evaluator runs.</p></li>
+<li><p>Without a shared filesystem the task directories are copied to
+<code class="docutils literal notranslate"><span class="pre">remote_root</span></code> with <code class="docutils literal notranslate"><span class="pre">rsync</span></code> before the job and back after it; with
+<code class="docutils literal notranslate"><span class="pre">shared_filesystem</span> <span class="pre">=</span> <span class="pre">yes</span></code> (or the local transport) nothing is copied.</p></li>
+<li><p>A rerun of the step polls bundles still in the queue rather than submitting
+them again, and a bundle that ran out of time leaves its finished tasks done.</p></li>
+<li><p>Tasks estimated to take less than <code class="docutils literal notranslate"><span class="pre">inline_below</span></code> seconds (default 60) run on
+the evaluator’s machine when their program is installed there.</p></li>
+<li><p>A task that carries its own <code class="docutils literal notranslate"><span class="pre">config</span></code> was configured for the evaluator’s
+machine, so on an ssh target it runs there instead, with a warning. ORCA and
+MOPAC do this until they name only their program.</p></li>
+</ul>
+<p>Bundle files are in <code class="docutils literal notranslate"><span class="pre">&lt;step&gt;/tasks/_bundles/&lt;bundle&gt;.&lt;n&gt;/</span></code>: <code class="docutils literal notranslate"><span class="pre">bundle.json</span></code>,
+<code class="docutils literal notranslate"><span class="pre">run.sh</span></code> and the scheduler’s log.</p>
 </section>
 </section>
 

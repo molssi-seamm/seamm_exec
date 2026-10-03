@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.local_pool &#8212; SEAMM seamm-exec Plug-in 2026.10.2 documentation</title>
+    <title>seamm_exec.local_pool &#8212; SEAMM seamm-exec Plug-in 2026.10.2.1 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=52372788"></script>
+    <script src="../../_static/documentation_options.js?v=77b25824"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.2" />
+  <meta name="docsearch:version" content="2026.10.2.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -529,14 +529,27 @@
 <span class="sd">        exactly the original ``Base.run()``.</span>
 <span class="sd">    max_concurrent : int, optional</span>
 <span class="sd">        At most this many tasks at once.</span>
+<span class="sd">    resolve_programs : bool = False</span>
+<span class="sd">        Apply the program's resolver (see :mod:`seamm_exec.resolve`) to each</span>
+<span class="sd">        task's configuration, command and environment. The task worker in a</span>
+<span class="sd">        scheduler's allocation does; the evaluator's own pool does not, since</span>
+<span class="sd">        the steps that set ``Task.config`` have resolved it already.</span>
 <span class="sd">    """</span>
 
     <span class="n">name</span> <span class="o">=</span> <span class="s2">"local"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">executor</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ce</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">synchronous</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">max_concurrent</span><span class="o">=</span><span class="kc">None</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">executor</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">root</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">ce</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">synchronous</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">max_concurrent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">resolve_programs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">executor</span> <span class="o">=</span> <span class="n">executor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resolve_programs</span> <span class="o">=</span> <span class="n">resolve_programs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span> <span class="k">if</span> <span class="n">root</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">synchronous</span> <span class="o">=</span> <span class="n">synchronous</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_concurrent</span> <span class="o">=</span> <span class="n">max_concurrent</span>
@@ -825,12 +838,19 @@
     <span class="c1"># ------------------------------------------------------------------</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_arguments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">,</span> <span class="n">concurrent</span><span class="p">):</span>
         <span class="n">task</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">task</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">cmd</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">synchronous</span><span class="p">:</span>
             <span class="n">config</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">config</span>
             <span class="n">env</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">env</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_for</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
             <span class="n">env</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">env</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolve_programs</span><span class="p">:</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">.resolve</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve</span>
+
+                <span class="n">config</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="n">resolve</span><span class="p">(</span>
+                    <span class="n">task</span><span class="o">.</span><span class="n">program</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">job</span><span class="o">.</span><span class="n">ce</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span>
+                <span class="p">)</span>
             <span class="k">if</span> <span class="n">concurrent</span><span class="p">:</span>
                 <span class="c1"># Keep concurrent tasks off each other's cores. A lone task</span>
                 <span class="c1"># gets the environment it always had.</span>
@@ -838,7 +858,7 @@
                 <span class="n">env</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">BINDING_ENV</span><span class="p">,</span> <span class="s2">"none"</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span>
             <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
-            <span class="n">cmd</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">cmd</span><span class="p">,</span>
+            <span class="n">cmd</span><span class="o">=</span><span class="n">cmd</span><span class="p">,</span>
             <span class="n">directory</span><span class="o">=</span><span class="n">job</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span>
             <span class="n">input_data</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">input_data</span><span class="p">,</span>
             <span class="n">files</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">files</span><span class="p">,</span>

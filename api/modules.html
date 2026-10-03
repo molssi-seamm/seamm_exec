@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec &#8212; SEAMM seamm-exec Plug-in 2026.10.2 documentation</title>
+    <title>seamm_exec &#8212; SEAMM seamm-exec Plug-in 2026.10.2.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=52372788"></script>
+    <script src="../_static/documentation_options.js?v=77b25824"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="API Documentation" href="../api.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.2" />
+  <meta name="docsearch:version" content="2026.10.2.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -468,8 +468,15 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="seamm_exec.html#module-seamm_exec.bundle_runner">seamm_exec.bundle_runner module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.bundle_runner.run_seamm_bundle"><code class="docutils literal notranslate"><span class="pre">run_seamm_bundle()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="seamm_exec.html#module-seamm_exec.computational_environment">seamm_exec.computational_environment module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.computational_environment.computational_environment"><code class="docutils literal notranslate"><span class="pre">computational_environment()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.computational_environment.expand_hostlist"><code class="docutils literal notranslate"><span class="pre">expand_hostlist()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.computational_environment.running_scheduler"><code class="docutils literal notranslate"><span class="pre">running_scheduler()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.computational_environment.scheduler_job_variables"><code class="docutils literal notranslate"><span class="pre">scheduler_job_variables()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="seamm_exec.html#module-seamm_exec.docker">seamm_exec.docker module</a><ul>
@@ -517,11 +524,49 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="seamm_exec.html#module-seamm_exec.resolve">seamm_exec.resolve module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.resolve.read_config"><code class="docutils literal notranslate"><span class="pre">read_config()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.resolve.register"><code class="docutils literal notranslate"><span class="pre">register()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.resolve.resolve"><code class="docutils literal notranslate"><span class="pre">resolve()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.resolve.resolvers"><code class="docutils literal notranslate"><span class="pre">resolvers()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="seamm_exec.html#module-seamm_exec.scheduler_backend">seamm_exec.scheduler_backend module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.scheduler_backend.QueueFull"><code class="docutils literal notranslate"><span class="pre">QueueFull</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.abandon"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.abandon()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.adopt"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.adopt()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.bundles"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.bundles</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.cancel"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.cancel()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.check"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.check()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.fetch"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.fetch()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.forget"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.forget()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.from_target"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.from_target()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.reason"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.reason()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.relative"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.relative()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.room"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.room()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.shared"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.shared</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.status"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.status()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.submit"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.submit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.wait"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.wait()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.where"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.where()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.scheduler_backend.parse_id"><code class="docutils literal notranslate"><span class="pre">parse_id()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.scheduler_backend.remote_name"><code class="docutils literal notranslate"><span class="pre">remote_name()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="seamm_exec.html#module-seamm_exec.seamm_exec">seamm_exec.seamm_exec module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.seamm_exec.canvas"><code class="docutils literal notranslate"><span class="pre">canvas()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="seamm_exec.html#module-seamm_exec.targets">seamm_exec.targets module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.targets.find_target"><code class="docutils literal notranslate"><span class="pre">find_target()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.targets.write_target"><code class="docutils literal notranslate"><span class="pre">write_target()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="seamm_exec.html#module-seamm_exec.task_worker">seamm_exec.task_worker module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#the-seamm-mode">The SEAMM mode</a></li>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.task_worker.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.task_worker.run_bundle"><code class="docutils literal notranslate"><span class="pre">run_bundle()</span></code></a></li>
 </ul>

@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.task_worker &#8212; SEAMM seamm-exec Plug-in 2026.10.2 documentation</title>
+    <title>seamm_exec.task_worker &#8212; SEAMM seamm-exec Plug-in 2026.10.2.1 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=52372788"></script>
+    <script src="../../_static/documentation_options.js?v=77b25824"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.2" />
+  <meta name="docsearch:version" content="2026.10.2.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -465,6 +465,27 @@
 <span class="sd">file containing its text -- writes ``DONE`` (JSON). A failure does not stop the</span>
 <span class="sd">bundle.</span>
 <span class="sd">The worker exits 0 if every task succeeded and 1 otherwise.</span>
+
+<span class="sd">The SEAMM mode</span>
+<span class="sd">--------------</span>
+
+<span class="sd">A bundle with ``"mode": "seamm"`` is run by a Python that has ``seamm_exec``</span>
+<span class="sd">(``python -m seamm_exec.task_worker bundle.json``). Each task is then given as</span>
+<span class="sd">the task layer describes it -- ``program``, the ``cmd`` template, the names of</span>
+<span class="sd">its input ``files`` (already in its directory), ``return_files``,</span>
+<span class="sd">``resources``, ``in_situ`` -- and runs through a</span>
+<span class="sd">:class:`~seamm_exec.local_pool.LocalPool` sized to the allocation, exactly as</span>
+<span class="sd">the evaluator's own pool would run it: the program resolved from</span>
+<span class="sd">``&lt;root&gt;/&lt;program&gt;.ini`` on this machine (and its resolver, see</span>
+<span class="sd">:mod:`seamm_exec.resolve`), ``{code}``/``{NTASKS}`` from the task's share of the</span>
+<span class="sd">allocation, scratch in ``$TMPDIR``, and only ``return_files`` kept. Tasks that</span>
+<span class="sd">fit side by side in the allocation run concurrently.</span>
+
+<span class="sd">Each task's ``marker`` directory (``&lt;step dir&gt;/tasks/&lt;key&gt;``) receives</span>
+<span class="sd">``DONE`` (JSON, in the task layer's own form, including the list of returned</span>
+<span class="sd">``files``) or ``FAILED`` (JSON, with the ``reason``). A task whose ``DONE``</span>
+<span class="sd">exists is skipped, so a bundle that is submitted again -- after a walltime</span>
+<span class="sd">limit, say -- runs only what is left.</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
@@ -560,7 +581,16 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">"Usage: task_worker.py bundle.json"</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
         <span class="k">return</span> <span class="mi">2</span>
     <span class="n">bundle</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
-    <span class="k">return</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">run_bundle</span><span class="p">(</span><span class="n">bundle</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">1</span></div>
+    <span class="k">if</span> <span class="n">bundle</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"mode"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"seamm"</span><span class="p">:</span>
+        <span class="c1"># Only a SEAMM-mode bundle needs seamm_exec, loaded by name so that this</span>
+        <span class="c1"># script stays runnable where SEAMM is not installed.</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
+
+        <span class="n">runner</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="s2">"seamm_exec.bundle_runner"</span><span class="p">)</span>
+        <span class="n">failures</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">run_seamm_bundle</span><span class="p">(</span><span class="n">bundle</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">failures</span> <span class="o">=</span> <span class="n">run_bundle</span><span class="p">(</span><span class="n">bundle</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">failures</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">1</span></div>
 
 
 

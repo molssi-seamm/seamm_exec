@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.computational_environment &#8212; SEAMM seamm-exec Plug-in 2026.10.2 documentation</title>
+    <title>seamm_exec.computational_environment &#8212; SEAMM seamm-exec Plug-in 2026.10.2.1 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=52372788"></script>
+    <script src="../../_static/documentation_options.js?v=77b25824"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.2" />
+  <meta name="docsearch:version" content="2026.10.2.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -433,8 +433,38 @@
 <span class="sd">systems."""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">psutil</span>
+
+<span class="c1"># The queueing systems whose allocations are recognized, in order. Each names</span>
+<span class="c1"># the variable that marks a job (``env_names["job_id"]``) in seamm_scheduler.</span>
+<span class="n">SCHEDULERS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"slurm"</span><span class="p">,</span> <span class="s2">"pbs"</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="scheduler_job_variables">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.computational_environment.scheduler_job_variables">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">scheduler_job_variables</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""The environment variables that mark a batch job, one per scheduler."""</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_scheduler</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_scheduler</span>
+
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">get_scheduler</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">.</span><span class="n">env_names</span><span class="p">[</span><span class="s2">"job_id"</span><span class="p">]</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">SCHEDULERS</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">"SLURM_JOB_ID"</span><span class="p">,</span> <span class="s2">"PBS_JOBID"</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="running_scheduler">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.computational_environment.running_scheduler">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">running_scheduler</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""The name of the queueing system whose allocation this is, or None."""</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">variable</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">SCHEDULERS</span><span class="p">,</span> <span class="n">scheduler_job_variables</span><span class="p">()):</span>
+        <span class="k">if</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">name</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
 
 
 <div class="viewcode-block" id="computational_environment">
@@ -453,8 +483,11 @@
 <span class="sd">        The attributes of the computational enviroment, limited by the imposed limits.</span>
 <span class="sd">    """</span>
 
-    <span class="k">if</span> <span class="s2">"SLURM_JOB_ID"</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+    <span class="n">scheduler</span> <span class="o">=</span> <span class="n">running_scheduler</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">scheduler</span> <span class="o">==</span> <span class="s2">"slurm"</span><span class="p">:</span>
         <span class="n">ce</span> <span class="o">=</span> <span class="n">_slurm</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">scheduler</span> <span class="o">==</span> <span class="s2">"pbs"</span><span class="p">:</span>
+        <span class="n">ce</span> <span class="o">=</span> <span class="n">_pbs</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">ce</span> <span class="o">=</span> <span class="n">_local</span><span class="p">()</span>
 
@@ -497,21 +530,28 @@
         <span class="k">elif</span> <span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"SBATCH_"</span><span class="p">:</span>
             <span class="n">ce</span><span class="p">[</span><span class="n">item</span><span class="p">[</span><span class="mi">7</span><span class="p">:]]</span> <span class="o">=</span> <span class="n">value</span>
 
+    <span class="c1"># Without --ntasks SLURM sets no SLURM_NTASKS: fall back to the cores</span>
+    <span class="c1"># allocated on this node.</span>
+    <span class="k">if</span> <span class="s2">"NNODES"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ce</span><span class="p">:</span>
+        <span class="n">ce</span><span class="p">[</span><span class="s2">"NNODES"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"JOB_NUM_NODES"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">"NTASKS"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ce</span><span class="p">:</span>
+        <span class="n">cpus</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"CPUS_ON_NODE"</span><span class="p">,</span> <span class="n">ce</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"JOB_CPUS_PER_NODE"</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cpus</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cpus</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"("</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">cpus</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">per_task</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"CPUS_PER_TASK"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">ce</span><span class="p">[</span><span class="s2">"NTASKS"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">cpus</span> <span class="o">//</span> <span class="n">per_task</span><span class="p">)</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="n">ce</span><span class="p">[</span><span class="s2">"NNODES"</span><span class="p">])</span>
+
     <span class="k">if</span> <span class="s2">"NTASKS_PER_NODE"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ce</span><span class="p">:</span>
         <span class="n">ce</span><span class="p">[</span><span class="s2">"NTASKS_PER_NODE"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ce</span><span class="p">[</span><span class="s2">"NTASKS"</span><span class="p">])</span> <span class="o">//</span> <span class="nb">int</span><span class="p">(</span><span class="n">ce</span><span class="p">[</span><span class="s2">"NNODES"</span><span class="p">])</span>
 
-    <span class="c1"># Expand `[i-k]` naming in nodelist, eg. SLURM_NODELIST=tc[053,059,183,200]</span>
-    <span class="n">nodes</span> <span class="o">=</span> <span class="n">ce</span><span class="p">[</span><span class="s2">"NODELIST"</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)</span>
+    <span class="c1"># Expand the hostlist, e.g. SLURM_NODELIST=tc[053,059-061],tc200</span>
     <span class="n">nodelist</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">npernode</span> <span class="o">=</span> <span class="n">ce</span><span class="p">[</span><span class="s2">"NTASKS_PER_NODE"</span><span class="p">]</span>
-    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
-        <span class="k">if</span> <span class="s2">"["</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
-            <span class="n">node</span><span class="p">,</span> <span class="n">count</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"["</span><span class="p">)</span>
-            <span class="n">first</span><span class="p">,</span> <span class="n">last</span> <span class="o">=</span> <span class="n">count</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"-"</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">first</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">last</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-                <span class="n">nodelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">node</span><span class="si">}{</span><span class="n">i</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">npernode</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">nodelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">node</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">npernode</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">nodelist_text</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"NODELIST"</span><span class="p">,</span> <span class="n">ce</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"JOB_NODELIST"</span><span class="p">,</span> <span class="s2">"localhost"</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">expand_hostlist</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">nodelist_text</span><span class="p">)):</span>
+        <span class="n">nodelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">node</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">npernode</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="n">nodelist</span> <span class="o">=</span> <span class="s2">","</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">nodelist</span><span class="p">)</span>
     <span class="n">ce</span><span class="p">[</span><span class="s2">"NODELIST"</span><span class="p">]</span> <span class="o">=</span> <span class="n">nodelist</span>
 
@@ -555,6 +595,102 @@
         <span class="n">ce</span><span class="p">[</span><span class="s2">"MEM_PER_NODE"</span><span class="p">]</span> <span class="o">=</span> <span class="n">available</span>
         <span class="n">ce</span><span class="p">[</span><span class="s2">"MEM_PER_CPU"</span><span class="p">]</span> <span class="o">=</span> <span class="n">available</span> <span class="o">//</span> <span class="n">cores_per_node</span>
     <span class="k">return</span> <span class="n">ce</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_pbs</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Get the number of tasks, nodes, etc. for a PBS job.</span>
+
+<span class="sd">    PBS exports less than SLURM: the job id, ``NCPUS`` (the cores of this</span>
+<span class="sd">    node's chunk), ``OMP_NUM_THREADS`` and ``PBS_NODEFILE``, which has one line</span>
+<span class="sd">    per MPI rank. Memory is not exported, so it is this node's available memory.</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_scheduler.pbs</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pbs</span>
+
+    <span class="n">names</span> <span class="o">=</span> <span class="n">Pbs</span><span class="o">.</span><span class="n">env_names</span>
+    <span class="k">if</span> <span class="n">names</span><span class="p">[</span><span class="s2">"job_id"</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"This does not appear to be a PBS job."</span><span class="p">)</span>
+    <span class="n">ce</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"pbs"</span><span class="p">,</span> <span class="s2">"JOB_ID"</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="n">names</span><span class="p">[</span><span class="s2">"job_id"</span><span class="p">]]}</span>
+
+    <span class="n">hosts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">nodefile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">names</span><span class="p">[</span><span class="s2">"nodefile"</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">nodefile</span> <span class="ow">and</span> <span class="n">Path</span><span class="p">(</span><span class="n">nodefile</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">hosts</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">Path</span><span class="p">(</span><span class="n">nodefile</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span> <span class="k">if</span> <span class="n">h</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="p">]</span>
+    <span class="n">ncpus</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">names</span><span class="p">[</span><span class="s2">"ncpus"</span><span class="p">],</span> <span class="s2">"0"</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">threads</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">names</span><span class="p">[</span><span class="s2">"threads"</span><span class="p">],</span> <span class="s2">"1"</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">hosts</span><span class="p">:</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">host</span> <span class="ow">in</span> <span class="n">hosts</span><span class="p">:</span>
+            <span class="n">counts</span><span class="p">[</span><span class="n">host</span><span class="p">]</span> <span class="o">=</span> <span class="n">counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">ce</span><span class="p">[</span><span class="s2">"NTASKS"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">hosts</span><span class="p">)</span>
+        <span class="n">ce</span><span class="p">[</span><span class="s2">"NNODES"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span>
+        <span class="n">ce</span><span class="p">[</span><span class="s2">"NTASKS_PER_NODE"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">counts</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">ce</span><span class="p">[</span><span class="s2">"NODELIST"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">","</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">h</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">h</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">counts</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ce</span><span class="p">[</span><span class="s2">"NTASKS"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ncpus</span> <span class="o">//</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">threads</span><span class="p">))</span>
+        <span class="n">ce</span><span class="p">[</span><span class="s2">"NNODES"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">ce</span><span class="p">[</span><span class="s2">"NTASKS_PER_NODE"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ce</span><span class="p">[</span><span class="s2">"NTASKS"</span><span class="p">]</span>
+    <span class="n">ce</span><span class="p">[</span><span class="s2">"CPUS_PER_TASK"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">threads</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">names</span><span class="p">[</span><span class="s2">"ngpus"</span><span class="p">]</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+        <span class="n">ce</span><span class="p">[</span><span class="s2">"NGPUS"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="n">names</span><span class="p">[</span><span class="s2">"ngpus"</span><span class="p">]]</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">cores_per_node</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ce</span><span class="p">[</span><span class="s2">"NTASKS_PER_NODE"</span><span class="p">]</span> <span class="o">*</span> <span class="n">ce</span><span class="p">[</span><span class="s2">"CPUS_PER_TASK"</span><span class="p">])</span>
+    <span class="n">available</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">virtual_memory</span><span class="p">()</span><span class="o">.</span><span class="n">available</span>
+    <span class="n">ce</span><span class="p">[</span><span class="s2">"MEM_PER_NODE"</span><span class="p">]</span> <span class="o">=</span> <span class="n">available</span>
+    <span class="n">ce</span><span class="p">[</span><span class="s2">"MEM_PER_CPU"</span><span class="p">]</span> <span class="o">=</span> <span class="n">available</span> <span class="o">//</span> <span class="n">cores_per_node</span>
+    <span class="k">return</span> <span class="n">ce</span>
+
+
+<div class="viewcode-block" id="expand_hostlist">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.computational_environment.expand_hostlist">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">expand_hostlist</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""SLURM's compressed hostlist -&gt; host names.</span>
+
+<span class="sd">    ``tc[053,059-061],gpu7`` -&gt; ``tc053 tc059 tc060 tc061 gpu7``; zero padding</span>
+<span class="sd">    is kept; a suffix after the brackets (``tc[01-02]-ib``) and several</span>
+<span class="sd">    bracket groups (``r[1-2]n[1-2]``, the product) are expanded as SLURM does.</span>
+<span class="sd">    """</span>
+    <span class="c1"># Split on the commas that are not inside brackets</span>
+    <span class="n">tokens</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">depth</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">current</span> <span class="o">=</span> <span class="s2">""</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">text</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s2">"["</span><span class="p">:</span>
+            <span class="n">depth</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s2">"]"</span><span class="p">:</span>
+            <span class="n">depth</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s2">","</span> <span class="ow">and</span> <span class="n">depth</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current</span><span class="p">)</span>
+            <span class="n">current</span> <span class="o">=</span> <span class="s2">""</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">current</span> <span class="o">+=</span> <span class="n">c</span>
+    <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current</span><span class="p">)</span>
+
+    <span class="n">hosts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">tokens</span><span class="p">:</span>
+        <span class="n">token</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">token</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">""</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s2">"(\[[^\]]*\])"</span><span class="p">,</span> <span class="n">token</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">part</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"["</span><span class="p">)</span> <span class="ow">and</span> <span class="n">part</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"]"</span><span class="p">):</span>
+                <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">part</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="s2">"-"</span> <span class="ow">in</span> <span class="n">item</span><span class="p">:</span>
+                        <span class="n">first</span><span class="p">,</span> <span class="n">last</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"-"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                        <span class="n">width</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">first</span><span class="p">)</span>
+                        <span class="n">values</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">0</span><span class="si">{</span><span class="n">width</span><span class="si">}</span><span class="s2">d</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">first</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">last</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+                <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="o">+</span> <span class="n">v</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">names</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="o">+</span> <span class="n">part</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">names</span><span class="p">]</span>
+        <span class="n">hosts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">hosts</span></div>
+
 </pre></div>
 
                 </article>

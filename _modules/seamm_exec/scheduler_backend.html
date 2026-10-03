@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>seamm_exec.scheduler_backend &#8212; SEAMM seamm-exec Plug-in 2026.10.2.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+
+    <script src="../../_static/documentation_options.js?v=77b25824"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/seamm_exec/scheduler_backend';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.10.2.1" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/SEAMM logo.png" class="logo__image only-light" alt=""/>
+    <img src="../../_static/SEAMM Inverted 288x181.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">SEAMM-EXEC</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../developer_guide/index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/seamm-exec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../developer_guide/index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/seamm-exec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../seamm_exec.html" class="nav-link">seamm_exec</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">seamm_exec.scheduler_backend</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for seamm_exec.scheduler_backend</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">"""SchedulerBackend: run tasks as batch jobs of a queueing system.</span>
+
+<span class="sd">Each call to :meth:`SchedulerBackend.submit` is one *bundle*: one batch job</span>
+<span class="sd">whose allocation runs the bundle's tasks through the task worker</span>
+<span class="sd">(``python -m seamm_exec.task_worker bundle.json``) in SEAMM mode, that is,</span>
+<span class="sd">through a ``LocalPool`` inside the allocation, with each program resolved from</span>
+<span class="sd">the ``&lt;program&gt;.ini`` files of the machine it runs on. The ``TaskSet`` decides</span>
+<span class="sd">the bundles (``bundle_tasks``, ``bundle_walltime``) and how many it keeps in</span>
+<span class="sd">the queue (:meth:`room`).</span>
+
+<span class="sd">Files: a bundle lives in ``&lt;step dir&gt;/tasks/_bundles/&lt;bundle&gt;.&lt;n&gt;/``</span>
+<span class="sd">(``bundle.json``, ``run.sh`` and the scheduler's log), the tasks in their own</span>
+<span class="sd">directories, and the worker writes each task's ``DONE`` or ``FAILED`` in</span>
+<span class="sd">``&lt;step dir&gt;/tasks/&lt;key&gt;/``. When the cluster does not share the evaluator's</span>
+<span class="sd">filesystem the directories are pushed before submission and pulled back once</span>
+<span class="sd">the bundle's job has ended, to ``&lt;remote_root&gt;/&lt;job&gt;/...``, the same relative</span>
+<span class="sd">paths under the remote job directory.</span>
+
+<span class="sd">Backend ids are ``&lt;job id&gt;#&lt;bundle&gt;.&lt;n&gt;#&lt;key&gt;``, so a restarted evaluator can</span>
+<span class="sd">find a task's job, bundle and files from its manifest record alone</span>
+<span class="sd">(:meth:`adopt`) and poll it rather than submit it again.</span>
+<span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">asdict</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span><span class="p">,</span> <span class="n">PurePosixPath</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">secrets</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shlex</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.tasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">FAILED</span><span class="p">,</span> <span class="n">FINISHED</span><span class="p">,</span> <span class="n">LOST</span><span class="p">,</span> <span class="n">QUEUED</span><span class="p">,</span> <span class="n">RUNNING</span><span class="p">,</span> <span class="n">TaskResult</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"seamm-exec"</span><span class="p">)</span>
+
+<span class="c1">#: sbatch's message when a QOS's per-user submit limit is reached</span>
+<span class="n">_QUEUE_FULL</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+    <span class="sa">r</span><span class="s2">"QOSMaxSubmitJob|AssocMaxSubmitJob|MaxSubmitJobs|job submit limit|"</span>
+    <span class="sa">r</span><span class="s2">"would exceed.*(queued|submit)|Maximum number of jobs"</span><span class="p">,</span>
+    <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="c1">#: A failure to reach the cluster, worth trying again later</span>
+<span class="n">_TRANSIENT</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+    <span class="sa">r</span><span class="s2">"ssh: |Connection (timed out|refused|reset|closed)|Operation timed out|"</span>
+    <span class="sa">r</span><span class="s2">"Could not resolve hostname|Network is unreachable|No route to host|"</span>
+    <span class="sa">r</span><span class="s2">"Socket timed out|Unable to contact slurm controller"</span><span class="p">,</span>
+    <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="QueueFull">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.scheduler_backend.QueueFull">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">QueueFull</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The queue will not take more jobs now (it is full, or cannot be reached);</span>
+<span class="sd">    the TaskSet holds the bundle and tries again later.</span>
+
+<span class="sd">    ``maybe_submitted`` is True when the bundle may have reached the queue</span>
+<span class="sd">    (the connection dropped during ``sbatch``): its tasks must then stay</span>
+<span class="sd">    recorded as queued, so that a restart looks for the job by name.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">maybe_submitted</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maybe_submitted</span> <span class="o">=</span> <span class="n">maybe_submitted</span></div>
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_Prepared</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A bundle written, and perhaps staged, but not yet known to be queued."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle_dir</span><span class="p">,</span> <span class="n">job_name</span><span class="p">,</span> <span class="n">script</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bundle_dir</span> <span class="o">=</span> <span class="n">bundle_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">job_name</span> <span class="o">=</span> <span class="n">job_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">script</span> <span class="o">=</span> <span class="n">script</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">staged</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maybe_submitted</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_Entry</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""What the backend knows of one submitted task."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">marker</span><span class="p">,</span> <span class="n">bundle_dir</span><span class="p">,</span> <span class="n">job_id</span><span class="p">,</span> <span class="n">job_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">=</span> <span class="n">task</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">digest</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">digest</span><span class="p">()</span>  <span class="c1"># once: it hashes every input file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">marker</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">marker</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bundle_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">bundle_dir</span><span class="p">)</span>
+        <span class="c1"># None until a job adopted by name is found in the queue</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">job_id</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">job_id</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">job_name</span> <span class="o">=</span> <span class="n">job_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">never_queued</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reason</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="SchedulerBackend">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SchedulerBackend</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A ``TaskBackend`` that submits bundles of tasks to a queueing system.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    queue : seamm_scheduler.QueueBackend</span>
+<span class="sd">        Submits, polls and cancels jobs (a scheduler plus a transport).</span>
+<span class="sd">    name : str</span>
+<span class="sd">        The name recorded in the manifest, ``queue:&lt;target&gt;``.</span>
+<span class="sd">    job_directory : str or Path</span>
+<span class="sd">        The job's directory. Task directories must be inside it when the</span>
+<span class="sd">        cluster does not share the filesystem.</span>
+<span class="sd">    stager : seamm_scheduler.JobStager, optional</span>
+<span class="sd">        ``RsyncStager`` when the cluster does not share the filesystem. None</span>
+<span class="sd">        (or a ``LocalStager``) means shared storage.</span>
+<span class="sd">    remote_job_directory : str, optional</span>
+<span class="sd">        Where the job directory is mirrored on the cluster, if not shared.</span>
+<span class="sd">    directives : dict, optional</span>
+<span class="sd">        Site defaults, in the scheduler's own spelling (the target section's</span>
+<span class="sd">        directive keys: partition, account, qos, export, ...).</span>
+<span class="sd">    setup : str, optional</span>
+<span class="sd">        Shell lines run in the batch script before the worker (module loads).</span>
+<span class="sd">    python : str, optional</span>
+<span class="sd">        A Python with ``seamm_exec`` where the tasks run. Default: this one.</span>
+<span class="sd">    root : str, optional</span>
+<span class="sd">        The SEAMM root with the ``&lt;program&gt;.ini`` files where the tasks run.</span>
+<span class="sd">    accepts_config : bool = True</span>
+<span class="sd">        Whether ``Task.config`` is valid where the tasks run (local</span>
+<span class="sd">        transport). On a remote cluster it is not sent.</span>
+<span class="sd">    bundle_walltime : float, optional</span>
+<span class="sd">        Seconds to request for a bundle whose tasks give no walltime.</span>
+<span class="sd">    max_queued : int, optional</span>
+<span class="sd">        The most jobs this user may have queued and running at once.</span>
+<span class="sd">    poll_interval : float = 30</span>
+<span class="sd">        Seconds between polls of the queue.</span>
+<span class="sd">    """</span>
+
+    <span class="c1">#: The TaskSet submits one call per bundle.</span>
+    <span class="n">bundles</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">queue</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">"queue"</span><span class="p">,</span>
+        <span class="n">job_directory</span><span class="p">,</span>
+        <span class="n">stager</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">remote_job_directory</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">directives</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">setup</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">python</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">root</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">executor</span><span class="o">=</span><span class="s2">"local"</span><span class="p">,</span>
+        <span class="n">accepts_config</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">bundle_walltime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">max_queued</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">poll_interval</span><span class="o">=</span><span class="mf">30.0</span><span class="p">,</span>
+        <span class="n">job_name_prefix</span><span class="o">=</span><span class="s2">"seamm"</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue</span> <span class="o">=</span> <span class="n">queue</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">job_directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">job_directory</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stager</span> <span class="o">=</span> <span class="n">stager</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remote_job_directory</span> <span class="o">=</span> <span class="n">remote_job_directory</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">directives</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">directives</span> <span class="ow">or</span> <span class="p">{})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup</span> <span class="o">=</span> <span class="n">setup</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">python</span> <span class="o">=</span> <span class="n">python</span> <span class="ow">or</span> <span class="n">sys</span><span class="o">.</span><span class="n">executable</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="n">root</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">executor</span> <span class="o">=</span> <span class="n">executor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accepts_config</span> <span class="o">=</span> <span class="n">accepts_config</span>
+        <span class="k">if</span> <span class="n">executor</span> <span class="o">!=</span> <span class="s2">"local"</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Tasks can go to a queue only with the local executor, not "</span>
+                <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">executor</span><span class="si">}</span><span class="s2">'."</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bundle_walltime</span> <span class="o">=</span> <span class="n">bundle_walltime</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_queued</span> <span class="o">=</span> <span class="n">max_queued</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">poll_interval</span> <span class="o">=</span> <span class="n">poll_interval</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">job_name_prefix</span> <span class="o">=</span> <span class="n">job_name_prefix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">abandon_timeout</span> <span class="o">=</span> <span class="mf">120.0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># backend id -&gt; _Entry</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># job id -&gt; last JobStatus (or None if not seen)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_misses</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># job id -&gt; polls in a row it was not found</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pulled</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>  <span class="c1"># job ids whose files are back (or never will be)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ended_polls</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># job id -&gt; polls since it was seen ended</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pull_failures</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># job id -&gt; failed pulls, not counting outages</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_unpullable</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># job id -&gt; why its files cannot come back</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prepared</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># (bundle, keys) -&gt; _Prepared, until it is queued</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resolved_at</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_polled_at</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_counted_at</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># Construction from a target section</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+<div class="viewcode-block" id="SchedulerBackend.from_target">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.from_target">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_target</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">job_directory</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">executor</span><span class="o">=</span><span class="s2">"local"</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The back end a target section with ``tasks = queue`` describes."""</span>
+        <span class="n">queue</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">build_task_backend</span><span class="p">()</span>
+        <span class="n">stager</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">build_task_stager</span><span class="p">()</span>
+        <span class="n">shared</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">tasks_share_filesystem</span>
+        <span class="n">remote_job_directory</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">python</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">remote_root</span> <span class="o">=</span> <span class="n">root</span>
+        <span class="k">if</span> <span class="n">remote_root</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">section</span><span class="o">.</span><span class="n">task_transport</span> <span class="o">==</span> <span class="s2">"local"</span><span class="p">:</span>
+            <span class="c1"># The evaluator's own installation, as a step would find it.</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_util.root</span><span class="w"> </span><span class="kn">import</span> <span class="n">current_root</span>
+
+                <span class="n">remote_root</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">current_root</span><span class="p">())</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">remote_root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"SEAMM_ROOT"</span><span class="p">,</span> <span class="s2">"~/SEAMM"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">shared</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">section</span><span class="o">.</span><span class="n">remote_root</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"Target '</span><span class="si">{</span><span class="n">section</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' sends tasks to </span><span class="si">{</span><span class="n">section</span><span class="o">.</span><span class="n">host</span><span class="si">}</span><span class="s2"> without "</span>
+                    <span class="s2">"a shared filesystem, so it needs remote_root (where task "</span>
+                    <span class="s2">"directories are staged)."</span>
+                <span class="p">)</span>
+            <span class="n">remote_job_directory</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+                <span class="n">PurePosixPath</span><span class="p">(</span><span class="n">section</span><span class="o">.</span><span class="n">remote_root</span><span class="p">)</span> <span class="o">/</span> <span class="n">remote_name</span><span class="p">(</span><span class="n">job_directory</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">section</span><span class="o">.</span><span class="n">task_transport</span> <span class="o">==</span> <span class="s2">"ssh"</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">section</span><span class="o">.</span><span class="n">remote_python</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"Target '</span><span class="si">{</span><span class="n">section</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' sends tasks to </span><span class="si">{</span><span class="n">section</span><span class="o">.</span><span class="n">host</span><span class="si">}</span><span class="s2"> over "</span>
+                    <span class="s2">"ssh, so it needs remote_python: a Python with seamm_exec "</span>
+                    <span class="s2">"on that cluster, which runs the tasks."</span>
+                <span class="p">)</span>
+            <span class="n">python</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">remote_python</span>
+            <span class="n">remote_root</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">remote_seamm_root</span> <span class="ow">or</span> <span class="n">default_root</span><span class="p">(</span><span class="n">python</span><span class="p">)</span>
+        <span class="n">directives</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">section</span><span class="o">.</span><span class="n">directives</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">queue</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"queue:</span><span class="si">{</span><span class="n">section</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+            <span class="n">job_directory</span><span class="o">=</span><span class="n">job_directory</span><span class="p">,</span>
+            <span class="n">stager</span><span class="o">=</span><span class="kc">None</span> <span class="k">if</span> <span class="n">shared</span> <span class="k">else</span> <span class="n">stager</span><span class="p">,</span>
+            <span class="n">remote_job_directory</span><span class="o">=</span><span class="n">remote_job_directory</span><span class="p">,</span>
+            <span class="n">directives</span><span class="o">=</span><span class="n">directives</span><span class="p">,</span>
+            <span class="n">setup</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">setup</span><span class="p">,</span>
+            <span class="n">python</span><span class="o">=</span><span class="n">python</span><span class="p">,</span>
+            <span class="n">root</span><span class="o">=</span><span class="n">remote_root</span><span class="p">,</span>
+            <span class="n">executor</span><span class="o">=</span><span class="n">executor</span><span class="p">,</span>
+            <span class="n">accepts_config</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">task_transport</span> <span class="o">==</span> <span class="s2">"local"</span><span class="p">,</span>
+            <span class="n">bundle_walltime</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">bundle_walltime</span><span class="p">,</span>
+            <span class="n">max_queued</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">max_queued_tasks</span><span class="p">,</span>
+            <span class="n">poll_interval</span><span class="o">=</span><span class="p">(</span>
+                <span class="n">section</span><span class="o">.</span><span class="n">poll_interval</span> <span class="k">if</span> <span class="n">section</span><span class="o">.</span><span class="n">poll_interval</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mf">30.0</span>
+            <span class="p">),</span>
+        <span class="p">)</span></div>
+
+
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># Paths</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">shared</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_job_directory</span> <span class="ow">is</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="SchedulerBackend.relative">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.relative">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">relative</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""``path`` relative to the job directory."""</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">path</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">job_directory</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> is not inside the job directory </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">job_directory</span><span class="si">}</span><span class="s2">, so "</span>
+                <span class="s2">"it cannot be staged to the cluster."</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="SchedulerBackend.where">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.where">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">where</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The path the cluster sees for a local ``path``."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">())</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">PurePosixPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_job_directory</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">relative</span><span class="p">(</span><span class="n">path</span><span class="p">))</span></div>
+
+
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># The TaskBackend interface</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+<div class="viewcode-block" id="SchedulerBackend.room">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.room">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">room</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""How many more bundles may be submitted now, or None for no limit."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_queued</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">now</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_counted_at</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_interval</span><span class="p">:</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">count_jobs</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="o">=</span> <span class="n">count</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_counted_at</span> <span class="o">=</span> <span class="n">now</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_queued</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count</span></div>
+
+
+<div class="viewcode-block" id="SchedulerBackend.submit">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.submit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">submit</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tasks</span><span class="p">,</span>
+        <span class="n">directories</span><span class="p">,</span>
+        <span class="n">on_start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">bundle</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">markers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">on_prepared</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Submit ``tasks`` as one bundle: one batch job. Returns their ids.</span>
+
+<span class="sd">        ``on_prepared(tasks, info)`` is called before ``sbatch`` with the</span>
+<span class="sd">        bundle's unique job name and directory, so the caller can record them:</span>
+<span class="sd">        a restart that finds no job id looks the job up by that name.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">tasks</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="n">directories</span> <span class="o">=</span> <span class="p">[</span><span class="n">Path</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">directories</span><span class="p">]</span>
+        <span class="n">markers</span> <span class="o">=</span> <span class="p">[</span><span class="n">Path</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="p">(</span><span class="n">markers</span> <span class="ow">or</span> <span class="n">directories</span><span class="p">)]</span>
+        <span class="n">bundle</span> <span class="o">=</span> <span class="n">bundle</span> <span class="ow">or</span> <span class="s2">"bundle"</span>
+
+        <span class="c1"># A bundle held earlier (queue full, cluster unreachable) is the same</span>
+        <span class="c1"># bundle when it is tried again: same directory, same job name.</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">bundle</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">key</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">))</span>
+        <span class="n">prepared</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepared</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">prepared</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">prepared</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare</span><span class="p">(</span><span class="n">bundle</span><span class="p">,</span> <span class="n">tasks</span><span class="p">,</span> <span class="n">directories</span><span class="p">,</span> <span class="n">markers</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_prepared</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">prepared</span>
+        <span class="k">if</span> <span class="n">on_prepared</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">on_prepared</span><span class="p">(</span>
+                <span class="n">tasks</span><span class="p">,</span>
+                <span class="p">{</span>
+                    <span class="s2">"job_name"</span><span class="p">:</span> <span class="n">prepared</span><span class="o">.</span><span class="n">job_name</span><span class="p">,</span>
+                    <span class="s2">"bundle_dir"</span><span class="p">:</span> <span class="n">prepared</span><span class="o">.</span><span class="n">bundle_dir</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">prepared</span><span class="o">.</span><span class="n">maybe_submitted</span><span class="p">:</span>
+            <span class="c1"># The connection dropped during sbatch: does the queue have it?</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">find_jobs</span><span class="p">(</span><span class="n">prepared</span><span class="o">.</span><span class="n">job_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">found</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">QueueFull</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"cannot yet tell whether </span><span class="si">{</span><span class="n">prepared</span><span class="o">.</span><span class="n">bundle_dir</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> reached "</span>
+                    <span class="s2">"the queue"</span><span class="p">,</span>
+                    <span class="n">maybe_submitted</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepared</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prepared</span><span class="o">.</span><span class="n">bundle_dir</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> had reached the queue as job "</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">found</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_register</span><span class="p">(</span>
+                    <span class="n">tasks</span><span class="p">,</span> <span class="n">directories</span><span class="p">,</span> <span class="n">markers</span><span class="p">,</span> <span class="n">prepared</span><span class="o">.</span><span class="n">bundle_dir</span><span class="p">,</span> <span class="n">found</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="p">)</span>
+            <span class="n">prepared</span><span class="o">.</span><span class="n">maybe_submitted</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">prepared</span><span class="o">.</span><span class="n">staged</span><span class="p">:</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">relative</span><span class="p">(</span><span class="n">prepared</span><span class="o">.</span><span class="n">bundle_dir</span><span class="p">))}</span>
+            <span class="k">for</span> <span class="n">directory</span><span class="p">,</span> <span class="n">marker</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">directories</span><span class="p">,</span> <span class="n">markers</span><span class="p">):</span>
+                <span class="n">paths</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">relative</span><span class="p">(</span><span class="n">directory</span><span class="p">)))</span>
+                <span class="n">paths</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">relative</span><span class="p">(</span><span class="n">marker</span><span class="p">)))</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_clear_remote_markers</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="n">directories</span><span class="p">,</span> <span class="n">markers</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stager</span><span class="o">.</span><span class="n">push</span><span class="p">(</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">job_directory</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_job_directory</span><span class="p">,</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">_TRANSIENT</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)):</span>
+                    <span class="k">raise</span> <span class="n">QueueFull</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cannot stage to the cluster: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+                <span class="k">raise</span>
+            <span class="n">prepared</span><span class="o">.</span><span class="n">staged</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">job_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">prepared</span><span class="o">.</span><span class="n">script</span><span class="p">,</span> <span class="n">job_name</span><span class="o">=</span><span class="n">prepared</span><span class="o">.</span><span class="n">job_name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">_QUEUE_FULL</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="n">QueueFull</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+            <span class="k">if</span> <span class="n">_TRANSIENT</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)):</span>
+                <span class="n">prepared</span><span class="o">.</span><span class="n">maybe_submitted</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">raise</span> <span class="n">QueueFull</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="n">maybe_submitted</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepared</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">raise</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepared</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Submitted </span><span class="si">{</span><span class="n">prepared</span><span class="o">.</span><span class="n">bundle_dir</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">tasks</span><span class="p">)</span><span class="si">}</span><span class="s2"> tasks) as job "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_register</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="n">directories</span><span class="p">,</span> <span class="n">markers</span><span class="p">,</span> <span class="n">prepared</span><span class="o">.</span><span class="n">bundle_dir</span><span class="p">,</span> <span class="n">job_id</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">,</span> <span class="n">tasks</span><span class="p">,</span> <span class="n">directories</span><span class="p">,</span> <span class="n">markers</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Write a bundle: its directory, the tasks' inputs, bundle.json, run.sh."""</span>
+        <span class="c1"># &lt;step dir&gt;/tasks/_bundles/&lt;bundle&gt;.&lt;n&gt;</span>
+        <span class="n">bundles_dir</span> <span class="o">=</span> <span class="n">markers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">"_bundles"</span>
+        <span class="n">bundles_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">while</span> <span class="p">(</span><span class="n">bundles_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">bundle</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">bundle_dir</span> <span class="o">=</span> <span class="n">bundles_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">bundle</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">"</span>
+        <span class="n">bundle_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">()</span>
+
+        <span class="n">entries</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">task</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">marker</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="n">directories</span><span class="p">,</span> <span class="n">markers</span><span class="p">):</span>
+            <span class="n">directory</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">marker</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">stale</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"DONE"</span><span class="p">,</span> <span class="s2">"FAILED"</span><span class="p">):</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">marker</span> <span class="o">/</span> <span class="n">stale</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                    <span class="p">(</span><span class="n">marker</span> <span class="o">/</span> <span class="n">stale</span><span class="p">)</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+            <span class="c1"># An earlier attempt's output must not pass this one's success check</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">task</span><span class="o">.</span><span class="n">success_text</span> <span class="ow">or</span> <span class="p">{}:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">directory</span> <span class="o">/</span> <span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+                    <span class="p">(</span><span class="n">directory</span> <span class="o">/</span> <span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">filename</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">files</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="n">directory</span> <span class="o">/</span> <span class="n">filename</span>
+                <span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+                    <span class="n">path</span><span class="o">.</span><span class="n">write_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">path</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bundle_entry</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">marker</span><span class="p">))</span>
+
+        <span class="n">bundle_json</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"version"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="s2">"mode"</span><span class="p">:</span> <span class="s2">"seamm"</span><span class="p">,</span>
+            <span class="s2">"root"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span>
+            <span class="s2">"executor"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="p">,</span>
+            <span class="s2">"tasks"</span><span class="p">:</span> <span class="n">entries</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="p">(</span><span class="n">bundle_dir</span> <span class="o">/</span> <span class="s2">"bundle.json"</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">bundle_json</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+        <span class="n">script</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_script</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="n">bundle_dir</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">bundle_dir</span> <span class="o">/</span> <span class="s2">"run.sh"</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
+        <span class="c1"># Unique, so the queue can be asked whether it has this very bundle</span>
+        <span class="n">job_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">job_name_prefix</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">bundle_dir</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">secrets</span><span class="o">.</span><span class="n">token_hex</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+        <span class="k">return</span> <span class="n">_Prepared</span><span class="p">(</span><span class="n">bundle_dir</span><span class="p">,</span> <span class="n">job_name</span><span class="p">,</span> <span class="n">script</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tasks</span><span class="p">,</span> <span class="n">directories</span><span class="p">,</span> <span class="n">markers</span><span class="p">,</span> <span class="n">bundle_dir</span><span class="p">,</span> <span class="n">job_id</span><span class="p">):</span>
+        <span class="n">ids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">task</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">marker</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="n">directories</span><span class="p">,</span> <span class="n">markers</span><span class="p">):</span>
+            <span class="n">backend_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">#</span><span class="si">{</span><span class="n">bundle_dir</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">#</span><span class="si">{</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s2">"</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="p">[</span><span class="n">backend_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">_Entry</span><span class="p">(</span>
+                <span class="n">task</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">marker</span><span class="p">,</span> <span class="n">bundle_dir</span><span class="p">,</span> <span class="n">job_id</span>
+            <span class="p">)</span>
+            <span class="n">ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">backend_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">job_id</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ids</span>
+
+<div class="viewcode-block" id="SchedulerBackend.check">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.check">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">marker</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Fail early, before anything is submitted, for a task this back end</span>
+<span class="sd">        cannot run (a directory outside the job, without shared storage)."""</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">marker</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_directory</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">isspace</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">())):</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">' contains whitespace, which batch scripts and "</span>
+                    <span class="s2">"rsync cannot carry safely. Use a directory without spaces "</span>
+                    <span class="s2">"for jobs whose tasks go to a queue."</span>
+                <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">relative</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">relative</span><span class="p">(</span><span class="n">marker</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SchedulerBackend.adopt">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.adopt">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">adopt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">marker</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Take back a task an earlier evaluator submitted, from its manifest</span>
+<span class="sd">        record. Returns its id, or None if the record is not one of ours."""</span>
+        <span class="n">backend_id</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"id"</span><span class="p">)</span>
+        <span class="n">parsed</span> <span class="o">=</span> <span class="n">parse_id</span><span class="p">(</span><span class="n">backend_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">parsed</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"job_name"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"bundle_dir"</span><span class="p">):</span>
+            <span class="c1"># Prepared, perhaps submitted, but its id was never recorded (the</span>
+            <span class="c1"># evaluator died during sbatch, or the connection dropped): find</span>
+            <span class="c1"># it by its unique job name.</span>
+            <span class="n">backend_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"?</span><span class="si">{</span><span class="n">record</span><span class="p">[</span><span class="s1">'job_name'</span><span class="p">]</span><span class="si">}</span><span class="s2">#</span><span class="si">{</span><span class="n">record</span><span class="p">[</span><span class="s1">'bundle_dir'</span><span class="p">]</span><span class="si">}</span><span class="s2">#</span><span class="si">{</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s2">"</span>
+            <span class="n">parsed</span> <span class="o">=</span> <span class="n">parse_id</span><span class="p">(</span><span class="n">backend_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">parsed</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">job_id</span><span class="p">,</span> <span class="n">bundle_name</span><span class="p">,</span> <span class="n">key</span> <span class="o">=</span> <span class="n">parsed</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">!=</span> <span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">bundle_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">marker</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">"_bundles"</span> <span class="o">/</span> <span class="n">bundle_name</span>
+        <span class="k">if</span> <span class="n">job_id</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"?"</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="p">[</span><span class="n">backend_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">_Entry</span><span class="p">(</span>
+                <span class="n">task</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">marker</span><span class="p">,</span> <span class="n">bundle_dir</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">job_name</span><span class="o">=</span><span class="n">job_id</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="p">[</span><span class="n">backend_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">_Entry</span><span class="p">(</span>
+                <span class="n">task</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">marker</span><span class="p">,</span> <span class="n">bundle_dir</span><span class="p">,</span> <span class="n">job_id</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">job_id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">backend_id</span></div>
+
+
+<div class="viewcode-block" id="SchedulerBackend.abandon">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.abandon">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">abandon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">records</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="p">()):</span>
+<span class="w">        </span><span class="sd">"""Cancel the jobs of ``records`` (tasks whose inputs have changed)</span>
+<span class="sd">        unless a task in ``keep`` (ids adopted) still runs in the same job."""</span>
+        <span class="n">kept</span> <span class="o">=</span> <span class="p">{</span><span class="n">parse_id</span><span class="p">(</span><span class="n">i</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">keep</span> <span class="k">if</span> <span class="n">parse_id</span><span class="p">(</span><span class="n">i</span><span class="p">)}</span>
+        <span class="n">jobs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">records</span><span class="p">:</span>
+            <span class="n">parsed</span> <span class="o">=</span> <span class="n">parse_id</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"id"</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">parsed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">parsed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kept</span><span class="p">:</span>
+                <span class="n">jobs</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">parsed</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">parsed</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"job_name"</span><span class="p">):</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">find_jobs</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">"job_name"</span><span class="p">])</span> <span class="ow">or</span> <span class="p">[]</span>
+                <span class="n">jobs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">j</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">found</span> <span class="k">if</span> <span class="n">j</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kept</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">jobs</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">jobs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">jobs</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Cancelling jobs running earlier inputs: </span><span class="si">{</span><span class="n">jobs</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">cancel_many</span><span class="p">(</span><span class="n">jobs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># Not fatal: DONE carries the fingerprint, so their results are</span>
+            <span class="c1"># never taken for the new inputs.</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not cancel </span><span class="si">{</span><span class="n">jobs</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="c1"># Wait for them to end (COMPLETING can take a while), so they cannot</span>
+        <span class="c1"># write into the task directories the new inputs will use.</span>
+        <span class="n">deadline</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">abandon_timeout</span>
+        <span class="k">while</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">deadline</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">statuses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">poll_many</span><span class="p">(</span><span class="n">jobs</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">statuses</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">statuses</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">scheduler</span><span class="p">,</span> <span class="s2">"poll_failed"</span><span class="p">,</span> <span class="kc">False</span>
+            <span class="p">):</span>
+                <span class="k">if</span> <span class="nb">all</span><span class="p">(</span>
+                    <span class="n">statuses</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">statuses</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">is_terminal</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">jobs</span>
+                <span class="p">):</span>
+                    <span class="k">return</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="mf">5.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_interval</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Jobs </span><span class="si">{</span><span class="n">jobs</span><span class="si">}</span><span class="s2"> had not ended after cancelling them"</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SchedulerBackend.status">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.status">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_names</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ids</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_poll</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">job_id</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ids</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">job_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">backend_id</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">:</span>
+            <span class="n">entry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">backend_id</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">entry</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">backend_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">LOST</span>
+                <span class="k">continue</span>
+            <span class="n">result</span><span class="p">[</span><span class="n">backend_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entries</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Find the jobs of entries adopted by name, at most once a poll."""</span>
+        <span class="n">pending</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">job_id</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">entry</span><span class="o">.</span><span class="n">never_queued</span><span class="p">:</span>
+                <span class="n">pending</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">job_name</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pending</span> <span class="ow">or</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolved_at</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_interval</span> <span class="o">/</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resolved_at</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">job_name</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">pending</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">find_jobs</span><span class="p">(</span><span class="n">job_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">found</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>  <span class="c1"># cannot tell yet</span>
+            <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+                    <span class="n">entry</span><span class="o">.</span><span class="n">job_id</span> <span class="o">=</span> <span class="n">found</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">found</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">entry</span><span class="o">.</span><span class="n">never_queued</span> <span class="o">=</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="SchedulerBackend.wait">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.wait">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wait</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Sleep until the next poll is due."""</span>
+        <span class="n">delay</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_interval</span> <span class="o">-</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_polled_at</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">delay</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">delay</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SchedulerBackend.cancel">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.cancel">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">):</span>
+        <span class="n">jobs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">backend_id</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">:</span>
+            <span class="n">entry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">backend_id</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">entry</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">job_id</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">status</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">status</span><span class="o">.</span><span class="n">is_terminal</span><span class="p">:</span>
+                <span class="n">jobs</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">job_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">jobs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">cancel_many</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">jobs</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="SchedulerBackend.fetch">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.fetch">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fetch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">backend_id</span><span class="p">):</span>
+        <span class="n">entry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">backend_id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">entry</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">TaskResult</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">LOST</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s2">"unknown task"</span><span class="p">)</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+        <span class="n">stdout</span> <span class="o">=</span> <span class="n">_read_text</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">directory</span> <span class="o">/</span> <span class="s2">"stdout.txt"</span><span class="p">)</span>
+        <span class="n">stderr</span> <span class="o">=</span> <span class="n">_read_text</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">directory</span> <span class="o">/</span> <span class="s2">"stderr.txt"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">state</span> <span class="o">==</span> <span class="n">FINISHED</span><span class="p">:</span>
+            <span class="n">done</span> <span class="o">=</span> <span class="n">_read_json</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">marker</span> <span class="o">/</span> <span class="s2">"DONE"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+            <span class="n">files</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">done</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"files"</span><span class="p">,</span> <span class="p">[]):</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">_read_returned</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">files</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+            <span class="k">return</span> <span class="n">TaskResult</span><span class="p">(</span>
+                <span class="n">key</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
+                <span class="n">state</span><span class="o">=</span><span class="n">FINISHED</span><span class="p">,</span>
+                <span class="n">returncode</span><span class="o">=</span><span class="n">done</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"returncode"</span><span class="p">),</span>
+                <span class="n">stdout</span><span class="o">=</span><span class="n">stdout</span><span class="p">,</span>
+                <span class="n">stderr</span><span class="o">=</span><span class="n">stderr</span><span class="p">,</span>
+                <span class="n">directory</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span>
+                <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span>
+                <span class="n">in_situ</span><span class="o">=</span><span class="n">done</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"in_situ"</span><span class="p">),</span>
+                <span class="n">run_directory</span><span class="o">=</span><span class="n">done</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"run_directory"</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">state</span> <span class="o">==</span> <span class="n">FAILED</span><span class="p">:</span>
+            <span class="n">failed</span> <span class="o">=</span> <span class="n">_read_json</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">marker</span> <span class="o">/</span> <span class="s2">"FAILED"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+            <span class="k">return</span> <span class="n">TaskResult</span><span class="p">(</span>
+                <span class="n">key</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
+                <span class="n">state</span><span class="o">=</span><span class="n">FAILED</span><span class="p">,</span>
+                <span class="n">returncode</span><span class="o">=</span><span class="n">failed</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"returncode"</span><span class="p">),</span>
+                <span class="n">stdout</span><span class="o">=</span><span class="n">stdout</span><span class="p">,</span>
+                <span class="n">stderr</span><span class="o">=</span><span class="n">stderr</span><span class="p">,</span>
+                <span class="n">directory</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span>
+                <span class="n">reason</span><span class="o">=</span><span class="n">failed</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"reason"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">entry</span><span class="o">.</span><span class="n">reason</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">TaskResult</span><span class="p">(</span>
+            <span class="n">key</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
+            <span class="n">state</span><span class="o">=</span><span class="n">LOST</span><span class="p">,</span>
+            <span class="n">directory</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span>
+            <span class="n">stdout</span><span class="o">=</span><span class="n">stdout</span><span class="p">,</span>
+            <span class="n">stderr</span><span class="o">=</span><span class="n">stderr</span><span class="p">,</span>
+            <span class="n">reason</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">reason</span> <span class="ow">or</span> <span class="s2">"lost"</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SchedulerBackend.reason">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.reason">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reason</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Why a task is lost, for the manifest."""</span>
+        <span class="n">entry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">backend_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">entry</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">entry</span><span class="o">.</span><span class="n">reason</span></div>
+
+
+<div class="viewcode-block" id="SchedulerBackend.forget">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.forget">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Drop a task the TaskSet will submit again."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">backend_id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># Internals</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_bundle_entry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">marker</span><span class="p">):</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="n">asdict</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">resources</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">"key"</span><span class="p">:</span> <span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
+            <span class="s2">"directory"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">directory</span><span class="p">),</span>
+            <span class="s2">"marker"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">marker</span><span class="p">),</span>
+            <span class="s2">"program"</span><span class="p">:</span> <span class="n">task</span><span class="o">.</span><span class="n">program</span><span class="p">,</span>
+            <span class="s2">"cmd"</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">cmd</span><span class="p">),</span>
+            <span class="s2">"files"</span><span class="p">:</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">files</span> <span class="ow">or</span> <span class="p">{}),</span>
+            <span class="s2">"return_files"</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">return_files</span><span class="p">),</span>
+            <span class="s2">"resources"</span><span class="p">:</span> <span class="n">resources</span><span class="p">,</span>
+            <span class="s2">"env"</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">env</span><span class="p">),</span>
+            <span class="s2">"in_situ"</span><span class="p">:</span> <span class="n">task</span><span class="o">.</span><span class="n">in_situ</span><span class="p">,</span>
+            <span class="s2">"shell"</span><span class="p">:</span> <span class="n">task</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span>
+            <span class="s2">"input"</span><span class="p">:</span> <span class="n">task</span><span class="o">.</span><span class="n">input_data</span><span class="p">,</span>
+            <span class="s2">"config"</span><span class="p">:</span> <span class="n">task</span><span class="o">.</span><span class="n">config</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">accepts_config</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">"fingerprint"</span><span class="p">:</span> <span class="n">task</span><span class="o">.</span><span class="n">digest</span><span class="p">(),</span>
+            <span class="s2">"success_text"</span><span class="p">:</span> <span class="n">task</span><span class="o">.</span><span class="n">success_text</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_bundle_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tasks</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""One allocation big enough for the largest task in the bundle."""</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">largest</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">resources</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">]</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+            <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="k">if</span> <span class="n">values</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">first</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">resources</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">value</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">walltimes</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">walltime</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">w</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">walltimes</span><span class="p">):</span>
+            <span class="n">walltime</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">walltimes</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">walltime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle_walltime</span>
+        <span class="n">ntasks</span> <span class="o">=</span> <span class="n">largest</span><span class="p">(</span><span class="s2">"ntasks"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ntasks</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">"ntasks"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">directives</span><span class="p">:</span>
+            <span class="c1"># Always ask for the cores, so the allocation's environment says</span>
+            <span class="c1"># how many it has.</span>
+            <span class="n">ntasks</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">"ntasks"</span><span class="p">:</span> <span class="n">ntasks</span><span class="p">,</span>
+            <span class="s2">"cpus_per_task"</span><span class="p">:</span> <span class="n">largest</span><span class="p">(</span><span class="s2">"cpus_per_task"</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">"mem_per_cpu"</span><span class="p">:</span> <span class="n">largest</span><span class="p">(</span><span class="s2">"mem_per_cpu"</span><span class="p">),</span>
+            <span class="s2">"ngpus"</span><span class="p">:</span> <span class="n">largest</span><span class="p">(</span><span class="s2">"ngpus"</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">"walltime"</span><span class="p">:</span> <span class="n">walltime</span><span class="p">,</span>
+            <span class="s2">"nodes"</span><span class="p">:</span> <span class="n">largest</span><span class="p">(</span><span class="s2">"nodes"</span><span class="p">),</span>
+            <span class="s2">"partition"</span><span class="p">:</span> <span class="n">first</span><span class="p">(</span><span class="s2">"partition"</span><span class="p">),</span>
+            <span class="s2">"account"</span><span class="p">:</span> <span class="n">first</span><span class="p">(</span><span class="s2">"account"</span><span class="p">),</span>
+            <span class="s2">"qos"</span><span class="p">:</span> <span class="n">first</span><span class="p">(</span><span class="s2">"qos"</span><span class="p">),</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_script</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tasks</span><span class="p">,</span> <span class="n">bundle_dir</span><span class="p">):</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_scheduler</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_script</span>
+
+        <span class="n">scheduler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">scheduler</span>
+        <span class="n">where</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">bundle_dir</span><span class="p">)</span>
+        <span class="n">directives</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">directives</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bundle_resources</span><span class="p">(</span><span class="n">tasks</span><span class="p">),</span> <span class="n">extra</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">directives</span>
+        <span class="p">)</span>
+        <span class="n">directives</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">scheduler</span><span class="o">.</span><span class="n">log_directives</span><span class="p">(</span><span class="n">where</span><span class="p">))</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">setup</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">setup</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cd </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">where</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"exec </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">python</span><span class="p">)</span><span class="si">}</span><span class="s2"> -m seamm_exec.task_worker bundle.json"</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">build_script</span><span class="p">(</span><span class="n">directives</span><span class="p">,</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">),</span> <span class="n">scheduler</span><span class="o">=</span><span class="n">scheduler</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_clear_remote_markers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tasks</span><span class="p">,</span> <span class="n">directories</span><span class="p">,</span> <span class="n">markers</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Remove on the cluster what rsync would keep: stale DONE/FAILED, and</span>
+<span class="sd">        an earlier attempt's files that a success check reads."""</span>
+        <span class="n">paths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">task</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">marker</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="n">directories</span><span class="p">,</span> <span class="n">markers</span><span class="p">):</span>
+            <span class="n">remote</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">marker</span><span class="p">)</span>
+            <span class="n">paths</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">remote</span><span class="si">}</span><span class="s2">/DONE"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">remote</span><span class="si">}</span><span class="s2">/FAILED"</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">task</span><span class="o">.</span><span class="n">success_text</span> <span class="ow">or</span> <span class="p">{}:</span>
+                <span class="n">paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">rc</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span>
+            <span class="p">[</span><span class="s2">"xargs"</span><span class="p">,</span> <span class="s2">"-0"</span><span class="p">,</span> <span class="s2">"rm"</span><span class="p">,</span> <span class="s2">"-f"</span><span class="p">],</span> <span class="n">input_text</span><span class="o">=</span><span class="s2">"</span><span class="se">\0</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\0</span><span class="s2">"</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">rc</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">_TRANSIENT</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">err</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">err</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not clear old task markers: </span><span class="si">{</span><span class="n">err</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_poll</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job_ids</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Poll the queue for ``job_ids``, at most once per poll interval, and</span>
+<span class="sd">        bring back the files of bundles whose jobs have ended."""</span>
+        <span class="n">job_ids</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">job_ids</span><span class="p">))</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">now</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_polled_at</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_interval</span> <span class="o">/</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="c1"># Every pass counts, so that wait() always sleeps.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_polled_at</span> <span class="o">=</span> <span class="n">now</span>
+
+        <span class="n">live</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">j</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">job_ids</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">is_terminal</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="n">live</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">statuses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">poll_many</span><span class="p">(</span><span class="n">live</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not poll </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                <span class="n">statuses</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">statuses</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">failed</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">scheduler</span><span class="p">,</span> <span class="s2">"poll_failed"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">failed</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"Could not ask </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> about every job; trying again "</span>
+                        <span class="s2">"later."</span>
+                    <span class="p">)</span>
+                <span class="k">for</span> <span class="n">job_id</span> <span class="ow">in</span> <span class="n">live</span><span class="p">:</span>
+                    <span class="n">status</span> <span class="o">=</span> <span class="n">statuses</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">status</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="c1"># Missing only counts when the queue could be asked.</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">failed</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_misses</span><span class="p">[</span><span class="n">job_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_misses</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">job_id</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+                        <span class="k">continue</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_misses</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">job_id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span><span class="p">[</span><span class="n">job_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">status</span>
+
+        <span class="c1"># Jobs that have ended (terminal, or gone from the queue) and whose</span>
+        <span class="c1"># files are not back yet -- whether or not they were polled just now.</span>
+        <span class="k">for</span> <span class="n">job_id</span> <span class="ow">in</span> <span class="n">job_ids</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">job_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pulled</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+            <span class="n">ended</span> <span class="o">=</span> <span class="p">(</span><span class="n">status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">status</span><span class="o">.</span><span class="n">is_terminal</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_misses</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="n">job_id</span><span class="p">,</span> <span class="mi">0</span>
+            <span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">3</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">ended</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ended_polls</span><span class="p">[</span><span class="n">job_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ended_polls</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">job_id</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared</span><span class="p">:</span>
+                <span class="c1"># One more poll before trusting what the markers say, for</span>
+                <span class="c1"># filesystems that cache directory lookups.</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ended_polls</span><span class="p">[</span><span class="n">job_id</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_pulled</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_pull</span><span class="p">([</span><span class="n">job_id</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">_TRANSIENT</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)):</span>
+                    <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pull_failures</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">job_id</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_pull_failures</span><span class="p">[</span><span class="n">job_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">n</span>
+                    <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">:</span>
+                        <span class="c1"># The files cannot come back (e.g. scratch purged).</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_unpullable</span><span class="p">[</span><span class="n">job_id</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_pulled</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not stage back job </span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pulled</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_pull</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job_ids</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Stage back the directories of the bundles whose jobs ended."""</span>
+        <span class="n">paths</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">job_id</span> <span class="ow">in</span> <span class="n">job_ids</span><span class="p">:</span>
+                <span class="n">paths</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">relative</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">bundle_dir</span><span class="p">)))</span>
+                <span class="n">paths</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">relative</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">directory</span><span class="p">)))</span>
+                <span class="n">paths</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">relative</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">marker</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">paths</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stager</span><span class="o">.</span><span class="n">pull</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">remote_job_directory</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">job_directory</span><span class="p">),</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_marker</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">""" "DONE", "FAILED" or None, from markers written for *this* task."""</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># A fresh listing, not a cached lookup of each name</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">marker</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">digest</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">digest</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"DONE"</span><span class="p">,</span> <span class="s2">"FAILED"</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">_read_json</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">marker</span> <span class="o">/</span> <span class="n">name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">continue</span>  <span class="c1"># being written</span>
+                <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"fingerprint"</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">digest</span><span class="p">):</span>
+                    <span class="k">continue</span>  <span class="c1"># left by an earlier version of the task</span>
+                <span class="k">return</span> <span class="n">name</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">job_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Adopted by name and not found yet</span>
+            <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">never_queued</span><span class="p">:</span>
+                <span class="n">entry</span><span class="o">.</span><span class="n">reason</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"bundle </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">bundle_dir</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> never reached the queue "</span>
+                    <span class="sa">f</span><span class="s2">"(no job named </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">job_name</span><span class="si">}</span><span class="s2">)"</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="n">LOST</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_marker</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"DONE"</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">FINISHED</span>
+            <span class="k">return</span> <span class="n">QUEUED</span>
+        <span class="c1"># The worker's markers decide, whenever they can be seen: on a shared</span>
+        <span class="c1"># filesystem even while the bundle still runs.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared</span> <span class="ow">or</span> <span class="n">entry</span><span class="o">.</span><span class="n">job_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pulled</span><span class="p">:</span>
+            <span class="n">marker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_marker</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">marker</span> <span class="o">==</span> <span class="s2">"DONE"</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">FINISHED</span>
+            <span class="k">if</span> <span class="n">marker</span> <span class="o">==</span> <span class="s2">"FAILED"</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">FAILED</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">job_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">job_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pulled</span><span class="p">:</span>
+            <span class="c1"># Ended, its files are back (or cannot come back), and no marker.</span>
+            <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">job_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unpullable</span><span class="p">:</span>
+                <span class="n">entry</span><span class="o">.</span><span class="n">reason</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"the files of job </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">job_id</span><span class="si">}</span><span class="s2"> could not be staged back: "</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_unpullable</span><span class="p">[</span><span class="n">entry</span><span class="o">.</span><span class="n">job_id</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">status</span><span class="o">.</span><span class="n">is_terminal</span><span class="p">:</span>
+                <span class="n">entry</span><span class="o">.</span><span class="n">reason</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"job </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">job_id</span><span class="si">}</span><span class="s2"> ended (</span><span class="si">{</span><span class="n">status</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s2">) before the task "</span>
+                    <span class="s2">"finished"</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">entry</span><span class="o">.</span><span class="n">reason</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"job </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">job_id</span><span class="si">}</span><span class="s2"> is no longer known to the queue and the "</span>
+                    <span class="s2">"task did not finish"</span>
+                <span class="p">)</span>
+            <span class="n">tail</span> <span class="o">=</span> <span class="n">_log_tail</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">bundle_dir</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tail</span><span class="p">:</span>
+                <span class="n">entry</span><span class="o">.</span><span class="n">reason</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"; its log ends: </span><span class="si">{</span><span class="n">tail</span><span class="si">}</span><span class="s2">"</span>
+            <span class="k">return</span> <span class="n">LOST</span>
+        <span class="k">if</span> <span class="n">status</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">status</span><span class="o">.</span><span class="n">is_terminal</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">status</span><span class="o">.</span><span class="n">task_state</span> <span class="o">==</span> <span class="s2">"running"</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">RUNNING</span>
+            <span class="k">return</span> <span class="n">QUEUED</span>
+        <span class="k">return</span> <span class="n">RUNNING</span>  <span class="c1"># ended; its files are not back yet</span></div>
+
+
+
+<div class="viewcode-block" id="parse_id">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.scheduler_backend.parse_id">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_id</span><span class="p">(</span><span class="n">backend_id</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""``&lt;job id&gt;#&lt;bundle&gt;.&lt;n&gt;#&lt;key&gt;`` -&gt; (job id, bundle dir name, key)."""</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">backend_id</span> <span class="ow">or</span> <span class="n">backend_id</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">"#"</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">job_id</span><span class="p">,</span> <span class="n">bundle</span><span class="p">,</span> <span class="n">key</span> <span class="o">=</span> <span class="n">backend_id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"#"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">job_id</span><span class="p">,</span> <span class="n">bundle</span><span class="p">,</span> <span class="n">key</span></div>
+
+
+
+<div class="viewcode-block" id="remote_name">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.scheduler_backend.remote_name">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">remote_name</span><span class="p">(</span><span class="n">job_directory</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The name of a job directory on the cluster: its own name and a hash of</span>
+<span class="sd">    its full path. Job numbers are unique only within one datastore, and</span>
+<span class="sd">    several installations (~/SEAMM, ~/SEAMM_DEV, ChemAI) may share a</span>
+<span class="sd">    ``remote_root``; a hand run's directory may be called anything."""</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">job_directory</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+    <span class="n">digest</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha1</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()[:</span><span class="mi">10</span><span class="p">]</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">digest</span><span class="si">}</span><span class="s2">"</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">default_root</span><span class="p">(</span><span class="n">python</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The SEAMM root a venv's Python belongs to: ``&lt;root&gt;/venv/bin/python``</span>
+<span class="sd">    or ``&lt;root&gt;/venvs/&lt;stamp&gt;/bin/python``."""</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">PurePosixPath</span><span class="p">(</span><span class="n">python</span><span class="p">)</span>
+    <span class="n">venv</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span>
+    <span class="k">if</span> <span class="n">venv</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">"venvs"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">venv</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">venv</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_log_tail</span><span class="p">(</span><span class="n">bundle_dir</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The last line of a bundle's scheduler log, if there is one."""</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">bundle_dir</span><span class="p">)</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"*.out"</span><span class="p">)):</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">_read_text</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span> <span class="ow">or</span> <span class="n">lines</span>
+    <span class="k">return</span> <span class="n">lines</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()[:</span><span class="mi">300</span><span class="p">]</span> <span class="k">if</span> <span class="n">lines</span> <span class="k">else</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_read_text</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">errors</span><span class="o">=</span><span class="s2">"replace"</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">""</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_read_json</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_read_returned</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A returned file: ``@subdir+name`` lands in ``subdir/name``."""</span>
+    <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"@"</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">"+"</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+        <span class="n">subdir</span><span class="p">,</span> <span class="n">fname</span> <span class="o">=</span> <span class="n">name</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"+"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="n">subdir</span> <span class="o">/</span> <span class="n">fname</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="n">name</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">UnicodeDecodeError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">data</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"SchedulerBackend"</span><span class="p">,</span> <span class="s2">"QueueFull"</span><span class="p">,</span> <span class="s2">"parse_id"</span><span class="p">,</span> <span class="s2">"remote_name"</span><span class="p">]</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

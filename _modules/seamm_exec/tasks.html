@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.tasks &#8212; SEAMM seamm-exec Plug-in 2026.10.2 documentation</title>
+    <title>seamm_exec.tasks &#8212; SEAMM seamm-exec Plug-in 2026.10.2.1 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=52372788"></script>
+    <script src="../../_static/documentation_options.js?v=77b25824"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.2" />
+  <meta name="docsearch:version" content="2026.10.2.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -813,15 +813,19 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    node : seamm.Node, optional</span>
-<span class="sd">        The step. Gives the step directory, the executor and ``root``.</span>
-<span class="sd">    target : str, optional</span>
-<span class="sd">        Reserved for the job's target; unused in this version.</span>
+<span class="sd">        The step. Gives the step directory, the executor, ``root`` and the job</span>
+<span class="sd">        directory.</span>
+<span class="sd">    target : str or seamm_scheduler.TargetSection, optional</span>
+<span class="sd">        The job's target. Default: found by :func:`seamm_exec.targets.find_target`</span>
+<span class="sd">        (``&lt;job dir&gt;/target.json``, then ``$SEAMM_TARGET``), else the local pool.</span>
+<span class="sd">        Ignored when ``backend`` is given.</span>
 <span class="sd">    directory : str or Path, optional</span>
 <span class="sd">        The step directory, overriding ``node.directory``.</span>
 <span class="sd">    executor : seamm_exec.Base, optional</span>
 <span class="sd">        Overrides ``node.flowchart.executor``.</span>
 <span class="sd">    backend : TaskBackend, optional</span>
-<span class="sd">        Where tasks go. Default: a ``LocalPool`` for this machine.</span>
+<span class="sd">        Where tasks go. Default: the target's back end (a ``SchedulerBackend``</span>
+<span class="sd">        for ``tasks = queue``), else a ``LocalPool`` for this machine.</span>
 <span class="sd">    local : LocalPool, optional</span>
 <span class="sd">        The evaluator's own pool, for the inline rule. Defaults to ``backend``</span>
 <span class="sd">        when that is a ``LocalPool``, else one is made on demand.</span>
@@ -833,15 +837,20 @@
 <span class="sd">        Pack each bundle's task directories into ``tasks/&lt;bundle&gt;.tar`` once all</span>
 <span class="sd">        its tasks are done, and remove the directories.</span>
 <span class="sd">    bundle_tasks : int, optional</span>
-<span class="sd">        Tasks per bundle, in the order added. Default: one bundle.</span>
+<span class="sd">        Tasks per bundle, in the order added. Default: the target's</span>
+<span class="sd">        ``bundle_tasks``; else one bundle (one task per bundle on a queue</span>
+<span class="sd">        without ``bundle_walltime``).</span>
+<span class="sd">    bundle_walltime : float, optional</span>
+<span class="sd">        Start a new bundle when the tasks' walltimes (or estimates) would add</span>
+<span class="sd">        up to more than this many seconds. Default: the target's.</span>
 <span class="sd">    max_attempts : int = 3</span>
 <span class="sd">        Attempts per task over all runs.</span>
 <span class="sd">    max_lost_retries : int = 2</span>
 <span class="sd">        Resubmissions of a lost task within one run.</span>
-<span class="sd">    inline_below : float = 60</span>
+<span class="sd">    inline_below : float, optional</span>
 <span class="sd">        Tasks estimated to take less than this many seconds run in the local</span>
 <span class="sd">        pool rather than on a remote back end, if their program is installed</span>
-<span class="sd">        here.</span>
+<span class="sd">        here. Default: the target's ``inline_below``, else 60.</span>
 <span class="sd">    poll_interval : float</span>
 <span class="sd">        Seconds between status checks of a back end without ``wait()``.</span>
 <span class="sd">    """</span>
@@ -859,9 +868,10 @@
         <span class="n">manifest</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">archive</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">bundle_tasks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">bundle_walltime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">max_attempts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
         <span class="n">max_lost_retries</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-        <span class="n">inline_below</span><span class="o">=</span><span class="mf">60.0</span><span class="p">,</span>
+        <span class="n">inline_below</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">poll_interval</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">node</span> <span class="o">=</span> <span class="n">node</span>
@@ -879,11 +889,45 @@
                 <span class="n">root</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="n">root</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">archive</span> <span class="o">=</span> <span class="n">archive</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bundle_tasks</span> <span class="o">=</span> <span class="n">bundle_tasks</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_attempts</span> <span class="o">=</span> <span class="n">max_attempts</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_lost_retries</span> <span class="o">=</span> <span class="n">max_lost_retries</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">inline_below</span> <span class="o">=</span> <span class="n">inline_below</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">poll_interval</span> <span class="o">=</span> <span class="n">poll_interval</span>
+
+        <span class="c1"># The job's target, unless the caller chose the back end itself</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">job_directory</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">job_directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">root_directory</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">job_directory</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_section</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">.targets</span><span class="w"> </span><span class="kn">import</span> <span class="n">find_target</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">target_section</span> <span class="o">=</span> <span class="n">find_target</span><span class="p">(</span>
+                <span class="n">target</span><span class="p">,</span> <span class="n">job_directory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">job_directory</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">root</span>
+            <span class="p">)</span>
+        <span class="n">section</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_section</span>
+        <span class="n">on_queue</span> <span class="o">=</span> <span class="n">section</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">section</span><span class="o">.</span><span class="n">tasks</span> <span class="o">==</span> <span class="s2">"queue"</span>
+        <span class="k">if</span> <span class="n">inline_below</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">inline_below</span> <span class="o">=</span> <span class="mf">60.0</span>
+            <span class="k">if</span> <span class="n">section</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">section</span><span class="o">.</span><span class="n">inline_below</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">inline_below</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">inline_below</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inline_below</span> <span class="o">=</span> <span class="n">inline_below</span>
+        <span class="k">if</span> <span class="n">bundle_tasks</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">on_queue</span><span class="p">:</span>
+            <span class="n">bundle_tasks</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">bundle_tasks</span>
+        <span class="k">if</span> <span class="n">bundle_walltime</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">on_queue</span><span class="p">:</span>
+            <span class="n">bundle_walltime</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">bundle_walltime</span>
+        <span class="k">if</span> <span class="n">on_queue</span> <span class="ow">and</span> <span class="n">bundle_tasks</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">bundle_walltime</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">bundle_tasks</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bundle_tasks</span> <span class="o">=</span> <span class="n">bundle_tasks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bundle_walltime</span> <span class="o">=</span> <span class="n">bundle_walltime</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bundle_index</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bundle_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bundle_seconds</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_held</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># [(backend, bundle, [tasks])] waiting for room</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_held_since</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># bundle -&gt; when it was first held</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config_warned</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="o">=</span> <span class="n">backend</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_local</span> <span class="o">=</span> <span class="n">local</span>
@@ -923,7 +967,28 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">backend</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""The back end for this TaskSet's tasks (the job's target)."""</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">local</span>
+            <span class="n">section</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_section</span>
+            <span class="n">tasks</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">section</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">section</span><span class="o">.</span><span class="n">tasks</span>
+            <span class="k">if</span> <span class="n">tasks</span> <span class="o">==</span> <span class="s2">"queue"</span><span class="p">:</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">.scheduler_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">SchedulerBackend</span>
+
+                <span class="n">job_directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_directory</span>
+                <span class="k">if</span> <span class="n">job_directory</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">job_directory</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span>
+                <span class="n">executor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">name</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">executor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">"local"</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="o">=</span> <span class="n">SchedulerBackend</span><span class="o">.</span><span class="n">from_target</span><span class="p">(</span>
+                    <span class="n">section</span><span class="p">,</span>
+                    <span class="n">job_directory</span><span class="o">=</span><span class="n">job_directory</span><span class="p">,</span>
+                    <span class="n">root</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span>
+                    <span class="n">executor</span><span class="o">=</span><span class="n">executor</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">tasks</span> <span class="o">==</span> <span class="s2">"taskserver"</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"Target '</span><span class="si">{</span><span class="n">section</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' sends tasks to a TaskServer, which "</span>
+                    <span class="s2">"this version of seamm_exec does not have yet."</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">local</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span>
 
 <div class="viewcode-block" id="TaskSet.add">
@@ -948,11 +1013,23 @@
                         <span class="sa">f</span><span class="s2">"Tasks '</span><span class="si">{</span><span class="n">other</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s2">' and '</span><span class="si">{</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s2">' share the directory "</span>
                         <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">task</span><span class="o">.</span><span class="n">directory</span><span class="si">}</span><span class="s2">."</span>
                     <span class="p">)</span>
-        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tasks</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle_tasks</span><span class="p">:</span>
-            <span class="n">bundle</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"bundle_</span><span class="si">{</span><span class="n">n</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">bundle_tasks</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">"</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">bundle</span> <span class="o">=</span> <span class="s2">"bundle_0000"</span>
+        <span class="c1"># A new bundle when this one is full, by count or by walltime</span>
+        <span class="n">seconds</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">walltime</span>
+        <span class="k">if</span> <span class="n">seconds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">seconds</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">estimated_seconds</span> <span class="ow">or</span> <span class="mf">0.0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bundle_count</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="p">(</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bundle_tasks</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bundle_count</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle_tasks</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bundle_walltime</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bundle_seconds</span> <span class="o">+</span> <span class="n">seconds</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle_walltime</span>
+            <span class="p">)</span>
+        <span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bundle_index</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bundle_count</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bundle_seconds</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bundle_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bundle_seconds</span> <span class="o">+=</span> <span class="n">seconds</span>
+        <span class="n">bundle</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"bundle_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_bundle_index</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">"</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span><span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">task</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_bundles</span><span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">bundle</span></div>
 
@@ -1005,6 +1082,17 @@
         <span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">LocalPool</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">backend</span>
+        <span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="s2">"accepts_config"</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+            <span class="c1"># The step resolved the program here; its paths mean nothing on the</span>
+            <span class="c1"># cluster. It runs here until the step names only the program.</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_warned</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_config_warned</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"Task '</span><span class="si">{</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s2">' (</span><span class="si">{</span><span class="n">task</span><span class="o">.</span><span class="n">program</span><span class="si">}</span><span class="s2">) carries its own "</span>
+                    <span class="sa">f</span><span class="s2">"configuration, so it runs on this machine rather than on "</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">backend</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">."</span>
+                <span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">local</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="n">task</span><span class="o">.</span><span class="n">estimated_seconds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
             <span class="ow">and</span> <span class="n">task</span><span class="o">.</span><span class="n">estimated_seconds</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">inline_below</span>
@@ -1059,7 +1147,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">flush</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># Tasks an earlier evaluator left queued or running</span>
-        <span class="n">pending</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reattach</span><span class="p">(</span><span class="n">pending</span><span class="p">)</span>
+        <span class="n">inflight</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># (backend, id) -&gt; task</span>
+        <span class="n">pending</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reattach</span><span class="p">(</span><span class="n">pending</span><span class="p">,</span> <span class="n">inflight</span><span class="p">)</span>
 
         <span class="c1"># Tasks past their attempts are reported, not run</span>
         <span class="n">runnable</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1088,14 +1177,22 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_archive_completed_bundles</span><span class="p">()</span>
 
-        <span class="n">inflight</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># (backend, id) -&gt; task</span>
         <span class="n">lost_retries</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_submit</span><span class="p">(</span><span class="n">runnable</span><span class="p">,</span> <span class="n">inflight</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">flush</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="k">while</span> <span class="n">inflight</span><span class="p">:</span>
+            <span class="k">while</span> <span class="n">inflight</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_held</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_held</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_submit_held</span><span class="p">(</span><span class="n">inflight</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">inflight</span><span class="p">:</span>
+                        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span>
+                            <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_held</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="s2">"poll_interval"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_interval</span>
+                        <span class="p">)</span>
+                        <span class="k">continue</span>
                 <span class="n">changed</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">resubmit</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="n">by_backend</span> <span class="o">=</span> <span class="p">{}</span>
                 <span class="k">for</span> <span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">backend_id</span><span class="p">),</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">inflight</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                     <span class="n">by_backend</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">backend_id</span><span class="p">)</span>
@@ -1118,28 +1215,40 @@
                                 <span class="ow">and</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"attempts"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_attempts</span>
                             <span class="p">):</span>
                                 <span class="n">lost_retries</span><span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span>
+                                <span class="n">reason</span> <span class="o">=</span> <span class="s2">"lost"</span>
+                                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="s2">"reason"</span><span class="p">):</span>
+                                    <span class="n">reason</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">reason</span><span class="p">(</span><span class="n">backend_id</span><span class="p">)</span> <span class="ow">or</span> <span class="n">reason</span>
                                 <span class="bp">self</span><span class="o">.</span><span class="n">_finish_attempt</span><span class="p">(</span>
-                                    <span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">LOST</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s2">"lost"</span>
+                                    <span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">LOST</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="n">reason</span>
                                 <span class="p">)</span>
-                                <span class="bp">self</span><span class="o">.</span><span class="n">_submit</span><span class="p">([</span><span class="n">task</span><span class="p">],</span> <span class="n">inflight</span><span class="p">)</span>
+                                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="s2">"forget"</span><span class="p">):</span>
+                                    <span class="n">backend</span><span class="o">.</span><span class="n">forget</span><span class="p">(</span><span class="n">backend_id</span><span class="p">)</span>
+                                <span class="n">resubmit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
                                 <span class="k">continue</span>
                         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collect</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">backend</span><span class="p">,</span> <span class="n">backend_id</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_results</span><span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
                         <span class="k">yield</span> <span class="n">result</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_archive_completed_bundles</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">resubmit</span><span class="p">:</span>
+                    <span class="c1"># Together, so a bundle's lost tasks go back as one bundle</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_submit</span><span class="p">(</span><span class="n">resubmit</span><span class="p">,</span> <span class="n">inflight</span><span class="p">)</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">changed</span> <span class="ow">and</span> <span class="n">inflight</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_wait</span><span class="p">(</span><span class="n">inflight</span><span class="p">)</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">inflight</span><span class="p">:</span>
                 <span class="n">by_backend</span> <span class="o">=</span> <span class="p">{}</span>
                 <span class="k">for</span> <span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">backend_id</span><span class="p">),</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">inflight</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                    <span class="n">by_backend</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">backend_id</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">CANCELLED</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">backend</span><span class="p">,</span> <span class="n">ids</span> <span class="ow">in</span> <span class="n">by_backend</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">by_backend</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">backend_id</span><span class="p">,</span> <span class="n">task</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">backend</span><span class="p">,</span> <span class="n">entries</span> <span class="ow">in</span> <span class="n">by_backend</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                     <span class="k">try</span><span class="p">:</span>
-                        <span class="n">backend</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>
+                        <span class="n">backend</span><span class="o">.</span><span class="n">cancel</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">])</span>
                     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                        <span class="c1"># Left as they were, so a restart adopts them rather</span>
+                        <span class="c1"># than submitting duplicates.</span>
                         <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">"Error cancelling tasks"</span><span class="p">)</span>
+                        <span class="k">continue</span>
+                    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">CANCELLED</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">flush</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_close_tars</span><span class="p">()</span></div>
 
@@ -1163,28 +1272,123 @@
         <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">:</span>
             <span class="n">by_backend</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="n">task</span><span class="p">),</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">backend</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">by_backend</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">now</span> <span class="o">=</span> <span class="n">_now</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="s2">"bundles"</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_submit_group</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">inflight</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="c1"># A back end that bundles gets one call per bundle, while it has room.</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="s2">"check"</span><span class="p">):</span>
+                <span class="c1"># Before anything is submitted</span>
+                <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
+                    <span class="n">backend</span><span class="o">.</span><span class="n">check</span><span class="p">(</span>
+                        <span class="n">task</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">task_directory</span><span class="p">(</span><span class="n">task</span><span class="p">),</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">marker_directory</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">),</span>
+                    <span class="p">)</span>
+            <span class="n">by_bundle</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
-                <span class="n">record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                    <span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
-                    <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                    <span class="n">state</span><span class="o">=</span><span class="n">QUEUED</span><span class="p">,</span>
-                    <span class="n">fingerprint</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">digest</span><span class="p">(),</span>
-                    <span class="n">attempts</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"attempts"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
-                    <span class="n">submitted</span><span class="o">=</span><span class="n">now</span><span class="p">,</span>
-                    <span class="n">directory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_relative</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_directory</span><span class="p">(</span><span class="n">task</span><span class="p">)),</span>
-                    <span class="n">pgid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                    <span class="n">host</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                <span class="p">)</span>
-            <span class="n">ids</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
-                <span class="n">group</span><span class="p">,</span>
-                <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">task_directory</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">group</span><span class="p">],</span>
-                <span class="n">on_start</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_on_start</span><span class="p">,</span>
+                <span class="n">by_bundle</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bundles</span><span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">],</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">bundle</span><span class="p">,</span> <span class="n">members</span> <span class="ow">in</span> <span class="n">by_bundle</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_held</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">backend</span><span class="p">,</span> <span class="n">bundle</span><span class="p">,</span> <span class="n">members</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_submit_held</span><span class="p">(</span><span class="n">inflight</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_submit_held</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inflight</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Submit held bundles while their back ends have room in the queue."""</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.scheduler_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">QueueFull</span>
+
+        <span class="n">still_held</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">full</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">backend</span><span class="p">,</span> <span class="n">bundle</span><span class="p">,</span> <span class="n">members</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_held</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">backend</span> <span class="ow">in</span> <span class="n">full</span><span class="p">:</span>
+                <span class="n">still_held</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">backend</span><span class="p">,</span> <span class="n">bundle</span><span class="p">,</span> <span class="n">members</span><span class="p">))</span>
+                <span class="k">continue</span>
+            <span class="n">room</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">room</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="s2">"room"</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">room</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">room</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">full</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+                <span class="n">still_held</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">backend</span><span class="p">,</span> <span class="n">bundle</span><span class="p">,</span> <span class="n">members</span><span class="p">))</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_submit_group</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">members</span><span class="p">,</span> <span class="n">inflight</span><span class="p">,</span> <span class="n">bundle</span><span class="o">=</span><span class="n">bundle</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_held_since</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">bundle</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">QueueFull</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">since</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_held_since</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">bundle</span><span class="p">,</span> <span class="n">_now</span><span class="p">())</span>
+                <span class="n">minutes</span> <span class="o">=</span> <span class="p">(</span><span class="n">_now</span><span class="p">()</span> <span class="o">-</span> <span class="n">since</span><span class="p">)</span> <span class="o">/</span> <span class="mi">60</span>
+                <span class="k">if</span> <span class="n">minutes</span> <span class="o">&gt;</span> <span class="mi">15</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">bundle</span><span class="si">}</span><span class="s2"> has waited </span><span class="si">{</span><span class="n">minutes</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> minutes to be submitted: "</span>
+                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Holding </span><span class="si">{</span><span class="n">bundle</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                <span class="n">full</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+                <span class="n">still_held</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">backend</span><span class="p">,</span> <span class="n">bundle</span><span class="p">,</span> <span class="n">members</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">still_held</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">inflight</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">still_held</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_held</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">still_held</span><span class="p">)</span><span class="si">}</span><span class="s2"> bundles are waiting for room in the queue"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_held</span> <span class="o">=</span> <span class="n">still_held</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_submit_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">inflight</span><span class="p">,</span> <span class="n">bundle</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Record the attempt and submit ``group`` to ``backend``."""</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">_now</span><span class="p">()</span>
+        <span class="n">previous</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
+            <span class="n">record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+            <span class="n">previous</span><span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
+                <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">state</span><span class="o">=</span><span class="n">QUEUED</span><span class="p">,</span>
+                <span class="n">fingerprint</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">digest</span><span class="p">(),</span>
+                <span class="n">attempts</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"attempts"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="n">submitted</span><span class="o">=</span><span class="n">now</span><span class="p">,</span>
+                <span class="n">directory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_relative</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_directory</span><span class="p">(</span><span class="n">task</span><span class="p">)),</span>
+                <span class="n">pgid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">host</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="nb">id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">job_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">bundle_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="k">for</span> <span class="n">task</span><span class="p">,</span> <span class="n">backend_id</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">ids</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">backend_id</span><span class="p">)</span>
-                <span class="n">inflight</span><span class="p">[(</span><span class="n">backend</span><span class="p">,</span> <span class="n">backend_id</span><span class="p">)]</span> <span class="o">=</span> <span class="n">task</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"on_start"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_on_start</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">bundle</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">"bundle"</span><span class="p">]</span> <span class="o">=</span> <span class="n">bundle</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">"markers"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">marker_directory</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">group</span><span class="p">]</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">"on_prepared"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_on_prepared</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ids</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
+                <span class="n">group</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">task_directory</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">group</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># Not submitted: the attempt does not count. A bundle that may have</span>
+            <span class="c1"># reached the queue stays recorded as queued, with its job name, so</span>
+            <span class="c1"># that a restart looks for it rather than submitting it again.</span>
+            <span class="n">maybe</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="s2">"maybe_submitted"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
+                <span class="n">record</span> <span class="o">=</span> <span class="n">previous</span><span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">maybe</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">attempts</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"attempts"</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                        <span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
+                        <span class="n">attempts</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"attempts"</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                        <span class="n">state</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"state"</span><span class="p">),</span>
+                        <span class="n">job_name</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"job_name"</span><span class="p">),</span>
+                        <span class="n">bundle_dir</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"bundle_dir"</span><span class="p">),</span>
+                        <span class="nb">id</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"id"</span><span class="p">),</span>
+                    <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">flush</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">raise</span>
+        <span class="k">for</span> <span class="n">task</span><span class="p">,</span> <span class="n">backend_id</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">ids</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">backend_id</span><span class="p">)</span>
+            <span class="n">inflight</span><span class="p">[(</span><span class="n">backend</span><span class="p">,</span> <span class="n">backend_id</span><span class="p">)]</span> <span class="o">=</span> <span class="n">task</span>
+        <span class="c1"># At once: a restart must find these ids even if the evaluator dies</span>
+        <span class="c1"># while later bundles are still being submitted.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">flush</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_on_prepared</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tasks</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Called by a back end just before it submits a bundle: its job name</span>
+<span class="sd">        and directory are written at once, so that an evaluator that dies</span>
+<span class="sd">        during the submission leaves enough to find the job."""</span>
+        <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="o">**</span><span class="n">info</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">flush</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_on_start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Called by a back end when a task's process starts.</span>
@@ -1234,7 +1438,10 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_collect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">backend</span><span class="p">,</span> <span class="n">backend_id</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Fetch a task's result, record it and mark it DONE if it finished."""</span>
-        <span class="k">if</span> <span class="n">state</span> <span class="o">==</span> <span class="n">FINISHED</span> <span class="ow">or</span> <span class="n">state</span> <span class="o">==</span> <span class="n">FAILED</span><span class="p">:</span>
+        <span class="c1"># A back end that bundles can also say why a task was lost.</span>
+        <span class="k">if</span> <span class="n">state</span> <span class="ow">in</span> <span class="p">(</span><span class="n">FINISHED</span><span class="p">,</span> <span class="n">FAILED</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+            <span class="n">state</span> <span class="o">==</span> <span class="n">LOST</span> <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="s2">"bundles"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="p">):</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">backend_id</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">FINISHED</span><span class="p">:</span>
                 <span class="n">problem</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_success</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
@@ -1311,7 +1518,8 @@
         <span class="p">}</span>
         <span class="n">marker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">marker_directory</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
         <span class="n">marker</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">tmp</span> <span class="o">=</span> <span class="n">marker</span> <span class="o">/</span> <span class="s2">"DONE.tmp"</span>
+        <span class="c1"># A name of its own, so two writers never trip over one temporary file</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">marker</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"DONE.</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">threading</span><span class="o">.</span><span class="n">get_ident</span><span class="p">()</span><span class="si">}</span><span class="s2">.tmp"</span>
         <span class="n">tmp</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">done</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
         <span class="n">os</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">marker</span> <span class="o">/</span> <span class="s2">"DONE"</span><span class="p">)</span>
 
@@ -1343,6 +1551,10 @@
 
         <span class="n">directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_directory</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
         <span class="n">files</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="s2">"files"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">done</span> <span class="ow">and</span> <span class="n">archive</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">directory</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># A DONE written by the pure bundle worker, which knows nothing of</span>
+            <span class="c1"># return_files: list them as Base.run() would have.</span>
+            <span class="n">done</span><span class="p">[</span><span class="s2">"files"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_returned</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">done</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"files"</span><span class="p">,</span> <span class="p">[]):</span>
             <span class="n">relative</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_returned_path</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">archive</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1382,20 +1594,53 @@
             <span class="n">archive</span><span class="o">=</span><span class="n">archive</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_reattach</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pending</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_reattach</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pending</span><span class="p">,</span> <span class="n">inflight</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Recover tasks an earlier evaluator left queued or running.</span>
 
-<span class="sd">        Back ends that can (a scheduler) report them still queued or running;</span>
-<span class="sd">        the ``LocalPool`` cannot adopt another process's children, so it kills</span>
-<span class="sd">        any it finds and reports them lost. Lost tasks are rerun. In this</span>
-<span class="sd">        version every task still in flight is resubmitted.</span>
+<span class="sd">        A back end that can (a scheduler) adopts them: they go into</span>
+<span class="sd">        ``inflight`` and are polled, not submitted again. The ``LocalPool``</span>
+<span class="sd">        cannot adopt another process's children, so it kills any it finds and</span>
+<span class="sd">        reports them lost; lost tasks are rerun.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        [Task]</span>
+<span class="sd">            The tasks still to submit.</span>
 <span class="sd">        """</span>
         <span class="n">by_backend</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">remaining</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">abandoned</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># backend -&gt; [records whose inputs changed]</span>
         <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">pending</span><span class="p">:</span>
             <span class="n">record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">record</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"state"</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">QUEUED</span><span class="p">,</span> <span class="n">RUNNING</span><span class="p">):</span>
+                <span class="n">remaining</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
                 <span class="k">continue</span>
             <span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend_named</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"backend"</span><span class="p">))</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="s2">"abandon"</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"fingerprint"</span><span class="p">)</span> <span class="o">!=</span> <span class="n">task</span><span class="o">.</span><span class="n">digest</span><span class="p">()</span>
+            <span class="p">):</span>
+                <span class="n">abandoned</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="s2">"adopt"</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"fingerprint"</span><span class="p">)</span> <span class="o">==</span> <span class="n">task</span><span class="o">.</span><span class="n">digest</span><span class="p">()</span>
+            <span class="p">):</span>
+                <span class="n">backend_id</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">adopt</span><span class="p">(</span>
+                    <span class="n">task</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">task_directory</span><span class="p">(</span><span class="n">task</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">marker_directory</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">),</span>
+                    <span class="n">record</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">backend_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"Task '</span><span class="si">{</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s2">' is still with </span><span class="si">{</span><span class="n">backend</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> "</span>
+                        <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="n">backend_id</span><span class="si">}</span><span class="s2">); polling it rather than submitting again."</span>
+                    <span class="p">)</span>
+                    <span class="n">inflight</span><span class="p">[(</span><span class="n">backend</span><span class="p">,</span> <span class="n">backend_id</span><span class="p">)]</span> <span class="o">=</span> <span class="n">task</span>
+                    <span class="k">continue</span>
+            <span class="n">remaining</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="s2">"reattach"</span><span class="p">):</span>
                 <span class="k">continue</span>
             <span class="n">by_backend</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
@@ -1406,15 +1651,25 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">_finish_attempt</span><span class="p">(</span>
                         <span class="n">key</span><span class="p">,</span> <span class="n">LOST</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s2">"the evaluator stopped while it ran"</span>
                     <span class="p">)</span>
-        <span class="k">return</span> <span class="n">pending</span>
+        <span class="c1"># Jobs still running old inputs, which no adopted task needs, are</span>
+        <span class="c1"># cancelled so they cannot write into the tasks' directories.</span>
+        <span class="k">for</span> <span class="n">backend</span><span class="p">,</span> <span class="n">records</span> <span class="ow">in</span> <span class="n">abandoned</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">adopted</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="ow">in</span> <span class="n">inflight</span> <span class="k">if</span> <span class="n">b</span> <span class="ow">is</span> <span class="n">backend</span><span class="p">]</span>
+            <span class="n">backend</span><span class="o">.</span><span class="n">abandon</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="n">adopted</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">remaining</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_backend_named</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span>
         <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">"local"</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">local</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">"Could not make the target's back end"</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">backend</span>
         <span class="k">return</span> <span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_result_from_record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">record</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
@@ -1497,6 +1752,16 @@
     <span class="c1"># ------------------------------------------------------------------</span>
     <span class="c1"># Utilities</span>
     <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_list_returned</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The names ``task.return_files`` match in ``directory``."""</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">task</span><span class="o">.</span><span class="n">return_files</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">pattern</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span> <span class="ow">and</span> <span class="n">path</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+                    <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">names</span>
+
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_returned_path</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Where a returned file lands: ``@subdir+name`` is ``subdir/name``."""</span>

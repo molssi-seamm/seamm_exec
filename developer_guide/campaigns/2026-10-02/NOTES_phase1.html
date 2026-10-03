@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Phase 1 notes &#8212; SEAMM seamm-exec Plug-in 2026.10.2 documentation</title>
+    <title>Phase 1 notes &#8212; SEAMM seamm-exec Plug-in 2026.10.2.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../../_static/documentation_options.js?v=52372788"></script>
+    <script src="../../../_static/documentation_options.js?v=77b25824"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -50,10 +50,11 @@
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Phase 2 notes" href="NOTES_phase2.html" />
     <link rel="prev" title="Phase 0 notes" href="NOTES_phase0.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.2" />
+  <meta name="docsearch:version" content="2026.10.2.1" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -705,11 +706,73 @@ cores today. A machine-wide slot lock would fix it.</p></li>
 per-task <code class="docutils literal notranslate"><span class="pre">NODELIST</span></code> is not narrowed.</p></li>
 <li><p>Tasks of the <code class="docutils literal notranslate"><span class="pre">docker</span></code> installation and executor cannot be killed by the
 pool, which has no process to signal.</p></li>
-<li><p>Release order: <code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code> first; then <code class="docutils literal notranslate"><span class="pre">orca_step</span></code> and <code class="docutils literal notranslate"><span class="pre">mopac_step</span></code>
-with <code class="docutils literal notranslate"><span class="pre">seamm-exec&gt;=&lt;that</span> <span class="pre">version&gt;</span></code> in <code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code> <strong>and</strong>
-<code class="docutils literal notranslate"><span class="pre">devtools/conda-envs/test_env.yaml</span></code>, each with its <code class="docutils literal notranslate"><span class="pre">HISTORY.rst</span></code> entry
-(release-shared-widgets-first). Before that, compare against the previous
-<code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV</span></code> version with <code class="docutils literal notranslate"><span class="pre">seamm-manager</span> <span class="pre">--root</span> <span class="pre">~/SEAMM_DEV</span> <span class="pre">compare</span></code>.</p></li>
+<li><p>MOPAC’s own <code class="docutils literal notranslate"><span class="pre">success.dat</span></code> skips a rerun of a completed step whatever its
+input now, ahead of the task layer’s fingerprint. Retire it in favour of the
+fingerprint (a <code class="docutils literal notranslate"><span class="pre">mopac_step</span></code> change).</p></li>
+</ul>
+</section>
+</section>
+<section id="released">
+<h2>2026-10-02 – released<a class="headerlink" href="#released" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Releases: <code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code> 2026.10.2 (PR #33) first, then <code class="docutils literal notranslate"><span class="pre">orca_step</span></code>
+2026.10.2.1 (PR #36) and <code class="docutils literal notranslate"><span class="pre">mopac_step</span></code> 2026.10.2 (PR #157). Each plug-in
+requires <code class="docutils literal notranslate"><span class="pre">seamm-exec&gt;=2026.10.2</span></code> in <code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code>; neither has a
+<code class="docutils literal notranslate"><span class="pre">test_env.yaml</span></code> any more, so CI installs exactly those requirements.</p></li>
+<li><p>Each plug-in’s user guide has a “Rerunning a job” section: what a rerun
+reuses, when a calculation runs again, and where the record lives
+(<code class="docutils literal notranslate"><span class="pre">tasks/manifest.json</span></code>). MOPAC’s says that a completed step with
+<code class="docutils literal notranslate"><span class="pre">success.dat</span></code> is skipped whatever its input, and that deleting
+<code class="docutils literal notranslate"><span class="pre">success.dat</span></code> forces a recompute.</p></li>
+</ul>
+<section id="the-a-b-comparison-in-seamm-dev">
+<h3>The A/B comparison in <code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV</span></code><a class="headerlink" href="#the-a-b-comparison-in-seamm-dev" title="Link to this heading">#</a></h3>
+<p>The current environment had <code class="docutils literal notranslate"><span class="pre">orca-step</span></code> 2026.10.1, behind the base of this
+work, so two versions were built beside it, without switching (the JobServer
+was untouched). Each was a copy of the current <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span> <span class="pre">freeze</span></code> (what
+<code class="docutils literal notranslate"><span class="pre">build_version</span></code> does) plus:</p>
+<ul class="simple">
+<li><p>A: <code class="docutils literal notranslate"><span class="pre">orca-step</span></code> 2026.10.2, i.e. everything released at the base of the
+work (<code class="docutils literal notranslate"><span class="pre">seamm-exec</span></code> 2026.9.27, <code class="docutils literal notranslate"><span class="pre">mopac-step</span></code> 2026.10.1);</p></li>
+<li><p>B: A plus the three checkouts (<code class="docutils literal notranslate"><span class="pre">f0bae06</span></code>, <code class="docutils literal notranslate"><span class="pre">f43b8f1</span></code>, <code class="docutils literal notranslate"><span class="pre">87feb48</span></code>),
+installed non-editable.</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">seamm-manager</span> <span class="pre">--root</span> <span class="pre">~/SEAMM_DEV</span> <span class="pre">compare</span> <span class="pre">&lt;flow&gt;</span> <span class="pre">-a</span> <span class="pre">A</span> <span class="pre">-b</span> <span class="pre">B</span></code> on four
+flowcharts:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">test.flow</span></code>: ORCA, then DDEC6 with chargemol going through the
+<code class="docutils literal notranslate"><span class="pre">Base.run()</span></code> shim;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">harness_water.flow</span></code> and <code class="docutils literal notranslate"><span class="pre">builder_loop.flow</span></code>: MOPAC, the second in a
+Loop;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bsse.flow</span></code>: five ORCA counterpoise sub-jobs in subdirectories.</p></li>
+</ul>
+<p>All energies, charges and tables agree. The only differences were:</p>
+<ul class="simple">
+<li><p>versions, and the paths and citation wrapping they change;</p></li>
+<li><p>timestamps, and ORCA’s process ids and timings;</p></li>
+<li><p>the new <code class="docutils literal notranslate"><span class="pre">tasks/manifest.json</span></code> and <code class="docutils literal notranslate"><span class="pre">DONE</span></code> files, which exist only in B;</p></li>
+<li><p>chargemol’s last-digit <code class="docutils literal notranslate"><span class="pre">Normalization</span></code> noise in <code class="docutils literal notranslate"><span class="pre">orca.output</span></code>.</p></li>
+</ul>
+<p>Two independent runs of A, compared with <code class="docutils literal notranslate"><span class="pre">--no-run</span></code>, differ in exactly the
+same files, so that noise is run to run and B adds nothing. <code class="docutils literal notranslate"><span class="pre">mlff_packmol</span></code>
+was not used: its PACKMOL placement and MD are random on every run. Both
+versions were pruned afterwards.</p>
+</section>
+<section id="lessons">
+<h3>Lessons<a class="headerlink" href="#lessons" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>Push a plug-in that uses a new library API only together with its
+minimum-version pin, or expect red CI until then.</strong> <code class="docutils literal notranslate"><span class="pre">orca_step</span></code> dev,
+pushed before <code class="docutils literal notranslate"><span class="pre">seamm-exec</span></code> 2026.10.2 existed, failed its Branch CI:
+<code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code> had no <code class="docutils literal notranslate"><span class="pre">run_task</span></code> or <code class="docutils literal notranslate"><span class="pre">TaskResult</span></code>, because CI installed
+2026.9.27 from PyPI. <code class="docutils literal notranslate"><span class="pre">mopac_step</span></code> passed only because its tests do not
+touch the new API; its code needs the pin just as much. The release PRs’
+<code class="docutils literal notranslate"><span class="pre">seamm-exec&gt;=2026.10.2</span></code> fixed both. Run the pre-flight with the
+<em>released</em> library installed, not the development build, which hides
+exactly this.</p></li>
+<li><p>ORCA exits 0 after an error termination, and a pid is reused once its
+process has gone. Both were caught only by running real codes and by
+review, not by the first round of tests.</p></li>
 </ul>
 </section>
 </section>
@@ -733,6 +796,15 @@ with <code class="docutils literal notranslate"><span class="pre">seamm-exec&gt;
         <p class="prev-next-subtitle">previous</p>
         <p class="prev-next-title">Phase 0 notes</p>
       </div>
+    </a>
+    <a class="right-next"
+       href="NOTES_phase2.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Phase 2 notes</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div>
                 </footer>
@@ -760,6 +832,11 @@ with <code class="docutils literal notranslate"><span class="pre">seamm-exec&gt;
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#found-on-the-way">Found on the way</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#review-fixes-2026-10-02">Review fixes (2026-10-02)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deferred-for-later-phases">Deferred, for later phases</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#released">2026-10-02 – released</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-a-b-comparison-in-seamm-dev">The A/B comparison in <code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lessons">Lessons</a></li>
 </ul>
 </li>
 </ul>

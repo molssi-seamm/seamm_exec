@@ -219,8 +219,69 @@ Deferred, for later phases
   per-task ``NODELIST`` is not narrowed.
 - Tasks of the ``docker`` installation and executor cannot be killed by the
   pool, which has no process to signal.
-- Release order: ``seamm_exec`` first; then ``orca_step`` and ``mopac_step``
-  with ``seamm-exec>=<that version>`` in ``requirements.txt`` **and**
-  ``devtools/conda-envs/test_env.yaml``, each with its ``HISTORY.rst`` entry
-  (release-shared-widgets-first). Before that, compare against the previous
-  ``~/SEAMM_DEV`` version with ``seamm-manager --root ~/SEAMM_DEV compare``.
+- MOPAC's own ``success.dat`` skips a rerun of a completed step whatever its
+  input now, ahead of the task layer's fingerprint. Retire it in favour of the
+  fingerprint (a ``mopac_step`` change).
+
+2026-10-02 -- released
+----------------------
+
+- Releases: ``seamm_exec`` 2026.10.2 (PR #33) first, then ``orca_step``
+  2026.10.2.1 (PR #36) and ``mopac_step`` 2026.10.2 (PR #157). Each plug-in
+  requires ``seamm-exec>=2026.10.2`` in ``requirements.txt``; neither has a
+  ``test_env.yaml`` any more, so CI installs exactly those requirements.
+- Each plug-in's user guide has a "Rerunning a job" section: what a rerun
+  reuses, when a calculation runs again, and where the record lives
+  (``tasks/manifest.json``). MOPAC's says that a completed step with
+  ``success.dat`` is skipped whatever its input, and that deleting
+  ``success.dat`` forces a recompute.
+
+The A/B comparison in ``~/SEAMM_DEV``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The current environment had ``orca-step`` 2026.10.1, behind the base of this
+work, so two versions were built beside it, without switching (the JobServer
+was untouched). Each was a copy of the current ``uv pip freeze`` (what
+``build_version`` does) plus:
+
+- A: ``orca-step`` 2026.10.2, i.e. everything released at the base of the
+  work (``seamm-exec`` 2026.9.27, ``mopac-step`` 2026.10.1);
+- B: A plus the three checkouts (``f0bae06``, ``f43b8f1``, ``87feb48``),
+  installed non-editable.
+
+``seamm-manager --root ~/SEAMM_DEV compare <flow> -a A -b B`` on four
+flowcharts:
+
+- ``test.flow``: ORCA, then DDEC6 with chargemol going through the
+  ``Base.run()`` shim;
+- ``harness_water.flow`` and ``builder_loop.flow``: MOPAC, the second in a
+  Loop;
+- ``bsse.flow``: five ORCA counterpoise sub-jobs in subdirectories.
+
+All energies, charges and tables agree. The only differences were:
+
+- versions, and the paths and citation wrapping they change;
+- timestamps, and ORCA's process ids and timings;
+- the new ``tasks/manifest.json`` and ``DONE`` files, which exist only in B;
+- chargemol's last-digit ``Normalization`` noise in ``orca.output``.
+
+Two independent runs of A, compared with ``--no-run``, differ in exactly the
+same files, so that noise is run to run and B adds nothing. ``mlff_packmol``
+was not used: its PACKMOL placement and MD are random on every run. Both
+versions were pruned afterwards.
+
+Lessons
+~~~~~~~
+
+- **Push a plug-in that uses a new library API only together with its
+  minimum-version pin, or expect red CI until then.** ``orca_step`` dev,
+  pushed before ``seamm-exec`` 2026.10.2 existed, failed its Branch CI:
+  ``seamm_exec`` had no ``run_task`` or ``TaskResult``, because CI installed
+  2026.9.27 from PyPI. ``mopac_step`` passed only because its tests do not
+  touch the new API; its code needs the pin just as much. The release PRs'
+  ``seamm-exec>=2026.10.2`` fixed both. Run the pre-flight with the
+  *released* library installed, not the development build, which hides
+  exactly this.
+- ORCA exits 0 after an error termination, and a pid is reused once its
+  process has gone. Both were caught only by running real codes and by
+  review, not by the first round of tests.

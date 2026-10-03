@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.base &#8212; SEAMM seamm-exec Plug-in 2026.10.2 documentation</title>
+    <title>seamm_exec.base &#8212; SEAMM seamm-exec Plug-in 2026.10.2.1 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=52372788"></script>
+    <script src="../../_static/documentation_options.js?v=77b25824"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.2" />
+  <meta name="docsearch:version" content="2026.10.2.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -449,16 +449,16 @@
     <span class="kn">import</span><span class="w"> </span><span class="nn">grp</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">pwd</span>
 
+
 <span class="c1"># Environment variables that indicate we are running inside a batch-scheduler</span>
 <span class="c1"># allocation, where the job/step directory is commonly NFS-mounted shared</span>
-<span class="c1"># storage rather than node-local disk. Mirrors the SLURM check in</span>
-<span class="c1"># computational_environment.computational_environment.</span>
-<span class="n">_SCHEDULER_ENV_VARS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"SLURM_JOB_ID"</span><span class="p">,)</span>
-
-
+<span class="c1"># storage rather than node-local disk. The same check</span>
+<span class="c1"># computational_environment.computational_environment makes.</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_running_under_scheduler</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">"""Whether we appear to be running inside a batch-scheduler allocation."""</span>
-    <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">var</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">_SCHEDULER_ENV_VARS</span><span class="p">)</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.computational_environment</span><span class="w"> </span><span class="kn">import</span> <span class="n">scheduler_job_variables</span>
+
+    <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">var</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">scheduler_job_variables</span><span class="p">())</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_is_kept</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">keep</span><span class="p">):</span>

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.2 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.2.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=52372788"></script>
+    <script src="../_static/documentation_options.js?v=77b25824"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="seamm_exec" href="modules.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.2" />
+  <meta name="docsearch:version" content="2026.10.2.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -542,6 +542,19 @@ otherwise run in place, as before.</p></li>
 </dd></dl>
 
 </section>
+<section id="module-seamm_exec.bundle_runner">
+<span id="seamm-exec-bundle-runner-module"></span><h2>seamm_exec.bundle_runner module<a class="headerlink" href="#module-seamm_exec.bundle_runner" title="Link to this heading">#</a></h2>
+<p>Run a SEAMM-mode bundle inside an allocation (see <code class="docutils literal notranslate"><span class="pre">task_worker.py</span></code>).</p>
+<p>Each task runs through a <a class="reference internal" href="#seamm_exec.local_pool.LocalPool" title="seamm_exec.local_pool.LocalPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">LocalPool</span></code></a> sized to the
+allocation, with programs resolved on this machine, and the task’s marker
+directory receives <code class="docutils literal notranslate"><span class="pre">DONE</span></code> or <code class="docutils literal notranslate"><span class="pre">FAILED</span></code>.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.bundle_runner.run_seamm_bundle">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.bundle_runner.</span></span><span class="sig-name descname"><span class="pre">run_seamm_bundle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bundle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/bundle_runner.html#run_seamm_bundle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.bundle_runner.run_seamm_bundle" title="Link to this definition">#</a></dt>
+<dd><p>Run a SEAMM-mode bundle through a LocalPool. Returns the number failed.</p>
+</dd></dl>
+
+</section>
 <section id="module-seamm_exec.computational_environment">
 <span id="seamm-exec-computational-environment-module"></span><h2>seamm_exec.computational_environment module<a class="headerlink" href="#module-seamm_exec.computational_environment" title="Link to this heading">#</a></h2>
 <p>Helper routines for determining the computational environment from queueuing
@@ -561,6 +574,27 @@ systems.</p>
 <dd class="field-odd"><p>dict(str, any)</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.computational_environment.expand_hostlist">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.computational_environment.</span></span><span class="sig-name descname"><span class="pre">expand_hostlist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/computational_environment.html#expand_hostlist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.computational_environment.expand_hostlist" title="Link to this definition">#</a></dt>
+<dd><p>SLURM’s compressed hostlist -&gt; host names.</p>
+<p><code class="docutils literal notranslate"><span class="pre">tc[053,059-061],gpu7</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">tc053</span> <span class="pre">tc059</span> <span class="pre">tc060</span> <span class="pre">tc061</span> <span class="pre">gpu7</span></code>; zero padding
+is kept; a suffix after the brackets (<code class="docutils literal notranslate"><span class="pre">tc[01-02]-ib</span></code>) and several
+bracket groups (<code class="docutils literal notranslate"><span class="pre">r[1-2]n[1-2]</span></code>, the product) are expanded as SLURM does.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.computational_environment.running_scheduler">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.computational_environment.</span></span><span class="sig-name descname"><span class="pre">running_scheduler</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/computational_environment.html#running_scheduler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.computational_environment.running_scheduler" title="Link to this definition">#</a></dt>
+<dd><p>The name of the queueing system whose allocation this is, or None.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.computational_environment.scheduler_job_variables">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.computational_environment.</span></span><span class="sig-name descname"><span class="pre">scheduler_job_variables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/computational_environment.html#scheduler_job_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.computational_environment.scheduler_job_variables" title="Link to this definition">#</a></dt>
+<dd><p>The environment variables that mark a batch job, one per scheduler.</p>
 </dd></dl>
 
 </section>
@@ -732,7 +766,7 @@ pool is clamped to it and runs alone.</p>
 return-file contract are exactly those of <code class="docutils literal notranslate"><span class="pre">Base.run()</span></code>.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="seamm_exec.local_pool.LocalPool">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.local_pool.</span></span><span class="sig-name descname"><span class="pre">LocalPool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">executor</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synchronous</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_concurrent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/local_pool.html#LocalPool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.local_pool.LocalPool" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.local_pool.</span></span><span class="sig-name descname"><span class="pre">LocalPool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">executor</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synchronous</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_concurrent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolve_programs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/local_pool.html#LocalPool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.local_pool.LocalPool" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A back end that runs tasks as local subprocesses.</p>
 <dl class="field-list simple">
@@ -746,6 +780,10 @@ return-file contract are exactly those of <code class="docutils literal notransl
 <code class="docutils literal notranslate"><span class="pre">ce</span></code> unchanged, the environment untouched and exceptions propagated:
 exactly the original <code class="docutils literal notranslate"><span class="pre">Base.run()</span></code>.</p></li>
 <li><p><strong>max_concurrent</strong> (<em>int</em><em>, </em><em>optional</em>) – At most this many tasks at once.</p></li>
+<li><p><strong>resolve_programs</strong> (<em>bool = False</em>) – Apply the program’s resolver (see <a class="reference internal" href="#module-seamm_exec.resolve" title="seamm_exec.resolve"><code class="xref py py-mod docutils literal notranslate"><span class="pre">seamm_exec.resolve</span></code></a>) to each
+task’s configuration, command and environment. The task worker in a
+scheduler’s allocation does; the evaluator’s own pool does not, since
+the steps that set <code class="docutils literal notranslate"><span class="pre">Task.config</span></code> have resolved it already.</p></li>
 </ul>
 </dd>
 </dl>
@@ -816,6 +854,243 @@ networks leaves the leftovers alone, the safe direction.)</p>
 </dd></dl>
 
 </section>
+<section id="module-seamm_exec.resolve">
+<span id="seamm-exec-resolve-module"></span><h2>seamm_exec.resolve module<a class="headerlink" href="#module-seamm_exec.resolve" title="Link to this heading">#</a></h2>
+<p>Resolve a program on the machine that runs it.</p>
+<p>A task names a <em>program</em> (“orca”, “mopac”, …). Where it runs, the program’s
+configuration comes from that machine’s <code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/&lt;program&gt;.ini</span></code> (the section
+for the executor, normally <code class="docutils literal notranslate"><span class="pre">[local]</span></code>), and a plug-in may register a
+<em>resolver</em> that adjusts the configuration, the command and the environment for
+that machine and the task’s share of it: ORCA must be invoked by its full path,
+and a parallel run needs the OpenMPI it was built against on the paths.</p>
+<p>Resolvers are entry points in the group <code class="docutils literal notranslate"><span class="pre">org.molssi.seamm.exec.resolvers</span></code>,
+named after the program:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">project</span><span class="o">.</span><span class="n">entry</span><span class="o">-</span><span class="n">points</span><span class="o">.</span><span class="s2">"org.molssi.seamm.exec.resolvers"</span><span class="p">]</span>
+<span class="n">orca</span> <span class="o">=</span> <span class="s2">"orca_step.resolver:resolve"</span>
+</pre></div>
+</div>
+<p>with the signature</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">resolve</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">ce</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">config</span></code> is the program’s ini section as a dict (already a copy), <code class="docutils literal notranslate"><span class="pre">cmd</span></code> the
+task’s command template (a list), <code class="docutils literal notranslate"><span class="pre">env</span></code> its extra environment, <code class="docutils literal notranslate"><span class="pre">ce</span></code> the
+task’s computational environment (<code class="docutils literal notranslate"><span class="pre">NTASKS</span></code>, <code class="docutils literal notranslate"><span class="pre">MEM_PER_CPU</span></code>, …) and
+<code class="docutils literal notranslate"><span class="pre">root</span></code> the SEAMM root holding the ini files. The command is formatted with
+<code class="docutils literal notranslate"><span class="pre">config</span></code> and <code class="docutils literal notranslate"><span class="pre">ce</span></code> afterwards, by the executor, exactly as before.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Task.config</span></code> is never sent to a remote back end (<code class="docutils literal notranslate"><span class="pre">transport</span> <span class="pre">=</span> <span class="pre">ssh</span></code>): it was
+resolved on the evaluator’s machine and names that machine’s paths, so the
+<code class="docutils literal notranslate"><span class="pre">TaskSet</span></code> keeps such a task in the evaluator’s own pool, with a warning. A
+task without it is resolved where it runs, here. On the local transport
+<code class="docutils literal notranslate"><span class="pre">Task.config</span></code>, when given, is used as it is, as in the <code class="docutils literal notranslate"><span class="pre">LocalPool</span></code>.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.resolve.read_config">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.resolve.</span></span><span class="sig-name descname"><span class="pre">read_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'local'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/resolve.html#read_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.resolve.read_config" title="Link to this definition">#</a></dt>
+<dd><p>The <code class="docutils literal notranslate"><span class="pre">[section]</span></code> of <code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/&lt;program&gt;.ini</span></code> as a dict, or None.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.resolve.register">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.resolve.</span></span><span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">function</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/resolve.html#register"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.resolve.register" title="Link to this definition">#</a></dt>
+<dd><p>Register a resolver by hand (tests, or a program without a plug-in).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.resolve.resolve">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.resolve.</span></span><span class="sig-name descname"><span class="pre">resolve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ce</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/resolve.html#resolve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.resolve.resolve" title="Link to this definition">#</a></dt>
+<dd><p>Apply the program’s resolver, if it has one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The configuration, command and environment to run with.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(dict, list, dict)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.resolve.resolvers">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.resolve.</span></span><span class="sig-name descname"><span class="pre">resolvers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/resolve.html#resolvers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.resolve.resolvers" title="Link to this definition">#</a></dt>
+<dd><p>The registered resolvers, <code class="docutils literal notranslate"><span class="pre">{program:</span> <span class="pre">callable}</span></code>.</p>
+</dd></dl>
+
+</section>
+<section id="module-seamm_exec.scheduler_backend">
+<span id="seamm-exec-scheduler-backend-module"></span><h2>seamm_exec.scheduler_backend module<a class="headerlink" href="#module-seamm_exec.scheduler_backend" title="Link to this heading">#</a></h2>
+<p>SchedulerBackend: run tasks as batch jobs of a queueing system.</p>
+<p>Each call to <a class="reference internal" href="#seamm_exec.scheduler_backend.SchedulerBackend.submit" title="seamm_exec.scheduler_backend.SchedulerBackend.submit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SchedulerBackend.submit()</span></code></a> is one <em>bundle</em>: one batch job
+whose allocation runs the bundle’s tasks through the task worker
+(<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">seamm_exec.task_worker</span> <span class="pre">bundle.json</span></code>) in SEAMM mode, that is,
+through a <code class="docutils literal notranslate"><span class="pre">LocalPool</span></code> inside the allocation, with each program resolved from
+the <code class="docutils literal notranslate"><span class="pre">&lt;program&gt;.ini</span></code> files of the machine it runs on. The <code class="docutils literal notranslate"><span class="pre">TaskSet</span></code> decides
+the bundles (<code class="docutils literal notranslate"><span class="pre">bundle_tasks</span></code>, <code class="docutils literal notranslate"><span class="pre">bundle_walltime</span></code>) and how many it keeps in
+the queue (<code class="xref py py-meth docutils literal notranslate"><span class="pre">room()</span></code>).</p>
+<p>Files: a bundle lives in <code class="docutils literal notranslate"><span class="pre">&lt;step</span> <span class="pre">dir&gt;/tasks/_bundles/&lt;bundle&gt;.&lt;n&gt;/</span></code>
+(<code class="docutils literal notranslate"><span class="pre">bundle.json</span></code>, <code class="docutils literal notranslate"><span class="pre">run.sh</span></code> and the scheduler’s log), the tasks in their own
+directories, and the worker writes each task’s <code class="docutils literal notranslate"><span class="pre">DONE</span></code> or <code class="docutils literal notranslate"><span class="pre">FAILED</span></code> in
+<code class="docutils literal notranslate"><span class="pre">&lt;step</span> <span class="pre">dir&gt;/tasks/&lt;key&gt;/</span></code>. When the cluster does not share the evaluator’s
+filesystem the directories are pushed before submission and pulled back once
+the bundle’s job has ended, to <code class="docutils literal notranslate"><span class="pre">&lt;remote_root&gt;/&lt;job&gt;/...</span></code>, the same relative
+paths under the remote job directory.</p>
+<p>Backend ids are <code class="docutils literal notranslate"><span class="pre">&lt;job</span> <span class="pre">id&gt;#&lt;bundle&gt;.&lt;n&gt;#&lt;key&gt;</span></code>, so a restarted evaluator can
+find a task’s job, bundle and files from its manifest record alone
+(<code class="xref py py-meth docutils literal notranslate"><span class="pre">adopt()</span></code>) and poll it rather than submit it again.</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="seamm_exec.scheduler_backend.QueueFull">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.scheduler_backend.</span></span><span class="sig-name descname"><span class="pre">QueueFull</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maybe_submitted</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#QueueFull"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.QueueFull" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></p>
+<p>The queue will not take more jobs now (it is full, or cannot be reached);
+the TaskSet holds the bundle and tries again later.</p>
+<p><code class="docutils literal notranslate"><span class="pre">maybe_submitted</span></code> is True when the bundle may have reached the queue
+(the connection dropped during <code class="docutils literal notranslate"><span class="pre">sbatch</span></code>): its tasks must then stay
+recorded as queued, so that a restart looks for the job by name.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="seamm_exec.scheduler_backend.SchedulerBackend">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.scheduler_backend.</span></span><span class="sig-name descname"><span class="pre">SchedulerBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queue</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'queue'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stager</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_job_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directives</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">setup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'local'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">accepts_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bundle_walltime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_queued</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poll_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_name_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'seamm'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#SchedulerBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">TaskBackend</span></code> that submits bundles of tasks to a queueing system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>queue</strong> (<em>seamm_scheduler.QueueBackend</em>) – Submits, polls and cancels jobs (a scheduler plus a transport).</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – The name recorded in the manifest, <code class="docutils literal notranslate"><span class="pre">queue:&lt;target&gt;</span></code>.</p></li>
+<li><p><strong>job_directory</strong> (<em>str</em><em> or </em><em>Path</em>) – The job’s directory. Task directories must be inside it when the
+cluster does not share the filesystem.</p></li>
+<li><p><strong>stager</strong> (<em>seamm_scheduler.JobStager</em><em>, </em><em>optional</em>) – <code class="docutils literal notranslate"><span class="pre">RsyncStager</span></code> when the cluster does not share the filesystem. None
+(or a <code class="docutils literal notranslate"><span class="pre">LocalStager</span></code>) means shared storage.</p></li>
+<li><p><strong>remote_job_directory</strong> (<em>str</em><em>, </em><em>optional</em>) – Where the job directory is mirrored on the cluster, if not shared.</p></li>
+<li><p><strong>directives</strong> (<em>dict</em><em>, </em><em>optional</em>) – Site defaults, in the scheduler’s own spelling (the target section’s
+directive keys: partition, account, qos, export, …).</p></li>
+<li><p><strong>setup</strong> (<em>str</em><em>, </em><em>optional</em>) – Shell lines run in the batch script before the worker (module loads).</p></li>
+<li><p><strong>python</strong> (<em>str</em><em>, </em><em>optional</em>) – A Python with <code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code> where the tasks run. Default: this one.</p></li>
+<li><p><strong>root</strong> (<em>str</em><em>, </em><em>optional</em>) – The SEAMM root with the <code class="docutils literal notranslate"><span class="pre">&lt;program&gt;.ini</span></code> files where the tasks run.</p></li>
+<li><p><strong>accepts_config</strong> (<em>bool = True</em>) – Whether <code class="docutils literal notranslate"><span class="pre">Task.config</span></code> is valid where the tasks run (local
+transport). On a remote cluster it is not sent.</p></li>
+<li><p><strong>bundle_walltime</strong> (<em>float</em><em>, </em><em>optional</em>) – Seconds to request for a bundle whose tasks give no walltime.</p></li>
+<li><p><strong>max_queued</strong> (<em>int</em><em>, </em><em>optional</em>) – The most jobs this user may have queued and running at once.</p></li>
+<li><p><strong>poll_interval</strong> (<em>float = 30</em>) – Seconds between polls of the queue.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.scheduler_backend.SchedulerBackend.abandon">
+<span class="sig-name descname"><span class="pre">abandon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">records</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#SchedulerBackend.abandon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend.abandon" title="Link to this definition">#</a></dt>
+<dd><p>Cancel the jobs of <code class="docutils literal notranslate"><span class="pre">records</span></code> (tasks whose inputs have changed)
+unless a task in <code class="docutils literal notranslate"><span class="pre">keep</span></code> (ids adopted) still runs in the same job.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.scheduler_backend.SchedulerBackend.adopt">
+<span class="sig-name descname"><span class="pre">adopt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">marker</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#SchedulerBackend.adopt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend.adopt" title="Link to this definition">#</a></dt>
+<dd><p>Take back a task an earlier evaluator submitted, from its manifest
+record. Returns its id, or None if the record is not one of ours.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.scheduler_backend.SchedulerBackend.bundles">
+<span class="sig-name descname"><span class="pre">bundles</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></span><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend.bundles" title="Link to this definition">#</a></dt>
+<dd><p>The TaskSet submits one call per bundle.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.scheduler_backend.SchedulerBackend.cancel">
+<span class="sig-name descname"><span class="pre">cancel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#SchedulerBackend.cancel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend.cancel" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.scheduler_backend.SchedulerBackend.check">
+<span class="sig-name descname"><span class="pre">check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">marker</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#SchedulerBackend.check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend.check" title="Link to this definition">#</a></dt>
+<dd><p>Fail early, before anything is submitted, for a task this back end
+cannot run (a directory outside the job, without shared storage).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.scheduler_backend.SchedulerBackend.fetch">
+<span class="sig-name descname"><span class="pre">fetch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#SchedulerBackend.fetch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend.fetch" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.scheduler_backend.SchedulerBackend.forget">
+<span class="sig-name descname"><span class="pre">forget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#SchedulerBackend.forget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend.forget" title="Link to this definition">#</a></dt>
+<dd><p>Drop a task the TaskSet will submit again.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.scheduler_backend.SchedulerBackend.from_target">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_target</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'local'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#SchedulerBackend.from_target"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend.from_target" title="Link to this definition">#</a></dt>
+<dd><p>The back end a target section with <code class="docutils literal notranslate"><span class="pre">tasks</span> <span class="pre">=</span> <span class="pre">queue</span></code> describes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.scheduler_backend.SchedulerBackend.reason">
+<span class="sig-name descname"><span class="pre">reason</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#SchedulerBackend.reason"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend.reason" title="Link to this definition">#</a></dt>
+<dd><p>Why a task is lost, for the manifest.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.scheduler_backend.SchedulerBackend.relative">
+<span class="sig-name descname"><span class="pre">relative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#SchedulerBackend.relative"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend.relative" title="Link to this definition">#</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">path</span></code> relative to the job directory.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.scheduler_backend.SchedulerBackend.room">
+<span class="sig-name descname"><span class="pre">room</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#SchedulerBackend.room"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend.room" title="Link to this definition">#</a></dt>
+<dd><p>How many more bundles may be submitted now, or None for no limit.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="seamm_exec.scheduler_backend.SchedulerBackend.shared">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">shared</span></span><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend.shared" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.scheduler_backend.SchedulerBackend.status">
+<span class="sig-name descname"><span class="pre">status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#SchedulerBackend.status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend.status" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.scheduler_backend.SchedulerBackend.submit">
+<span class="sig-name descname"><span class="pre">submit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tasks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bundle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">markers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_prepared</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#SchedulerBackend.submit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend.submit" title="Link to this definition">#</a></dt>
+<dd><p>Submit <code class="docutils literal notranslate"><span class="pre">tasks</span></code> as one bundle: one batch job. Returns their ids.</p>
+<p><code class="docutils literal notranslate"><span class="pre">on_prepared(tasks,</span> <span class="pre">info)</span></code> is called before <code class="docutils literal notranslate"><span class="pre">sbatch</span></code> with the
+bundle’s unique job name and directory, so the caller can record them:
+a restart that finds no job id looks the job up by that name.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.scheduler_backend.SchedulerBackend.wait">
+<span class="sig-name descname"><span class="pre">wait</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#SchedulerBackend.wait"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend.wait" title="Link to this definition">#</a></dt>
+<dd><p>Sleep until the next poll is due.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.scheduler_backend.SchedulerBackend.where">
+<span class="sig-name descname"><span class="pre">where</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#SchedulerBackend.where"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend.where" title="Link to this definition">#</a></dt>
+<dd><p>The path the cluster sees for a local <code class="docutils literal notranslate"><span class="pre">path</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.scheduler_backend.parse_id">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.scheduler_backend.</span></span><span class="sig-name descname"><span class="pre">parse_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#parse_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.parse_id" title="Link to this definition">#</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">&lt;job</span> <span class="pre">id&gt;#&lt;bundle&gt;.&lt;n&gt;#&lt;key&gt;</span></code> -&gt; (job id, bundle dir name, key).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.scheduler_backend.remote_name">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.scheduler_backend.</span></span><span class="sig-name descname"><span class="pre">remote_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">job_directory</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#remote_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.remote_name" title="Link to this definition">#</a></dt>
+<dd><p>The name of a job directory on the cluster: its own name and a hash of
+its full path. Job numbers are unique only within one datastore, and
+several installations (~/SEAMM, ~/SEAMM_DEV, ChemAI) may share a
+<code class="docutils literal notranslate"><span class="pre">remote_root</span></code>; a hand run’s directory may be called anything.</p>
+</dd></dl>
+
+</section>
 <section id="module-seamm_exec.seamm_exec">
 <span id="seamm-exec-seamm-exec-module"></span><h2>seamm_exec.seamm_exec module<a class="headerlink" href="#module-seamm_exec.seamm_exec" title="Link to this heading">#</a></h2>
 <p>Provide the primary functions.</p>
@@ -835,6 +1110,47 @@ networks leaves the leftovers alone, the safe direction.)</p>
 <dd class="field-odd"><p>str</p>
 </dd>
 </dl>
+</dd></dl>
+
+</section>
+<section id="module-seamm_exec.targets">
+<span id="seamm-exec-targets-module"></span><h2>seamm_exec.targets module<a class="headerlink" href="#module-seamm_exec.targets" title="Link to this heading">#</a></h2>
+<p>Find the job’s target: where its tasks run.</p>
+<p>A target is a section of the JobServer’s <code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/&lt;jobserver-name&gt;.ini</span></code> (see
+<code class="docutils literal notranslate"><span class="pre">seamm_scheduler.config</span></code>). The evaluator finds it, in order:</p>
+<ol class="arabic simple">
+<li><p>given explicitly (<code class="docutils literal notranslate"><span class="pre">TaskSet(target=...)</span></code>, a name or a <code class="docutils literal notranslate"><span class="pre">TargetSection</span></code>);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;job</span> <span class="pre">dir&gt;/target.json</span></code>, written by the JobServer when it starts the job,
+so an evaluator running as a batch job on a cluster, which cannot read the
+JobServer’s ini file, still knows its target;</p></li>
+<li><p>the environment variable <code class="docutils literal notranslate"><span class="pre">SEAMM_TARGET</span></code>, naming a section of
+<code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/&lt;hostname&gt;.ini</span></code> (or of the file named by <code class="docutils literal notranslate"><span class="pre">SEAMM_TARGETS</span></code>), for
+runs by hand with <code class="docutils literal notranslate"><span class="pre">run_flowchart</span></code>;</p></li>
+<li><p>none: tasks run in the evaluator’s own <code class="docutils literal notranslate"><span class="pre">LocalPool</span></code>, as before targets
+existed.</p></li>
+</ol>
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.targets.find_target">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.targets.</span></span><span class="sig-name descname"><span class="pre">find_target</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/targets.html#find_target"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.targets.find_target" title="Link to this definition">#</a></dt>
+<dd><p>The target section for the job, or None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target</strong> (<em>str</em><em> or </em><em>TargetSection</em><em>, </em><em>optional</em>) – A section, or the name of one in <code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/&lt;hostname&gt;.ini</span></code>.</p></li>
+<li><p><strong>job_directory</strong> (<em>str</em><em> or </em><em>Path</em><em>, </em><em>optional</em>) – Where to look for <code class="docutils literal notranslate"><span class="pre">target.json</span></code>. Default: the current directory.</p></li>
+<li><p><strong>root</strong> (<em>str</em><em> or </em><em>Path</em><em>, </em><em>optional</em>) – The SEAMM root holding the JobServer’s ini file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>seamm_scheduler.TargetSection or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.targets.write_target">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.targets.</span></span><span class="sig-name descname"><span class="pre">write_target</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_directory</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/targets.html#write_target"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.targets.write_target" title="Link to this definition">#</a></dt>
+<dd><p>Write <code class="docutils literal notranslate"><span class="pre">&lt;job</span> <span class="pre">dir&gt;/target.json</span></code> for a section (what the JobServer does).</p>
 </dd></dl>
 
 </section>
@@ -873,6 +1189,25 @@ and a successful run – return code 0 and, if given, every <code class="docutil
 file containing its text – writes <code class="docutils literal notranslate"><span class="pre">DONE</span></code> (JSON). A failure does not stop the
 bundle.
 The worker exits 0 if every task succeeded and 1 otherwise.</p>
+<section id="the-seamm-mode">
+<h3>The SEAMM mode<a class="headerlink" href="#the-seamm-mode" title="Link to this heading">#</a></h3>
+<p>A bundle with <code class="docutils literal notranslate"><span class="pre">&quot;mode&quot;:</span> <span class="pre">&quot;seamm&quot;</span></code> is run by a Python that has <code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code>
+(<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">seamm_exec.task_worker</span> <span class="pre">bundle.json</span></code>). Each task is then given as
+the task layer describes it – <code class="docutils literal notranslate"><span class="pre">program</span></code>, the <code class="docutils literal notranslate"><span class="pre">cmd</span></code> template, the names of
+its input <code class="docutils literal notranslate"><span class="pre">files</span></code> (already in its directory), <code class="docutils literal notranslate"><span class="pre">return_files</span></code>,
+<code class="docutils literal notranslate"><span class="pre">resources</span></code>, <code class="docutils literal notranslate"><span class="pre">in_situ</span></code> – and runs through a
+<a class="reference internal" href="#seamm_exec.local_pool.LocalPool" title="seamm_exec.local_pool.LocalPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">LocalPool</span></code></a> sized to the allocation, exactly as
+the evaluator’s own pool would run it: the program resolved from
+<code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/&lt;program&gt;.ini</span></code> on this machine (and its resolver, see
+<a class="reference internal" href="#module-seamm_exec.resolve" title="seamm_exec.resolve"><code class="xref py py-mod docutils literal notranslate"><span class="pre">seamm_exec.resolve</span></code></a>), <code class="docutils literal notranslate"><span class="pre">{code}</span></code>/<code class="docutils literal notranslate"><span class="pre">{NTASKS}</span></code> from the task’s share of the
+allocation, scratch in <code class="docutils literal notranslate"><span class="pre">$TMPDIR</span></code>, and only <code class="docutils literal notranslate"><span class="pre">return_files</span></code> kept. Tasks that
+fit side by side in the allocation run concurrently.</p>
+<p>Each task’s <code class="docutils literal notranslate"><span class="pre">marker</span></code> directory (<code class="docutils literal notranslate"><span class="pre">&lt;step</span> <span class="pre">dir&gt;/tasks/&lt;key&gt;</span></code>) receives
+<code class="docutils literal notranslate"><span class="pre">DONE</span></code> (JSON, in the task layer’s own form, including the list of returned
+<code class="docutils literal notranslate"><span class="pre">files</span></code>) or <code class="docutils literal notranslate"><span class="pre">FAILED</span></code> (JSON, with the <code class="docutils literal notranslate"><span class="pre">reason</span></code>). A task whose <code class="docutils literal notranslate"><span class="pre">DONE</span></code>
+exists is skipped, so a bundle that is submitted again – after a walltime
+limit, say – runs only what is left.</p>
+</section>
 <dl class="py function">
 <dt class="sig sig-object py" id="seamm_exec.task_worker.main">
 <span class="sig-prename descclassname"><span class="pre">seamm_exec.task_worker.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/task_worker.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.task_worker.main" title="Link to this definition">#</a></dt>
@@ -1555,7 +1890,7 @@ it again, e.g. its process group).</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="seamm_exec.tasks.TaskSet">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.tasks.</span></span><span class="sig-name descname"><span class="pre">TaskSet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">manifest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">archive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bundle_tasks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_attempts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_lost_retries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inline_below</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">60.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poll_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#TaskSet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.TaskSet" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.tasks.</span></span><span class="sig-name descname"><span class="pre">TaskSet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">manifest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">archive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bundle_tasks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bundle_walltime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_attempts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_lost_retries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inline_below</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poll_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#TaskSet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.TaskSet" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>What a step uses: add tasks, then iterate over their results.</p>
 <p><code class="docutils literal notranslate"><span class="pre">run()</span></code> yields finished tasks from earlier runs first (from their <code class="docutils literal notranslate"><span class="pre">DONE</span></code>
@@ -1566,23 +1901,31 @@ lost task is tried again until it has had <code class="docutils literal notransl
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>node</strong> (<em>seamm.Node</em><em>, </em><em>optional</em>) – The step. Gives the step directory, the executor and <code class="docutils literal notranslate"><span class="pre">root</span></code>.</p></li>
-<li><p><strong>target</strong> (<em>str</em><em>, </em><em>optional</em>) – Reserved for the job’s target; unused in this version.</p></li>
+<li><p><strong>node</strong> (<em>seamm.Node</em><em>, </em><em>optional</em>) – The step. Gives the step directory, the executor, <code class="docutils literal notranslate"><span class="pre">root</span></code> and the job
+directory.</p></li>
+<li><p><strong>target</strong> (<em>str</em><em> or </em><em>seamm_scheduler.TargetSection</em><em>, </em><em>optional</em>) – The job’s target. Default: found by <a class="reference internal" href="#seamm_exec.targets.find_target" title="seamm_exec.targets.find_target"><code class="xref py py-func docutils literal notranslate"><span class="pre">seamm_exec.targets.find_target()</span></code></a>
+(<code class="docutils literal notranslate"><span class="pre">&lt;job</span> <span class="pre">dir&gt;/target.json</span></code>, then <code class="docutils literal notranslate"><span class="pre">$SEAMM_TARGET</span></code>), else the local pool.
+Ignored when <code class="docutils literal notranslate"><span class="pre">backend</span></code> is given.</p></li>
 <li><p><strong>directory</strong> (<em>str</em><em> or </em><em>Path</em><em>, </em><em>optional</em>) – The step directory, overriding <code class="docutils literal notranslate"><span class="pre">node.directory</span></code>.</p></li>
 <li><p><strong>executor</strong> (<em>seamm_exec.Base</em><em>, </em><em>optional</em>) – Overrides <code class="docutils literal notranslate"><span class="pre">node.flowchart.executor</span></code>.</p></li>
-<li><p><strong>backend</strong> (<a class="reference internal" href="#seamm_exec.tasks.TaskBackend" title="seamm_exec.tasks.TaskBackend"><em>TaskBackend</em></a><em>, </em><em>optional</em>) – Where tasks go. Default: a <code class="docutils literal notranslate"><span class="pre">LocalPool</span></code> for this machine.</p></li>
+<li><p><strong>backend</strong> (<a class="reference internal" href="#seamm_exec.tasks.TaskBackend" title="seamm_exec.tasks.TaskBackend"><em>TaskBackend</em></a><em>, </em><em>optional</em>) – Where tasks go. Default: the target’s back end (a <code class="docutils literal notranslate"><span class="pre">SchedulerBackend</span></code>
+for <code class="docutils literal notranslate"><span class="pre">tasks</span> <span class="pre">=</span> <span class="pre">queue</span></code>), else a <code class="docutils literal notranslate"><span class="pre">LocalPool</span></code> for this machine.</p></li>
 <li><p><strong>local</strong> (<a class="reference internal" href="#seamm_exec.local_pool.LocalPool" title="seamm_exec.local_pool.LocalPool"><em>LocalPool</em></a><em>, </em><em>optional</em>) – The evaluator’s own pool, for the inline rule. Defaults to <code class="docutils literal notranslate"><span class="pre">backend</span></code>
 when that is a <code class="docutils literal notranslate"><span class="pre">LocalPool</span></code>, else one is made on demand.</p></li>
 <li><p><strong>root</strong> (<em>str</em><em> or </em><em>Path</em><em>, </em><em>optional</em>) – Where the <code class="docutils literal notranslate"><span class="pre">&lt;program&gt;.ini</span></code> files are. Default <code class="docutils literal notranslate"><span class="pre">node.global_options[&quot;root&quot;]</span></code>.</p></li>
 <li><p><strong>manifest</strong> (<em>bool = True</em>) – Keep the manifest and <code class="docutils literal notranslate"><span class="pre">DONE</span></code> markers. False only for <code class="docutils literal notranslate"><span class="pre">Base.run()</span></code>.</p></li>
 <li><p><strong>archive</strong> (<em>bool = False</em>) – Pack each bundle’s task directories into <code class="docutils literal notranslate"><span class="pre">tasks/&lt;bundle&gt;.tar</span></code> once all
 its tasks are done, and remove the directories.</p></li>
-<li><p><strong>bundle_tasks</strong> (<em>int</em><em>, </em><em>optional</em>) – Tasks per bundle, in the order added. Default: one bundle.</p></li>
+<li><p><strong>bundle_tasks</strong> (<em>int</em><em>, </em><em>optional</em>) – Tasks per bundle, in the order added. Default: the target’s
+<code class="docutils literal notranslate"><span class="pre">bundle_tasks</span></code>; else one bundle (one task per bundle on a queue
+without <code class="docutils literal notranslate"><span class="pre">bundle_walltime</span></code>).</p></li>
+<li><p><strong>bundle_walltime</strong> (<em>float</em><em>, </em><em>optional</em>) – Start a new bundle when the tasks’ walltimes (or estimates) would add
+up to more than this many seconds. Default: the target’s.</p></li>
 <li><p><strong>max_attempts</strong> (<em>int = 3</em>) – Attempts per task over all runs.</p></li>
 <li><p><strong>max_lost_retries</strong> (<em>int = 2</em>) – Resubmissions of a lost task within one run.</p></li>
-<li><p><strong>inline_below</strong> (<em>float = 60</em>) – Tasks estimated to take less than this many seconds run in the local
+<li><p><strong>inline_below</strong> (<em>float</em><em>, </em><em>optional</em>) – Tasks estimated to take less than this many seconds run in the local
 pool rather than on a remote back end, if their program is installed
-here.</p></li>
+here. Default: the target’s <code class="docutils literal notranslate"><span class="pre">inline_below</span></code>, else 60.</p></li>
 <li><p><strong>poll_interval</strong> (<em>float</em>) – Seconds between status checks of a back end without <code class="docutils literal notranslate"><span class="pre">wait()</span></code>.</p></li>
 </ul>
 </dd>
@@ -1769,8 +2112,15 @@ runs somewhere other than <code class="docutils literal notranslate"><span class
 </li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.bundle_runner">seamm_exec.bundle_runner module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.bundle_runner.run_seamm_bundle"><code class="docutils literal notranslate"><span class="pre">run_seamm_bundle()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.computational_environment">seamm_exec.computational_environment module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.computational_environment.computational_environment"><code class="docutils literal notranslate"><span class="pre">computational_environment()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.computational_environment.expand_hostlist"><code class="docutils literal notranslate"><span class="pre">expand_hostlist()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.computational_environment.running_scheduler"><code class="docutils literal notranslate"><span class="pre">running_scheduler()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.computational_environment.scheduler_job_variables"><code class="docutils literal notranslate"><span class="pre">scheduler_job_variables()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.docker">seamm_exec.docker module</a><ul class="pst-show_toc_level nav section-nav flex-column">
@@ -1818,11 +2168,49 @@ runs somewhere other than <code class="docutils literal notranslate"><span class
 </li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.resolve">seamm_exec.resolve module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.resolve.read_config"><code class="docutils literal notranslate"><span class="pre">read_config()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.resolve.register"><code class="docutils literal notranslate"><span class="pre">register()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.resolve.resolve"><code class="docutils literal notranslate"><span class="pre">resolve()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.resolve.resolvers"><code class="docutils literal notranslate"><span class="pre">resolvers()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.scheduler_backend">seamm_exec.scheduler_backend module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.QueueFull"><code class="docutils literal notranslate"><span class="pre">QueueFull</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.SchedulerBackend"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.SchedulerBackend.abandon"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.abandon()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.SchedulerBackend.adopt"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.adopt()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.SchedulerBackend.bundles"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.bundles</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.SchedulerBackend.cancel"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.cancel()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.SchedulerBackend.check"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.check()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.SchedulerBackend.fetch"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.fetch()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.SchedulerBackend.forget"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.forget()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.SchedulerBackend.from_target"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.from_target()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.SchedulerBackend.reason"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.reason()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.SchedulerBackend.relative"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.relative()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.SchedulerBackend.room"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.room()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.SchedulerBackend.shared"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.shared</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.SchedulerBackend.status"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.status()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.SchedulerBackend.submit"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.submit()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.SchedulerBackend.wait"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.wait()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.SchedulerBackend.where"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.where()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.parse_id"><code class="docutils literal notranslate"><span class="pre">parse_id()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.remote_name"><code class="docutils literal notranslate"><span class="pre">remote_name()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.seamm_exec">seamm_exec.seamm_exec module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.seamm_exec.canvas"><code class="docutils literal notranslate"><span class="pre">canvas()</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.targets">seamm_exec.targets module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.targets.find_target"><code class="docutils literal notranslate"><span class="pre">find_target()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.targets.write_target"><code class="docutils literal notranslate"><span class="pre">write_target()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.task_worker">seamm_exec.task_worker module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-seamm-mode">The SEAMM mode</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.task_worker.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.task_worker.run_bundle"><code class="docutils literal notranslate"><span class="pre">run_bundle()</span></code></a></li>
 </ul>
