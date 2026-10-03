@@ -290,3 +290,32 @@ def test_periodic_results_need_stress(tmp_path):
     assert results["m"].ok  # a molecule has no stress
     with pytest.raises(AnalysisError, match="has no stress"):
         check_properties({"energy": 1.0}, ("energy", "stress"), "x", periodic=True)
+
+
+def test_resources_reach_get_task(tmp_path):
+    """The Evaluator's resources are passed to the provider's get_task on the
+    batch path, and omitted when not given (providers without the argument
+    keep working)."""
+    seen = []
+
+    class Provider(FakeProvider):
+        @classmethod
+        def get_task(cls, configuration, model_chemistry, **kwargs):
+            seen.append(kwargs.get("resources"))
+            kwargs.pop("resources", None)
+            return FakeProvider.get_task(configuration, model_chemistry, **kwargs)
+
+    geometry = Geometry([8, 1, 1], [[0, 0, 0], [0.96, 0, 0], [-0.24, 0.93, 0]])
+    resources = seamm_exec.Resources(ntasks=4, mem_per_cpu=1_500_000_000)
+    with Evaluator(
+        _node(tmp_path, Provider), MC, path="batch", resources=resources
+    ) as evaluator:
+        evaluator.submit(geometry, key="a")
+        assert [r.ok for r in evaluator.results()] == [True]
+    assert seen == [resources]
+
+    seen.clear()
+    with Evaluator(_node(tmp_path / "b", Provider), MC, path="batch") as evaluator:
+        evaluator.submit(geometry, key="a")
+        list(evaluator.results())
+    assert seen == [None]

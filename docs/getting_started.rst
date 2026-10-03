@@ -126,9 +126,23 @@ with the reason. The batch path keeps the task layer's restart, so a rerun
 reuses finished structures. ``options`` on ``submit`` carries what a fragment
 needs: ``atom_indices``, ``ghost_atoms``, ``charge`` and ``multiplicity``.
 
+``resources`` on the Evaluator (a :class:`~seamm_exec.Resources`: ranks, memory
+per rank) sets the size of each calculation on the batch path; the provider's
+``get_task`` receives it. Without it the provider chooses.
+
 A program offers the batch path through three classmethods beside
 ``get_model_chemistry_options``: ``get_task``, ``analyze_task`` and, optionally,
 ``can_run_task``; see :mod:`seamm_exec.evaluator`.
+
+**The sign of the stress.** The stress comes back as the program gives it, in
+GPa, and programs differ in its sign. A provider that returns a stress must
+therefore declare its convention in its ``get_model_chemistry_options`` entry:
+``options["stress_convention"]`` is ``"pressure"`` (positive when the system
+pushes outward: VASP's ``in kB`` line, MDI's ``<STRESS``) or ``"stress"``
+(sigma = -P, as ASE and xnn use). The Evaluator passes the stress through
+unchanged; a consumer converts it with that declaration and refuses a level
+that lacks it. Pinning one convention for every provider later would be a
+documented change of this contract.
 
 Where things run
 ----------------

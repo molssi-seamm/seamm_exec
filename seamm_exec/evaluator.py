@@ -247,6 +247,9 @@ class Evaluator:
         The job's target. Default: found for the job.
     task_set_options : dict, optional
         Extra arguments for the ``TaskSet`` (``bundle_tasks``, ``archive``, ...).
+    resources : seamm_exec.Resources, optional
+        The resources of each calculation on the batch path (ranks, memory per
+        rank), passed to the provider's ``get_task``. Default: the provider's.
     name : str
         A name for the MDI engine.
     """
@@ -261,6 +264,7 @@ class Evaluator:
         directory=None,
         target=None,
         task_set_options=None,
+        resources=None,
         name="SEAMM",
     ):
         self.node = node
@@ -277,6 +281,7 @@ class Evaluator:
         self.provider = node.flowchart.plugin_manager.get(model_chemistry["step"])
         self.directory = directory
         self.task_set_options = dict(task_set_options or {})
+        self.resources = resources
         self.name = name
 
         if target is None and path is None:
@@ -529,12 +534,16 @@ class Evaluator:
         refused = []
         for key, (configuration, options) in pending.items():
             try:
+                extra = {}
+                if self.resources is not None:
+                    extra["resources"] = self.resources
                 task = self.provider.get_task(
                     configuration,
                     self.model_chemistry,
                     key=key,
                     properties=self.properties,
                     options=options,
+                    **extra,
                 )
             except Exception as e:
                 # One structure the program refuses must not stop the others.
