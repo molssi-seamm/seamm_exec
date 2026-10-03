@@ -202,10 +202,9 @@ class ExecFlowchart(object):
             next_node = self.flowchart.get_node("1")
             while next_node is not None:
                 try:
+                    node = next_node
                     next_node = next_node.run()
-                    # Commit the step's table and structure changes (phase 5 will
-                    # write its checkpoint only after this).
-                    seamm.flowchart_variables.get_variable("_system_db").db.commit()
+                    seamm.step_completed(node)
                 except DeprecationWarning as e:
                     print("\nDeprecation warning: " + str(e))
                     traceback.print_exc(file=sys.stderr)

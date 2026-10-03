@@ -329,3 +329,90 @@ Paul's answers (2026-10-03)
   are expected.
 - Dashboard view of tables: deferred (phase 7, with the task view).
 - Go ahead and code.
+
+2026-10-03 -- implementation
+----------------------------
+
+Committed locally on each ``dev`` (not pushed):
+
+======================================  ========  =============================================
+Package                                 Commit    Change
+======================================  ========  =============================================
+``molsystem``                           0ad3f75   ``user_tables.py``: ``SystemDB.user_tables``,
+                                                  ``UserTable``, registry and journal; quoted
+                                                  string ``DEFAULT`` in ``add_attribute``.
+``seamm``                               131646a   ``table.py``: ``seamm.Table``,
+                                                  ``check_table_plugins``; ``get_table`` and
+                                                  ``store_results`` converted.
+``seamm_exec``                          e487896   Commit after each step; the start-up check.
+``table_step``                          e8a84e1   All methods on ``seamm.Table``.
+``loop_step``                           6ba6156   "For rows in table" on ``seamm.Table``;
+                                                  commit after each body step.
+``properties_step``                     14359c8   Export on ``seamm.Table``.
+``geometry_analysis_step``              b9d04d0   Tables on ``seamm.Table``.
+======================================  ========  =============================================
+
+Choices made while coding:
+
+- **Columns have no SQL type.** SQLite then stores exactly what was written
+  (Geometry Analysis's text ``"1.0960"`` stays text, so its CSVs are
+  unchanged); the declared type in the registry decides how values are read
+  back and how ``to_dataframe()`` types the column.
+- **The current row is a rowid or NULL**, NULL meaning "the row after the last":
+  the next write appends it. A new or empty table starts there, so the first
+  ``store_results`` creates row 0 as before. ``next_row()`` past the last row
+  goes there, and does nothing if already there, so "Go to the next row" works
+  at either end of a loop body (today's ``+= 1`` twice would have left a gap in
+  the labels).
+- **Assigning a DataFrame to** ``handle["table"]`` replaces the table's
+  contents, keeping its name, index column and file, so unconverted code that
+  does ``concat`` and replace still saves its rows. Reading it gives a copy,
+  with a warning.
+- ``get_table`` adopts a table that is in the database but not yet a variable
+  (a database given with ``--database``; later, checkpoint restore).
+- The plug-in check treats a development checkout (a version with a local part,
+  ``2026.9.30+3.g1234abc``) as current. The minimum versions in
+  ``seamm.table.table_plugins`` are placeholders (2026.10.4) until the release.
+
+**Correction to the design (both sessions had it wrong):** the Loop does *not*
+return its body's steps to the evaluator's loop; it runs them in its own
+``run()``. The per-step commit is therefore in both ``exec_flowchart`` and the
+Loop. Phase 5's checkpoint hook must likewise be called from both, or moved to
+a shared helper.
+
+Pre-existing bugs fixed on the way (found by the A/B runs, where the released
+code failed):
+
+- The Loop's row selection converted the second value even when only
+  ``between`` uses it, so any test on a numeric column with an empty second
+  value raised ``ValueError``.
+- The Table step's Get/Set element by row always did ``int(row)``, so a table
+  with a text index column could not be addressed by its index.
+
+Validation (2026-10-03)
+~~~~~~~~~~~~~~~~~~~~~~~
+
+- Unit tests: molsystem 322 (23 new), seamm 251 (17 new), seamm_exec 102,
+  table_step 17 with the flowchart tests (``--integration``), loop_step 4,
+  properties_step 1, geometry_analysis_step 1.
+- SEAMM_DEV A/B with ``seamm-manager compare``: ``venvs/phase4-A`` (today's
+  releases, plus ``properties-step`` from PyPI, which SEAMM_DEV lacked) against
+  ``venvs/phase4-B`` (A plus the seven checkouts, editable), on
+  ``Testing/phase4/``: ``p4_rows`` (append, loop over rows, a ``where``
+  selection, Set/Get element, Read with an index, csv/json/txt), 
+  ``p4_results_only`` (``store_results`` with no Table step, "Go to the next
+  row"), ``p4_props_geom`` (Properties, Geometry Analysis single and separate
+  tables), ``builder_loop``, and table_step's ``test1`` and
+  ``append_text_rows``.
+
+  - Every CSV, the xlsx contents and every printed table are identical, except
+    the intended changes: appended rows get their columns' defaults (``x``
+    where A left NaN), and "Get element" gives Python values (``4.0``, not
+    ``np.float64(4.0)``).
+  - In ``p4_rows`` A stopped at each of the two bugs above; B ran through.
+  - Otherwise only versions, timings, paths, reference wrapping and
+    ``seamm.db`` differ.
+
+Still to do: the Dropbox corpus through the harness, review, soak in SEAMM_DEV,
+then the release (molsystem, seamm, seamm_exec, the four steps; minimum
+versions in ``table_plugins`` and the pins set then).
