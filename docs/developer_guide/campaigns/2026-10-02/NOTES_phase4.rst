@@ -505,7 +505,10 @@ their MOPAC Optimization has ``structure handling: be put in a new
 configuration``, an old spelling that ``structure_handling_description`` no
 longer accepts, so every iteration raised. The copies were changed to "Create a
 new configuration" to exercise the tables; the Dropbox originals are untouched.
-Both pre-existing problems are for Paul to decide on.
+Both pre-existing problems are filed, not fixed in phase 4: `seamm#220
+<https://github.com/molssi-seamm/seamm/issues/220>`_ (the ``Path`` system name)
+and `seamm#221 <https://github.com/molssi-seamm/seamm/issues/221>`_ (the legacy
+structure-handling spellings).
 
 The remaining table flowcharts are for the soak in SEAMM_DEV.
 
