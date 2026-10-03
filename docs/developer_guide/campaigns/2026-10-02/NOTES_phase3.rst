@@ -263,3 +263,64 @@ Validation
   - The only differences are versions, pids and timings, plus the new
     ``tasks/`` layouts (BSSE's sub-jobs share one manifest in the step
     directory; the ORCA Energy step runs as tasks).
+
+Review (2026-10-03)
+~~~~~~~~~~~~~~~~~~~
+
+An independent review of the six diffs. Fixed, each with a test unless noted:
+
+1. **ORCA's batch path accepted periodic structures.** With ``prefers_batch`` the
+   Energy step would have stored a gas-phase cluster energy for a periodic
+   configuration; the MDI path had refused it.
+
+   - Programs now offer ``can_run_task(configuration, model_chemistry,
+     options)``. A structure for which it is False goes to the program's MDI
+     engine, if it has one, even when the rest run as tasks; otherwise it gets a
+     failed result.
+   - ORCA's ``get_task`` refuses periodic structures and initial guesses (not
+     supported yet), and ``can_run_task`` refuses open-shell DLPNO.
+2. **A queue target forced MOPAC's periodic and open-shell structures onto tasks
+   it cannot run.** Same mechanism: MOPAC's ``can_run_task`` keeps them on MDI.
+   A ``get_task`` that raises now fails that structure alone, instead of
+   stopping the whole ``results()``.
+3. **Pins.**
+
+   - ``orca_step`` and ``mopac_step`` require ``seamm-exec>=2026.10.3``. The
+     released 2026.10.2.1 never resolves config-less tasks in the evaluator's
+     pool, so a new ``orca_step`` on it would lose ORCA's full path, the OpenMPI
+     paths and ``{orca_2aim}``.
+   - The three consumers now list ``seamm-exec>=2026.10.3``.
+   - The pool's error names the missing resolver when a plug-in is not
+     installed where a task runs (no test).
+4. **Lone atoms.** ``get_task`` lacked the ORCA step's one-center ``NoCOSX``
+   guard, so ``seamm_bsse``/MBE jobs for a bare Li⁺ or Na⁺ would get the ~5
+   kJ/mol RIJCOSX artifact. It is added to both ``get_task`` and the MDI engine
+   (``single_center_method``), so the two paths still agree. Real ORCA, Na⁺:
+   batch == MDI exactly.
+
+   This is a behaviour change of the ORCA MDI engine for single atoms (a fix),
+   and goes in orca_step's HISTORY.
+5. **NMS imported ``seamm_mdi`` unconditionally**, and failed when no engine
+   could start, e.g. on a queue target with ORCA installed only on the cluster.
+   It now imports lazily and falls back to the finite difference as tasks.
+6. **The Dimer Builder's single points are slow on the task path. Deferred.**
+
+   - Each point of the inward wall walk is its own one-task ``TaskSet`` (the
+     manifest is re-read and re-written per point). On a queue target, a point
+     above ``inline_below`` would be its own batch job.
+   - Small ORCA dimers stay local by the inline rule. The rest needs
+     speculative blocks of inward points, or one long-lived ``TaskSet`` per
+     ``_TaskEnergies``.
+7. **MOPAC's ``.aux`` gradients** stop at the next ``KEY=`` line and must be
+   exactly 3n values (``AnalysisError`` otherwise).
+8. **BSSE sub-jobs were treated as "concurrent"**, so the pool set
+   ``OMP_NUM_THREADS=1`` and binding ``none`` on them, under SLURM too. They
+   run one at a time anyway, each taking every core. A task that takes the
+   whole pool is no longer "concurrent". Old per-sub-job restart records are
+   not reused: one recompute after upgrading.
+9. Minor:
+
+   - a configuration selected twice is evaluated once by the Energy step;
+   - the ``mopac`` resolver keeps a conda or modules installation whose
+     ``code`` is empty;
+   - DLPNO open-shell refused energy-only too, matching MDI (unchanged).
