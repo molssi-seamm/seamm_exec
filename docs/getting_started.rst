@@ -141,7 +141,8 @@ therefore declare its convention in its ``get_model_chemistry_options`` entry:
 pushes outward: VASP's ``in kB`` line, MDI's ``<STRESS``) or ``"stress"``
 (sigma = -P, as ASE and xnn use). The Evaluator passes the stress through
 unchanged; a consumer converts it with that declaration and refuses a level
-that lacks it. Pinning one convention for every provider later would be a
+that lacks it. The declaration covers both paths, batch and MDI, so a provider
+whose two paths would give opposite signs must make them agree. Pinning one convention for every provider later would be a
 documented change of this contract.
 
 Where things run
