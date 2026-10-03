@@ -30,8 +30,9 @@ The program's contract (classmethods beside ``get_model_chemistry_options``)::
 
 A structure for which ``can_run_task`` is False (e.g. a periodic system for
 ORCA or MOPAC) goes to the program's MDI engine, if it has one, even when the
-others run as tasks; a ``get_task`` that raises gives that structure a failed
-result without stopping the rest.
+others run as tasks. If there is no engine, or it cannot start here (a queue
+target with the code only on the cluster), that structure gets a failed result;
+so does one whose ``get_task`` raises. Neither stops the rest.
 
 ``analyze_task`` raises :class:`AnalysisError` when a required property is
 missing; it never returns partial numbers. ``options`` passes what a consumer
