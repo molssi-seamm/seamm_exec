@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.3.1 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.3.2 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=0667127d"></script>
+    <script src="../_static/documentation_options.js?v=319f9817"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="seamm_exec" href="modules.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.3.1" />
+  <meta name="docsearch:version" content="2026.10.3.2" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -1308,8 +1308,10 @@ cannot run (a directory outside the job, without shared storage).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="seamm_exec.scheduler_backend.SchedulerBackend.submit">
-<span class="sig-name descname"><span class="pre">submit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tasks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bundle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">markers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_prepared</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#SchedulerBackend.submit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend.submit" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">submit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tasks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bundle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">markers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_prepared</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bundle_walltime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#SchedulerBackend.submit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend.submit" title="Link to this definition">#</a></dt>
 <dd><p>Submit <code class="docutils literal notranslate"><span class="pre">tasks</span></code> as one bundle: one batch job. Returns their ids.</p>
+<p><code class="docutils literal notranslate"><span class="pre">bundle_walltime</span></code> (seconds) is the caller’s limit on a bundle, used to
+bound its time when the tasks give none.</p>
 <p><code class="docutils literal notranslate"><span class="pre">on_prepared(tasks,</span> <span class="pre">info)</span></code> is called before <code class="docutils literal notranslate"><span class="pre">sbatch</span></code> with the
 bundle’s unique job name and directory, so the caller can record them:
 a restart that finds no job id looks the job up by that name.</p>
@@ -1945,7 +1947,10 @@ here. Default: the target’s <code class="docutils literal notranslate"><span c
 <dd><p>The back end for a task: the job’s target, except for tiny tasks.</p>
 <p>The inline rule: a task whose <code class="docutils literal notranslate"><span class="pre">estimated_seconds</span></code> is below
 <code class="docutils literal notranslate"><span class="pre">inline_below</span></code> runs in the evaluator’s own pool instead of a remote
-back end, provided its program is installed here.</p>
+back end, provided its program is installed here and the task fits the
+pool: a task asking for more cores than the evaluator has goes to the
+back end however cheap it is, since its input may already say how many
+ranks to use (seamm_exec#38).</p>
 </dd></dl>
 
 <dl class="py method">

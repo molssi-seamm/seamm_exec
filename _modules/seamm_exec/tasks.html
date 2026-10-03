@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.tasks &#8212; SEAMM seamm-exec Plug-in 2026.10.3.1 documentation</title>
+    <title>seamm_exec.tasks &#8212; SEAMM seamm-exec Plug-in 2026.10.3.2 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=0667127d"></script>
+    <script src="../../_static/documentation_options.js?v=319f9817"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.3.1" />
+  <meta name="docsearch:version" content="2026.10.3.2" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1075,7 +1075,10 @@
 
 <span class="sd">        The inline rule: a task whose ``estimated_seconds`` is below</span>
 <span class="sd">        ``inline_below`` runs in the evaluator's own pool instead of a remote</span>
-<span class="sd">        back end, provided its program is installed here.</span>
+<span class="sd">        back end, provided its program is installed here and the task fits the</span>
+<span class="sd">        pool: a task asking for more cores than the evaluator has goes to the</span>
+<span class="sd">        back end however cheap it is, since its input may already say how many</span>
+<span class="sd">        ranks to use (seamm_exec#38).</span>
 <span class="sd">        """</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">.local_pool</span><span class="w"> </span><span class="kn">import</span> <span class="n">LocalPool</span>
 
@@ -1096,11 +1099,21 @@
         <span class="k">if</span> <span class="p">(</span>
             <span class="n">task</span><span class="o">.</span><span class="n">estimated_seconds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
             <span class="ow">and</span> <span class="n">task</span><span class="o">.</span><span class="n">estimated_seconds</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">inline_below</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fits_locally</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
             <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">local</span><span class="o">.</span><span class="n">has_program</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
         <span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">local</span>
         <span class="k">return</span> <span class="n">backend</span></div>
 
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fits_locally</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Whether the task's cores fit the evaluator's own pool."""</span>
+        <span class="n">ntasks</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">ntasks</span>
+        <span class="k">if</span> <span class="n">ntasks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># "all of the back end's capacity": whatever the pool has</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="n">cores</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ntasks</span><span class="p">)</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">cpus_per_task</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cores</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">local</span><span class="o">.</span><span class="n">cores</span>
 
     <span class="c1"># ------------------------------------------------------------------</span>
     <span class="c1"># Running</span>
@@ -1351,6 +1364,8 @@
             <span class="n">kwargs</span><span class="p">[</span><span class="s2">"bundle"</span><span class="p">]</span> <span class="o">=</span> <span class="n">bundle</span>
             <span class="n">kwargs</span><span class="p">[</span><span class="s2">"markers"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">marker_directory</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">group</span><span class="p">]</span>
             <span class="n">kwargs</span><span class="p">[</span><span class="s2">"on_prepared"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_on_prepared</span>
+            <span class="c1"># Bounds the bundle's time when its tasks give none.</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">"bundle_walltime"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle_walltime</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">ids</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
                 <span class="n">group</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">task_directory</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">group</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span>

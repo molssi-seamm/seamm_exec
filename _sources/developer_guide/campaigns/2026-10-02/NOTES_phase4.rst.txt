@@ -553,6 +553,39 @@ The three legacy SMILES-table flowcharts now run cleanly unchanged, and
 ``geometry.flow`` runs to the end. table_step's soak commit was amended to drop a
 stray reformat of ``_version.py``: it is now f5b529e.
 
-Still to do: soak in SEAMM_DEV,
-then the release (molsystem, seamm, seamm_exec, the four steps; minimum
-versions in ``table_plugins`` and the pins set then).
+Released (2026-10-03)
+~~~~~~~~~~~~~~~~~~~~~
+
+Paul merged the PRs; at his request the worker created the Releases, after
+checking that each ``main`` head was the merge:
+
+==========================  ============  ==============================
+Package                     Version       PR
+==========================  ============  ==============================
+``molsystem``               2026.10.3     #120
+``seamm``                   2026.10.3     #222 (closes #220, #221)
+``seamm_exec``              2026.10.3.1   #36
+``table_step``              2026.10.3     #98
+``loop_step``               2026.10.3     #38
+``properties_step``         2026.10.3.1   #3, #4
+``geometry_analysis_step``  2026.10.3.1   #10, #11
+==========================  ============  ==============================
+
+Lessons:
+
+- **seamm needs openpyxl now:** Excel export moved from table_step into
+  ``seamm.Table``; seamm's first CI run failed without it.
+- **twine check before tagging.** properties_step and geometry_analysis_step
+  2026.10.3 were tagged but not published: their new HISTORY entries lacked the
+  blank line before the next entry, which CI and the docs build accept but the
+  publish step's ``twine check`` rejects. Re-released as 2026.10.3.1 (#4, #11);
+  the orphan 2026.10.3 Releases and tags were deleted (Paul's call).
+- **gh-pages race:** a tag starts both the Release workflow and the
+  Documentation workflow, and both push ``gh-pages``; properties_step's
+  Release lost the race ("cannot lock ref"), so its tests and PyPI job were
+  skipped. Rerunning the failed jobs published it.
+- A docs run started right after a dependency's upload can fail to resolve it
+  (PyPI index lag); rerun.
+
+Not rolled out to any installation. ``~/SEAMM_DEV`` is still on
+``venvs/phase4-B`` (editable checkouts, now at the released tags).

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Phase 4 notes &#8212; SEAMM seamm-exec Plug-in 2026.10.3.1 documentation</title>
+    <title>Phase 4 notes &#8212; SEAMM seamm-exec Plug-in 2026.10.3.2 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../../_static/documentation_options.js?v=0667127d"></script>
+    <script src="../../../_static/documentation_options.js?v=319f9817"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -53,7 +53,7 @@
     <link rel="prev" title="Phase 3 notes" href="NOTES_phase3.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.3.1" />
+  <meta name="docsearch:version" content="2026.10.3.2" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -1100,9 +1100,68 @@ exports the property values rather than their <code class="docutils literal notr
 The three legacy SMILES-table flowcharts now run cleanly unchanged, and
 <code class="docutils literal notranslate"><span class="pre">geometry.flow</span></code> runs to the end. table_step’s soak commit was amended to drop a
 stray reformat of <code class="docutils literal notranslate"><span class="pre">_version.py</span></code>: it is now f5b529e.</p>
-<p>Still to do: soak in SEAMM_DEV,
-then the release (molsystem, seamm, seamm_exec, the four steps; minimum
-versions in <code class="docutils literal notranslate"><span class="pre">table_plugins</span></code> and the pins set then).</p>
+</section>
+<section id="released-2026-10-03">
+<h3>Released (2026-10-03)<a class="headerlink" href="#released-2026-10-03" title="Link to this heading">#</a></h3>
+<p>Paul merged the PRs; at his request the worker created the Releases, after
+checking that each <code class="docutils literal notranslate"><span class="pre">main</span></code> head was the merge:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Package</p></th>
+<th class="head"><p>Version</p></th>
+<th class="head"><p>PR</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">molsystem</span></code></p></td>
+<td><p>2026.10.3</p></td>
+<td><p>#120</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">seamm</span></code></p></td>
+<td><p>2026.10.3</p></td>
+<td><p>#222 (closes #220, #221)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code></p></td>
+<td><p>2026.10.3.1</p></td>
+<td><p>#36</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">table_step</span></code></p></td>
+<td><p>2026.10.3</p></td>
+<td><p>#98</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">loop_step</span></code></p></td>
+<td><p>2026.10.3</p></td>
+<td><p>#38</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">properties_step</span></code></p></td>
+<td><p>2026.10.3.1</p></td>
+<td><p>#3, #4</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">geometry_analysis_step</span></code></p></td>
+<td><p>2026.10.3.1</p></td>
+<td><p>#10, #11</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Lessons:</p>
+<ul class="simple">
+<li><p><strong>seamm needs openpyxl now:</strong> Excel export moved from table_step into
+<code class="docutils literal notranslate"><span class="pre">seamm.Table</span></code>; seamm’s first CI run failed without it.</p></li>
+<li><p><strong>twine check before tagging.</strong> properties_step and geometry_analysis_step
+2026.10.3 were tagged but not published: their new HISTORY entries lacked the
+blank line before the next entry, which CI and the docs build accept but the
+publish step’s <code class="docutils literal notranslate"><span class="pre">twine</span> <span class="pre">check</span></code> rejects. Re-released as 2026.10.3.1 (#4, #11);
+the orphan 2026.10.3 Releases and tags were deleted (Paul’s call).</p></li>
+<li><p><strong>gh-pages race:</strong> a tag starts both the Release workflow and the
+Documentation workflow, and both push <code class="docutils literal notranslate"><span class="pre">gh-pages</span></code>; properties_step’s
+Release lost the race (“cannot lock ref”), so its tests and PyPI job were
+skipped. Rerunning the failed jobs published it.</p></li>
+<li><p>A docs run started right after a dependency’s upload can fail to resolve it
+(PyPI index lag); rerun.</p></li>
+</ul>
+<p>Not rolled out to any installation. <code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV</span></code> is still on
+<code class="docutils literal notranslate"><span class="pre">venvs/phase4-B</span></code> (editable checkouts, now at the released tags).</p>
 </section>
 </section>
 </section>
@@ -1159,6 +1218,7 @@ versions in <code class="docutils literal notranslate"><span class="pre">table_p
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#review-2026-10-03">Review (2026-10-03)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#corpus-2026-10-03">Corpus (2026-10-03)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#soak-2026-10-03">Soak (2026-10-03)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#released-2026-10-03">Released (2026-10-03)</a></li>
 </ul>
 </li>
 </ul>

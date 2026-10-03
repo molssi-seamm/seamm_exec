@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops &#8212; SEAMM seamm-exec Plug-in 2026.10.3.1 documentation</title>
+    <title>2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops &#8212; SEAMM seamm-exec Plug-in 2026.10.3.2 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../../_static/documentation_options.js?v=0667127d"></script>
+    <script src="../../../_static/documentation_options.js?v=319f9817"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="Campaigns" href="../index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.3.1" />
+  <meta name="docsearch:version" content="2026.10.3.2" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -1211,7 +1211,14 @@ audit of the code steps; JobServer resubmission validated for real on ARC-alone.
 <li><p><strong>Parallel Loop</strong> with the snapshot, merge and placement options; validate on the laptop (pool), on
 ChemAI + ARC, and on ARC alone.</p></li>
 <li><p><strong>TaskServer</strong> and its client; <strong>PBS</strong> validated on a real PBS site when one is available; Dashboard
-task view.</p></li>
+task view. <em>PBS done 2026-10-03:</em> MolSSI10 (test-only) replaced SLURM with OpenPBS 23.06.06; the PBS
+back end was fixed against it (<code class="docutils literal notranslate"><span class="pre">-W</span> <span class="pre">depend</span></code>, <code class="docutils literal notranslate"><span class="pre">cd</span></code> into the job directory, <code class="docutils literal notranslate"><span class="pre">-V</span></code>, <code class="docutils literal notranslate"><span class="pre">qselect</span> <span class="pre">-x</span></code>)
+and its output recorded as test fixtures, as was SLURM 20.11’s before removal; JobServer sections
+gained <code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">queue</span></code> + <code class="docutils literal notranslate"><span class="pre">scheduler</span> <span class="pre">=</span> <span class="pre">pbs|slurm</span></code>; a flowchart ran as a PBS job, and with its
+calculations as PBS tasks, from SEAMM_DEV over ssh; after the review fixes, job 4008 (the validation record)
+ran its bundles with the queue’s <code class="docutils literal notranslate"><span class="pre">select</span></code> memory and brought <code class="docutils literal notranslate"><span class="pre">pbs.out</span></code> back. See seamm_scheduler
+<code class="docutils literal notranslate"><span class="pre">docs/developer_guide/campaigns/2026-10-03/</span></code>. (OpenPBS’s last release is 2023; it stands in for PBS
+Professional sites.)</p></li>
 </ol>
 <p>Phase 0 protects every later phase. Phases 1 to 3 unblock the MBE step with low production exposure;
 4 and 5 are prerequisites of 6; 4 is the one that needs a soak period before it is released.</p>
