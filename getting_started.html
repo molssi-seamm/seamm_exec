@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.4 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.4.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="_static/documentation_options.js?v=3dc6335c"></script>
+    <script src="_static/documentation_options.js?v=883ce3b3"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="Welcome to SEAMM exec’s documentation!" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.4" />
+  <meta name="docsearch:version" content="2026.10.4.1" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -509,8 +509,10 @@ many cores and how much memory it needs, and <code class="docutils literal notra
 the same directory restores finished tasks from their markers and never
 recomputes them; a task whose inputs changed is recomputed. A task that failed is
 not retried within a run, but is tried again on a rerun, up to three attempts in
-all (the count resets when the inputs change). A process that a crashed run left
-behind is killed on the rerun, after checking it is the same process.</p></li>
+all (the count resets when the inputs change). A task that stopped only because
+the evaluator stopped (killed, out of walltime) does not count as an attempt. A
+process that a crashed run left behind is killed on the rerun, after checking it
+is the same process.</p></li>
 <li><p><strong>Success beyond the exit code.</strong> <code class="docutils literal notranslate"><span class="pre">success_text</span></code> names text that must appear in
 a result file; ORCA exits 0 on an error termination, for example.</p></li>
 <li><p><strong>Archiving.</strong> With <code class="docutils literal notranslate"><span class="pre">archive=True</span></code> finished task directories are packed into one
@@ -611,6 +613,9 @@ where the evaluator runs.</p></li>
 <code class="docutils literal notranslate"><span class="pre">shared_filesystem</span> <span class="pre">=</span> <span class="pre">yes</span></code> (or the local transport) nothing is copied.</p></li>
 <li><p>A rerun of the step polls bundles still in the queue rather than submitting
 them again, and a bundle that ran out of time leaves its finished tasks done.</p></li>
+<li><p>A task whose bundle the queue stopped for running out of time is submitted
+again with twice the estimated time, and twice that after a second timeout,
+within <code class="docutils literal notranslate"><span class="pre">bundle_walltime</span></code>. A walltime the task gives itself is used as given.</p></li>
 <li><p>Tasks estimated to take less than <code class="docutils literal notranslate"><span class="pre">inline_below</span></code> seconds (default 60) run on
 the evaluator’s machine when their program is installed there.</p></li>
 <li><p>A task that carries its own <code class="docutils literal notranslate"><span class="pre">config</span></code> was configured for the evaluator’s
@@ -620,6 +625,42 @@ still configure their program themselves do this; ORCA (from orca_step
 </ul>
 <p>Bundle files are in <code class="docutils literal notranslate"><span class="pre">&lt;step&gt;/tasks/_bundles/&lt;bundle&gt;.&lt;n&gt;/</span></code>: <code class="docutils literal notranslate"><span class="pre">bundle.json</span></code>,
 <code class="docutils literal notranslate"><span class="pre">run.sh</span></code> and the scheduler’s log.</p>
+</section>
+<section id="resuming-a-job">
+<h2>Resuming a job<a class="headerlink" href="#resuming-a-job" title="Link to this heading">#</a></h2>
+<p>Since 2026.10.4.1 a flowchart run in its own directory keeps a checkpoint, and a
+job that stopped part way – killed, out of walltime on a cluster, the machine
+rebooted – can continue from where it got to instead of starting again:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>run_flowchart<span class="w"> </span>flowchart.flow<span class="w"> </span>--resume<span class="w">      </span><span class="c1"># in the job's directory</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">--resume</span></code> continues at the first step that had not finished, or in a Loop at
+the iteration (and step) it had reached. The JobServer asks for it itself when it
+resubmits a job a cluster lost (it sets <code class="docutils literal notranslate"><span class="pre">SEAMM_RESUME=1</span></code> in the batch script).</p>
+<ul class="simple">
+<li><p><strong>What is kept.</strong> Each step’s database writes (structures, properties, tables)
+are one transaction, committed together with the checkpoint when the step
+finishes. A step that was stopped part way has none of its writes kept, and runs
+again; its finished calculations are reused from its task manifests. The
+checkpoint also holds the flowchart’s variables, the current system and each
+Loop’s position. It is stored in the job database, <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code>;
+<code class="docutils literal notranslate"><span class="pre">checkpoint.json</span></code> beside it is a copy for people to read.</p></li>
+<li><p><strong>When it resumes.</strong> Only with <code class="docutils literal notranslate"><span class="pre">--resume</span></code> (or <code class="docutils literal notranslate"><span class="pre">SEAMM_RESUME</span></code>), and only if
+the flowchart and its command line are the same as before. A rerun without it
+moves the previous run’s <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code> to <code class="docutils literal notranslate"><span class="pre">previous/&lt;date</span> <span class="pre">and</span> <span class="pre">time&gt;/</span></code> and starts
+from the top, saying so in <code class="docutils literal notranslate"><span class="pre">job.out</span></code>; if that run could have been resumed it
+says that too. (A changed input file is not detected, which is why resuming is
+never automatic.) Changed package versions are noted, not refused.</p></li>
+<li><p><strong>Variables.</strong> Numbers, strings, lists, dictionaries, numpy arrays, quantities,
+paths, tables and the like are saved; a step that makes other objects saves
+them itself (the Forcefield step does). Anything else, such as a function a
+Custom step defined, is not available after a resume, and a step that uses it
+stops with a message saying so.</p></li>
+<li><p><strong>Not resumable:</strong> a run with <code class="docutils literal notranslate"><span class="pre">--read-only</span></code>, <code class="docutils literal notranslate"><span class="pre">:memory:</span></code>, or a
+<code class="docutils literal notranslate"><span class="pre">--database</span></code> outside the job directory.</p></li>
+<li><p><strong>Visibility.</strong> While a step runs, other programs reading the job’s database
+(the Dashboard, the web UI) see it as of the last finished step.</p></li>
+</ul>
 </section>
 </section>
 
@@ -674,6 +715,7 @@ still configure their program themselves do this; ORCA (from orca_step
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-codes-as-tasks">Running codes as tasks</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#many-structures-one-model-chemistry">Many structures, one model chemistry</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#where-things-run">Where things run</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resuming-a-job">Resuming a job</a></li>
 </ul>
   </nav></div>
 

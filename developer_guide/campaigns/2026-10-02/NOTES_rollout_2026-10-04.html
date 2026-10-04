@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Phase 0 notes &#8212; SEAMM seamm-exec Plug-in 2026.10.4.1 documentation</title>
+    <title>Rollout of 2026-10-04: ChemAI and TinkerCliffs &#8212; SEAMM seamm-exec Plug-in 2026.10.4.1 documentation</title>
   
   
   
@@ -46,12 +46,11 @@
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'developer_guide/campaigns/2026-10-02/NOTES_phase0';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'developer_guide/campaigns/2026-10-02/NOTES_rollout_2026-10-04';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="Phase 1 notes" href="NOTES_phase1.html" />
-    <link rel="prev" title="2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops" href="index.html" />
+    <link rel="prev" title="Phase 5 notes" href="NOTES_phase5.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="2026.10.4.1" />
@@ -458,7 +457,7 @@
     
     <li class="breadcrumb-item"><a href="index.html" class="nav-link">2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Phase 0 notes</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Rollout of 2026-10-04: ChemAI and TinkerCliffs</span></li>
   </ul>
 </nav>
 </div>
@@ -475,94 +474,203 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="phase-0-notes">
-<h1>Phase 0 notes<a class="headerlink" href="#phase-0-notes" title="Link to this heading">#</a></h1>
-<section id="versioned-environments-in-seamm-manager">
-<h2>2026-10-02 – versioned environments in seamm-manager<a class="headerlink" href="#versioned-environments-in-seamm-manager" title="Link to this heading">#</a></h2>
-<p>Done on <code class="docutils literal notranslate"><span class="pre">seamm_manager</span></code> <code class="docutils literal notranslate"><span class="pre">dev</span></code> (uncommitted to main, unreleased): the rule
-“never update a venv in place while jobs run”.</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/venv</span></code> becomes a symlink to <code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/venvs/&lt;stamp&gt;</span></code>. An update builds
-the new version from <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span> <span class="pre">freeze</span></code> of the current one (4 s with uv’s cache,
-1.3 GB; editable and local installs survive), applies the change there, and
-switches the link.</p></li>
-<li><p>CPython does not resolve the link when it locates a venv, so every launcher
-(launchd plist, systemd unit, service bundle, desktop apps, the migrated
-scripts’ shebangs) is rewritten to the real path. A switch is refused while a
-process started through the link exists; <code class="docutils literal notranslate"><span class="pre">--force</span></code> overrides.</p></li>
-<li><p>New: <code class="docutils literal notranslate"><span class="pre">environment</span> <span class="pre">versions</span> <span class="pre">|</span> <span class="pre">migrate</span> <span class="pre">|</span> <span class="pre">switch</span> <span class="pre">|</span> <span class="pre">rollback</span> <span class="pre">|</span> <span class="pre">prune</span></code>;
-<code class="docutils literal notranslate"><span class="pre">recreate</span></code> builds beside instead of deleting.</p></li>
-<li><p>Validated on <code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV</span></code>: migration under a running JobServer; a real
-update of <code class="docutils literal notranslate"><span class="pre">seamm</span></code> 2026.10.2 to 2026.10.2.2 whose switch was refused by a
-link-started process and completed later with <code class="docutils literal notranslate"><span class="pre">environment</span> <span class="pre">switch</span></code>;
-rollback and back; prune keeps in-use and young versions; job 4002 reported
-<code class="docutils literal notranslate"><span class="pre">sys.prefix</span></code> under <code class="docutils literal notranslate"><span class="pre">venvs/&lt;stamp&gt;</span></code>.</p></li>
-</ul>
-<section id="found-on-the-way">
-<h3>Found on the way<a class="headerlink" href="#found-on-the-way" title="Link to this heading">#</a></h3>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">Uv.install(...,</span> <span class="pre">upgrade=True)</span></code> without a lock passes every installed
-package’s requirements as <code class="docutils literal notranslate"><span class="pre">-r</span></code> context; with <code class="docutils literal notranslate"><span class="pre">--upgrade</span></code> uv treats those
-as requests and upgrades them too (the old environment’s <code class="docutils literal notranslate"><span class="pre">seamm</span></code> and
-<code class="docutils literal notranslate"><span class="pre">seamm-manager</span></code> moved during the development-packages step). The
-development packages now ride along in the new build, which closes the leak
-for updates, but the <code class="docutils literal notranslate"><span class="pre">-r</span></code> semantics deserve a look.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">venv-webui</span></code> is still updated in place (no jobs run from it; a restart is a
-brief outage). Same treatment later if wanted.</p></li>
-<li><p>The plug-in installers update the codes’ conda environments in place; the
-Python-based engines (xnn, the MOPAC MDI engine) import lazily too.</p></li>
-</ul>
+  <section id="rollout-of-2026-10-04-chemai-and-tinkercliffs">
+<h1>Rollout of 2026-10-04: ChemAI and TinkerCliffs<a class="headerlink" href="#rollout-of-2026-10-04-chemai-and-tinkercliffs" title="Link to this heading">#</a></h1>
+<p>Paul’s explicit ask (2026-10-04): update ChemAI’s and TinkerCliffs’ SEAMM
+installations to the current releases (phase 4, the PBS chain, seamm_exec
+2026.10.4, read_structure_step 2026.10.4). Done the same day.</p>
+<section id="versions">
+<h2>Versions<a class="headerlink" href="#versions" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Package</p></th>
+<th class="head"><p>ChemAI before</p></th>
+<th class="head"><p>ChemAI now</p></th>
+<th class="head"><p>TinkerCliffs before</p></th>
+<th class="head"><p>TinkerCliffs now</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>seamm</p></td>
+<td><p>2026.10.2</p></td>
+<td><p>2026.10.3</p></td>
+<td><p>2026.10.2.2</p></td>
+<td><p>2026.10.3</p></td>
+</tr>
+<tr class="row-odd"><td><p>molsystem</p></td>
+<td><p>2026.9.25</p></td>
+<td><p>2026.10.3</p></td>
+<td><p>2026.9.25</p></td>
+<td><p>2026.10.3</p></td>
+</tr>
+<tr class="row-even"><td><p>seamm-exec</p></td>
+<td><p>2026.9.27</p></td>
+<td><p>2026.10.4</p></td>
+<td><p>2026.10.2.1</p></td>
+<td><p>2026.10.4</p></td>
+</tr>
+<tr class="row-odd"><td><p>seamm-scheduler</p></td>
+<td><p>(none)</p></td>
+<td><p>2026.10.3</p></td>
+<td><p>2026.10.2</p></td>
+<td><p>2026.10.3</p></td>
+</tr>
+<tr class="row-even"><td><p>seamm-jobserver</p></td>
+<td><p>2026.9.27</p></td>
+<td><p>2026.10.3</p></td>
+<td><p>2026.10.2</p></td>
+<td><p>2026.10.3</p></td>
+</tr>
+<tr class="row-odd"><td><p>seamm-slurm</p></td>
+<td><p>2026.8.13</p></td>
+<td><p>2026.10.2</p></td>
+<td><p>2026.10.2</p></td>
+<td><p>2026.10.2</p></td>
+</tr>
+<tr class="row-even"><td><p>seamm-webui (own venv)</p></td>
+<td><p>2026.10.1.1</p></td>
+<td><p>2026.10.3</p></td>
+<td><p>(no web UI)</p></td>
+<td><p>–</p></td>
+</tr>
+<tr class="row-odd"><td><p>table-step</p></td>
+<td><p>2026.9.30</p></td>
+<td><p>2026.10.3</p></td>
+<td><p>2026.9.30</p></td>
+<td><p>2026.10.3</p></td>
+</tr>
+<tr class="row-even"><td><p>loop-step</p></td>
+<td><p>2026.9.18</p></td>
+<td><p>2026.10.3</p></td>
+<td><p>2026.9.18</p></td>
+<td><p>2026.10.3</p></td>
+</tr>
+<tr class="row-odd"><td><p>geometry-analysis-step</p></td>
+<td><p>2026.3.1</p></td>
+<td><p>2026.10.3.1</p></td>
+<td><p>2026.3.1</p></td>
+<td><p>2026.10.3.1</p></td>
+</tr>
+<tr class="row-even"><td><p>orca-step</p></td>
+<td><p>2026.10.1</p></td>
+<td><p>2026.10.3.2</p></td>
+<td><p>2026.10.1</p></td>
+<td><p>2026.10.3.2</p></td>
+</tr>
+<tr class="row-odd"><td><p>mopac-step</p></td>
+<td><p>2026.10.1</p></td>
+<td><p>2026.10.3.2</p></td>
+<td><p>2026.10.1</p></td>
+<td><p>2026.10.3.2</p></td>
+</tr>
+<tr class="row-even"><td><p>read-structure-step</p></td>
+<td><p>2026.9.18.1</p></td>
+<td><p>2026.10.4</p></td>
+<td><p>2026.9.18.1</p></td>
+<td><p>2026.10.4</p></td>
+</tr>
+<tr class="row-odd"><td><p>vasp-step</p></td>
+<td><p>2026.9.29</p></td>
+<td><p>2026.10.3.1</p></td>
+<td><p>2026.9.29</p></td>
+<td><p>2026.10.3.1</p></td>
+</tr>
+<tr class="row-even"><td><p>lammps-step</p></td>
+<td><p>2026.10.1</p></td>
+<td><p>2026.10.3</p></td>
+<td><p>–</p></td>
+<td><p>–</p></td>
+</tr>
+<tr class="row-odd"><td><p>xnn-step</p></td>
+<td><p>2026.9.28</p></td>
+<td><p>2026.9.28</p></td>
+<td><p>2026.9.28</p></td>
+<td><p>2026.10.2</p></td>
+</tr>
+<tr class="row-even"><td><p>seamm-manager (tool)</p></td>
+<td><p>2026.10.1.1</p></td>
+<td><p>2026.10.2.3</p></td>
+<td><p>2026.10.2.3</p></td>
+<td><p>2026.10.2.3</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">check</span></code> is clean on both. properties-step is not installed on either
+(<code class="docutils literal notranslate"><span class="pre">update</span></code> only upgrades what is installed). mbe-step 2026.10.4 and seamm-mbe
+2026.10.3.1 were added to ChemAI afterwards (below); TinkerCliffs has neither.</p>
 </section>
-<section id="the-comparison-harness-same-day">
-<h3>The comparison harness (same day)<a class="headerlink" href="#the-comparison-harness-same-day" title="Link to this heading">#</a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">seamm-manager</span> <span class="pre">compare</span> <span class="pre">&lt;flowchart&gt;</span> <span class="pre">-a</span> <span class="pre">&lt;side&gt;</span> <span class="pre">-b</span> <span class="pre">&lt;side&gt;</span> <span class="pre">[--work</span> <span class="pre">DIR]</span> <span class="pre">[--</span> <span class="pre">args]</span></code>
-runs the flowchart with each side’s <code class="docutils literal notranslate"><span class="pre">run_flowchart</span></code> (<code class="docutils literal notranslate"><span class="pre">--root</span></code> set to the
-side’s installation) in <code class="docutils literal notranslate"><span class="pre">a/</span></code> and <code class="docutils literal notranslate"><span class="pre">b/</span></code> and compares the trees: JSON, CSV and
-structure files with a numeric tolerance (<code class="docutils literal notranslate"><span class="pre">--rtol</span></code>, <code class="docutils literal notranslate"><span class="pre">--atol</span></code>), text files
-after dropping lines with timestamps, durations, versions and hosts and
-replacing the working directories. Sides: <code class="docutils literal notranslate"><span class="pre">current</span></code>, <code class="docutils literal notranslate"><span class="pre">newest</span></code>,
-<code class="docutils literal notranslate"><span class="pre">previous</span></code>, a version name, an environment directory, an installation root.
-So the check before a switch is <code class="docutils literal notranslate"><span class="pre">compare</span> <span class="pre">x.flow</span> <span class="pre">-a</span> <span class="pre">current</span> <span class="pre">-b</span> <span class="pre">newest</span></code>.
-Validated with <code class="docutils literal notranslate"><span class="pre">Testing/harness_water.flow</span></code> (FromSMILES + MOPAC energy)
-between the two SEAMM_DEV versions and between ~/SEAMM and SEAMM_DEV: every
-file identical or within tolerance once MOPAC’s timing lines and the job
-uuid were treated as volatile.</p>
-<p>Found: <code class="docutils literal notranslate"><span class="pre">seamm_util.root.installation_root</span></code> keyed on a directory named
-<code class="docutils literal notranslate"><span class="pre">venv</span></code>, so anything run by hand from a versioned environment defaulted to
-<code class="docutils literal notranslate"><span class="pre">~/SEAMM</span></code> (jobs were fine: the JobServer passes <code class="docutils literal notranslate"><span class="pre">--root</span></code>). Fixed on
-<code class="docutils literal notranslate"><span class="pre">seamm_util</span></code> <code class="docutils literal notranslate"><span class="pre">dev</span></code>; <strong>seamm_util must be released before seamm-manager’s
-migration reaches a production installation.</strong></p>
+<section id="chemai">
+<h2>ChemAI<a class="headerlink" href="#chemai" title="Link to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p>No jobs: nothing in SLURM for <code class="docutils literal notranslate"><span class="pre">seamm</span></code>, nothing submitted or running in the
+datastore (the 112 old “started” rows are stale). JobServer and web UI
+stopped.</p></li>
+<li><p>seamm-manager 2026.10.2.3 (<code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">tool</span> <span class="pre">install</span> <span class="pre">--force</span> <span class="pre">--python</span> <span class="pre">3.12</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">environment</span> <span class="pre">migrate</span></code>: the old venv is <code class="docutils literal notranslate"><span class="pre">venvs/2026-10-04T06-14-09</span></code> (the
+rollback). It reported starting the JobServer; it was not running
+(seamm_manager#26).</p></li>
+<li><p><strong>Not</strong> <code class="docutils literal notranslate"><span class="pre">update</span> <span class="pre">--all</span></code>: xnn-step’s installer would have applied
+<code class="docutils literal notranslate"><span class="pre">seamm-xnn.yml</span></code> with <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">update</span></code> to <code class="docutils literal notranslate"><span class="pre">seamm-lammps</span></code>, which
+<code class="docutils literal notranslate"><span class="pre">xnn.ini</span></code> names and which has no xnn applied-marker – the LAMMPS/MLFF
+environment the rollout must not touch. Paul chose to update everything
+except xnn-step: <code class="docutils literal notranslate"><span class="pre">update</span> <span class="pre">--latest</span></code> with every installed package but xnn-step,
+plus <code class="docutils literal notranslate"><span class="pre">seamm-webui</span></code>. New venv <code class="docutils literal notranslate"><span class="pre">venvs/2026-10-04T06-18-41</span></code> (19 changes). The
+other code installers found their environment files unchanged since
+2026-09-28 (markers under 7 days old) and did nothing: every code environment’s
+marker and <code class="docutils literal notranslate"><span class="pre">conda-meta</span></code> are unchanged; <code class="docutils literal notranslate"><span class="pre">seamm-lammps</span></code>’ history was last
+written 2026-09-19. The pyxtal-step installer failed (<code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">pkg_resources</span></code>),
+a problem of that plug-in, not of the update.</p></li>
+<li><p>JobServer 2026.10.3 started (<code class="docutils literal notranslate"><span class="pre">services</span> <span class="pre">start</span> <span class="pre">jobserver</span></code>), web UI running
+(55155) with all 16 queues; the legacy dashboard left stopped.</p></li>
+</ol>
 </section>
-<section id="released-and-rolled-out-2026-10-02-afternoon">
-<h3>Released and rolled out (2026-10-02, afternoon)<a class="headerlink" href="#released-and-rolled-out-2026-10-02-afternoon" title="Link to this heading">#</a></h3>
+<section id="tinkercliffs">
+<h2>TinkerCliffs<a class="headerlink" href="#tinkercliffs" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">/projects/seamm/SEAMM</span></code> was already versioned with seamm-manager 2026.10.2.3.
+None of the jobs running there used it (the MBE session’s bundles use its
+private venv; the <code class="docutils literal notranslate"><span class="pre">qzDimer2</span></code> array runs ORCA directly), so
+<code class="docutils literal notranslate"><span class="pre">update</span> <span class="pre">--latest</span> <span class="pre">--all</span></code> built <code class="docutils literal notranslate"><span class="pre">venvs/2026-10-04T06-12-15</span></code> and switched; the
+previous version <code class="docutils literal notranslate"><span class="pre">venvs/2026-10-03T06-33-37</span></code> is the rollback.</p>
+<p><strong>Damage:</strong> <code class="docutils literal notranslate"><span class="pre">--all</span></code> included xnn-step, whose installer applied
+<code class="docutils literal notranslate"><span class="pre">seamm-xnn.yml</span></code> to the env <code class="docutils literal notranslate"><span class="pre">xnn.ini</span></code> names, <code class="docutils literal notranslate"><span class="pre">seamm-lammps-xnndev</span></code> (the ARC
+MLFF env). At 06:14-06:15 that upgraded openssl 3.6.4 -&gt; 3.6.5 (conda) and
+replaced xnns 0.5.0 from git <code class="docutils literal notranslate"><span class="pre">a8958df6</span></code> with xnns 0.6.0 from PyPI (pip,
+<code class="docutils literal notranslate"><span class="pre">xnns&gt;=0.4.0</span></code>), and wrote the <code class="docutils literal notranslate"><span class="pre">seamm-xnn-step</span></code>/<code class="docutils literal notranslate"><span class="pre">seamm-lammps-step</span></code> markers.
+The development session had installed 0.6.0 at 05:58, but into the separate
+clone <code class="docutils literal notranslate"><span class="pre">seamm-lammps-xnn060</span></code>; its pending <code class="docutils literal notranslate"><span class="pre">xnn060_val</span></code> job (7849692) compares
+the two envs. The same mistake was avoided on ChemAI and missed here.
+Restored at Paul’s word (2026-10-04, job 7849692 still pending):
+<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--no-deps</span> <span class="pre">&quot;xnns</span> <span class="pre">&#64;</span> <span class="pre">git+https://github.com/molssi-ai/xnn&#64;a8958df6...&quot;</span></code>
+into <code class="docutils literal notranslate"><span class="pre">seamm-lammps-xnndev</span></code>; its <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">freeze</span></code> is now identical to the
+development session’s <code class="docutils literal notranslate"><span class="pre">envbuild/freeze_dev.txt</span></code> and <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">check</span></code> is clean. The
+openssl 3.6.5 patch and the two markers were left.</p>
+</section>
+<section id="test-jobs">
+<h2>Test jobs<a class="headerlink" href="#test-jobs" title="Link to this heading">#</a></h2>
 <ul class="simple">
-<li><p>seamm_util 2026.10.2 (root fix; CI on uv) and seamm-manager 2026.10.2.1 are on
-PyPI. <code class="docutils literal notranslate"><span class="pre">~/SEAMM</span></code> is migrated (<code class="docutils literal notranslate"><span class="pre">venvs/2026-10-02T15-02-40</span></code>, JobServer and apps
-relinked); <code class="docutils literal notranslate"><span class="pre">update</span> <span class="pre">--latest</span> <span class="pre">seamm-util</span></code> built <code class="docutils literal notranslate"><span class="pre">venvs/2026-10-02T15-03-12</span></code>
-with seamm_util 2026.10.2 but the switch was refused: five <code class="docutils literal notranslate"><span class="pre">seamm-flowchart</span></code>
-MCP servers of Claude sessions were started through the link before the
-migration. They are the only link-started processes; once restarted, every
-later production switch is unguarded.</p></li>
-<li><p>Found: <code class="docutils literal notranslate"><span class="pre">sync_manager()</span></code> ran after the build against the <em>current</em>
-environment when the switch was refused – an in-place change. Fixed on
-seamm_manager dev (unreleased): the manager’s release is installed into the
-new environment during the build.</p></li>
-<li><p>Found: <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">tool</span> <span class="pre">install</span> <span class="pre">--force</span> <span class="pre">--refresh</span> <span class="pre">seamm-manager</span></code> without a version
-or <code class="docutils literal notranslate"><span class="pre">--python</span></code> resolved 2026.9.26.1, not the newest; with <code class="docutils literal notranslate"><span class="pre">--python</span> <span class="pre">3.12</span></code>
-and the version it is fine. The manager’s own self-upgrade passes
-<code class="docutils literal notranslate"><span class="pre">--python</span></code>, so <code class="docutils literal notranslate"><span class="pre">update</span> <span class="pre">--all</span></code> is unaffected; by hand, pin both.</p></li>
+<li><p>ChemAI job <strong>5165</strong>, queue <code class="docutils literal notranslate"><span class="pre">ChemAI</span></code> (local SLURM): the MOPAC table
+flowchart; same table as every earlier run; the table is in its <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code>.</p></li>
+<li><p>ChemAI job <strong>5166</strong>, queue <code class="docutils literal notranslate"><span class="pre">tinkercliffs_debug</span></code> (SLURM job 7850707 on
+TinkerCliffs, run in the new environment): same table.</p></li>
 </ul>
+<p>Left for Paul: xnn-step on ChemAI (2026.9.28), to be updated deliberately
+without applying <code class="docutils literal notranslate"><span class="pre">seamm-xnn.yml</span></code> to <code class="docutils literal notranslate"><span class="pre">seamm-lammps</span></code>; the pyxtal-step
+installer’s <code class="docutils literal notranslate"><span class="pre">pkg_resources</span></code> import.</p>
 </section>
-<section id="still-to-do-in-phase-0">
-<h3>Still to do in phase 0<a class="headerlink" href="#still-to-do-in-phase-0" title="Link to this heading">#</a></h3>
-<ul class="simple">
-<li><p>Switch ~/SEAMM to the new version once the link-started MCP servers are
-restarted; release the sync_manager fix; migrate paul.local, then ChemAI (on
-an explicit ask) and ARC.</p></li>
-<li><p>Broaden the harness’s corpus: a loop with a table, an ORCA step, a
-Write Structure step, so phase 4 (tables in the database) has its gate.</p></li>
-</ul>
-</section>
+<section id="mbe-on-chemai">
+<h2>MBE on ChemAI<a class="headerlink" href="#mbe-on-chemai" title="Link to this heading">#</a></h2>
+<p>Paul’s ask, same day: install mbe-step and seamm-mbe on ChemAI.
+<code class="docutils literal notranslate"><span class="pre">seamm-manager</span> <span class="pre">install</span></code> refused both (“not a SEAMM package”): they are not yet
+in the nightly package list. They were added to the current venv
+(<code class="docutils literal notranslate"><span class="pre">venvs/2026-10-04T06-18-41</span></code>) in place with
+<code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--python</span> <span class="pre">~/SEAMM/venv/bin/python</span> <span class="pre">mbe-step==2026.10.4</span>
+<span class="pre">seamm-mbe==2026.10.3.1</span></code>, with nothing queued that used the venv. Their
+dependencies were already there, so nothing else changed; <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span> <span class="pre">check</span></code> is
+clean and <code class="docutils literal notranslate"><span class="pre">MBE</span></code> is registered under <code class="docutils literal notranslate"><span class="pre">org.molssi.seamm</span></code>. mbe-step has no
+installer (no code environment). No service restart: each job imports the
+plug-ins afresh. Until the two are in the package list, a later
+<code class="docutils literal notranslate"><span class="pre">update</span> <span class="pre">--all</span></code> keeps them but <code class="docutils literal notranslate"><span class="pre">environment</span> <span class="pre">recreate</span></code> would drop them.</p>
 </section>
 </section>
 
@@ -577,22 +685,13 @@ Write Structure step, so phase 4 (tables in the database) has its gate.</p></li>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="index.html"
+       href="NOTES_phase5.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops</p>
+        <p class="prev-next-title">Phase 5 notes</p>
       </div>
-    </a>
-    <a class="right-next"
-       href="NOTES_phase1.html"
-       title="next page">
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Phase 1 notes</p>
-      </div>
-      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div>
                 </footer>
@@ -613,20 +712,18 @@ Write Structure step, so phase 4 (tables in the database) has its gate.</p></li>
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#versioned-environments-in-seamm-manager">2026-10-02 – versioned environments in seamm-manager</a><ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#found-on-the-way">Found on the way</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-comparison-harness-same-day">The comparison harness (same day)</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#released-and-rolled-out-2026-10-02-afternoon">Released and rolled out (2026-10-02, afternoon)</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#still-to-do-in-phase-0">Still to do in phase 0</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#versions">Versions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#chemai">ChemAI</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tinkercliffs">TinkerCliffs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#test-jobs">Test jobs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mbe-on-chemai">MBE on ChemAI</a></li>
 </ul>
   </nav></div>
 
   <div class="sidebar-secondary-item">
 
   <div class="tocsection sourcelink">
-    <a href="../../../_sources/developer_guide/campaigns/2026-10-02/NOTES_phase0.rst.txt">
+    <a href="../../../_sources/developer_guide/campaigns/2026-10-02/NOTES_rollout_2026-10-04.rst.txt">
       <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
   </div>

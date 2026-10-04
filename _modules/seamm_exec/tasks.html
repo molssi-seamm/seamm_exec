@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.tasks &#8212; SEAMM seamm-exec Plug-in 2026.10.4 documentation</title>
+    <title>seamm_exec.tasks &#8212; SEAMM seamm-exec Plug-in 2026.10.4.1 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=3dc6335c"></script>
+    <script src="../../_static/documentation_options.js?v=883ce3b3"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.4" />
+  <meta name="docsearch:version" content="2026.10.4.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -627,6 +627,8 @@
 <span class="sd">        Why a task failed: its return code, a failed success check, ...</span>
 <span class="sd">    archive : Path or None</span>
 <span class="sd">        The tar holding the task's directory, once archived.</span>
+<span class="sd">    timed_out : bool</span>
+<span class="sd">        Whether the queue stopped it for running past the time limit.</span>
 <span class="sd">    raw : dict or None</span>
 <span class="sd">        The ``Base.run()``-style dictionary, for this run's results.</span>
 <span class="sd">    """</span>
@@ -645,6 +647,7 @@
     <span class="n">restored</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">archive</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">reason</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">timed_out</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">raw</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
@@ -809,6 +812,8 @@
 <span class="sd">    it completes. Within a run a task that fails (nonzero return code) is not</span>
 <span class="sd">    retried; a lost one is, up to ``max_lost_retries``. Across runs a failed or</span>
 <span class="sd">    lost task is tried again until it has had ``max_attempts`` attempts in all.</span>
+<span class="sd">    A local task that stopped because the evaluator stopped (killed, out of</span>
+<span class="sd">    walltime) does not use up an attempt.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1231,8 +1236,15 @@
                                 <span class="n">reason</span> <span class="o">=</span> <span class="s2">"lost"</span>
                                 <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="s2">"reason"</span><span class="p">):</span>
                                     <span class="n">reason</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">reason</span><span class="p">(</span><span class="n">backend_id</span><span class="p">)</span> <span class="ow">or</span> <span class="n">reason</span>
+                                <span class="n">timed_out</span> <span class="o">=</span> <span class="kc">False</span>
+                                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="s2">"timed_out"</span><span class="p">):</span>
+                                    <span class="n">timed_out</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">timed_out</span><span class="p">(</span><span class="n">backend_id</span><span class="p">)</span>
                                 <span class="bp">self</span><span class="o">.</span><span class="n">_finish_attempt</span><span class="p">(</span>
-                                    <span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">LOST</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="n">reason</span>
+                                    <span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
+                                    <span class="n">LOST</span><span class="p">,</span>
+                                    <span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">reason</span><span class="o">=</span><span class="n">reason</span><span class="p">,</span>
+                                    <span class="n">timed_out</span><span class="o">=</span><span class="n">timed_out</span><span class="p">,</span>
                                 <span class="p">)</span>
                                 <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="s2">"forget"</span><span class="p">):</span>
                                     <span class="n">backend</span><span class="o">.</span><span class="n">forget</span><span class="p">(</span><span class="n">backend_id</span><span class="p">)</span>
@@ -1342,9 +1354,14 @@
 <span class="w">        </span><span class="sd">"""Record the attempt and submit ``group`` to ``backend``."""</span>
         <span class="n">now</span> <span class="o">=</span> <span class="n">_now</span><span class="p">()</span>
         <span class="n">previous</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">timeouts</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
             <span class="n">record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
             <span class="n">previous</span><span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+            <span class="n">timeouts</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+                <span class="n">timeouts</span><span class="p">,</span>
+                <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"history"</span><span class="p">,</span> <span class="p">[])</span> <span class="k">if</span> <span class="n">h</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"timed_out"</span><span class="p">)),</span>
+            <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
                 <span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
                 <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
@@ -1366,6 +1383,14 @@
             <span class="n">kwargs</span><span class="p">[</span><span class="s2">"on_prepared"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_on_prepared</span>
             <span class="c1"># Bounds the bundle's time when its tasks give none.</span>
             <span class="n">kwargs</span><span class="p">[</span><span class="s2">"bundle_walltime"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle_walltime</span>
+            <span class="k">if</span> <span class="n">timeouts</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># It ran out of time before: twice as long each time, within</span>
+                <span class="c1"># the bundle limit, or it can never finish.</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s2">"walltime_scale"</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.0</span><span class="o">**</span><span class="n">timeouts</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"Bundle </span><span class="si">{</span><span class="n">bundle</span><span class="si">}</span><span class="s2">: a task ran out of time </span><span class="si">{</span><span class="n">timeouts</span><span class="si">}</span><span class="s2"> time(s); "</span>
+                    <span class="sa">f</span><span class="s2">"asking for </span><span class="si">{</span><span class="mi">2</span><span class="o">**</span><span class="n">timeouts</span><span class="si">}</span><span class="s2"> times the estimated time."</span>
+                <span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">ids</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
                 <span class="n">group</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">task_directory</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">group</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span>
@@ -1425,12 +1450,17 @@
                 <span class="k">return</span>
         <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">poll_interval</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_finish_attempt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">returncode</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_finish_attempt</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">returncode</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">counted</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timed_out</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Record how an attempt ended; ``counted=False`` gives the attempt back."""</span>
         <span class="n">record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
         <span class="n">history</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"history"</span><span class="p">,</span> <span class="p">[]))</span>
         <span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
             <span class="p">{</span>
                 <span class="s2">"attempt"</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"attempts"</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                <span class="s2">"counted"</span><span class="p">:</span> <span class="n">counted</span><span class="p">,</span>
+                <span class="s2">"timed_out"</span><span class="p">:</span> <span class="n">timed_out</span><span class="p">,</span>
                 <span class="s2">"backend"</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"backend"</span><span class="p">),</span>
                 <span class="s2">"id"</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"id"</span><span class="p">),</span>
                 <span class="s2">"state"</span><span class="p">:</span> <span class="n">state</span><span class="p">,</span>
@@ -1441,6 +1471,9 @@
                 <span class="s2">"finished"</span><span class="p">:</span> <span class="n">_now</span><span class="p">(),</span>
             <span class="p">}</span>
         <span class="p">)</span>
+        <span class="n">attempts</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"attempts"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">counted</span><span class="p">:</span>
+            <span class="n">attempts</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">attempts</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
             <span class="n">key</span><span class="p">,</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
@@ -1448,6 +1481,7 @@
             <span class="n">reason</span><span class="o">=</span><span class="n">reason</span><span class="p">,</span>
             <span class="n">finished</span><span class="o">=</span><span class="n">_now</span><span class="p">(),</span>
             <span class="n">history</span><span class="o">=</span><span class="n">history</span><span class="p">,</span>
+            <span class="n">attempts</span><span class="o">=</span><span class="n">attempts</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">history</span>
 
@@ -1482,7 +1516,11 @@
                 <span class="n">reason</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="n">history</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_finish_attempt</span><span class="p">(</span>
-            <span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">reason</span>
+            <span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
+            <span class="n">state</span><span class="p">,</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span>
+            <span class="n">reason</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">reason</span><span class="p">,</span>
+            <span class="n">timed_out</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">timed_out</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
         <span class="n">result</span><span class="o">.</span><span class="n">attempts</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"attempts"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
@@ -1662,9 +1700,28 @@
         <span class="k">for</span> <span class="n">backend</span><span class="p">,</span> <span class="n">records</span> <span class="ow">in</span> <span class="n">by_backend</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">states</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">reattach</span><span class="p">(</span><span class="n">records</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">states</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">if</span> <span class="n">state</span> <span class="o">==</span> <span class="n">LOST</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">state</span> <span class="o">!=</span> <span class="n">LOST</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">local</span><span class="p">:</span>
+                    <span class="c1"># It ran in the evaluator's own pool, so it stopped because</span>
+                    <span class="c1"># the evaluator did (killed, out of walltime, a reboot): not</span>
+                    <span class="c1"># the task's failure, so not one of its attempts. How often</span>
+                    <span class="c1"># a job may be restarted is the JobServer's max_resubmits.</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_finish_attempt</span><span class="p">(</span>
-                        <span class="n">key</span><span class="p">,</span> <span class="n">LOST</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s2">"the evaluator stopped while it ran"</span>
+                        <span class="n">key</span><span class="p">,</span>
+                        <span class="n">LOST</span><span class="p">,</span>
+                        <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">reason</span><span class="o">=</span><span class="s2">"the evaluator stopped while it ran (not counted)"</span><span class="p">,</span>
+                        <span class="n">counted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_finish_attempt</span><span class="p">(</span>
+                        <span class="n">key</span><span class="p">,</span>
+                        <span class="n">LOST</span><span class="p">,</span>
+                        <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">reason</span><span class="o">=</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">"lost by </span><span class="si">{</span><span class="n">backend</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> while the evaluator was "</span> <span class="s2">"stopped"</span>
+                        <span class="p">),</span>
                     <span class="p">)</span>
         <span class="c1"># Jobs still running old inputs, which no adopted task needs, are</span>
         <span class="c1"># cancelled so they cannot write into the tasks' directories.</span>

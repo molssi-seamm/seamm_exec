@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Phase 5 notes &#8212; SEAMM seamm-exec Plug-in 2026.10.4.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+
+    <script src="../../../_static/documentation_options.js?v=883ce3b3"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'developer_guide/campaigns/2026-10-02/NOTES_phase5';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Rollout of 2026-10-04: ChemAI and TinkerCliffs" href="NOTES_rollout_2026-10-04.html" />
+    <link rel="prev" title="Phase 4 notes" href="NOTES_phase4.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.10.4.1" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/SEAMM logo.png" class="logo__image only-light" alt=""/>
+    <img src="../../../_static/SEAMM Inverted 288x181.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">SEAMM-EXEC</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/seamm-exec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/seamm-exec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">Campaigns</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html">2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Developer Documentation</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Campaigns</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Phase 5 notes</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="phase-5-notes">
+<h1>Phase 5 notes<a class="headerlink" href="#phase-5-notes" title="Link to this heading">#</a></h1>
+<section id="design-note-draft-for-paul-and-the-design-session">
+<h2>2026-10-04 – design note (draft for Paul and the design session)<a class="headerlink" href="#design-note-draft-for-paul-and-the-design-session" title="Link to this heading">#</a></h2>
+<p>Phase 5 makes a flowchart resumable: after a crash, a walltime kill, a lost node or
+a JobServer resubmit, a rerun in the job’s own directory continues at the first
+unfinished step (or Loop iteration) instead of starting again from the top. Nothing
+is coded yet. This note records the survey, the proposed design and the decisions
+Paul needs to make, marked <strong>D1</strong> to <strong>D7</strong>.</p>
+<p>Inputs carried in from earlier phases: the <code class="docutils literal notranslate"><span class="pre">seamm.step_completed(node)</span></code> hook
+(<code class="docutils literal notranslate"><span class="pre">seamm/checkpoint.py</span></code>, called by <code class="docutils literal notranslate"><span class="pre">exec_flowchart</span></code> <em>and</em> inside <code class="docutils literal notranslate"><span class="pre">Loop.run</span></code>);
+the “no checkpoint” branch already released in seamm_exec 2026.10.4 (seamm_exec#41:
+archive <code class="docutils literal notranslate"><span class="pre">seamm.db*</span></code>/<code class="docutils literal notranslate"><span class="pre">references.db</span></code> to <code class="docutils literal notranslate"><span class="pre">previous/&lt;UTC&gt;/</span></code>, keep the step
+directories so task manifests reuse finished calculations); tables in <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code>
+with the current row in the registry; the <code class="docutils literal notranslate"><span class="pre">_table_changes</span></code> journal; the
+NOTES_phase4 review list (append_row/set_cell-on-NULL not idempotent, the Loop’s
+in-memory row snapshot, per-operation molsystem commits).</p>
+</section>
+<section id="survey-2026-10-04">
+<h2>Survey (2026-10-04)<a class="headerlink" href="#survey-2026-10-04" title="Link to this heading">#</a></h2>
+<p>What a resume has to deal with, found by reading the code and an audit of the
+plug-ins:</p>
+<ol class="arabic">
+<li><p><strong>molsystem commits after nearly every operation.</strong> 42 <code class="docutils literal notranslate"><span class="pre">commit()</span></code> calls
+(19 in <code class="docutils literal notranslate"><span class="pre">configuration.py</span></code>; the <code class="docutils literal notranslate"><span class="pre">System.configuration</span></code> setter commits), so a
+node killed half way leaves its earlier writes in the database. Every molsystem
+object reaches SQLite through the one connection made in <code class="docutils literal notranslate"><span class="pre">SystemDB.filename</span></code>
+(<code class="docutils literal notranslate"><span class="pre">system_db.py:358</span></code>); <code class="docutils literal notranslate"><span class="pre">seamm.Table</span></code> and <code class="docutils literal notranslate"><span class="pre">user_tables</span></code> use it too. No code
+opens a second connection to the job’s <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code>. The temporary in-memory
+databases (conformer_search, packmol, ligpargen) are separate connections.
+No <code class="docutils literal notranslate"><span class="pre">with</span> <span class="pre">db:</span></code>, <code class="docutils literal notranslate"><span class="pre">BEGIN</span></code> or <code class="docutils literal notranslate"><span class="pre">SAVEPOINT</span></code> anywhere. Two places bypass or fight
+a long transaction:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">_Table.__delitem__</span></code> (drop a column) uses <code class="docutils literal notranslate"><span class="pre">executescript</span></code>, which commits
+whatever is pending before it runs.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">with</span> <span class="pre">table:</span></code> / <code class="docutils literal notranslate"><span class="pre">with</span> <span class="pre">configuration:</span></code> backup-and-restore blocks
+(<code class="docutils literal notranslate"><span class="pre">_Table.__enter__</span></code>/<code class="docutils literal notranslate"><span class="pre">__exit__</span></code>) restore after an exception with
+<code class="docutils literal notranslate"><span class="pre">PRAGMA</span> <span class="pre">foreign_keys</span> <span class="pre">=</span> <span class="pre">OFF</span></code>, which SQLite silently ignores inside a
+transaction (verified on 3.12). Used by molsystem’s own tests; no plug-in uses
+it, but it must still be correct.</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">ATTACH</span></code> inside a transaction works (verified). <code class="docutils literal notranslate"><span class="pre">DETACH</span></code> does not once the</p>
+</li>
+</ol>
+<blockquote>
+<div><p>attached database has been read (“database … is locked”; found by the code
+review), so a deferring <code class="docutils literal notranslate"><span class="pre">SystemDB</span></code> leaves it attached (molsystem, review fixes).</p>
+</div></blockquote>
+<ol class="arabic" start="2">
+<li><p><strong>The current system lives only in memory</strong> (<code class="docutils literal notranslate"><span class="pre">SystemDB._current_system_id</span></code>,
+defaulting to the last system). The current configuration of each system and
+each table’s current row are in the database.</p></li>
+<li><p><strong>Variables are not all JSON.</strong> JSON-safe: numbers, strings, lists, dicts,
+<code class="docutils literal notranslate"><span class="pre">_loop_indices</span></code> (a tuple), <code class="docutils literal notranslate"><span class="pre">_row</span></code>, <code class="docutils literal notranslate"><span class="pre">_model_chemistry</span></code>. Not JSON-safe but
+encodable: numpy scalars and arrays (<code class="docutils literal notranslate"><span class="pre">store_results</span></code> “variable” puts these in
+for every non-scalar result), <code class="docutils literal notranslate"><span class="pre">Path</span></code>s (Control Parameters “file”), NaN
+(NULL float cells). Objects: <code class="docutils literal notranslate"><span class="pre">printer</span></code>, <code class="docutils literal notranslate"><span class="pre">_system_db</span></code> (the evaluator’s own),
+<code class="docutils literal notranslate"><span class="pre">seamm.Table</span></code> handles (a name plus the SystemDB), <code class="docutils literal notranslate"><span class="pre">_forcefield</span></code> (a
+<code class="docutils literal notranslate"><span class="pre">seamm_ff_util.Forcefield</span></code>, rebuildable from its file), and whatever a Custom
+step’s <code class="docutils literal notranslate"><span class="pre">exec</span></code> leaves behind (modules, functions, anything). <code class="docutils literal notranslate"><span class="pre">eval</span></code> in
+<code class="docutils literal notranslate"><span class="pre">Variables.value</span></code> inserts <code class="docutils literal notranslate"><span class="pre">__builtins__</span></code>.</p></li>
+<li><p><strong>Who runs other nodes inside ``run()``.</strong> The Loop runs its whole body inside
+one <code class="docutils literal notranslate"><span class="pre">run()</span></code> call. So do the code steps with sub-flowcharts (ORCA, MOPAC,
+Psi4, LAMMPS, Gaussian, VASP, xTB, FHI-aims, DFTB+, …) and the hosts Energy
+Scan, Reaction Path, Conformer Search, Thermomechanical, Diffusivity, Thermal
+Conductivity, Training, the ASE/geomeTRIC optimizers (which re-run their
+sub-flowchart for every geometry) and the generic Sub-flowchart step. Each
+hand-rolls its loop over sub-steps; there is no shared helper to hook. LAMMPS,
+Psi4 and MOPAC build one input from <em>all</em> their sub-steps and run once, so
+resuming “at sub-step 3” is not meaningful for them in general. Split and Join
+do nothing at run time; there are no if/while steps.</p></li>
+<li><p><strong>Non-repeatable side effects</strong> (would duplicate or corrupt if a node re-runs
+after doing part of its work):</p>
+<ul class="simple">
+<li><p>database writes: new systems/configurations (the standard structure handling,
+~40 plug-ins; NMS and Dimer Builder’s <code class="docutils literal notranslate"><span class="pre">create_combined_system</span></code>), table
+appends (Table “Append a row”, Properties, Geometry Analysis, <code class="docutils literal notranslate"><span class="pre">set_cell</span></code>
+with no current row);</p></li>
+<li><p>files appended <em>outside</em> the step directory: Write Structure “append” to a
+job-root <code class="docutils literal notranslate"><span class="pre">/name</span></code> file (sdf/extxyz/cif), Gaussian’s basis-set append;</p></li>
+<li><p>names made unique by checking the disk: <code class="docutils literal notranslate"><span class="pre">Loop.safe_filename</span></code> picks
+<code class="docutils literal notranslate"><span class="pre">name_2</span></code> when <code class="docutils literal notranslate"><span class="pre">name</span></code> exists, so a resumed iteration would get a new
+directory;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">references.db</span></code> is deleted at job start, and <code class="docutils literal notranslate"><span class="pre">job.out</span></code>,
+<code class="docutils literal notranslate"><span class="pre">iteration.out</span></code> and <code class="docutils literal notranslate"><span class="pre">step.out</span></code> are truncated when (re)opened;</p></li>
+<li><p>harmless: timing CSVs in <code class="docutils literal notranslate"><span class="pre">~/.seamm.d/timing</span></code>, appended <code class="docutils literal notranslate"><span class="pre">stderr.out</span></code>,
+the Table step’s “save every N” counter and Golden Compare’s pass counts
+(node state lost on resume).</p></li>
+</ul>
+<p>No node writes the datastore or the Dashboard; only the evaluator does, at the
+start and the end.</p>
+</li>
+<li><p><strong>Warm engines</strong> (MDI for Energy, NMS, Dimer Builder, LAMMPS QM) live for one
+<code class="docutils literal notranslate"><span class="pre">run()</span></code> call. A re-entered node starts a new engine; only the time is lost.
+The batch path already resumes through <code class="docutils literal notranslate"><span class="pre">tasks/manifest.json</span></code> + <code class="docutils literal notranslate"><span class="pre">DONE</span></code>.</p></li>
+<li><p><strong>The JobServer’s resubmit-on-loss never fires today.</strong> The evaluator writes
+<code class="docutils literal notranslate"><span class="pre">job_data.json</span></code> with <code class="docutils literal notranslate"><span class="pre">state:</span> <span class="pre">started</span></code> when it begins (and the JobServer
+writes it at submit). <code class="docutils literal notranslate"><span class="pre">_read_job_data_state</span></code> returns that, any non-<code class="docutils literal notranslate"><span class="pre">None</span></code>
+state counts as the job’s conclusion, so a walltime-killed SLURM evaluator is
+finalized with status <code class="docutils literal notranslate"><span class="pre">started</span></code> and dropped. A local job whose process died
+is finalized the same way. The design doc’s “the JobServer becomes correct
+without change” is wrong: it needs a small change (below).</p></li>
+<li><p><strong>The Loop already freezes its items.</strong> Every loop type computes its list
+once, when <code class="docutils literal notranslate"><span class="pre">run()</span></code> is entered (<code class="docutils literal notranslate"><span class="pre">table_rows</span></code>/<code class="docutils literal notranslate"><span class="pre">table_indices</span></code> for a table,
+<code class="docutils literal notranslate"><span class="pre">select_configurations</span></code> for the database, the values otherwise), never per
+iteration. Freezing the list in the checkpoint therefore reproduces today’s
+semantics exactly, including a body that appends rows to the table being
+looped over (the new rows are not visited).</p></li>
+<li><p><strong>SQLite with a long open write transaction</strong> (verified, 3.12, WAL): a second
+<code class="docutils literal notranslate"><span class="pre">mode=ro</span></code> connection reads the last committed state; uncommitted pages spill
+into the <code class="docutils literal notranslate"><span class="pre">-wal</span></code> file (20 MB written → 19 MB of WAL before the commit);
+<code class="docutils literal notranslate"><span class="pre">PRAGMA</span> <span class="pre">wal_checkpoint</span></code> from a read-only connection fails (“disk I/O
+error”). Nothing in the evaluator, the JobServer, the web UI or the Dashboard
+runs <code class="docutils literal notranslate"><span class="pre">wal_checkpoint</span></code>.</p></li>
+</ol>
+</section>
+<section id="the-design">
+<h2>The design<a class="headerlink" href="#the-design" title="Link to this heading">#</a></h2>
+<section id="the-node-is-the-transaction">
+<h3>The node is the transaction<a class="headerlink" href="#the-node-is-the-transaction" title="Link to this heading">#</a></h3>
+<p>Instead of auditing and fixing every plug-in’s database writes for re-entry, make
+them atomic per node:</p>
+<ul class="simple">
+<li><p>The job’s <code class="docutils literal notranslate"><span class="pre">SystemDB</span></code> connects with <code class="docutils literal notranslate"><span class="pre">sqlite3.connect(...,</span> <span class="pre">factory=JobConnection)</span></code>,
+a <code class="docutils literal notranslate"><span class="pre">sqlite3.Connection</span></code> subclass whose <code class="docutils literal notranslate"><span class="pre">commit()</span></code> is a no-op while a node is
+running. molsystem’s 42 <code class="docutils literal notranslate"><span class="pre">commit()</span></code> calls are untouched.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">seamm.step_completed(node)</span></code> does the one real commit, and in the same
+transaction writes the checkpoint row (below). The database and the checkpoint
+can never disagree: there is no window in which the database is a node ahead.</p></li>
+<li><p>A process killed mid-node loses exactly that node’s database writes, by design:
+SQLite discards the uncommitted transaction. Its files (step directory, task
+manifests, <code class="docutils literal notranslate"><span class="pre">DONE</span></code> markers) survive, so the re-entered node regenerates its
+inputs and its TaskSet reuses every finished calculation.</p></li>
+<li><p>Prototyped on the SEAMM_DEV Python (3.12, WAL): writes and <code class="docutils literal notranslate"><span class="pre">CREATE</span> <span class="pre">TABLE</span></code> after
+the deferral are gone after <code class="docutils literal notranslate"><span class="pre">os._exit</span></code>, present after the commit.</p></li>
+</ul>
+<p>Consequences, stated so they are not surprises:</p>
+<ul class="simple">
+<li><p><strong>Readers see the last finished node.</strong> In WAL mode the web UI, the Dashboard and
+the MCP server reading a running job’s <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code> see the state as of the last
+<code class="docutils literal notranslate"><span class="pre">step_completed</span></code>. A node running a TaskSet for hours shows nothing new until it
+finishes. Loop bodies commit per body node, so loops stay visible iteration by
+iteration (the phase 4 behaviour). HISTORY says so, and the web UI’s job page
+labels a running job’s tables and structures “as of the last finished step”.</p></li>
+<li><p><strong>The WAL grows during a long node.</strong> SQLite cannot checkpoint the WAL past an
+open transaction, so a node writing thousands of configurations (Dimer
+Builder, NMS, Extract Clusters) grows <code class="docutils literal notranslate"><span class="pre">seamm.db-wal</span></code> to about the size of its
+writes until <code class="docutils literal notranslate"><span class="pre">step_completed</span></code>; it is folded back after the commit. Harmless
+on disk. Nothing may run <code class="docutils literal notranslate"><span class="pre">PRAGMA</span> <span class="pre">wal_checkpoint</span></code> mid-node.</p></li>
+<li><p><strong>One writer per file</strong> (already the rule) is now enforced by SQLite’s lock: a
+second connection writing the job’s <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code> mid-node would wait 10 s and
+fail. None exists today; the temporary in-memory databases are separate files.</p></li>
+<li><p><strong>molsystem changes:</strong> <code class="docutils literal notranslate"><span class="pre">__delitem__</span></code> without <code class="docutils literal notranslate"><span class="pre">executescript</span></code> (statements one
+by one, <code class="docutils literal notranslate"><span class="pre">PRAGMA</span> <span class="pre">defer_foreign_keys</span></code>), and the <code class="docutils literal notranslate"><span class="pre">with</span></code> blocks use
+<code class="docutils literal notranslate"><span class="pre">SAVEPOINT</span></code>/<code class="docutils literal notranslate"><span class="pre">ROLLBACK</span> <span class="pre">TO</span></code>/<code class="docutils literal notranslate"><span class="pre">RELEASE</span></code> when the connection is deferring (the
+PRAGMA-based restore is wrong inside a transaction). <code class="docutils literal notranslate"><span class="pre">JobConnection</span></code> lives in
+molsystem; <code class="docutils literal notranslate"><span class="pre">SystemDB(filename,</span> <span class="pre">deferred_commit=True)</span></code> selects it; the default is
+unchanged, so every other user of molsystem behaves as today.</p></li>
+<li><p><strong>D1 – a node that raises.</strong> Uncaught (the job fails): roll back that node’s
+writes, so the database matches the checkpoint and a rerun re-enters the node
+cleanly. Today the partial writes are committed; after this the failed node’s
+files and <code class="docutils literal notranslate"><span class="pre">final_structure.*</span></code> (written from the same connection before the
+rollback) remain for debugging, its rows and structures do not; so do any
+other files the failing node wrote, such as a Write Structure file (see the
+append fix below). Caught by a Loop
+with <code class="docutils literal notranslate"><span class="pre">errors</span> <span class="pre">=</span> <span class="pre">continue</span></code>: <strong>commit</strong> the partial writes as today and record the
+iteration as failed, so a loop’s surviving behaviour does not change.
+<em>Recommended as stated; the alternative is to roll back in both cases.</em></p></li>
+</ul>
+</section>
+<section id="granularity-nodes-and-loop-iterations-not-sub-steps">
+<h3>Granularity: nodes and Loop iterations, not sub-steps<a class="headerlink" href="#granularity-nodes-and-loop-iterations-not-sub-steps" title="Link to this heading">#</a></h3>
+<p>A checkpoint unit is a node of the flowchart or of a Loop body, recursively
+(nested loops). The sub-steps of a code step (ORCA’s Energy/Optimization/…) and the
+bodies of the other hosts in survey item 4 are <em>not</em> units: such a node is one
+transaction and is re-entered as a whole.</p>
+<ul class="simple">
+<li><p>Why: 45 plug-ins each run their own sub-step loop, several build one input from
+all their sub-steps, and the ASE/geomeTRIC optimizers call their sub-flowchart
+from inside an optimizer’s callback. A per-sub-step unit would need resume
+support in every one of them, and committing per sub-step without it would
+break the node-is-a-transaction rule.</p></li>
+<li><p>What makes it cheap anyway: converted codes (ORCA, MOPAC, Energy, BSSE, Dimer
+Builder, NMS, MBE) reuse every finished calculation through their manifests, so
+re-entering a 5-sub-step ORCA node redoes only the analysis.</p></li>
+<li><p>What it costs: unconverted codes (Gaussian, Psi4, LAMMPS, VASP, …) recompute
+the whole node on re-entry. That is correct, just slow; each code gets the task
+layer on its own merits (the phase 1 rule), not as part of this phase.</p></li>
+<li><p>The generic Sub-flowchart step could become a unit like the Loop later; not in
+this phase.</p></li>
+</ul>
+</section>
+<section id="what-the-checkpoint-holds">
+<h3>What the checkpoint holds<a class="headerlink" href="#what-the-checkpoint-holds" title="Link to this heading">#</a></h3>
+<p>One JSON document, stored in a one-row <code class="docutils literal notranslate"><span class="pre">_checkpoint</span></code> table in <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code>
+(authoritative, written in the node’s transaction) and mirrored to
+<code class="docutils literal notranslate"><span class="pre">&lt;job&gt;/checkpoint.json</span></code> after the commit, for people only. A crash between the
+two leaves the mirror one node behind (or absent after the first node), so no
+decision is ever taken from the mirror: the start-up branch choice opens the
+existing <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code> read-only and reads <code class="docutils literal notranslate"><span class="pre">_checkpoint</span></code> (see <em>Resuming</em>):</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>{
+  "format": 1,
+  "state": "running",                      // running | finished | error
+  "flowchart_digest_strict": "…",
+  "command_line": ["…"],
+  "versions": {"seamm": "…", "loop_step": "…"},
+  "written": "2026-10-04T12:34:56Z",
+  "position": [                            // a stack, outermost first
+    {"node": "3", "loop": {"type": "For rows in table", "iteration": 17,
+                            "length": 40, "items": [11, 12, …],
+                            "directory": "iter_0017", "done": false}},
+    {"node": "3.iter_0017.2", "next": "3.iter_0017.3"}
+  ],
+  "system_id": 1,
+  "variables": {"…": "…"},
+  "unrestorable": {"_forcefield": {"type": "Forcefield", "set_by": "2"}},
+  "failed_iterations": {"3": [5, 9]}
+}
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Position.</strong> The innermost frame names the next node to run; the Loop frames
+above it carry each loop’s iteration, its <em>frozen item list</em> (the row ids for a
+loop over a table, the configuration ids for a loop over the database, the
+values otherwise, computed once at loop entry and never recomputed, because the
+body may have changed the table or the database since) and its directory name
+(so <code class="docutils literal notranslate"><span class="pre">safe_filename</span></code> is never consulted on resume). <code class="docutils literal notranslate"><span class="pre">done:</span> <span class="pre">true</span></code> with no
+inner frame means the iteration finished and the loop continues at the next.</p></li>
+<li><p><strong>Variables</strong> go through a small tagged JSON codec in <code class="docutils literal notranslate"><span class="pre">seamm</span></code>: numpy arrays
+and scalars, <code class="docutils literal notranslate"><span class="pre">Path</span></code>, tuples, sets, NaN/±inf, <code class="docutils literal notranslate"><span class="pre">datetime</span></code>, and <code class="docutils literal notranslate"><span class="pre">seamm.Table</span></code>
+handles (by name). Skipped: only the evaluator’s own <code class="docutils literal notranslate"><span class="pre">printer</span></code> and
+<code class="docutils literal notranslate"><span class="pre">_system_db</span></code> (it remakes them) and <code class="docutils literal notranslate"><span class="pre">__builtins__</span></code>. Anything else, including
+the modules and functions a Custom step’s <code class="docutils literal notranslate"><span class="pre">exec</span></code> leaves behind, is recorded
+in <code class="docutils literal notranslate"><span class="pre">unrestorable</span></code> with its type and the id of the node that set it, so a
+later step that uses it gets the clear error below, not a <code class="docutils literal notranslate"><span class="pre">NameError</span></code>.</p></li>
+<li><p><strong>D2 – unrestorable variables.</strong> Proposed: do not refuse the checkpoint. A node
+may implement <code class="docutils literal notranslate"><span class="pre">checkpoint_variable(name,</span> <span class="pre">value)</span> <span class="pre">-&gt;</span> <span class="pre">json</span></code> and
+<code class="docutils literal notranslate"><span class="pre">restore_variable(name,</span> <span class="pre">data)</span> <span class="pre">-&gt;</span> <span class="pre">value</span></code> for the objects it makes (Forcefield
+does: it saves the file name and rebuilds); <code class="docutils literal notranslate"><span class="pre">Variables</span></code> records which node set
+each variable so the right node is asked. A variable nobody can restore is
+replaced by a marker that raises a clear error if a later step reads it (“the
+variable ‘_x’ (a Foo set by step 4) could not be restored when this job resumed;
+rerun it without –resume”). A job whose later steps never touch
+it resumes normally. <em>The design doc’s alternative was to refuse the checkpoint
+up front; that would disable resume for every flowchart with a Custom step.</em></p></li>
+<li><p><strong>Current system</strong> id, restored before the first node runs.</p></li>
+<li><p><strong>What is not in it:</strong> tables, structures and properties (already in the
+database), files (already on disk), task state (manifests).</p></li>
+</ul>
+</section>
+<section id="writing-it">
+<h3>Writing it<a class="headerlink" href="#writing-it" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">step_completed(node)</span></code> (both callers) serializes the variables, builds the
+position from the evaluator’s and the Loops’ frames, writes the row, commits,
+then writes the mirror (<code class="docutils literal notranslate"><span class="pre">checkpoint.json.tmp</span></code> + rename). The Loop also calls a
+<code class="docutils literal notranslate"><span class="pre">seamm.iteration_started</span></code>/<code class="docutils literal notranslate"><span class="pre">iteration_finished</span></code> pair so the frame is correct at
+iteration boundaries. At the end of the run the state becomes <code class="docutils literal notranslate"><span class="pre">finished</span></code> or
+<code class="docutils literal notranslate"><span class="pre">error</span></code>.</p>
+<p>No checkpoint is written (and no resume is possible) for <code class="docutils literal notranslate"><span class="pre">--read-only</span></code>,
+<code class="docutils literal notranslate"><span class="pre">:memory:</span></code> and a <code class="docutils literal notranslate"><span class="pre">--database</span></code> outside the job directory, the same cases in
+which the 2026.10.4 archive rule leaves the database alone.</p>
+<p>Cost: one JSON dump of the variables per node. The phase 4 soak measured 1.15 s per
+loop iteration with a commit per node; the gate is that <code class="docutils literal notranslate"><span class="pre">timing_noindex.flow</span></code> and
+<code class="docutils literal notranslate"><span class="pre">soak_loop_store.flow</span></code> stay within 5 %. A flowchart that keeps a large array in a
+variable pays for it at every node, so the soak includes one carrying a ~1 MB
+numpy variable through a loop; if its cost shows, cache the encoded value and
+re-encode only changed variables.</p>
+</section>
+<section id="resuming">
+<h3>Resuming<a class="headerlink" href="#resuming" title="Link to this heading">#</a></h3>
+<p>Resume is <strong>explicit</strong> (D4, revised after the design review): a plain rerun in
+place never silently skips steps. The digest and the command line do not cover
+the <em>input files</em> a flowchart reads (Read Structure’s file, Control Parameters’
+files, a forcefield file), so an automatic resume after the user replaced
+<code class="docutils literal notranslate"><span class="pre">structure.xyz</span></code> would skip Read Structure and carry on with the old structure.</p>
+<p>At start, <code class="docutils literal notranslate"><span class="pre">ExecFlowchart.run</span></code> opens an existing <code class="docutils literal notranslate"><span class="pre">&lt;job&gt;/seamm.db</span></code> read-only and
+reads its <code class="docutils literal notranslate"><span class="pre">_checkpoint</span></code> row (falling back to <code class="docutils literal notranslate"><span class="pre">checkpoint.json</span></code> only when the
+table is absent, i.e. a database from before phase 5), then:</p>
+<ol class="arabic simple">
+<li><p><strong>Resume requested</strong> (<code class="docutils literal notranslate"><span class="pre">--resume</span></code> on the command line, or <code class="docutils literal notranslate"><span class="pre">SEAMM_RESUME=1</span></code>
+in the environment) <strong>and</strong> a checkpoint in state <code class="docutils literal notranslate"><span class="pre">running</span></code> or <code class="docutils literal notranslate"><span class="pre">error</span></code>
+with the same strict flowchart digest and command line: resume.</p></li>
+<li><p><strong>Resume requested but not possible</strong> (no checkpoint, a <code class="docutils literal notranslate"><span class="pre">finished</span></code> one, or a
+different flowchart or command line): archive and run from the top, saying
+why in <code class="docutils literal notranslate"><span class="pre">job.out</span></code>.</p></li>
+<li><p><strong>No resume requested:</strong> archive the previous database (and
+<code class="docutils literal notranslate"><span class="pre">checkpoint.json</span></code>) to <code class="docutils literal notranslate"><span class="pre">previous/&lt;UTC&gt;/</span></code> and run from the top, as 2026.10.4
+does. If the checkpoint was resumable, <code class="docutils literal notranslate"><span class="pre">job.out</span></code> says so first: “this
+directory had a resumable checkpoint (step 3, iteration 17 of 40); it was
+moved to previous/&lt;UTC&gt;/; rerun with –resume to continue instead”. Nothing is
+lost: moving <code class="docutils literal notranslate"><span class="pre">previous/&lt;UTC&gt;/seamm.db</span></code> back and rerunning with <code class="docutils literal notranslate"><span class="pre">--resume</span></code>
+resumes.</p></li>
+</ol>
+<p>The JobServer’s resubmit sets <code class="docutils literal notranslate"><span class="pre">SEAMM_RESUME=1</span></code>. It is an environment variable
+rather than a flag so that a remote venv still at 2026.10.4 ignores it and starts
+from the top instead of failing on an unknown option. Because queue sections use
+<code class="docutils literal notranslate"><span class="pre">export=NONE</span></code> (SLURM) and PBS starts from a clean login, the JobServer writes
+<code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">SEAMM_RESUME=1</span></code> <em>into the batch script</em> on a resubmit, not into its own
+environment.</p>
+<p>A change of package versions since the checkpoint is printed as a warning, not
+refused; rolling a venv back and resuming is a legitimate thing to do (tested).</p>
+<p>This changes the 2026.10.4 rule in one respect, noted in seamm_exec’s HISTORY:
+the archive decision reads the database’s <code class="docutils literal notranslate"><span class="pre">_checkpoint</span></code> row, not the existence
+of <code class="docutils literal notranslate"><span class="pre">checkpoint.json</span></code> (which 2026.10.4 treated as “keep the database”).</p>
+<p>Resume itself:</p>
+<ul class="simple">
+<li><p>keep <code class="docutils literal notranslate"><span class="pre">references.db</span></code> (do not delete it at start); the re-entered node may
+count a citation twice, which is harmless;</p></li>
+<li><p>append to <code class="docutils literal notranslate"><span class="pre">job.out</span></code> under a banner (“Resumed at step 3, iteration 17 of 40, on
+&lt;date&gt;; previous attempt ended &lt;state&gt;”), and to the resumed iteration’s
+<code class="docutils literal notranslate"><span class="pre">iteration.out</span></code>;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">job_data.json</span></code> keeps its <code class="docutils literal notranslate"><span class="pre">start</span> <span class="pre">time</span></code> and gains <code class="docutils literal notranslate"><span class="pre">&quot;resumed&quot;:</span> <span class="pre">[&lt;times&gt;]</span></code>;</p></li>
+<li><p>restore the variables, the current system, then walk the position: nodes before
+the outermost frame are skipped (their <code class="docutils literal notranslate"><span class="pre">describe()</span></code> output is still printed, as
+now), the Loop named by a frame restores its frozen state and re-runs its
+iteration set-up for that iteration (variables, current row, current
+configuration, directory: all idempotent once the names come from the
+checkpoint) and then starts its body at the frame’s <code class="docutils literal notranslate"><span class="pre">next</span></code> node instead of
+the first;</p></li>
+<li><p>a node that was mid-flight is simply run again; its writes were rolled back and
+its tasks reattach or reuse their results.</p></li>
+</ul>
+</section>
+<section id="remaining-non-database-re-entry-fixes-the-audit">
+<h3>Remaining non-database re-entry fixes (the audit)<a class="headerlink" href="#remaining-non-database-re-entry-fixes-the-audit" title="Link to this heading">#</a></h3>
+<p>With the database atomic per node, what is left is small:</p>
+<ul class="simple">
+<li><p><strong>Write Structure append</strong> to a job-root file: record the file’s size in the
+step directory before appending, truncate back to it on re-entry
+(read_structure_step). Same for Gaussian’s basis-set append if it can append to
+a shared file (to check).</p></li>
+<li><p><strong>Loop directory names</strong>: from the checkpoint (above).</p></li>
+<li><p><strong>references.db / job.out / iteration.out</strong>: above.</p></li>
+<li><p>Accepted as harmless: timing CSVs, <code class="docutils literal notranslate"><span class="pre">stderr.out</span></code>, the Table step’s save counter,
+Golden Compare’s counts.</p></li>
+</ul>
+</section>
+<section id="the-jobserver">
+<h3>The JobServer<a class="headerlink" href="#the-jobserver" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>Queue jobs (SLURM/PBS):</strong> treat <code class="docutils literal notranslate"><span class="pre">submitted</span></code>/<code class="docutils literal notranslate"><span class="pre">started</span></code>/<code class="docutils literal notranslate"><span class="pre">running</span></code> in
+<code class="docutils literal notranslate"><span class="pre">job_data.json</span></code> as “no conclusion”, so a job the scheduler reports ended
+without a terminal state goes down the existing resubmit path (<code class="docutils literal notranslate"><span class="pre">max_resubmits</span></code>,
+same directory) with <code class="docutils literal notranslate"><span class="pre">SEAMM_RESUME=1</span></code> in the batch script.</p></li>
+<li><p><strong>Staging order for ssh targets.</strong> After a walltime kill the <em>remote</em> directory
+is the newer copy. The resubmit path already stages out (remote → local) before
+it stages in (local → remote), both <code class="docutils literal notranslate"><span class="pre">rsync</span> <span class="pre">-a</span></code> without <code class="docutils literal notranslate"><span class="pre">--delete</span></code>, so after
+the stage-out the local copy has the same sizes and times and the stage-in
+overwrites nothing. One wrinkle: a file the job <em>deleted</em> remotely but that
+still exists locally (a pruned task directory, a skipped iteration’s
+directory) is pushed back. The manifests tolerate that (fingerprints and
+<code class="docutils literal notranslate"><span class="pre">DONE</span></code> decide, not a directory’s presence); the live test checks it.</p></li>
+<li><p><strong>Bounded damage before phase 5 is installed everywhere.</strong> With the JobServer
+change, a lost job whose <em>remote</em> venv predates phase 5 ignores
+<code class="docutils literal notranslate"><span class="pre">SEAMM_RESUME</span></code> and reruns from the top, up to <code class="docutils literal notranslate"><span class="pre">max_resubmits</span></code> times
+(3 on ChemAI), each a full walltime. Recommendation: release the JobServer
+change last, and set <code class="docutils literal notranslate"><span class="pre">max_resubmits</span> <span class="pre">=</span> <span class="pre">1</span></code> on any queue whose remote venv is
+older until it is upgraded.</p></li>
+<li><p><strong>D3 – local jobs.</strong> A local evaluator that died (machine reboot, OOM kill)
+with <code class="docutils literal notranslate"><span class="pre">state:</span> <span class="pre">started</span></code> is today finalized as <code class="docutils literal notranslate"><span class="pre">started</span></code> (a bug either way).
+Proposed: finalize it as <code class="docutils literal notranslate"><span class="pre">error</span></code> by default, and add an opt-in section key
+<code class="docutils literal notranslate"><span class="pre">resubmit_lost</span> <span class="pre">=</span> <span class="pre">yes</span></code> that resubmits it like a queue job, so a laptop that
+rebooted resumes its jobs when the JobServer comes back. <em>Default unchanged
+apart from the status fix, per the rollout rule.</em></p></li>
+<li><p>Two subtleties to keep: the resubmit counter must not reset on resume (it does
+not today), and a walltime kill must not count as a <code class="docutils literal notranslate"><span class="pre">failed</span></code> task in the
+evaluator’s manifests (a killed bundle job is “lost”, which is retried).</p></li>
+</ul>
+</section>
+<section id="phase-6-compatibility">
+<h3>Phase 6 compatibility<a class="headerlink" href="#phase-6-compatibility" title="Link to this heading">#</a></h3>
+<p>A parallel-Loop iteration is a child evaluator with its own <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code>; it uses
+the same <code class="docutils literal notranslate"><span class="pre">_checkpoint</span></code> row and <code class="docutils literal notranslate"><span class="pre">checkpoint.json</span></code>, unchanged. The parent’s Loop
+frame then holds per-iteration states (pending/running/done/failed) instead of a
+single <code class="docutils literal notranslate"><span class="pre">iteration</span></code>; the frame format above already has the frozen item list
+and <code class="docutils literal notranslate"><span class="pre">failed_iterations</span></code>, so phase 6 adds a field, not a format.</p>
+</section>
+</section>
+<section id="decisions-for-paul">
+<h2>Decisions for Paul<a class="headerlink" href="#decisions-for-paul" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><strong>D1</strong> A node that raises and is not caught: roll back its writes (recommended)
+or commit them as today. Caught by a Loop with <code class="docutils literal notranslate"><span class="pre">errors</span> <span class="pre">=</span> <span class="pre">continue</span></code>: commit as
+today (recommended).</p></li>
+<li><p><strong>D2</strong> Unrestorable variables: per-node restore hooks + a marker that fails only
+if read (recommended), or refuse the checkpoint.</p></li>
+<li><p><strong>D3</strong> Local jobs that die: <code class="docutils literal notranslate"><span class="pre">error</span></code> by default + opt-in <code class="docutils literal notranslate"><span class="pre">resubmit_lost</span></code>
+(recommended), or resubmit by default.</p></li>
+<li><p><strong>D4</strong> Resume is explicit: <code class="docutils literal notranslate"><span class="pre">--resume</span></code> for people, <code class="docutils literal notranslate"><span class="pre">SEAMM_RESUME=1</span></code> written
+into the batch script by the JobServer’s resubmit; a plain rerun in place
+archives as today and says a resumable checkpoint was set aside (recommended,
+the design session’s proposal). Alternative: automatic resume with
+<code class="docutils literal notranslate"><span class="pre">--from-the-top</span></code> to override, which then must <em>refuse</em> when any file named by
+a file-type parameter of a completed node is newer than the checkpoint, and
+print a loud banner. Paul’s <code class="docutils literal notranslate"><span class="pre">rm</span> <span class="pre">-fr</span> <span class="pre">tmp/*</span></code> test idiom is unaffected either
+way.</p></li>
+<li><p><strong>D5</strong> Granularity: nodes and Loop iterations only; sub-steps of code steps and
+other hosts are re-entered whole (recommended).</p></li>
+<li><p><strong>D6</strong> Deferred commit is on for every job database the evaluator owns (the
+file in the job directory), with no switch; rollback is the venv rollback as in
+phase 4 (recommended). It changes when a running job’s writes become visible
+(end of node, not mid-node).</p></li>
+<li><p><strong>D7</strong> Validation targets: SEAMM_DEV soak (below) and the real-resubmit test on
+TinkerCliffs through the SEAMM_DEV JobServer, including the staging order;
+ARC-alone as a re-<code class="docutils literal notranslate"><span class="pre">sbatch</span></code> of the same script in the same directory with
+<code class="docutils literal notranslate"><span class="pre">--resume</span></code>. ChemAI not involved.</p></li>
+</ul>
+</section>
+<section id="packages-release-order-tests">
+<h2>Packages, release order, tests<a class="headerlink" href="#packages-release-order-tests" title="Link to this heading">#</a></h2>
+<p>Release order (shared libraries first, pinned): molsystem (<code class="docutils literal notranslate"><span class="pre">JobConnection</span></code>,
+<code class="docutils literal notranslate"><span class="pre">deferred_commit</span></code>, savepoint <code class="docutils literal notranslate"><span class="pre">with</span></code> blocks, no <code class="docutils literal notranslate"><span class="pre">executescript</span></code>) → seamm
+(checkpoint write/read, variable codec, <code class="docutils literal notranslate"><span class="pre">Variables</span></code> origin tracking, node
+restore hooks, <code class="docutils literal notranslate"><span class="pre">--resume</span></code>) → seamm_exec (the three branches, resume walk,
+<code class="docutils literal notranslate"><span class="pre">references.db</span></code>/<code class="docutils literal notranslate"><span class="pre">job.out</span></code>/<code class="docutils literal notranslate"><span class="pre">job_data.json</span></code>) → loop_step (frames, frozen items,
+names) → read_structure_step (append offset), forcefield_step (<code class="docutils literal notranslate"><span class="pre">_forcefield</span></code>
+restore) → seamm_jobserver (non-terminal states, <code class="docutils literal notranslate"><span class="pre">resubmit_lost</span></code>).</p>
+<p>Tests:</p>
+<ul class="simple">
+<li><p>unit: molsystem deferred commit + rollback on <code class="docutils literal notranslate"><span class="pre">os._exit</span></code> in a subprocess,
+savepoint <code class="docutils literal notranslate"><span class="pre">with</span></code> blocks with foreign keys on; seamm codec round trips; seamm_exec
+branch choice and the resume walk with fake nodes; loop_step resume mid-body,
+at an iteration boundary, nested, every loop type, with a body that appends rows
+to the table being looped over; jobserver non-terminal state → resubmit.</p></li>
+<li><p><strong>kill-anywhere soak</strong> in <code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV</span></code> (extends <code class="docutils literal notranslate"><span class="pre">Testing/phase4/soak</span></code>): a
+harness that runs a flowchart uninterrupted once, then N times with
+<code class="docutils literal notranslate"><span class="pre">kill</span> <span class="pre">-9</span></code> after a random delay, rerunning in place until it finishes, and
+diffs every results file, table export and the <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code> contents (systems,
+configurations, properties, tables) against the uninterrupted run (each rerun
+with <code class="docutils literal notranslate"><span class="pre">--resume</span></code>; one more trial reruns <em>without</em> it and checks the archive
+message and a clean from-the-top result). Flowcharts:
+soak_kill, soak_nested, soak_loop_store, soak_props_geom, an ORCA one (task
+reuse), one each using Forcefield + LAMMPS and a Custom step (D2), and one
+carrying a ~1 MB numpy variable (encode cost). Plus: resume after a venv
+rollback (the versions warning), and reading <code class="docutils literal notranslate"><span class="pre">_checkpoint</span></code> from a second
+read-only connection while a node’s transaction is open.</p></li>
+<li><p>A/B corpus run (phase 4 harness) for the deferred-commit change alone: results
+must be identical with no kill at all.</p></li>
+<li><p>live: a SEAMM_DEV flowchart on <code class="docutils literal notranslate"><span class="pre">tinkercliffs_debug</span></code> with a walltime shorter than
+the job, so SLURM kills it, the JobServer resubmits and it resumes to the same
+results; and the same on TinkerCliffs alone by re-<code class="docutils literal notranslate"><span class="pre">sbatch</span></code>.</p></li>
+</ul>
+</section>
+<section id="review-design-session-2026-10-04">
+<h2>Review (design session, 2026-10-04)<a class="headerlink" href="#review-design-session-2026-10-04" title="Link to this heading">#</a></h2>
+<p>The design session reviewed the draft. Every point is folded in above:</p>
+<ol class="arabic simple">
+<li><p><em>Must:</em> branch selection reads the database’s <code class="docutils literal notranslate"><span class="pre">_checkpoint</span></code> row, never the
+mirror (a crash between commit and mirror would otherwise archive a resumable
+database); noted as a change to the 2026.10.4 rule.</p></li>
+<li><p><em>Must:</em> the stale-input trap of automatic resume; resume made explicit
+(<code class="docutils literal notranslate"><span class="pre">--resume</span></code> / <code class="docutils literal notranslate"><span class="pre">SEAMM_RESUME=1</span></code>), D4 revised.</p></li>
+<li><p>Frozen item lists reproduce today’s semantics: verified, survey item 8.</p></li>
+<li><p>The WAL during a long node and readers during an open transaction: verified,
+survey item 9 and the consequences list.</p></li>
+<li><p>A Custom step’s modules and functions go to <code class="docutils literal notranslate"><span class="pre">unrestorable</span></code>, not skipped.</p></li>
+<li><p>Staging order for ssh resubmits stated; the deleted-file wrinkle found while
+checking it.</p></li>
+<li><p>Bounded damage while remote venvs predate phase 5: release the JobServer last,
+<code class="docutils literal notranslate"><span class="pre">max_resubmits</span> <span class="pre">=</span> <span class="pre">1</span></code> meanwhile.</p></li>
+</ol>
+<p>Nits adopted: venv-rollback resume test, a ~1 MB numpy variable in the soak,
+Write Structure files of a failed node listed with D1.</p>
+<p>Design-session recommendations on the decisions: D1, D2, D3, D5, D6, D7 as
+recommended; D4 explicit (now the recommendation above).</p>
+</section>
+<section id="decisions-paul-2026-10-04">
+<h2>Decisions (Paul, 2026-10-04)<a class="headerlink" href="#decisions-paul-2026-10-04" title="Link to this heading">#</a></h2>
+<p>D1 to D7 agreed as recommended: roll back an uncaught failing node, commit when a
+Loop continues (D1); per-node restore hooks and a marker that fails only if read
+(D2); dead local jobs <code class="docutils literal notranslate"><span class="pre">error</span></code> plus opt-in <code class="docutils literal notranslate"><span class="pre">resubmit_lost</span></code> (D3); explicit
+resume, <code class="docutils literal notranslate"><span class="pre">--resume</span></code> / <code class="docutils literal notranslate"><span class="pre">SEAMM_RESUME=1</span></code> (D4); nodes and Loop iterations only
+(D5); no switch, venv rollback (D6); validation in SEAMM_DEV, TinkerCliffs through
+the SEAMM_DEV JobServer, and TinkerCliffs alone (D7).</p>
+</section>
+<section id="implementation-2026-10-04">
+<h2>Implementation (2026-10-04)<a class="headerlink" href="#implementation-2026-10-04" title="Link to this heading">#</a></h2>
+<p>Local commits on <code class="docutils literal notranslate"><span class="pre">dev</span></code> (not pushed), in release order:</p>
+<ul class="simple">
+<li><p><strong>molsystem</strong> e15be3d, ad24ed7: <code class="docutils literal notranslate"><span class="pre">JobConnection</span></code> (a <code class="docutils literal notranslate"><span class="pre">sqlite3.Connection</span></code>
+subclass whose <code class="docutils literal notranslate"><span class="pre">commit()</span></code> does nothing while <code class="docutils literal notranslate"><span class="pre">deferring</span></code>; <code class="docutils literal notranslate"><span class="pre">commit_now</span></code>),
+<code class="docutils literal notranslate"><span class="pre">SystemDB(deferred_commit=True)</span></code>, <code class="docutils literal notranslate"><span class="pre">commit_transaction()</span></code>,
+<code class="docutils literal notranslate"><span class="pre">rollback_transaction()</span></code>; <code class="docutils literal notranslate"><span class="pre">with</span></code> blocks use savepoints when deferring;
+column deletion by <code class="docutils literal notranslate"><span class="pre">ALTER</span> <span class="pre">TABLE</span> <span class="pre">DROP</span> <span class="pre">COLUMN</span></code>; a Configuration’s <code class="docutils literal notranslate"><span class="pre">with</span></code>
+makes its cell row first. While deferring a transaction is always open (see
+<em>Findings</em>). Default behaviour unchanged.</p></li>
+<li><p><strong>seamm</strong> 32ab81e, fbf4528: <code class="docutils literal notranslate"><span class="pre">seamm/checkpoint.py</span></code> – <code class="docutils literal notranslate"><span class="pre">Checkpointer</span></code> (frames,
+<code class="docutils literal notranslate"><span class="pre">start</span></code>, <code class="docutils literal notranslate"><span class="pre">loop_resume</span></code>, <code class="docutils literal notranslate"><span class="pre">enter_iteration</span></code> which writes,
+<code class="docutils literal notranslate"><span class="pre">iteration_failed</span></code>, <code class="docutils literal notranslate"><span class="pre">leave_loop</span></code>, <code class="docutils literal notranslate"><span class="pre">step_completed</span></code>, <code class="docutils literal notranslate"><span class="pre">finish</span></code>), the
+variable codec, <code class="docutils literal notranslate"><span class="pre">Unrestorable</span></code>, <code class="docutils literal notranslate"><span class="pre">read_checkpoint</span></code>, <code class="docutils literal notranslate"><span class="pre">resumable</span></code>,
+<code class="docutils literal notranslate"><span class="pre">find_node</span></code>; <code class="docutils literal notranslate"><span class="pre">Variables</span></code> records the uuid of the step that set each
+variable; <code class="docutils literal notranslate"><span class="pre">Node.checkpoint_variable</span></code>/<code class="docutils literal notranslate"><span class="pre">restore_variable</span></code>.</p></li>
+<li><p><strong>seamm_exec</strong> 90d09b5: <code class="docutils literal notranslate"><span class="pre">plan_start</span></code> (the branch choice, reading the
+<code class="docutils literal notranslate"><span class="pre">_checkpoint</span></code> row read-only), <code class="docutils literal notranslate"><span class="pre">--resume</span></code>/<code class="docutils literal notranslate"><span class="pre">SEAMM_RESUME</span></code>, the deferred job
+database, the checkpointer around the run loop, rollback on error after the
+final structure is written, <code class="docutils literal notranslate"><span class="pre">job.out</span></code> appended and <code class="docutils literal notranslate"><span class="pre">job_data.json</span></code>
+<code class="docutils literal notranslate"><span class="pre">resumed</span></code>/<code class="docutils literal notranslate"><span class="pre">first</span> <span class="pre">start</span> <span class="pre">time</span></code> on resume; a relative <code class="docutils literal notranslate"><span class="pre">--database</span></code> is
+relative to the job directory.</p></li>
+<li><p><strong>loop_step</strong> 70e4e80: state saved at each iteration’s start; an <code class="docutils literal notranslate"><span class="pre">advance</span></code>
+flag so a resumed iteration is set up again rather than advanced; body started
+at the unfinished step; <code class="docutils literal notranslate"><span class="pre">iteration_failed</span></code> for continue/exit.</p></li>
+<li><p><strong>read_structure_step</strong> 87ea2c9: Write Structure records the size of each file
+it appends to (<code class="docutils literal notranslate"><span class="pre">appended_files.json</span></code> in its directory) and cuts the file back
+when it runs there again.</p></li>
+<li><p><strong>forcefield_step</strong> 6ea4c26: <code class="docutils literal notranslate"><span class="pre">_forcefield</span></code> saved as file + forcefield name.</p></li>
+<li><p><strong>seamm_jobserver</strong> ca83a11: only a terminal <code class="docutils literal notranslate"><span class="pre">job_data.json</span></code> state concludes a
+job; resubmitted batch scripts export <code class="docutils literal notranslate"><span class="pre">SEAMM_RESUME=1</span></code>; dead local jobs are
+<code class="docutils literal notranslate"><span class="pre">error</span></code>, or resubmitted with <code class="docutils literal notranslate"><span class="pre">--resubmit-lost</span></code>.</p></li>
+</ul>
+<p>Tests: molsystem 340 (11 new), seamm 295 (33 new), seamm_exec 127 (new
+<code class="docutils literal notranslate"><span class="pre">test_resume.py</span></code>), loop_step 22 (crash-and-resume against an uninterrupted
+run: For, Foreach, float, table whose body appends rows, systems with named
+directories, nested at 8 positions, twice, errors continue/exit; database and
+directories identical), read_structure_step 3 new, forcefield_step 2 new,
+seamm_jobserver 102 (10 new). Test venvs <code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV/venvs/phase5-A</span></code>
+(released) and <code class="docutils literal notranslate"><span class="pre">phase5-B</span></code> (A + the seven checkouts, editable); the live
+SEAMM_DEV venv is untouched.</p>
+<section id="findings">
+<h3>Findings<a class="headerlink" href="#findings" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>DDL commits itself.</strong> The sqlite3 module opens a transaction implicitly only
+before INSERT/UPDATE/DELETE/REPLACE. A step whose first write after a commit was
+<code class="docutils literal notranslate"><span class="pre">CREATE</span> <span class="pre">TABLE</span></code> (a Geometry Analysis table) committed it at once, and a kill left
+an empty, unregistered user table that shifted later tables’ SQL names. Found by
+the kill soak (<code class="docutils literal notranslate"><span class="pre">soak_props_geom</span></code>, 1 trial in 6); fixed by keeping a
+transaction open while deferring (molsystem ad24ed7, with a test that fails
+without it).</p></li>
+<li><p><strong>SMILES → 3D with RDKit was not resumable.</strong> RDKit’s embedding (molsystem’s
+default flavor) carries its random state from call to call, so the same SMILES
+gave a different conformer depending on what the process had built before:
+reproducible from a fresh start, but a resumed run (and phase 6’s parallel
+iterations) built different, equally valid structures after the resume point
+(MOPAC energies differing by ~1 kcal/mol). OpenBabel’s builder is not affected
+(checked; an earlier draft of this note said it was). <strong>Paul, 2026-10-04: fix
+it</strong> – molsystem 9c9a31f gives the embedding a fixed seed, so a SMILES always
+gives the same structure. This changes the conformers SMILES-built flowcharts
+produce compared with earlier releases (HISTORY must say so). Follow-up:
+structure_step embeds stereoisomers the same way (<code class="docutils literal notranslate"><span class="pre">rdDistGeom.EmbedMolecule</span></code>
+without a seed). The soak flowcharts read pre-built SDF files either way.</p></li>
+<li><p><strong>Read Structure and a MOL block without ``$$$$``.</strong> An <code class="docutils literal notranslate"><span class="pre">.sdf</span></code> holding a single
+MOL block without the terminator counts as 0 records, and the default indices
+<code class="docutils literal notranslate"><span class="pre">1:end</span></code> then fail with “If stop &lt; start, the step must be negative: 1”.
+Pre-existing; to file.</p></li>
+<li><p>(Corrected later: forcefield_step’s suite passes, 231 tests, when run from its
+own directory, as CI does. The 223 errors came from running it elsewhere, where
+the fixtures’ relative data paths do not resolve and seamm_ff_util falls into a
+branch that calls a <code class="docutils literal notranslate"><span class="pre">Forcefield._create_file</span></code> it does not have – a small
+latent seamm_ff_util bug, not a phase 5 matter.)</p></li>
+<li><p><strong>The strict digest blocks resuming after any update.</strong>
+<code class="docutils literal notranslate"><span class="pre">Flowchart.digest(strict=True)</span></code> hashes each step’s version, so a resume after a
+venv update or rollback (even a dev commit, in the soak) was refused as “the
+flowchart has changed”. And <code class="docutils literal notranslate"><span class="pre">Flowchart.digest</span></code> follows the steps with
+<code class="docutils literal notranslate"><span class="pre">next()</span></code>, which stops at the first Loop: changes inside or after a loop do not
+change it. The checkpoint now matches on its own <code class="docutils literal notranslate"><span class="pre">flowchart_fingerprint</span></code>
+(every node’s parameters and every edge, no versions; seamm 7960d35), and a
+resume notes the packages whose versions changed (seamm eabf0bb, seamm_exec
+c2ec57c). <code class="docutils literal notranslate"><span class="pre">Flowchart.digest</span></code> itself is unchanged (it is recorded in
+<code class="docutils literal notranslate"><span class="pre">job_data.json</span></code>); its stopping at Loops is a pre-existing bug to file.</p></li>
+<li><p><strong>Evaluator kills used up task attempts.</strong> Three kills during the same ORCA step
+exhausted its <code class="docutils literal notranslate"><span class="pre">max_attempts</span></code> (3): the resumed step refused to run, the Loop
+(continue on errors) carried on, and the job finished with the row missing. A
+local task stopped because the evaluator stopped is now recorded as not counted
+(seamm_exec cb4b724); a task a queue lost still counts. How often a job comes
+back is the JobServer’s <code class="docutils literal notranslate"><span class="pre">max_resubmits</span></code>.</p></li>
+<li><p><strong>Node uuids are not stable across runs.</strong> Reading a flowchart gives its steps
+new uuids, so a variable’s origin saved as a uuid found no step on resume and the
+Forcefield’s <code class="docutils literal notranslate"><span class="pre">_forcefield</span></code> came back unrestorable (clear error, as designed,
+but wrong). Origins are saved as the steps’ ids from the flowchart’s numbering
+(seamm bf4dbd4). The seamm unit test restored in the same process and missed
+it; it now rebuilds the flowchart first.</p></li>
+<li><p>The harness itself: a trial that had finished was rerun once more, which (as
+a rerun without a resumable checkpoint) started from the top and, for loops
+naming directories after rows, made <code class="docutils literal notranslate"><span class="pre">mol0001_2</span></code> directories – correct
+behaviour, pre-existing, not a phase 5 issue. Fixed in the harness.</p></li>
+<li><p><strong>A large variable made quick loops slow.</strong> The A/B run of <code class="docutils literal notranslate"><span class="pre">soak_custom</span></code> (a
+1 MB numpy array in a variable, 200 iterations of two quick steps) took 72.9 s
+against 16.7 s released: every checkpoint encoded the array as a JSON list and
+wrote it into <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code> and <code class="docutils literal notranslate"><span class="pre">checkpoint.json</span></code>. Variables now live one per
+row in <code class="docutils literal notranslate"><span class="pre">_checkpoint_variables</span></code>, rewritten only when they change (a numpy
+array is fingerprinted by a hash of its bytes, so an unchanged one is not even
+encoded), arrays are stored as base64 bytes (bit-exact), and <code class="docutils literal notranslate"><span class="pre">checkpoint.json</span></code>
+only summarizes values over 2000 characters (seamm 866cc6e). Now 10.3 s against
+16.2 s released: deferring molsystem’s per-operation commits to one per step
+makes such loops faster than before.</p></li>
+</ul>
+</section>
+</section>
+<section id="soak-and-a-b-results-2026-10-04">
+<h2>Soak and A/B results (2026-10-04)<a class="headerlink" href="#soak-and-a-b-results-2026-10-04" title="Link to this heading">#</a></h2>
+<p>Kill-anywhere soak (<code class="docutils literal notranslate"><span class="pre">Testing/phase5/kill_harness.py</span></code>: <code class="docutils literal notranslate"><span class="pre">kill</span> <span class="pre">-9</span></code> on the
+evaluator’s process group at random times, up to three times per trial, rerun with
+<code class="docutils literal notranslate"><span class="pre">--resume</span></code>; every table of <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code> but the checkpoint, the result files and
+the directory tree compared with an uninterrupted run), after the fixes above:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Flowchart</p></th>
+<th class="head"><p>Trials</p></th>
+<th class="head"><p>Result</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>soak_kill (MOPAC, table)</p></td>
+<td><p>8</p></td>
+<td><p>identical</p></td>
+</tr>
+<tr class="row-odd"><td><p>soak_nested (nested loops)</p></td>
+<td><p>8</p></td>
+<td><p>identical</p></td>
+</tr>
+<tr class="row-even"><td><p>soak_loop_store (table rows)</p></td>
+<td><p>8</p></td>
+<td><p>7 identical; 1 refused to resume (strict digest, fixed)</p></td>
+</tr>
+<tr class="row-odd"><td><p>soak_props_geom (properties,</p></td>
+<td><p>8</p></td>
+<td><p>identical (after the DDL fix)</p></td>
+</tr>
+<tr class="row-even"><td><p>geometry analysis tables)</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>soak_custom (Custom step, 1 MB</p></td>
+<td><p>6 + 4</p></td>
+<td><p>identical</p></td>
+</tr>
+<tr class="row-even"><td><p>numpy variable)</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>soak_ff_lammps (Forcefield</p></td>
+<td><p>6</p></td>
+<td><p>identical (after the origins fix)</p></td>
+</tr>
+<tr class="row-even"><td><p>object, LAMMPS)</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>soak_orca (ORCA opt + energy)</p></td>
+<td><p>6</p></td>
+<td><p>all rows; one energy 1e-9 Eh apart (ORCA restarts
+from the killed run’s .gbw); ORCA scratch files of
+killed runs left behind (cosmetic)</p></td>
+</tr>
+<tr class="row-even"><td><p>phase 4 soak_kill (from SMILES)</p></td>
+<td><p>6</p></td>
+<td><p>identical (after the RDKit seed)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>A/B without kills (<code class="docutils literal notranslate"><span class="pre">Testing/phase5/ab.py</span></code>, phase5-A released vs phase5-B, 17
+flowcharts): identical apart from the new <code class="docutils literal notranslate"><span class="pre">checkpoint.json</span></code> and
+<code class="docutils literal notranslate"><span class="pre">_checkpoint_variables</span></code>, except the flowcharts that build structures from
+SMILES, which differ by design since the seed (other conformers; same rows, same
+exit codes). Timing: no measurable cost – <code class="docutils literal notranslate"><span class="pre">p5_loop_store</span></code> three repeats 41.3/35.9,
+35.6/35.8, 35.8/35.6 s (A/B), <code class="docutils literal notranslate"><span class="pre">p5_orca</span></code> 96.6/98.1 s, <code class="docutils literal notranslate"><span class="pre">p5_ff_lammps</span></code> 26.7/25.0 s,
+<code class="docutils literal notranslate"><span class="pre">p5_custom</span></code> 16.2/10.3 s; run-to-run noise is about 10 %.</p>
+<p><strong>Correction (2026-10-04, from the live TinkerCliffs test).</strong> The fingerprint as
+first written (seamm 7960d35) hashed the steps’ <em>uuids</em>, which are new each time a
+flowchart is read: every real resume, in a new process, was refused (“the flowchart
+has changed”) and ran from the top. Those runs still finished with identical
+results, because the steps’ finished calculations were reused from the task
+manifests, so the kill soaks run after 7960d35 (soak_ff_lammps and soak_orca
+reruns, soak_custom, the SMILES soak) passed without resuming, and the table above
+overstates them. The unit tests resumed with the same flowchart objects. Fixed in
+seamm df0afbe (the fingerprint uses the steps’ numbered ids); the seamm_exec and
+loop_step resume tests now build the flowchart again before resuming (they fail
+on the old fingerprint: 18 and 5 tests), and the kill harness now fails a trial
+whose run.log shows a refused resume. The whole soak is being rerun.</p>
+<p>Live TinkerCliffs, first attempt (with the uuid fingerprint): SEAMM_DEV job 4010 on
+<code class="docutils literal notranslate"><span class="pre">tinkercliffs_phase5</span></code> (3-minute walltime) was stopped by SLURM three times
+(TIMEOUT), left <code class="docutils literal notranslate"><span class="pre">state:</span> <span class="pre">started</span></code>, and was resubmitted by the JobServer each time
+with <code class="docutils literal notranslate"><span class="pre">SEAMM_RESUME=1</span></code> in the script (<code class="docutils literal notranslate"><span class="pre">resubmit_count</span></code> 3), finishing on the
+fourth (SLURM 7851390/7851412/7851420/7851489). The JobServer half is therefore
+validated; the evaluator half refused to resume (above). TinkerCliffs alone
+(re-<code class="docutils literal notranslate"><span class="pre">sbatch</span></code> with <code class="docutils literal notranslate"><span class="pre">--resume</span></code>) likewise: 3 TIMEOUTs, then COMPLETED; results
+identical to an uninterrupted reference run (SLURM 7851391, 10:26).</p>
+<p>Live TinkerCliffs, second attempt (seamm df0afbe): TinkerCliffs alone resumed at
+iterations 43 and 87 (two TIMEOUTs, then COMPLETED) and is identical to the
+reference. SEAMM_DEV job 4011 resumed at iterations 37 and 75 (<code class="docutils literal notranslate"><span class="pre">resubmit_count</span></code>
+2); its third attempt finished the flowchart and wrote <code class="docutils literal notranslate"><span class="pre">finished</span></code> just as the
+walltime hit (SLURM recorded TIMEOUT), and the JobServer rightly trusted
+<code class="docutils literal notranslate"><span class="pre">job_data.json</span></code>. Its staged-back <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code>, however, read as 74 of 120 rows:</p>
+<ul class="simple">
+<li><p><strong>A stale SQLite log after a second stage-out.</strong> <code class="docutils literal notranslate"><span class="pre">RsyncStager</span></code> copies with
+<code class="docutils literal notranslate"><span class="pre">rsync</span> <span class="pre">-a</span></code>, which never deletes. The stage-out before the second resubmit
+brought <code class="docutils literal notranslate"><span class="pre">seamm.db-wal</span></code> back; the last attempt then folded its log into
+<code class="docutils literal notranslate"><span class="pre">seamm.db</span></code> and removed it on exit; the final stage-out copied the new
+<code class="docutils literal notranslate"><span class="pre">seamm.db</span></code> but left the old <code class="docutils literal notranslate"><span class="pre">-wal</span></code> beside it, and SQLite replayed it over
+the newer database. Pre-existing (a Dashboard pulling a running job’s files and
+then the final stage-out does the same), but resubmits make it routine.
+seamm_scheduler f557c92: a second rsync pass in <code class="docutils literal notranslate"><span class="pre">stage_in</span></code> and <code class="docutils literal notranslate"><span class="pre">stage_out</span></code>
+with <code class="docutils literal notranslate"><span class="pre">--delete</span></code> restricted to <code class="docutils literal notranslate"><span class="pre">*-wal</span></code>/<code class="docutils literal notranslate"><span class="pre">*-shm</span></code>/<code class="docutils literal notranslate"><span class="pre">*-journal</span></code>; a test runs
+rsync for real through a fake ssh. With the stale files removed by hand, job
+4011 is identical to the reference. <strong>seamm_scheduler joins the phase 5 release
+set</strong> (before seamm_jobserver).</p></li>
+</ul>
+<p>Live TinkerCliffs, third attempt (with the staging fix, seamm_scheduler f557c92 in
+SEAMM_DEV): job 4012 was stopped by the walltime three times and resumed at
+iterations 40, 77 and 116 (<code class="docutils literal notranslate"><span class="pre">resubmit_count</span></code> 3); its staged-back <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code> is
+complete with no stale log beside it, and the job is identical to the reference
+apart from a <code class="docutils literal notranslate"><span class="pre">mopac.end</span></code> left by a killed MOPAC run. <strong>The live validation (D7)
+is complete:</strong> JobServer → TinkerCliffs resubmit-and-resume (jobs 4011, 4012) and
+TinkerCliffs alone with <code class="docutils literal notranslate"><span class="pre">--resume</span></code> both reproduce an uninterrupted run exactly.</p>
+<p><strong>Kill soak, final (2026-10-04, after seamm df0afbe, with the harness failing any
+trial whose rerun refused to resume):</strong> every trial resumed and matched the
+uninterrupted run – soak_kill 6/6, soak_nested 6/6, soak_loop_store 6/6,
+soak_props_geom 6/6, soak_custom 6/6, soak_ff_lammps 6/6, soak_orca 6/6, SMILES
+soak_kill 6/6. Differences ignored as not data: the row order of
+<code class="docutils literal notranslate"><span class="pre">_checkpoint_variables</span></code> (rewritten on a resume’s first checkpoint); ORCA scratch
+files and <code class="docutils literal notranslate"><span class="pre">mopac.end</span></code> left by killed runs; ORCA timings; and in one ORCA trial the
+molecule’s name in <code class="docutils literal notranslate"><span class="pre">Thermochemistry.txt</span></code> (“ethane” vs “Formula: C2H6”), which
+comes from a PubChem lookup over the network that failed in that attempt.</p>
+<p>Added during phase 5 (Paul OK, 2026-10-04): <strong>a timed-out task gets more time when
+retried</strong> (reported by mbe from C.3b). A bundle whose tasks give no walltime asks
+for twice their estimates plus ten minutes; when the queue stopped it for its time
+limit, the task was resubmitted with the same time and could never finish (r2SCAN
+ghost tasks with SlowConv). seamm_scheduler 77b31fa: <code class="docutils literal notranslate"><span class="pre">JobStatus.timed_out</span></code> (SLURM
+TIMEOUT; PBS exit status -29 or a “walltime … exceeded” comment). seamm_exec
+52d2f40: the timeout is recorded in the task’s history (<code class="docutils literal notranslate"><span class="pre">timed_out</span></code>), and each
+retry after one asks for <code class="docutils literal notranslate"><span class="pre">2**timeouts</span></code> times the estimated time, within
+<code class="docutils literal notranslate"><span class="pre">bundle_walltime</span></code>, both within a run and across runs; a walltime the task gives is
+used as given; the prepared bundle is keyed on the scale. Test: 1200, 2400, 4800 s
+for a task that times out twice.</p>
+</section>
+<section id="release-preparation-2026-10-04-not-pushed-or-tagged">
+<h2>Release preparation (2026-10-04, not pushed or tagged)<a class="headerlink" href="#release-preparation-2026-10-04-not-pushed-or-tagged" title="Link to this heading">#</a></h2>
+<p>HISTORY entries, pins and documentation are prepared on <code class="docutils literal notranslate"><span class="pre">dev</span></code> for: molsystem
+2026.10.4; seamm 2026.10.4 (<code class="docutils literal notranslate"><span class="pre">molsystem&gt;=2026.10.4</span></code>); seamm_exec 2026.10.4.1
+(<code class="docutils literal notranslate"><span class="pre">molsystem</span></code>/<code class="docutils literal notranslate"><span class="pre">seamm</span></code>/<code class="docutils literal notranslate"><span class="pre">seamm-scheduler&gt;=2026.10.4</span></code>; a “Resuming a job” section
+and the task retry rules in <code class="docutils literal notranslate"><span class="pre">getting_started.rst</span></code>); loop_step 2026.10.4
+(<code class="docutils literal notranslate"><span class="pre">seamm&gt;=2026.10.4</span></code>); read_structure_step 2026.10.4.1; forcefield_step 2026.10.4;
+seamm_scheduler 2026.10.4; seamm_jobserver 2026.10.4 (<code class="docutils literal notranslate"><span class="pre">seamm_scheduler&gt;=2026.10.4</span></code>;
+the user guide’s resubmit section rewritten). read_structure_step and
+forcefield_step drop <code class="docutils literal notranslate"><span class="pre">devtools/conda-envs/test_env.yaml</span></code> (uv CI). Versions are
+dated today; bump them if the merge is on a later day. Release order (corrected by
+the review: seamm_exec pins seamm-scheduler): molsystem, seamm, seamm_scheduler,
+seamm_exec, loop_step, read_structure_step and forcefield_step (both pin seamm),
+seamm_jobserver last; until a cluster’s SEAMM has seamm_exec 2026.10.4.1 a resubmit
+there reruns from the top, so set <code class="docutils literal notranslate"><span class="pre">max_resubmits</span> <span class="pre">=</span> <span class="pre">1</span></code> on such queues until it is
+upgraded.</p>
+</section>
+<section id="cleanup-after-the-release-each-needs-paul-s-ok">
+<h2>Cleanup after the release (each needs Paul’s OK)<a class="headerlink" href="#cleanup-after-the-release-each-needs-paul-s-ok" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV</span></code>: its venv is <code class="docutils literal notranslate"><span class="pre">venvs/phase5-B</span></code> (editable checkouts). After the
+release, update it to the released packages (or switch back to <code class="docutils literal notranslate"><span class="pre">phase4-B</span></code> and
+<code class="docutils literal notranslate"><span class="pre">update</span> <span class="pre">--latest</span></code>), restart its services, and prune <code class="docutils literal notranslate"><span class="pre">venvs/phase5-A</span></code> and
+<code class="docutils literal notranslate"><span class="pre">venvs/phase5-B</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV/PaulVT.local.ini</span></code>: remove the <code class="docutils literal notranslate"><span class="pre">[tinkercliffs_phase5]</span></code> section
+(3-minute walltime, for the live test); the file before it is
+<code class="docutils literal notranslate"><span class="pre">PaulVT.local.ini.bak-2026-10-04-phase5</span></code>. Restart the JobServer after.</p></li>
+<li><p>TinkerCliffs: <code class="docutils literal notranslate"><span class="pre">/projects/seamm/psaxe/phase5</span></code> (private venv, source copies,
+<code class="docutils literal notranslate"><span class="pre">remote_jobs/</span></code>, <code class="docutils literal notranslate"><span class="pre">ref/</span></code>, <code class="docutils literal notranslate"><span class="pre">alone/</span></code>, <code class="docutils literal notranslate"><span class="pre">alone2/</span></code>, smoke test); 1.8 GB.</p></li>
+<li><p>SEAMM_DEV test jobs 4010-4012 (project <code class="docutils literal notranslate"><span class="pre">test</span></code>) can stay or be deleted.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Testing/phase5/runs</span></code> and <code class="docutils literal notranslate"><span class="pre">ab_runs</span></code> (local, 306 MB and 114 MB) once the
+results above are no longer needed.</p></li>
+</ul>
+</section>
+<section id="code-review-design-session-2026-10-04">
+<h2>Code review (design session, 2026-10-04)<a class="headerlink" href="#code-review-design-session-2026-10-04" title="Link to this heading">#</a></h2>
+<p>A review subagent read all eight packages at the release-preparation heads and
+probed the risky paths. Fixed:</p>
+<ol class="arabic simple">
+<li><p><em>Must:</em> <code class="docutils literal notranslate"><span class="pre">Checkpointer.start()</span></code> keeps only the outermost frame, so a resume that
+failed inside a Loop before it re-entered its iteration (an unrestorable
+variable in the loop’s parameters, say) wrote that bare position with state
+<code class="docutils literal notranslate"><span class="pre">error</span></code>, and the next resume restarted the loop at iteration 1 over the
+committed iterations: duplicate rows and <code class="docutils literal notranslate"><span class="pre">_2</span></code> directories. Now a failed resume
+that wrote nothing rewrites the checkpoint it resumed from, marked <code class="docutils literal notranslate"><span class="pre">error</span></code>.
+Test: crash mid-loop, a resume that fails in <code class="docutils literal notranslate"><span class="pre">Loop._restore_state</span></code>, then a
+good resume – identical to an uninterrupted run (fails without the fix).</p></li>
+<li><p>A variable that encodes but that JSON cannot hold (numpy <code class="docutils literal notranslate"><span class="pre">datetime64</span></code>: its
+<code class="docutils literal notranslate"><span class="pre">.item()</span></code> is a <code class="docutils literal notranslate"><span class="pre">date</span></code>) raised in <code class="docutils literal notranslate"><span class="pre">step_completed</span></code> and failed the job; it is
+now recorded as unrestorable. Test.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ExecFlowchart.run()</span></code> making its own plan did so before <code class="docutils literal notranslate"><span class="pre">set_ids()</span></code>, and the
+fingerprint of a flowchart without ids never matches; it sets them first. Test
+with the ids reset.</p></li>
+<li><p>molsystem: <code class="docutils literal notranslate"><span class="pre">detach</span></code> while deferring leaves the database attached (above);
+dropping a column while deferring drops the indices on it first and needs SQLite
+3.35 (clear error otherwise). Tests.</p></li>
+<li><p>Write Structure’s <code class="docutils literal notranslate"><span class="pre">appended_files.json</span></code> was not tied to a run: a rerun from the
+top in place could cut a job-root file back to the previous run’s sizes. The
+record now carries the checkpoint’s <code class="docutils literal notranslate"><span class="pre">run_id</span></code> (new for a run from the top,
+kept through resumes; seamm <code class="docutils literal notranslate"><span class="pre">Checkpointer.run_id</span></code>) and other runs’ records,
+or a run without a checkpoint, are ignored. read_structure_step now pins
+<code class="docutils literal notranslate"><span class="pre">seamm&gt;=2026.10.4</span></code>. Tests.</p></li>
+</ol>
+<p>Nits taken: the checkpoint’s <code class="docutils literal notranslate"><span class="pre">position</span></code> is deep-copied; loop_step writes an
+iteration’s checkpoint before making its directory (a kill in between left a
+directory the checkpoint did not know, so <code class="docutils literal notranslate"><span class="pre">name_2</span></code> after the resume), keeping a
+resumed iteration’s <code class="docutils literal notranslate"><span class="pre">iteration.out</span></code>; loop_step’s HISTORY says a failed iteration
+under “exit the loop” also keeps its writes; the stager’s side-file pass protects
+directories (<code class="docutils literal notranslate"><span class="pre">--filter=P</span> <span class="pre">*/</span></code>; rsync’s <code class="docutils literal notranslate"><span class="pre">--delete</span></code> also removed empty directories
+found only on one side) – verified live to TinkerCliffs (GNU rsync 3.2.7) from the
+Mac (openrsync) in both directions, and MolSSI10 has GNU rsync 3.2.3; the RDKit
+seed changes no test that compares coordinates (forcefield_step_experimental’s 25
+failures and 5 errors are the same with the released packages; xnn embeds with RDKit
+itself).</p>
+<p>Known, not changed (documented here):</p>
+<ul class="simple">
+<li><p>A queue TIMEOUT seen only when a restarted evaluator reattaches is recorded as
+lost without <code class="docutils literal notranslate"><span class="pre">timed_out</span></code>, so the time doubling does not apply to that retry.</p></li>
+<li><p>The doubled time is capped by <code class="docutils literal notranslate"><span class="pre">bundle_walltime</span></code> only, not by the queue’s own
+maximum unless <code class="docutils literal notranslate"><span class="pre">bundle_walltime</span></code> is set to it.</p></li>
+<li><p>A job that finished but whose final <code class="docutils literal notranslate"><span class="pre">job_data.json</span></code> could not be staged back is
+resubmitted with <code class="docutils literal notranslate"><span class="pre">SEAMM_RESUME=1</span></code>; the evaluator finds the checkpoint
+<code class="docutils literal notranslate"><span class="pre">finished</span></code>, refuses to resume and runs from the top, up to <code class="docutils literal notranslate"><span class="pre">max_resubmits</span></code>.</p></li>
+<li><p>gaussian_step’s basis-set append (<code class="docutils literal notranslate"><span class="pre">energy.py</span></code>) is not made safe to repeat.</p></li>
+<li><p>The structured-dtype numpy arrays come back as raw bytes (<code class="docutils literal notranslate"><span class="pre">|V12</span></code>) and a
+<code class="docutils literal notranslate"><span class="pre">str</span></code> Enum as its repr; neither occurs in SEAMM’s variables today.</p></li>
+<li><p>molsystem’s <code class="docutils literal notranslate"><span class="pre">with</span> <span class="pre">configuration:</span></code> now creates the configuration’s cell row (for
+every configuration used in such a block).</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="NOTES_phase4.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Phase 4 notes</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="NOTES_rollout_2026-10-04.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Rollout of 2026-10-04: ChemAI and TinkerCliffs</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#design-note-draft-for-paul-and-the-design-session">2026-10-04 – design note (draft for Paul and the design session)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#survey-2026-10-04">Survey (2026-10-04)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-design">The design</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-node-is-the-transaction">The node is the transaction</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#granularity-nodes-and-loop-iterations-not-sub-steps">Granularity: nodes and Loop iterations, not sub-steps</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-the-checkpoint-holds">What the checkpoint holds</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#writing-it">Writing it</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#resuming">Resuming</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#remaining-non-database-re-entry-fixes-the-audit">Remaining non-database re-entry fixes (the audit)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-jobserver">The JobServer</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#phase-6-compatibility">Phase 6 compatibility</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#decisions-for-paul">Decisions for Paul</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#packages-release-order-tests">Packages, release order, tests</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#review-design-session-2026-10-04">Review (design session, 2026-10-04)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#decisions-paul-2026-10-04">Decisions (Paul, 2026-10-04)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation-2026-10-04">Implementation (2026-10-04)</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#findings">Findings</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#soak-and-a-b-results-2026-10-04">Soak and A/B results (2026-10-04)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#release-preparation-2026-10-04-not-pushed-or-tagged">Release preparation (2026-10-04, not pushed or tagged)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cleanup-after-the-release-each-needs-paul-s-ok">Cleanup after the release (each needs Paul’s OK)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#code-review-design-session-2026-10-04">Code review (design session, 2026-10-04)</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../../_sources/developer_guide/campaigns/2026-10-02/NOTES_phase5.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.exec_flowchart &#8212; SEAMM seamm-exec Plug-in 2026.10.4 documentation</title>
+    <title>seamm_exec.exec_flowchart &#8212; SEAMM seamm-exec Plug-in 2026.10.4.1 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=3dc6335c"></script>
+    <script src="../../_static/documentation_options.js?v=883ce3b3"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.4" />
+  <meta name="docsearch:version" content="2026.10.4.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -482,15 +482,27 @@
 <div class="viewcode-block" id="ExecFlowchart">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.exec_flowchart.ExecFlowchart">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ExecFlowchart</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flowchart</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flowchart</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cmdline</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plan</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Execute a flowchart, providing support for the actual</span>
-<span class="sd">        execution of codes"""</span>
+<span class="sd">        execution of codes</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        flowchart : seamm.Flowchart</span>
+<span class="sd">            The flowchart to run.</span>
+<span class="sd">        cmdline : [str]</span>
+<span class="sd">            The command-line arguments, recorded in and compared with the</span>
+<span class="sd">            checkpoint.</span>
+<span class="sd">        plan : dict</span>
+<span class="sd">            How to start (see :func:`plan_start`), if already decided.</span>
+<span class="sd">        """</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"In ExecFlowchart.init()"</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span> <span class="o">=</span> <span class="n">flowchart</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cmdline</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">cmdline</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">cmdline</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plan</span> <span class="o">=</span> <span class="n">plan</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_archive_previous_database</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
-        <span class="n">root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">root_directory</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_archive_previous_database</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">root</span><span class="p">):</span>
         <span class="n">moved</span> <span class="o">=</span> <span class="n">archive_previous_database</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">moved</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
@@ -527,15 +539,27 @@
         <span class="c1"># And add the printer</span>
         <span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">"printer"</span><span class="p">,</span> <span class="n">printer</span><span class="p">)</span>
 
-        <span class="c1"># A rerun in the job's own directory: no checkpoint to resume from yet,</span>
-        <span class="c1"># so set the previous run's job database aside and start from the top.</span>
-        <span class="c1"># The step directories (and their task manifests) stay, so finished</span>
-        <span class="c1"># calculations are reused (seamm_exec#41).</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_archive_previous_database</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+        <span class="c1"># Resume from the checkpoint, or set a previous run's job database aside</span>
+        <span class="c1"># and start from the top. Either way the step directories (and their</span>
+        <span class="c1"># task manifests) stay, so finished calculations are reused.</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">root</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">root_directory</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="n">plan</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plan</span>
+        <span class="k">if</span> <span class="n">plan</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># The checkpoint's fingerprint uses the steps' ids</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">set_ids</span><span class="p">()</span>
+            <span class="n">plan</span> <span class="o">=</span> <span class="n">plan_start</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cmdline</span><span class="p">)</span>
+        <span class="n">resume</span> <span class="o">=</span> <span class="n">plan</span><span class="p">[</span><span class="s2">"resume"</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">resume</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_archive_previous_database</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">plan</span><span class="p">[</span><span class="s2">"message"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">plan</span><span class="p">[</span><span class="s2">"message"</span><span class="p">])</span>
+            <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="n">plan</span><span class="p">[</span><span class="s2">"message"</span><span class="p">],</span> <span class="n">indent</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">indent_initial</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+            <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
 
-        <span class="c1"># Setup the citations</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">root_directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"references.db"</span>
-        <span class="n">filename</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">missing_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># Setup the citations, keeping those of the steps already run if resuming</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">root</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"references.db"</span>
+        <span class="k">if</span> <span class="n">resume</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">filename</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">missing_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">references</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">references</span> <span class="o">=</span> <span class="n">reference_handler</span><span class="o">.</span><span class="n">Reference_Handler</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
@@ -584,7 +608,10 @@
                 <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Exception in citation </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                 <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
 
-        <span class="c1"># Create the system database, default system and configuration</span>
+        <span class="c1"># Create the system database, default system and configuration. The job's</span>
+        <span class="c1"># own database defers molsystem's commits, so each step is one</span>
+        <span class="c1"># transaction, committed with the checkpoint when the step finishes.</span>
+        <span class="n">checkpointing</span> <span class="o">=</span> <span class="n">plan</span><span class="p">[</span><span class="s2">"checkpointing"</span><span class="p">]</span>
         <span class="k">if</span> <span class="s2">"SEAMM"</span> <span class="ow">in</span> <span class="n">options</span><span class="p">:</span>
             <span class="n">seamm_options</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">"SEAMM"</span><span class="p">]</span>
             <span class="n">read_only</span> <span class="o">=</span> <span class="s2">"read_only"</span> <span class="ow">in</span> <span class="n">seamm_options</span> <span class="ow">and</span> <span class="n">seamm_options</span><span class="p">[</span><span class="s2">"read_only"</span><span class="p">]</span>
@@ -596,9 +623,9 @@
                 <span class="n">uri</span> <span class="o">=</span> <span class="s2">"file:"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">read_only</span><span class="p">:</span>
                     <span class="n">uri</span> <span class="o">+=</span> <span class="s2">"?mode=ro"</span>
-                <span class="n">db</span> <span class="o">=</span> <span class="n">SystemDB</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">uri</span><span class="p">)</span>
+                <span class="n">db</span> <span class="o">=</span> <span class="n">SystemDB</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">uri</span><span class="p">,</span> <span class="n">deferred_commit</span><span class="o">=</span><span class="n">checkpointing</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">db</span> <span class="o">=</span> <span class="n">SystemDB</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">"file:seamm.db"</span><span class="p">)</span>
+            <span class="n">db</span> <span class="o">=</span> <span class="n">SystemDB</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">"file:seamm.db"</span><span class="p">,</span> <span class="n">deferred_commit</span><span class="o">=</span><span class="n">checkpointing</span><span class="p">)</span>
 
         <span class="c1"># Put the system database in the global context for access.</span>
         <span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">"_system_db"</span><span class="p">,</span> <span class="n">db</span><span class="p">)</span>
@@ -615,6 +642,18 @@
             <span class="n">message</span> <span class="o">=</span> <span class="s2">"This flowchart cannot run here:</span><span class="se">\n</span><span class="s2">    "</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">    "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">problems</span><span class="p">)</span>
             <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+        <span class="n">checkpointer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">checkpointing</span><span class="p">:</span>
+            <span class="n">checkpointer</span> <span class="o">=</span> <span class="n">seamm</span><span class="o">.</span><span class="n">Checkpointer</span><span class="p">(</span>
+                <span class="n">db</span><span class="p">,</span>
+                <span class="n">root</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="p">,</span>
+                <span class="n">comparable_command_line</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cmdline</span><span class="p">),</span>
+                <span class="n">resume</span><span class="o">=</span><span class="n">resume</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">seamm</span><span class="o">.</span><span class="n">checkpoint</span><span class="o">.</span><span class="n">set_checkpointer</span><span class="p">(</span><span class="n">checkpointer</span><span class="p">)</span>
+            <span class="n">checkpointer</span><span class="o">.</span><span class="n">restore_variables</span><span class="p">(</span><span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="p">)</span>
 
         <span class="c1"># Write out an initial summary of the flowchart before doing anything</span>
         <span class="c1"># Reset the visited flag for traversal</span>
@@ -649,17 +688,23 @@
         <span class="c1"># And actually run it!</span>
         <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">((</span><span class="s2">"Running the flowchart</span><span class="se">\n</span><span class="s2">"</span> <span class="s2">"---------------------"</span><span class="p">))</span>
 
+        <span class="n">failed</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">next_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="s2">"1"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">checkpointer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">next_node</span> <span class="o">=</span> <span class="n">checkpointer</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">next_node</span><span class="p">)</span>
             <span class="k">while</span> <span class="n">next_node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">node</span> <span class="o">=</span> <span class="n">next_node</span>
                     <span class="n">next_node</span> <span class="o">=</span> <span class="n">next_node</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
-                    <span class="n">seamm</span><span class="o">.</span><span class="n">step_completed</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+                    <span class="n">seamm</span><span class="o">.</span><span class="n">step_completed</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">next_node</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">DeprecationWarning</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Deprecation warning: "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
                     <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
                     <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
+            <span class="n">failed</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">raise</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="c1"># Write the final structure</span>
             <span class="n">db</span> <span class="o">=</span> <span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"_system_db"</span><span class="p">)</span>
@@ -707,6 +752,16 @@
                                 <span class="s2">"</span><span class="se">\n</span><span class="s2">Was unable to write the final structure as either "</span>
                                 <span class="s2">"an mmcif or cif file for viewing."</span>
                             <span class="p">)</span>
+
+            <span class="c1"># The checkpoint's last word. After an error the failing step's</span>
+            <span class="c1"># writes are rolled back (the files written above keep what it did),</span>
+            <span class="c1"># so a resume re-runs it.</span>
+            <span class="k">if</span> <span class="n">checkpointer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">checkpointer</span><span class="o">.</span><span class="n">finish</span><span class="p">(</span><span class="s2">"error"</span> <span class="k">if</span> <span class="n">failed</span> <span class="k">else</span> <span class="s2">"finished"</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">"Could not write the final checkpoint"</span><span class="p">)</span>
+                <span class="n">seamm</span><span class="o">.</span><span class="n">checkpoint</span><span class="o">.</span><span class="n">set_checkpointer</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
 
             <span class="c1"># And print out the references</span>
             <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">root_directory</span><span class="p">,</span> <span class="s2">"references.db"</span><span class="p">)</span>
@@ -831,7 +886,15 @@
 
 
 
-<span class="n">_DATABASE_FILES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"seamm.db"</span><span class="p">,</span> <span class="s2">"seamm.db-wal"</span><span class="p">,</span> <span class="s2">"seamm.db-shm"</span><span class="p">,</span> <span class="s2">"references.db"</span><span class="p">)</span>
+<span class="n">_DATABASE_FILES</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">"seamm.db"</span><span class="p">,</span>
+    <span class="s2">"seamm.db-wal"</span><span class="p">,</span>
+    <span class="s2">"seamm.db-shm"</span><span class="p">,</span>
+    <span class="s2">"references.db"</span><span class="p">,</span>
+    <span class="s2">"checkpoint.json"</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">RESUME_ENVIRONMENT</span> <span class="o">=</span> <span class="s2">"SEAMM_RESUME"</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_job_database</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">root</span><span class="p">):</span>
@@ -848,7 +911,8 @@
         <span class="k">return</span> <span class="kc">None</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">db_file</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">():</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span> <span class="o">/</span> <span class="n">path</span>
+        <span class="c1"># Relative to the job directory, where the evaluator runs.</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">root</span><span class="p">)</span> <span class="o">/</span> <span class="n">path</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">path</span> <span class="o">!=</span> <span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">root</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"seamm.db"</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">():</span>
         <span class="k">return</span> <span class="kc">None</span>
@@ -860,14 +924,13 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">archive_previous_database</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Move a previous run's job database into ``previous/&lt;UTC time&gt;/``.</span>
 
-<span class="sd">    Only when the job database is ``&lt;root&gt;/seamm.db``, it exists, and there is no</span>
-<span class="sd">    checkpoint to resume from. Returns the directory it was moved to, or None.</span>
+<span class="sd">    Only when the job database is ``&lt;root&gt;/seamm.db`` and it exists; the caller</span>
+<span class="sd">    has decided not to resume from it (see :func:`plan_start`). The checkpoint</span>
+<span class="sd">    mirror goes with it. Returns the directory it was moved to, or None.</span>
 <span class="sd">    """</span>
     <span class="n">root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">_job_database</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-        <span class="k">return</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">root</span> <span class="o">/</span> <span class="s2">"checkpoint.json"</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
         <span class="k">return</span> <span class="kc">None</span>
     <span class="n">stamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">T%H-%M-%SZ"</span><span class="p">)</span>
     <span class="n">destination</span> <span class="o">=</span> <span class="n">root</span> <span class="o">/</span> <span class="s2">"previous"</span> <span class="o">/</span> <span class="n">stamp</span>
@@ -877,6 +940,111 @@
         <span class="k">if</span> <span class="n">source</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
             <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">source</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">destination</span> <span class="o">/</span> <span class="n">name</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">destination</span></div>
+
+
+
+<div class="viewcode-block" id="resume_requested">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.exec_flowchart.resume_requested">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">resume_requested</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Whether this run was asked to resume: --resume, or SEAMM_RESUME=1.</span>
+
+<span class="sd">    The JobServer asks with the environment variable when it resubmits a job</span>
+<span class="sd">    that was lost, so that an evaluator too old to know about resuming simply</span>
+<span class="sd">    starts from the top instead of failing on an unknown option.</span>
+<span class="sd">    """</span>
+    <span class="n">seamm_options</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"SEAMM"</span><span class="p">,</span> <span class="p">{})</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">seamm_options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"resume"</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">RESUME_ENVIRONMENT</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"1"</span><span class="p">,</span> <span class="s2">"yes"</span><span class="p">,</span> <span class="s2">"true"</span><span class="p">,</span> <span class="s2">"on"</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="comparable_command_line">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.exec_flowchart.comparable_command_line">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">comparable_command_line</span><span class="p">(</span><span class="n">cmdline</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The command line as recorded in a checkpoint: without --resume."""</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">arg</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">cmdline</span> <span class="k">if</span> <span class="n">arg</span> <span class="o">!=</span> <span class="s2">"--resume"</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="plan_start">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.exec_flowchart.plan_start">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plan_start</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">flowchart</span><span class="p">,</span> <span class="n">cmdline</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Decide how a run starts: resume from the checkpoint, or from the top.</span>
+
+<span class="sd">    Resuming is never the silent default for a rerun in place: the checkpoint</span>
+<span class="sd">    cannot tell whether the files the flowchart reads have changed. A run that</span>
+<span class="sd">    does not ask to resume sets a resumable checkpoint aside with the rest of the</span>
+<span class="sd">    previous database, and says how to resume instead.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    root : str or pathlib.Path</span>
+<span class="sd">        The job directory.</span>
+<span class="sd">    options : dict</span>
+<span class="sd">        The parsed options.</span>
+<span class="sd">    flowchart : seamm.Flowchart</span>
+<span class="sd">        The flowchart to run.</span>
+<span class="sd">    cmdline : [str]</span>
+<span class="sd">        The command-line arguments.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        ``resume``: the checkpoint to resume from, or None; ``checkpointing``:</span>
+<span class="sd">        whether this run writes checkpoints (only for a job database in the job</span>
+<span class="sd">        directory, writable and on disk); ``message``: what to tell the user, or</span>
+<span class="sd">        None.</span>
+<span class="sd">    """</span>
+    <span class="n">requested</span> <span class="o">=</span> <span class="n">resume_requested</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">_job_database</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">requested</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">"This job cannot resume: its database is read-only, in memory or "</span>
+                <span class="s2">"outside the job directory, so it has no checkpoint. Running from "</span>
+                <span class="s2">"the top."</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"resume"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">"checkpointing"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"message"</span><span class="p">:</span> <span class="n">message</span><span class="p">}</span>
+
+    <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">seamm</span><span class="o">.</span><span class="n">read_checkpoint</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">ok</span><span class="p">,</span> <span class="n">why</span> <span class="o">=</span> <span class="n">seamm</span><span class="o">.</span><span class="n">checkpoint</span><span class="o">.</span><span class="n">resumable</span><span class="p">(</span>
+        <span class="n">checkpoint</span><span class="p">,</span>
+        <span class="n">seamm</span><span class="o">.</span><span class="n">checkpoint</span><span class="o">.</span><span class="n">flowchart_fingerprint</span><span class="p">(</span><span class="n">flowchart</span><span class="p">),</span>
+        <span class="n">comparable_command_line</span><span class="p">(</span><span class="n">cmdline</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">ok</span><span class="p">:</span>
+        <span class="n">where</span> <span class="o">=</span> <span class="n">seamm</span><span class="o">.</span><span class="n">checkpoint</span><span class="o">.</span><span class="n">describe_position</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">requested</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ok</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Resuming at </span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">. The previous attempt ended in state "</span>
+                <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">checkpoint</span><span class="p">[</span><span class="s1">'state'</span><span class="p">]</span><span class="si">}</span><span class="s2">'; its checkpoint was written "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">checkpoint</span><span class="p">[</span><span class="s1">'written'</span><span class="p">]</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+            <span class="n">changed</span> <span class="o">=</span> <span class="n">seamm</span><span class="o">.</span><span class="n">checkpoint</span><span class="o">.</span><span class="n">changed_versions</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">flowchart</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">changed</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">versions</span> <span class="o">=</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">b</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">changed</span><span class="p">)</span>
+                <span class="n">message</span> <span class="o">+=</span> <span class="p">(</span>
+                    <span class="s2">" Note that the versions of some packages have changed since "</span>
+                    <span class="sa">f</span><span class="s2">"then: </span><span class="si">{</span><span class="n">versions</span><span class="si">}</span><span class="s2">."</span>
+                <span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">"resume"</span><span class="p">:</span> <span class="n">checkpoint</span><span class="p">,</span> <span class="s2">"checkpointing"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"message"</span><span class="p">:</span> <span class="n">message</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">"resume"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">"checkpointing"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">"message"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"Asked to resume, but cannot: </span><span class="si">{</span><span class="n">why</span><span class="si">}</span><span class="s2">. Running from the top."</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">ok</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"The previous run in this directory could have been resumed at </span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">. "</span>
+            <span class="s2">"Its database was set aside instead (rerun with --resume to continue "</span>
+            <span class="s2">"from where it stopped)."</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">"resume"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">"checkpointing"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"message"</span><span class="p">:</span> <span class="n">message</span><span class="p">}</span></div>
 
 
 
@@ -989,6 +1157,17 @@
         <span class="n">help</span><span class="o">=</span><span class="s2">"The executor used to run simulation engines."</span><span class="p">,</span>
     <span class="p">)</span>
 
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"SEAMM"</span><span class="p">,</span>
+        <span class="s2">"--resume"</span><span class="p">,</span>
+        <span class="n">group</span><span class="o">=</span><span class="s2">"job options"</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">"Resume a job that stopped part way, in its own directory, from its "</span>
+            <span class="s2">"checkpoint. Without it a rerun in place starts from the top."</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+
     <span class="c1"># Now we need to get the flowchart so that we can set up all the</span>
     <span class="c1"># parsers for the steps in order to provide appropriate help.</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
@@ -1085,10 +1264,29 @@
         <span class="n">console_handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
         <span class="n">printer</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">console_handler</span><span class="p">)</span>
 
+    <span class="c1"># Resume, or start from the top?</span>
+    <span class="k">with</span> <span class="n">cd</span><span class="p">(</span><span class="n">wdir</span><span class="p">):</span>
+        <span class="n">plan</span> <span class="o">=</span> <span class="n">plan_start</span><span class="p">(</span>
+            <span class="n">wdir</span><span class="p">,</span> <span class="n">parser</span><span class="o">.</span><span class="n">get_options</span><span class="p">(),</span> <span class="n">flowchart</span><span class="p">,</span> <span class="n">comparable_command_line</span><span class="p">(</span><span class="n">cmdline</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="n">resuming</span> <span class="o">=</span> <span class="n">plan</span><span class="p">[</span><span class="s2">"resume"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
     <span class="c1"># A handler for the file</span>
-    <span class="c1"># Frist remove the job.out file if it exists so we start freash</span>
+    <span class="c1"># First remove the job.out file if it exists so we start fresh, unless</span>
+    <span class="c1"># resuming, which carries on after a banner.</span>
     <span class="n">job_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">wdir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"job.out"</span>
-    <span class="n">job_file</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">missing_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">resuming</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">job_file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">"a"</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+            <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="o">+</span> <span class="mi">79</span> <span class="o">*</span> <span class="s2">"="</span>
+                <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="o">+</span> <span class="sa">f</span><span class="s2">"Resumed </span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="o">+</span> <span class="mi">79</span> <span class="o">*</span> <span class="s2">"="</span>
+                <span class="o">+</span> <span class="s2">"</span><span class="se">\n\n</span><span class="s2">"</span>
+            <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">job_file</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">missing_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="n">file_handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">wdir</span><span class="p">,</span> <span class="s2">"job.out"</span><span class="p">))</span>
     <span class="n">file_handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">seamm_util</span><span class="o">.</span><span class="n">printing</span><span class="o">.</span><span class="n">NORMAL</span><span class="p">)</span>
@@ -1123,7 +1321,7 @@
     <span class="k">with</span> <span class="n">cd</span><span class="p">(</span><span class="n">wdir</span><span class="p">):</span>
         <span class="c1"># Set up the initial metadata for the job.</span>
         <span class="n">time_now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">in_jobserver</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">in_jobserver</span> <span class="ow">or</span> <span class="p">(</span><span class="n">resuming</span> <span class="ow">and</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"job_data.json"</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()):</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"job_data.json"</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
                 <span class="n">fd</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
                 <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
@@ -1146,6 +1344,7 @@
                 <span class="s2">"working directory"</span><span class="p">:</span> <span class="n">wdir</span><span class="p">,</span>
                 <span class="s2">"submitted time"</span><span class="p">:</span> <span class="n">time_now</span><span class="p">,</span>
             <span class="p">}</span>
+        <span class="n">previous_start</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"start time"</span><span class="p">)</span>
         <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
             <span class="p">{</span>
                 <span class="s2">"command line"</span><span class="p">:</span> <span class="n">cmdline</span><span class="p">,</span>
@@ -1157,6 +1356,13 @@
                 <span class="s2">"~cpuinfo"</span><span class="p">:</span> <span class="n">cpuinfo</span><span class="o">.</span><span class="n">get_cpu_info</span><span class="p">(),</span>
             <span class="p">}</span>
         <span class="p">)</span>
+        <span class="k">if</span> <span class="n">resuming</span><span class="p">:</span>
+            <span class="c1"># Keep when the job first started; note each resume.</span>
+            <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"first start time"</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="s2">"first start time"</span><span class="p">]</span> <span class="o">=</span> <span class="n">previous_start</span> <span class="ow">or</span> <span class="n">time_now</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">"resumed"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"resumed"</span><span class="p">,</span> <span class="p">[]),</span> <span class="n">time_now</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"end time"</span><span class="p">,</span> <span class="s2">"error type"</span><span class="p">,</span> <span class="s2">"error message"</span><span class="p">):</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">in_jobserver</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">standalone</span><span class="p">:</span>
             <span class="kn">import</span><span class="w"> </span><span class="nn">seamm_datastore</span>
 
@@ -1205,7 +1411,7 @@
         <span class="c1"># And run the flowchart</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Executing the flowchart"</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">exec</span> <span class="o">=</span> <span class="n">ExecFlowchart</span><span class="p">(</span><span class="n">flowchart</span><span class="p">)</span>
+            <span class="n">exec</span> <span class="o">=</span> <span class="n">ExecFlowchart</span><span class="p">(</span><span class="n">flowchart</span><span class="p">,</span> <span class="n">cmdline</span><span class="o">=</span><span class="n">cmdline</span><span class="p">,</span> <span class="n">plan</span><span class="o">=</span><span class="n">plan</span><span class="p">)</span>
             <span class="n">exec</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="n">wdir</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">job_id</span><span class="p">)</span>
             <span class="n">data</span><span class="p">[</span><span class="s2">"state"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"finished"</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
