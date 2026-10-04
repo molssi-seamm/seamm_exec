@@ -451,3 +451,55 @@ Left to clean up after the review: ``[tinkercliffs_phase6]`` in
 restart the services after); TinkerCliffs ``/projects/seamm/psaxe/phase6``;
 SEAMM_DEV jobs 4013 and 4014 (project ``test``); local ``Testing/phase6/runs`` and
 ``~/SEAMM_DEV/venvs/phase6-B``.
+
+Code review (design session, 2026-10-04) and fixes
+--------------------------------------------------
+
+The review verified the design and the driver's kill/retry/break/exit semantics,
+and found merge defects the A/B and live runs had not reached (none looped over
+several configurations of one system, or changed the shared current structure in
+two iterations). Fixed:
+
+- **M1** (molsystem): an unchanged row referring to a row outside the snapshot (a
+  system's default configuration) was rewritten to NULL. Now a reference to a row
+  the iteration did not create keeps its id, deferred updates are only for
+  changed rows, and the snapshot includes each selected system's default
+  configuration (so the system is usable in the child and a change of default is
+  visible; rewriting the default in the snapshot instead hid the iteration's
+  choice).
+- **M2** (molsystem, loop_step): a loop over several configurations of one system
+  raised a spurious conflict (each iteration makes its configuration current).
+  ``system.default_configuration`` is merged without a conflict, the last merged
+  change left; the Loop makes the iteration's configuration current before
+  merging it (the case the merge cannot see: back to the entry's default).
+- **M3** (molsystem): two iterations changing the coordinates (velocities,
+  gradients, attributes, links) of one configuration were not detected; now a
+  conflict on the configuration. The note's claim that only whole-database
+  snapshots share structures was wrong: the current configuration is in every
+  snapshot.
+- **M4** (seamm): ``Node.job_path`` falls back to ``root_directory`` for a
+  flowchart without ``job_directory`` (13 orca_step tests used such fakes).
+- **S1** appends replayed as appends, as serially (two rows with one index
+  value), superseding the index rule; **S2** property definitions must agree in
+  type and units; **S3** ``Node.job_file`` walks the enclosing iterations
+  (``Flowchart.job_read_directories``, passed as ``SEAMM_JOB_READ``) and the
+  guide says a job-level file is read live; **S4** citations planned with the
+  job's counts in the committed plan, merged by setting counts, so a redo does not
+  double them; **S5** an iteration's ``OMP_NUM_THREADS`` is its share of cores,
+  not the pool's one per core asked for; **S6** tables re-exported and
+  ``loop_entry.db`` removed after a break or *exit* too (kept after *stop the
+  job*, whose resume reruns the failed iteration); **S7** tables made in the body
+  are variables after the merge; **S8** ``loop_step/tests/test_parallel.py``: a
+  serial-vs-parallel run, black-box, with a fake step plug-in installed on
+  ``PYTHONPATH`` (no external codes; ~40 s).
+- Nits: URIs quoted; no NOT NULL without a default; later-wins warnings in
+  ``job.out``; the user guide marks separate placement experimental and states the
+  start-up and whole-snapshot disk costs.
+
+Pins, at release preparation: seamm_exec ``molsystem>=`` and ``seamm>=`` the phase
+6 versions; loop_step now requires ``molsystem`` and ``seamm-exec`` (floors raised
+to the phase 6 versions at release, with ``seamm``); read_structure_step
+``seamm>=`` phase 6 (``job_file``); the other five steps bumped for consistency.
+Answers to the review's questions: start-up cost documented, a warm evaluator per
+bundle is phase 7 material; whole-database snapshots stay up front, the disk cost
+documented.

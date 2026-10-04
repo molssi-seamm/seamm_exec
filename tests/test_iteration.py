@@ -20,6 +20,8 @@ def test_resolver_gives_run_flowchart_and_the_share(monkeypatch):
     assert cmd == ["{code}", "x.flow"]
     assert env["A"] == "1"
     assert json.loads(env[it.CE_ENVIRONMENT]) == {"NTASKS": 2, "MEM_PER_CPU": 10}
+    # Its share of threads, not the pool's one per core asked for
+    assert env["OMP_NUM_THREADS"] == "2"
     # A code named in seamm.ini wins
     config, _, _ = it.resolve({"code": "/opt/rf"}, [], {}, {}, None)
     assert config["code"] == "/opt/rf"
@@ -52,6 +54,7 @@ def test_iteration_task(tmp_path):
     assert task.env["SEAMM_RESUME"] == "1"
     assert task.env[it.PARENT_JOB_ENVIRONMENT] == "../../.."
     assert task.env["SEAMM_TARGET"] == ""
+    assert task.env[it.READ_ENVIRONMENT] == "../../.."
     assert task.resources.ntasks == 2
     assert task.resources.mem_per_cpu == 2 * 10**9
     assert task.keep == ["."] and task.in_situ and task.shell
@@ -131,6 +134,10 @@ def test_appends_of_another_run_are_copies(tmp_path):
     assert plan == {"append": {}, "copy": ["all.sdf"]}
 
 
+def bib(alias):
+    return f"@misc{{{alias}, title = {{{alias}}}}}"
+
+
 def citations(path, rows):
     db = sqlite3.connect(str(path))
     db.execute(
@@ -141,7 +148,9 @@ def citations(path, rows):
         "module TEXT, note TEXT, count INTEGER, level INTEGER)"
     )
     for i, (alias, module, count) in enumerate(rows, start=1):
-        db.execute("INSERT INTO citation VALUES (?, ?, ?, NULL)", (i, alias, alias))
+        db.execute(
+            "INSERT INTO citation VALUES (?, ?, ?, NULL)", (i, alias, bib(alias))
+        )
         db.execute(
             "INSERT INTO context VALUES (?, ?, ?, 'note', ?, 1)", (i, i, module, count)
         )
@@ -219,3 +228,19 @@ def test_child_mode_reports_a_finished_iteration(tmp_path, monkeypatch):
     assert plan["iteration"] == {"done": True, "break": True, "skip": False}
     outcome = it.iteration_outcome(tmp_path)
     assert outcome["break"] and outcome["run_id"] == "r"
+
+
+def test_citations_merged_again_give_the_same_counts(tmp_path):
+    """Redone after an interruption, the planned merge sets, not adds, counts."""
+    import reference_handler
+
+    evaluator = tmp_path / "it"
+    evaluator.mkdir()
+    citations(evaluator / "references.db", [("SEAMM", "seamm", 1), ("mopac", "m", 2)])
+    job = reference_handler.Reference_Handler(str(tmp_path / "references.db"))
+    job.cite(raw=bib("mopac"), alias="mopac", module="m", level=1, note="note")
+    before = it.plan_citations(evaluator, job)
+    for _ in range(2):
+        it.merge_citations(evaluator, job, before)
+    count = job.conn.execute("SELECT count FROM context").fetchall()
+    assert count == [(3,)]

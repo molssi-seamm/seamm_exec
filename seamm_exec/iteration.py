@@ -26,6 +26,7 @@ import shlex
 import shutil
 import sqlite3
 import sys
+from urllib.parse import quote
 
 from .tasks import Resources, Task
 
@@ -40,6 +41,10 @@ EVALUATOR_DIRECTORY = "_evaluator"
 PARENT_JOB_ENVIRONMENT = "SEAMM_PARENT_JOB"
 #: The child's share of the machine, as JSON (see computational_environment)
 CE_ENVIRONMENT = "SEAMM_CE"
+#: Where a child reads job-level files it has not written: the enclosing
+#: iterations' job directories, then the job's (os.pathsep-separated, relative to
+#: the child's directory)
+READ_ENVIRONMENT = "SEAMM_JOB_READ"
 #: Write Structure's record of the files it appended to, in its step directory
 APPENDED_RECORD = "appended_files.json"
 
@@ -102,6 +107,10 @@ def resolve(config, cmd, env, ce, root):
             continue
         share[key] = value
     env[CE_ENVIRONMENT] = json.dumps(share)
+    # The pool would give a concurrent task one thread per core it asked for;
+    # an evaluator's own codes may use all of its share.
+    cores = int(ce.get("NTASKS", 1) or 1) * int(ce.get("CPUS_PER_TASK", 1) or 1)
+    env["OMP_NUM_THREADS"] = str(max(1, cores))
     return config, list(cmd), env
 
 
@@ -126,6 +135,7 @@ def iteration_task(
     walltime=None,
     placement="inline",
     root_directory=None,
+    read_directories=None,
 ):
     """The task that runs one iteration in its ``_evaluator`` directory.
 
@@ -152,6 +162,9 @@ def iteration_task(
     root_directory : str or Path, optional
         Where the steps' directories are, by default ``job_directory``: the
         job's, also for a parallel loop nested in an iteration of another.
+    read_directories : [str or Path], optional
+        Where the child reads job-level files it has not written, innermost
+        first; by default ``job_directory``.
     """
     evaluator = Path(evaluator)
     job_directory = Path(job_directory)
@@ -166,7 +179,15 @@ def iteration_task(
         for a in (flowchart, *command_line)
     ]
     cmd = ["{code}", *args, ">", "stdout.txt", "2>", "stderr.txt"]
-    env = {"SEAMM_RESUME": "1", PARENT_JOB_ENVIRONMENT: parent}
+    if read_directories is None:
+        read_directories = [job_directory]
+    env = {
+        "SEAMM_RESUME": "1",
+        PARENT_JOB_ENVIRONMENT: parent,
+        READ_ENVIRONMENT: os.pathsep.join(
+            os.path.relpath(d, evaluator) for d in read_directories
+        ),
+    }
     if placement == "inline":
         # No target: the child's codes run in its own pool, within its share
         env["SEAMM_TARGET"] = ""
@@ -255,7 +276,9 @@ def merge_database(system_db, evaluator, state, iteration, later_wins=False):
     )
     result["exports"] = {}
     if len(result.get("exported", [])) > 0:
-        db = sqlite3.connect(f"file:{evaluator / 'seamm.db'}?mode=ro", uri=True)
+        db = sqlite3.connect(
+            f"file:{quote(str(evaluator / 'seamm.db'))}?mode=ro", uri=True
+        )
         try:
             for name in result["exported"]:
                 row = db.execute(
@@ -369,20 +392,12 @@ def merge_files(evaluator, job_directory, plan):
         os.replace(tmp, target)
 
 
-def merge_citations(evaluator, references):
-    """Cite in the job's references what the iteration cited.
-
-    Parameters
-    ----------
-    evaluator : str or Path
-        The iteration's ``_evaluator`` directory.
-    references : reference_handler.Reference_Handler
-        The job's.
-    """
+def _citation_rows(evaluator):
+    """The iteration's citations: (alias, raw, module, note, level, count)."""
     path = Path(evaluator) / "references.db"
-    if references is None or not path.exists():
-        return 0
-    db = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+    if not path.exists():
+        return []
+    db = sqlite3.connect(f"file:{quote(str(path))}?mode=ro", uri=True)
     try:
         rows = db.execute(
             "SELECT c.alias, c.raw, x.module, x.note, x.level, x.count "
@@ -393,20 +408,75 @@ def merge_citations(evaluator, references):
         rows = []
     finally:
         db.close()
+    # Every evaluator cites SEAMM as it starts; the job has already
+    return [r for r in rows if not (r[0] == "SEAMM" and r[2] == "seamm")]
+
+
+def _context_key(alias, module, note, level):
+    return "\0".join((str(alias), str(module), str(note), str(level)))
+
+
+def _job_count(references, alias, module, note, level):
+    row = references.conn.execute(
+        "SELECT x.count FROM citation c JOIN context x ON x.reference_id = c.id "
+        "WHERE c.alias = ? AND x.module = ? AND x.note = ? AND x.level = ?",
+        (alias, module, note, level),
+    ).fetchone()
+    return 0 if row is None else row[0]
+
+
+def plan_citations(evaluator, references):
+    """The job's count of each citation the iteration made, before merging it.
+
+    Kept in the committed plan, so merging the citations again after an
+    interruption sets the same counts rather than adding the iteration's twice.
+    """
+    if references is None:
+        return {}
+    return {
+        _context_key(a, m, n, lv): _job_count(references, a, m, n, lv)
+        for a, _, m, n, lv, _ in _citation_rows(evaluator)
+    }
+
+
+def merge_citations(evaluator, references, before=None):
+    """Cite in the job's references what the iteration cited.
+
+    Parameters
+    ----------
+    evaluator : str or Path
+        The iteration's ``_evaluator`` directory.
+    references : reference_handler.Reference_Handler
+        The job's.
+    before : dict, optional
+        From :func:`plan_citations`: the counts are set to these plus the
+        iteration's, so doing it twice gives the same counts.
+    """
+    if references is None:
+        return 0
     n = 0
-    for alias, raw, module, note, level, count in rows:
-        if alias == "SEAMM" and module == "seamm":
-            # Every evaluator cites SEAMM as it starts; the job has already
+    for alias, raw, module, note, level, count in _citation_rows(evaluator):
+        try:
+            references.cite(raw=raw, alias=alias, module=module, level=level, note=note)
+        except Exception as e:
+            logger.warning(f"Could not cite '{alias}' from {evaluator}: {e}")
             continue
-        for _ in range(max(1, int(count or 1))):
-            try:
+        count = max(1, int(count or 1))
+        if before is not None:
+            total = before.get(_context_key(alias, module, note, level), 0) + count
+            references.conn.execute(
+                "UPDATE context SET count = ? WHERE module = ? AND note = ? AND "
+                "level = ? AND reference_id = (SELECT id FROM citation WHERE "
+                "alias = ?)",
+                (total, module, note, level, alias),
+            )
+            references.conn.commit()
+        else:
+            for _ in range(count - 1):
                 references.cite(
                     raw=raw, alias=alias, module=module, level=level, note=note
                 )
-            except Exception as e:
-                logger.warning(f"Could not cite '{alias}' from {path}: {e}")
-                break
-            n += 1
+        n += count
     return n
 
 

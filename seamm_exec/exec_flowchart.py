@@ -40,7 +40,7 @@ import seamm_exec
 import seamm_util
 import seamm_util.printing as printing
 from ._version import __version__
-from .iteration import PARENT_JOB_ENVIRONMENT
+from .iteration import PARENT_JOB_ENVIRONMENT, READ_ENVIRONMENT
 
 logger = logging.getLogger("seamm-exec")
 printer = printing.getPrinter()
@@ -208,6 +208,10 @@ class ExecFlowchart(object):
         if parent:
             self.flowchart.job_directory = root
             self.flowchart.root_directory = str((Path(root) / parent).resolve())
+            read = os.environ.get(READ_ENVIRONMENT, "")
+            self.flowchart.job_read_directories = [
+                str((Path(root) / d).resolve()) for d in read.split(os.pathsep) if d
+            ] or [self.flowchart.root_directory]
 
         # Correctly number the nodes
         self.flowchart.set_ids()
