@@ -1,6 +1,18 @@
 =======
 History
 =======
+2026.10.4 -- Exit status on failure; rerunning a job in its own directory
+    * ``run_flowchart`` exits with status 1 when the flowchart fails, after
+      recording the failure as before, so batch scripts, pipelines and tasks see
+      it. It exited 0 (#40).
+    * Running a flowchart again in a job directory that already has a job
+      database (e.g. after a failure) moves the old ``seamm.db`` and
+      ``references.db`` to ``previous/<date and time>/`` and starts from the top,
+      saying so in ``job.out``. The step directories stay, so finished
+      calculations are reused. Before, the stale database made the first Read
+      Structure step fail (#41). Not done for ``--read-only`` or a ``--database``
+      elsewhere.
+
 2026.10.3.2 -- Bugfix: task bundles: one node, enough time; inline only tasks that fit
     * A bundle of tasks always runs on one node: a task's ranks share the node and
       its node-local scratch. Before, a bundle of 8-rank VASP tasks could be spread

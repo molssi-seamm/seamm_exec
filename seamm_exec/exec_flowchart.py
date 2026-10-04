@@ -58,6 +58,18 @@ class ExecFlowchart(object):
 
         self.flowchart = flowchart
 
+    def _archive_previous_database(self, options):
+        root = self.flowchart.root_directory or os.getcwd()
+        moved = archive_previous_database(root, options)
+        if moved is not None:
+            message = (
+                "This directory had the job database of an earlier run, so it was "
+                f"moved to {moved.relative_to(Path(root))}/ and the flowchart "
+                "starts from the top. Finished calculations are reused."
+            )
+            logger.warning(message)
+            printer.job(message)
+
     def run(self, root=None, job_id=None):
         logger.info("In ExecFlowchart.run()")
         if not self.flowchart:
@@ -81,6 +93,12 @@ class ExecFlowchart(object):
 
         # And add the printer
         seamm.flowchart_variables.set_variable("printer", printer)
+
+        # A rerun in the job's own directory: no checkpoint to resume from yet,
+        # so set the previous run's job database aside and start from the top.
+        # The step directories (and their task manifests) stay, so finished
+        # calculations are reused (seamm_exec#41).
+        self._archive_previous_database(options)
 
         # Setup the citations
         filename = Path(self.flowchart.root_directory) / "references.db"
@@ -367,6 +385,52 @@ def open_datastore(root, datastore, timeout=20.0):
     )
 
     return db
+
+
+_DATABASE_FILES = ("seamm.db", "seamm.db-wal", "seamm.db-shm", "references.db")
+
+
+def _job_database(options, root):
+    """The job database's path, or None if it is not a file in ``root``.
+
+    None for an in-memory or read-only database, or one given with --database
+    that lives elsewhere.
+    """
+    seamm_options = options.get("SEAMM", {}) if isinstance(options, dict) else {}
+    if seamm_options.get("read_only"):
+        return None
+    db_file = seamm_options.get("database", "seamm.db") or "seamm.db"
+    if ":memory:" in db_file:
+        return None
+    path = Path(db_file).expanduser()
+    if not path.is_absolute():
+        path = Path.cwd() / path
+    path = path.resolve()
+    if path != (Path(root) / "seamm.db").resolve():
+        return None
+    return path
+
+
+def archive_previous_database(root, options):
+    """Move a previous run's job database into ``previous/<UTC time>/``.
+
+    Only when the job database is ``<root>/seamm.db``, it exists, and there is no
+    checkpoint to resume from. Returns the directory it was moved to, or None.
+    """
+    root = Path(root)
+    path = _job_database(options, root)
+    if path is None or not path.exists():
+        return None
+    if (root / "checkpoint.json").exists():
+        return None
+    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%SZ")
+    destination = root / "previous" / stamp
+    destination.mkdir(parents=True, exist_ok=True)
+    for name in _DATABASE_FILES:
+        source = root / name
+        if source.exists():
+            shutil.move(str(source), str(destination / name))
+    return destination
 
 
 def run_from_jobserver():
@@ -749,6 +813,12 @@ def run(
                     )
                 del db
         printer.job(datetime.now().strftime("%A %Y.%m.%d %H:%M:%S %Z"))
+
+    # Only after job_data.json and the datastore are written: exit non-zero for
+    # a flowchart that failed, so batch scripts, pipelines and tasks see it
+    # (seamm_exec#40).
+    if data["state"] == "error":
+        sys.exit(1)
 
 
 def get_job_id(filename):
