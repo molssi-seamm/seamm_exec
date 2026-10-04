@@ -231,3 +231,18 @@ to every printed digit.
 
 Since both sites moved together, no ``max_resubmits`` change was needed on ChemAI's
 ARC queues.
+
+MBE on TinkerCliffs (2026-10-04, Paul's ask)
+--------------------------------------------
+
+So that MBE runs use the main install instead of the MBE session's private venv:
+``uv pip install mbe-step==2026.10.4 seamm-mbe==2026.10.3.1`` into
+``/projects/seamm/SEAMM/venv`` (``venvs/2026-10-04T15-23-39``), in place as on ChemAI
+this morning (``seamm-manager install`` refuses packages not in the package list).
+A dry run first showed only these two; nothing used the venv. ``uv pip check``
+clean; ``MBE`` registered under ``org.molssi.seamm`` and listed by
+``seamm-flowchart steps``. ``vasp.ini`` there (changed by the MBE session with
+Paul's OK; backup ``vasp.ini.bak-2026-10-04``) names ``dftd4 =
+/projects/seamm/conda-envs/dftd4/bin/dftd4``; neither package has an installer, so
+nothing rewrote it. Until mbe-step and seamm-mbe are in the package list
+(seamm_packaging PR #3), ``environment recreate`` would drop them.
