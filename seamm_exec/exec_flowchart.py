@@ -51,15 +51,27 @@ header_line = "!MolSSI job_data 1.0\n"
 
 
 class ExecFlowchart(object):
-    def __init__(self, flowchart=None):
+    def __init__(self, flowchart=None, cmdline=None, plan=None):
         """Execute a flowchart, providing support for the actual
-        execution of codes"""
+        execution of codes
+
+        Parameters
+        ----------
+        flowchart : seamm.Flowchart
+            The flowchart to run.
+        cmdline : [str]
+            The command-line arguments, recorded in and compared with the
+            checkpoint.
+        plan : dict
+            How to start (see :func:`plan_start`), if already decided.
+        """
         logger.info("In ExecFlowchart.init()")
 
         self.flowchart = flowchart
+        self.cmdline = [] if cmdline is None else list(cmdline)
+        self.plan = plan
 
-    def _archive_previous_database(self, options):
-        root = self.flowchart.root_directory or os.getcwd()
+    def _archive_previous_database(self, options, root):
         moved = archive_previous_database(root, options)
         if moved is not None:
             message = (
@@ -94,15 +106,25 @@ class ExecFlowchart(object):
         # And add the printer
         seamm.flowchart_variables.set_variable("printer", printer)
 
-        # A rerun in the job's own directory: no checkpoint to resume from yet,
-        # so set the previous run's job database aside and start from the top.
-        # The step directories (and their task manifests) stay, so finished
-        # calculations are reused (seamm_exec#41).
-        self._archive_previous_database(options)
+        # Resume from the checkpoint, or set a previous run's job database aside
+        # and start from the top. Either way the step directories (and their
+        # task manifests) stay, so finished calculations are reused.
+        root = root or self.flowchart.root_directory or os.getcwd()
+        plan = self.plan
+        if plan is None:
+            plan = plan_start(root, options, self.flowchart, self.cmdline)
+        resume = plan["resume"]
+        if resume is None:
+            self._archive_previous_database(options, root)
+        if plan["message"] is not None:
+            logger.warning(plan["message"])
+            printer.job(__(plan["message"], indent="", indent_initial=False))
+            printer.job("")
 
-        # Setup the citations
-        filename = Path(self.flowchart.root_directory) / "references.db"
-        filename.unlink(missing_ok=True)
+        # Setup the citations, keeping those of the steps already run if resuming
+        filename = Path(root) / "references.db"
+        if resume is None:
+            filename.unlink(missing_ok=True)
         references = None
         try:
             references = reference_handler.Reference_Handler(str(filename))
@@ -151,7 +173,10 @@ class ExecFlowchart(object):
                 printer.job(f"Exception in citation {type(e)}: {e}")
                 printer.job(traceback.format_exc())
 
-        # Create the system database, default system and configuration
+        # Create the system database, default system and configuration. The job's
+        # own database defers molsystem's commits, so each step is one
+        # transaction, committed with the checkpoint when the step finishes.
+        checkpointing = plan["checkpointing"]
         if "SEAMM" in options:
             seamm_options = options["SEAMM"]
             read_only = "read_only" in seamm_options and seamm_options["read_only"]
@@ -163,9 +188,9 @@ class ExecFlowchart(object):
                 uri = "file:" + str(path)
                 if read_only:
                     uri += "?mode=ro"
-                db = SystemDB(filename=uri)
+                db = SystemDB(filename=uri, deferred_commit=checkpointing)
         else:
-            db = SystemDB(filename="file:seamm.db")
+            db = SystemDB(filename="file:seamm.db", deferred_commit=checkpointing)
 
         # Put the system database in the global context for access.
         seamm.flowchart_variables.set_variable("_system_db", db)
@@ -182,6 +207,18 @@ class ExecFlowchart(object):
             message = "This flowchart cannot run here:\n    " + "\n    ".join(problems)
             printer.job(message)
             raise RuntimeError(message)
+
+        checkpointer = None
+        if checkpointing:
+            checkpointer = seamm.Checkpointer(
+                db,
+                root,
+                self.flowchart,
+                comparable_command_line(self.cmdline),
+                resume=resume,
+            )
+            seamm.checkpoint.set_checkpointer(checkpointer)
+            checkpointer.restore_variables(seamm.flowchart_variables)
 
         # Write out an initial summary of the flowchart before doing anything
         # Reset the visited flag for traversal
@@ -216,17 +253,23 @@ class ExecFlowchart(object):
         # And actually run it!
         printer.job(("Running the flowchart\n" "---------------------"))
 
+        failed = False
         try:
             next_node = self.flowchart.get_node("1")
+            if checkpointer is not None:
+                next_node = checkpointer.start(next_node)
             while next_node is not None:
                 try:
                     node = next_node
                     next_node = next_node.run()
-                    seamm.step_completed(node)
+                    seamm.step_completed(node, next_node)
                 except DeprecationWarning as e:
                     print("\nDeprecation warning: " + str(e))
                     traceback.print_exc(file=sys.stderr)
                     traceback.print_exc(file=sys.stdout)
+        except BaseException:
+            failed = True
+            raise
         finally:
             # Write the final structure
             db = seamm.flowchart_variables.get_variable("_system_db")
@@ -274,6 +317,16 @@ class ExecFlowchart(object):
                                 "\nWas unable to write the final structure as either "
                                 "an mmcif or cif file for viewing."
                             )
+
+            # The checkpoint's last word. After an error the failing step's
+            # writes are rolled back (the files written above keep what it did),
+            # so a resume re-runs it.
+            if checkpointer is not None:
+                try:
+                    checkpointer.finish("error" if failed else "finished")
+                except Exception:
+                    logger.exception("Could not write the final checkpoint")
+                seamm.checkpoint.set_checkpointer(None)
 
             # And print out the references
             filename = os.path.join(self.flowchart.root_directory, "references.db")
@@ -387,7 +440,15 @@ def open_datastore(root, datastore, timeout=20.0):
     return db
 
 
-_DATABASE_FILES = ("seamm.db", "seamm.db-wal", "seamm.db-shm", "references.db")
+_DATABASE_FILES = (
+    "seamm.db",
+    "seamm.db-wal",
+    "seamm.db-shm",
+    "references.db",
+    "checkpoint.json",
+)
+
+RESUME_ENVIRONMENT = "SEAMM_RESUME"
 
 
 def _job_database(options, root):
@@ -404,7 +465,8 @@ def _job_database(options, root):
         return None
     path = Path(db_file).expanduser()
     if not path.is_absolute():
-        path = Path.cwd() / path
+        # Relative to the job directory, where the evaluator runs.
+        path = Path(root) / path
     path = path.resolve()
     if path != (Path(root) / "seamm.db").resolve():
         return None
@@ -414,14 +476,13 @@ def _job_database(options, root):
 def archive_previous_database(root, options):
     """Move a previous run's job database into ``previous/<UTC time>/``.
 
-    Only when the job database is ``<root>/seamm.db``, it exists, and there is no
-    checkpoint to resume from. Returns the directory it was moved to, or None.
+    Only when the job database is ``<root>/seamm.db`` and it exists; the caller
+    has decided not to resume from it (see :func:`plan_start`). The checkpoint
+    mirror goes with it. Returns the directory it was moved to, or None.
     """
     root = Path(root)
     path = _job_database(options, root)
     if path is None or not path.exists():
-        return None
-    if (root / "checkpoint.json").exists():
         return None
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%SZ")
     destination = root / "previous" / stamp
@@ -431,6 +492,95 @@ def archive_previous_database(root, options):
         if source.exists():
             shutil.move(str(source), str(destination / name))
     return destination
+
+
+def resume_requested(options):
+    """Whether this run was asked to resume: --resume, or SEAMM_RESUME=1.
+
+    The JobServer asks with the environment variable when it resubmits a job
+    that was lost, so that an evaluator too old to know about resuming simply
+    starts from the top instead of failing on an unknown option.
+    """
+    seamm_options = options.get("SEAMM", {}) if isinstance(options, dict) else {}
+    if seamm_options.get("resume", False):
+        return True
+    value = os.environ.get(RESUME_ENVIRONMENT, "").strip().lower()
+    return value in ("1", "yes", "true", "on")
+
+
+def comparable_command_line(cmdline):
+    """The command line as recorded in a checkpoint: without --resume."""
+    return [arg for arg in cmdline if arg != "--resume"]
+
+
+def plan_start(root, options, flowchart, cmdline):
+    """Decide how a run starts: resume from the checkpoint, or from the top.
+
+    Resuming is never the silent default for a rerun in place: the checkpoint
+    cannot tell whether the files the flowchart reads have changed. A run that
+    does not ask to resume sets a resumable checkpoint aside with the rest of the
+    previous database, and says how to resume instead.
+
+    Parameters
+    ----------
+    root : str or pathlib.Path
+        The job directory.
+    options : dict
+        The parsed options.
+    flowchart : seamm.Flowchart
+        The flowchart to run.
+    cmdline : [str]
+        The command-line arguments.
+
+    Returns
+    -------
+    dict
+        ``resume``: the checkpoint to resume from, or None; ``checkpointing``:
+        whether this run writes checkpoints (only for a job database in the job
+        directory, writable and on disk); ``message``: what to tell the user, or
+        None.
+    """
+    requested = resume_requested(options)
+    path = _job_database(options, root)
+    if path is None:
+        message = None
+        if requested:
+            message = (
+                "This job cannot resume: its database is read-only, in memory or "
+                "outside the job directory, so it has no checkpoint. Running from "
+                "the top."
+            )
+        return {"resume": None, "checkpointing": False, "message": message}
+
+    checkpoint = seamm.read_checkpoint(path)
+    ok, why = seamm.checkpoint.resumable(
+        checkpoint,
+        flowchart.digest(strict=True),
+        comparable_command_line(cmdline),
+    )
+    if ok:
+        where = seamm.checkpoint.describe_position(checkpoint)
+    if requested:
+        if ok:
+            message = (
+                f"Resuming at {where}. The previous attempt ended in state "
+                f"'{checkpoint['state']}'; its checkpoint was written "
+                f"{checkpoint['written']}."
+            )
+            return {"resume": checkpoint, "checkpointing": True, "message": message}
+        return {
+            "resume": None,
+            "checkpointing": True,
+            "message": f"Asked to resume, but cannot: {why}. Running from the top.",
+        }
+    message = None
+    if ok:
+        message = (
+            f"The previous run in this directory could have been resumed at {where}. "
+            "Its database was set aside instead (rerun with --resume to continue "
+            "from where it stopped)."
+        )
+    return {"resume": None, "checkpointing": True, "message": message}
 
 
 def run_from_jobserver():
@@ -537,6 +687,17 @@ def run(
         help="The executor used to run simulation engines.",
     )
 
+    parser.add_argument(
+        "SEAMM",
+        "--resume",
+        group="job options",
+        action="store_true",
+        help=(
+            "Resume a job that stopped part way, in its own directory, from its "
+            "checkpoint. Without it a rerun in place starts from the top."
+        ),
+    )
+
     # Now we need to get the flowchart so that we can set up all the
     # parsers for the steps in order to provide appropriate help.
     if not os.path.exists(filename):
@@ -633,10 +794,29 @@ def run(
         console_handler.setFormatter(formatter)
         printer.addHandler(console_handler)
 
+    # Resume, or start from the top?
+    with cd(wdir):
+        plan = plan_start(
+            wdir, parser.get_options(), flowchart, comparable_command_line(cmdline)
+        )
+    resuming = plan["resume"] is not None
+
     # A handler for the file
-    # Frist remove the job.out file if it exists so we start freash
+    # First remove the job.out file if it exists so we start fresh, unless
+    # resuming, which carries on after a banner.
     job_file = Path(wdir) / "job.out"
-    job_file.unlink(missing_ok=True)
+    if resuming:
+        with job_file.open("a") as fd:
+            fd.write(
+                "\n"
+                + 79 * "="
+                + "\n"
+                + f"Resumed {datetime.now(timezone.utc).isoformat()}\n"
+                + 79 * "="
+                + "\n\n"
+            )
+    else:
+        job_file.unlink(missing_ok=True)
 
     file_handler = logging.FileHandler(os.path.join(wdir, "job.out"))
     file_handler.setLevel(seamm_util.printing.NORMAL)
@@ -671,7 +851,7 @@ def run(
     with cd(wdir):
         # Set up the initial metadata for the job.
         time_now = datetime.now(timezone.utc).isoformat()
-        if in_jobserver:
+        if in_jobserver or (resuming and Path("job_data.json").exists()):
             with open("job_data.json", "r") as fd:
                 fd.readline()
                 data = json.load(fd)
@@ -694,6 +874,7 @@ def run(
                 "working directory": wdir,
                 "submitted time": time_now,
             }
+        previous_start = data.get("start time")
         data.update(
             {
                 "command line": cmdline,
@@ -705,6 +886,13 @@ def run(
                 "~cpuinfo": cpuinfo.get_cpu_info(),
             }
         )
+        if resuming:
+            # Keep when the job first started; note each resume.
+            if data.get("first start time") is None:
+                data["first start time"] = previous_start or time_now
+            data["resumed"] = [*data.get("resumed", []), time_now]
+            for key in ("end time", "error type", "error message"):
+                data.pop(key, None)
         if not in_jobserver and not standalone:
             import seamm_datastore
 
@@ -753,7 +941,7 @@ def run(
         # And run the flowchart
         logger.info("Executing the flowchart")
         try:
-            exec = ExecFlowchart(flowchart)
+            exec = ExecFlowchart(flowchart, cmdline=cmdline, plan=plan)
             exec.run(root=wdir, job_id=job_id)
             data["state"] = "finished"
         except Exception as e:
