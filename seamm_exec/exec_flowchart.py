@@ -567,6 +567,13 @@ def plan_start(root, options, flowchart, cmdline):
                 f"'{checkpoint['state']}'; its checkpoint was written "
                 f"{checkpoint['written']}."
             )
+            changed = seamm.checkpoint.changed_versions(checkpoint, flowchart)
+            if len(changed) > 0:
+                versions = ", ".join(f"{p} {a} -> {b}" for p, a, b in changed)
+                message += (
+                    " Note that the versions of some packages have changed since "
+                    f"then: {versions}."
+                )
             return {"resume": checkpoint, "checkpointing": True, "message": message}
         return {
             "resume": None,

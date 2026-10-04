@@ -165,3 +165,18 @@ def test_comparable_command_line():
 def test_resume_requested_environment(monkeypatch, value, expected):
     monkeypatch.setenv(ef.RESUME_ENVIRONMENT, value)
     assert ef.resume_requested({"SEAMM": {}}) is expected
+
+
+def test_resume_after_a_version_change(failed_job):
+    """Resuming with other package versions works, with a note saying so."""
+    root, flowchart = failed_job
+    db = sqlite3.connect(root / "seamm.db")
+    document = json.loads(db.execute("SELECT document FROM _checkpoint").fetchone()[0])
+    document["versions"]["seamm"] = "2026.1.1"
+    db.execute("UPDATE _checkpoint SET document = ?", (json.dumps(document),))
+    db.commit()
+    db.close()
+    plan = execute(root, flowchart, {"SEAMM": {"resume": True}})
+    assert plan["resume"] is not None
+    assert "seamm 2026.1.1 ->" in plan["message"]
+    assert Step.runs == ["B", "C"]
