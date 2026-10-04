@@ -597,6 +597,10 @@ resubmit-on-loss assumption true. Scheme:
   finish. A short audit of the code steps is part of this phase.
 - The JobServer's "trust ``job_data.json``, else resubmit up to ``max_resubmits``" path becomes correct
   without change.
+- **Rerunning in place:** checkpoint present → keep the job database and resume at the first
+  unfinished node (phase 5); absent → archive the database (``seamm.db*``, ``references.db``) to
+  ``previous/<UTC time>/`` and start from the top, keeping the step directories so their task manifests
+  reuse finished calculations (done 2026-10-04, seamm_exec#41).
 
 
 The parallel Loop
