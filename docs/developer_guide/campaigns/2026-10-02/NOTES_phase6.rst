@@ -437,6 +437,15 @@ iterations bundled as queue jobs from a parent on a compute node, and the
 JobServer's resubmit-and-resume of a parallel loop. Separate placement (the
 children's codes as tasks on the target) is not yet tested live.
 
+The two remaining A/B cases (2026-10-04): **p6, whole-database snapshot** -- a loop
+over systems with each iteration given the whole database (each baseline holds all
+six systems): identical to serial. **p7, two iterations setting the same cell** of a
+row that existed before the loop: by default the parallel job stops with
+``MergeConflict`` at iteration 2 (iteration 1 merged and committed, iteration 2's
+merge rolled back; the message now names the Loop setting, loop_step b7423f1);
+with "the later iteration wins" it is identical to serial, with a warning per
+overwritten cell (in the log, not ``job.out`` -- a review point).
+
 Left to clean up after the review: ``[tinkercliffs_phase6]`` in
 ``~/SEAMM_DEV/PaulVT.local.ini`` (backup ``PaulVT.local.ini.bak-2026-10-04-phase6``;
 restart the services after); TinkerCliffs ``/projects/seamm/psaxe/phase6``;
