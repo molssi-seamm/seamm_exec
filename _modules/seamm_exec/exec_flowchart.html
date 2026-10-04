@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.exec_flowchart &#8212; SEAMM seamm-exec Plug-in 2026.10.3.2 documentation</title>
+    <title>seamm_exec.exec_flowchart &#8212; SEAMM seamm-exec Plug-in 2026.10.4 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=319f9817"></script>
+    <script src="../../_static/documentation_options.js?v=3dc6335c"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.3.2" />
+  <meta name="docsearch:version" content="2026.10.4" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -489,6 +489,18 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span> <span class="o">=</span> <span class="n">flowchart</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_archive_previous_database</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">root_directory</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="n">moved</span> <span class="o">=</span> <span class="n">archive_previous_database</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">moved</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">"This directory had the job database of an earlier run, so it was "</span>
+                <span class="sa">f</span><span class="s2">"moved to </span><span class="si">{</span><span class="n">moved</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">root</span><span class="p">))</span><span class="si">}</span><span class="s2">/ and the flowchart "</span>
+                <span class="s2">"starts from the top. Finished calculations are reused."</span>
+            <span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
 <div class="viewcode-block" id="ExecFlowchart.run">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.exec_flowchart.ExecFlowchart.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -514,6 +526,12 @@
 
         <span class="c1"># And add the printer</span>
         <span class="n">seamm</span><span class="o">.</span><span class="n">flowchart_variables</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">"printer"</span><span class="p">,</span> <span class="n">printer</span><span class="p">)</span>
+
+        <span class="c1"># A rerun in the job's own directory: no checkpoint to resume from yet,</span>
+        <span class="c1"># so set the previous run's job database aside and start from the top.</span>
+        <span class="c1"># The step directories (and their task manifests) stay, so finished</span>
+        <span class="c1"># calculations are reused (seamm_exec#41).</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_archive_previous_database</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
 
         <span class="c1"># Setup the citations</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">root_directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"references.db"</span>
@@ -810,6 +828,55 @@
     <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">db</span></div>
+
+
+
+<span class="n">_DATABASE_FILES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"seamm.db"</span><span class="p">,</span> <span class="s2">"seamm.db-wal"</span><span class="p">,</span> <span class="s2">"seamm.db-shm"</span><span class="p">,</span> <span class="s2">"references.db"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_job_database</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">root</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The job database's path, or None if it is not a file in ``root``.</span>
+
+<span class="sd">    None for an in-memory or read-only database, or one given with --database</span>
+<span class="sd">    that lives elsewhere.</span>
+<span class="sd">    """</span>
+    <span class="n">seamm_options</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"SEAMM"</span><span class="p">,</span> <span class="p">{})</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">seamm_options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"read_only"</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">db_file</span> <span class="o">=</span> <span class="n">seamm_options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"database"</span><span class="p">,</span> <span class="s2">"seamm.db"</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"seamm.db"</span>
+    <span class="k">if</span> <span class="s2">":memory:"</span> <span class="ow">in</span> <span class="n">db_file</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">db_file</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">():</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span> <span class="o">/</span> <span class="n">path</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">path</span> <span class="o">!=</span> <span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">root</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"seamm.db"</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">():</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">path</span>
+
+
+<div class="viewcode-block" id="archive_previous_database">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.exec_flowchart.archive_previous_database">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">archive_previous_database</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Move a previous run's job database into ``previous/&lt;UTC time&gt;/``.</span>
+
+<span class="sd">    Only when the job database is ``&lt;root&gt;/seamm.db``, it exists, and there is no</span>
+<span class="sd">    checkpoint to resume from. Returns the directory it was moved to, or None.</span>
+<span class="sd">    """</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">_job_database</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">root</span> <span class="o">/</span> <span class="s2">"checkpoint.json"</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">stamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">T%H-%M-%SZ"</span><span class="p">)</span>
+    <span class="n">destination</span> <span class="o">=</span> <span class="n">root</span> <span class="o">/</span> <span class="s2">"previous"</span> <span class="o">/</span> <span class="n">stamp</span>
+    <span class="n">destination</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_DATABASE_FILES</span><span class="p">:</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="n">root</span> <span class="o">/</span> <span class="n">name</span>
+        <span class="k">if</span> <span class="n">source</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">source</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">destination</span> <span class="o">/</span> <span class="n">name</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">destination</span></div>
 
 
 
@@ -1197,7 +1264,13 @@
                         <span class="n">job_id</span><span class="p">,</span> <span class="n">finished</span><span class="o">=</span><span class="n">current_time</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">"state"</span><span class="p">]</span>
                     <span class="p">)</span>
                 <span class="k">del</span> <span class="n">db</span>
-        <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">"%A %Y.%m.</span><span class="si">%d</span><span class="s2"> %H:%M:%S %Z"</span><span class="p">))</span></div>
+        <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">"%A %Y.%m.</span><span class="si">%d</span><span class="s2"> %H:%M:%S %Z"</span><span class="p">))</span>
+
+    <span class="c1"># Only after job_data.json and the datastore are written: exit non-zero for</span>
+    <span class="c1"># a flowchart that failed, so batch scripts, pipelines and tasks see it</span>
+    <span class="c1"># (seamm_exec#40).</span>
+    <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s2">"state"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"error"</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
 
 
 

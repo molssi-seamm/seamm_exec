@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops &#8212; SEAMM seamm-exec Plug-in 2026.10.3.2 documentation</title>
+    <title>2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops &#8212; SEAMM seamm-exec Plug-in 2026.10.4 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../../_static/documentation_options.js?v=319f9817"></script>
+    <script src="../../../_static/documentation_options.js?v=3dc6335c"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="Campaigns" href="../index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.3.2" />
+  <meta name="docsearch:version" content="2026.10.4" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -1039,6 +1039,10 @@ deterministically (the task key makes this checkable) and must not append to tab
 finish. A short audit of the code steps is part of this phase.</p></li>
 <li><p>The JobServer’s “trust <code class="docutils literal notranslate"><span class="pre">job_data.json</span></code>, else resubmit up to <code class="docutils literal notranslate"><span class="pre">max_resubmits</span></code>” path becomes correct
 without change.</p></li>
+<li><p><strong>Rerunning in place:</strong> checkpoint present → keep the job database and resume at the first
+unfinished node (phase 5); absent → archive the database (<code class="docutils literal notranslate"><span class="pre">seamm.db*</span></code>, <code class="docutils literal notranslate"><span class="pre">references.db</span></code>) to
+<code class="docutils literal notranslate"><span class="pre">previous/&lt;UTC</span> <span class="pre">time&gt;/</span></code> and start from the top, keeping the step directories so their task manifests
+reuse finished calculations (done 2026-10-04, seamm_exec#41).</p></li>
 </ul>
 </section>
 </section>
