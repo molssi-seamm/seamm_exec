@@ -313,3 +313,132 @@ later to win; failed iterations are never merged; job-level files as in D5; the 
 Loop parameters; all four loop types with inline and separate placement; validation
 by serial-vs-parallel comparison, kill soak on parent and children, and a live
 TinkerCliffs run.
+
+Implementation (2026-10-04)
+---------------------------
+
+Local commits on ``dev``, not pushed; all ten packages installed editable in
+``~/SEAMM_DEV/venvs/phase6-B``.
+
+- **molsystem** ``molsystem/snapshot.py``: ``snapshot`` (own connection; selected
+  configurations with their ids, or the whole database by the backup API),
+  ``baseline`` (read-only copy) and ``merge`` (property definitions by name, id
+  tables remapped, row tables, property data, the table journal replayed with
+  values read from the child, ``MergeConflict``). Found in testing: an iteration
+  adds *columns* -- per-atom attributes of the structure tables (MOPAC's charges)
+  and table columns after rows it appended (MOPAC results) -- so the merge adds
+  new columns first and reads the baseline with NULL for them.
+  ``System.copy_configuration`` fixed on the way (it copied from the new
+  configuration, not the previous one).
+- **seamm**: ``Flowchart.job_directory`` (defaults to ``root_directory``);
+  ``Node.job_path`` follows it, ``Node.job_file(name)`` reads the iteration's own
+  file else the job's (inputs read by ``/name`` or ``job:NAME``); citations go to
+  ``job_directory``; ``IterationDone(broke, skipped)``; ``Checkpointer.write_child``
+  (the child's checkpoint, written into its snapshot), ``parallel_loop`` (the
+  parallel frame, committed), and ``iteration`` kept in the final checkpoint.
+- **seamm_exec** ``seamm_exec/iteration.py``: the ``seamm`` resolver (entry point;
+  ``run_flowchart`` beside the interpreter; the child's share of the machine as
+  ``SEAMM_CE``, which ``computational_environment`` honours), ``iteration_task``
+  (shell command with relative flowchart and parent paths, ``SEAMM_RESUME=1``,
+  ``SEAMM_PARENT_JOB``, ``SEAMM_TARGET=""`` for inline placement, ``target.json``
+  copied for separate), ``iteration_outcome``, ``merge_database``,
+  ``plan_files``/``merge_files`` (appends from Write Structure's records, by run id;
+  other files copied; redone exactly from the plan), ``merge_citations`` (not the
+  SEAMM citation every evaluator adds). Child mode in ``exec_flowchart``: forced
+  standalone (no datastore job of its own); resumes only its parent's checkpoint,
+  never from the top; a rerun after the iteration finished reports it from the
+  checkpoint. ``Task.keep`` (``"."`` for an iteration) so an in-situ task's
+  cleanup leaves the evaluator's files; ``TaskSet`` looks for ``target.json`` in
+  ``job_directory``.
+- **loop_step**: the D6 parameters, shown only when parallel is yes. ``run()``
+  refactored around ``_prepare`` / ``_setup_iteration(k)`` / ``_end_loop`` shared
+  by the serial loop, the child (``only``) and the parent. The parent:
+  ``parallel_loop`` frame (frozen items, directories given out, ``next`` to merge,
+  failed, merge state, exports, pending file merge); ``loop_entry.db`` (the
+  committed database at loop entry, rollback journal) from which every snapshot
+  is taken; per iteration its set-up, directory name committed before the
+  directory exists, snapshot + ``write_child`` + baseline, then a task; the
+  ``TaskSet`` with a ``LocalPool`` of ``iterations at once``; merge in order (one
+  transaction + checkpoint each, then files and citations from a committed plan);
+  for a loop over rows the iteration's row is made current before the merged
+  current rows are applied (the merge cannot see a move back to the entry's
+  current row). An evaluator that stopped before its iteration ended (its
+  checkpoint still 'running': killed, out of memory) is run again, resuming, up
+  to twice; one that ended in error is a failed iteration. Errors: *continue*
+  records and goes on; *exit* records and stops; *stop the job* raises without
+  recording, so a resume runs the iteration again. ``break`` stops dispatching
+  and merging after the iteration; skipped iterations are merged and their
+  directory removed, as serially.
+- **The six steps** (read_structure, table, properties, lammps, orca,
+  geometry_analysis): job-level writes to ``job_path``, reads through
+  ``job_file``; ``job://<n>`` keeps ``root_directory`` (the parent job in a child);
+  ORCA's read-only checkpoint lookup falls back to the job's checkpoints.
+
+Validation so far (``Testing/phase6``: ``ab_parallel.py`` builds each spec serial
+and parallel with ``seamm-flowchart`` and compares databases and files;
+``kill_parallel.py`` kills the parent, a child, or both, resumes, and compares
+with the serial run):
+
+============================  ==============================================
+case                          serial vs parallel
+============================  ==============================================
+p1 rows + MOPAC + files       identical
+p2 systems, optimize in place identical (D1)
+p3 parallel outer, serial in  identical
+p4 serial outer, parallel in  identical
+p5 break, skip, failure       identical database; the dispatched iteration
+                              after the break kept, not merged (by design)
+============================  ==============================================
+
+Differences that are the contract, not bugs: variables set in the body (and the
+row variables of a rows loop) are not visible after a parallel loop; the order of
+the table journal (merge bookkeeping). A loop whose iterations are *not*
+independent (Read Structure overwriting the current system that iteration 1
+created) differs, as documented in the Loop's user guide.
+
+Timing: each iteration pays ~5 s of evaluator start-up, so the tiny MOPAC test
+loops run slower in parallel (p1: 11 s serial, 21 s parallel with 2 at once).
+
+Kill soak (``kill_parallel.py``, local, 2026-10-04): every trial resumed and matched
+the serial run -- p1 rows: parent 3/3, child 4/4, both 6/6 (rerun after the fix
+below); p2 systems: parent 3/3, both 3/3; p3 parallel outer: parent 3/3, both 3/3;
+p4 parallel inner: parent 3/3, both 3/3. Killed iterations were run again and
+resumed from their own checkpoints; orphaned evaluators of a killed parent were
+killed by the resumed parent's ``TaskSet`` before it reran them. Found: an evaluator
+killed *as it exited*, after its iteration had finished, was counted a failed
+iteration (return code -9) and dropped under *continue* -- now the iteration's own
+final checkpoint decides, whatever the return code (loop_step 92d9ac8).
+
+Live TinkerCliffs (2026-10-04), flowchart ``p8_tc`` (a parallel Foreach over SMILES:
+From SMILES as a new system, a row, MOPAC PM7 optimization into the row, Write
+Structure appending ``/all.sdf``), private venv ``/projects/seamm/psaxe/phase6``:
+
+============================================  =========  ======================
+run                                            elapsed    vs serial reference
+============================================  =========  ======================
+ref: serial, 1 core (SLURM 7855609)            1:48       --
+inline: 4 at once in a 4-core job (7855610)    1:50       identical
+queue: 1-core parent, iterations bundled 2     2:27       identical
+per SLURM job (7855611 + bundles
+7855614-17)
+SEAMM_DEV job 4013 via the JobServer,          0:58       identical
+4-core, 1-minute walltime (finished as the
+walltime hit; JobServer trusted job_data)
+SEAMM_DEV job 4014, 24 molecules, 1-minute     3 attempts identical to ref24
+walltime: TIMEOUT, resubmit, resume at 1/24;   (SLURM     (7855648, 1:59) but a
+TIMEOUT, resume at 19/24; COMPLETED            7855649,   ``mopac.end`` of a
+(``resubmit_count`` 2)                         -56, -58)  killed MOPAC run
+============================================  =========  ======================
+
+The iterations are short (about 10 s of MOPAC each), so evaluator start-up hides
+any speed-up; the runs validate correctness, placement and the queue bundling,
+not performance. **The live validation (D8) is complete** for inline placement,
+iterations bundled as queue jobs from a parent on a compute node, and the
+JobServer's resubmit-and-resume of a parallel loop. Separate placement (the
+children's codes as tasks on the target) is not yet tested live.
+
+Left to clean up after the review: ``[tinkercliffs_phase6]`` in
+``~/SEAMM_DEV/PaulVT.local.ini`` (backup ``PaulVT.local.ini.bak-2026-10-04-phase6``;
+restart the services after); TinkerCliffs ``/projects/seamm/psaxe/phase6``;
+SEAMM_DEV jobs 4013 and 4014 (project ``test``); local ``Testing/phase6/runs`` and
+``~/SEAMM_DEV/venvs/phase6-B``.
