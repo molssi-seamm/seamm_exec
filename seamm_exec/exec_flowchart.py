@@ -112,6 +112,8 @@ class ExecFlowchart(object):
         root = root or self.flowchart.root_directory or os.getcwd()
         plan = self.plan
         if plan is None:
+            # The checkpoint's fingerprint uses the steps' ids
+            self.flowchart.set_ids()
             plan = plan_start(root, options, self.flowchart, self.cmdline)
         resume = plan["resume"]
         if resume is None:

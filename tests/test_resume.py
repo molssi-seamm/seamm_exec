@@ -185,3 +185,20 @@ def test_resume_after_a_version_change(failed_job):
     assert plan["resume"] is not None
     assert "seamm 2026.1.1 ->" in plan["message"]
     assert Step.runs == ["B", "C"]
+
+
+def test_exec_flowchart_plans_with_the_ids_set(failed_job, monkeypatch):
+    """ExecFlowchart.run() making its own plan, for a flowchart whose step ids are
+    not set yet (as read from a file), still matches the checkpoint."""
+    root, _ = failed_job
+    flowchart = make_flowchart(root, "A", "B", "C")
+    for node in flowchart:
+        node.reset_id()
+    monkeypatch.setenv(ef.RESUME_ENVIRONMENT, "1")
+    cwd = os.getcwd()
+    try:
+        os.chdir(root)
+        ef.ExecFlowchart(flowchart, cmdline=[]).run(root=str(root))
+    finally:
+        os.chdir(cwd)
+    assert Step.runs == ["B", "C"]

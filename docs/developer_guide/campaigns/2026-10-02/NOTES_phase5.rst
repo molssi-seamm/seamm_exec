@@ -43,7 +43,9 @@ plug-ins:
      transaction (verified on 3.12). Used by molsystem's own tests; no plug-in uses
      it, but it must still be correct.
 
-   ``ATTACH``/``DETACH`` inside a transaction work (verified).
+   ``ATTACH`` inside a transaction works (verified). ``DETACH`` does not once the
+  attached database has been read ("database ... is locked"; found by the code
+  review), so a deferring ``SystemDB`` leaves it attached (molsystem, review fixes).
 
 2. **The current system lives only in memory** (``SystemDB._current_system_id``,
    defaulting to the last system). The current configuration of each system and
@@ -717,10 +719,12 @@ and the task retry rules in ``getting_started.rst``); loop_step 2026.10.4
 seamm_scheduler 2026.10.4; seamm_jobserver 2026.10.4 (``seamm_scheduler>=2026.10.4``;
 the user guide's resubmit section rewritten). read_structure_step and
 forcefield_step drop ``devtools/conda-envs/test_env.yaml`` (uv CI). Versions are
-dated today; bump them if the merge is on a later day. Release order: molsystem,
-seamm, seamm_exec, loop_step / read_structure_step / forcefield_step,
-seamm_scheduler, seamm_jobserver (last; until a cluster's SEAMM has seamm_exec
-2026.10.4.1, a resubmit there reruns from the top, so keep ``max_resubmits`` low).
+dated today; bump them if the merge is on a later day. Release order (corrected by
+the review: seamm_exec pins seamm-scheduler): molsystem, seamm, seamm_scheduler,
+seamm_exec, loop_step, read_structure_step and forcefield_step (both pin seamm),
+seamm_jobserver last; until a cluster's SEAMM has seamm_exec 2026.10.4.1 a resubmit
+there reruns from the top, so set ``max_resubmits = 1`` on such queues until it is
+upgraded.
 
 Cleanup after the release (each needs Paul's OK)
 ------------------------------------------------
@@ -737,3 +741,61 @@ Cleanup after the release (each needs Paul's OK)
 - SEAMM_DEV test jobs 4010-4012 (project ``test``) can stay or be deleted.
 - ``Testing/phase5/runs`` and ``ab_runs`` (local, 306 MB and 114 MB) once the
   results above are no longer needed.
+
+
+Code review (design session, 2026-10-04)
+----------------------------------------
+
+A review subagent read all eight packages at the release-preparation heads and
+probed the risky paths. Fixed:
+
+1. *Must:* ``Checkpointer.start()`` keeps only the outermost frame, so a resume that
+   failed inside a Loop before it re-entered its iteration (an unrestorable
+   variable in the loop's parameters, say) wrote that bare position with state
+   ``error``, and the next resume restarted the loop at iteration 1 over the
+   committed iterations: duplicate rows and ``_2`` directories. Now a failed resume
+   that wrote nothing rewrites the checkpoint it resumed from, marked ``error``.
+   Test: crash mid-loop, a resume that fails in ``Loop._restore_state``, then a
+   good resume -- identical to an uninterrupted run (fails without the fix).
+2. A variable that encodes but that JSON cannot hold (numpy ``datetime64``: its
+   ``.item()`` is a ``date``) raised in ``step_completed`` and failed the job; it is
+   now recorded as unrestorable. Test.
+3. ``ExecFlowchart.run()`` making its own plan did so before ``set_ids()``, and the
+   fingerprint of a flowchart without ids never matches; it sets them first. Test
+   with the ids reset.
+4. molsystem: ``detach`` while deferring leaves the database attached (above);
+   dropping a column while deferring drops the indices on it first and needs SQLite
+   3.35 (clear error otherwise). Tests.
+5. Write Structure's ``appended_files.json`` was not tied to a run: a rerun from the
+   top in place could cut a job-root file back to the previous run's sizes. The
+   record now carries the checkpoint's ``run_id`` (new for a run from the top,
+   kept through resumes; seamm ``Checkpointer.run_id``) and other runs' records,
+   or a run without a checkpoint, are ignored. read_structure_step now pins
+   ``seamm>=2026.10.4``. Tests.
+
+Nits taken: the checkpoint's ``position`` is deep-copied; loop_step writes an
+iteration's checkpoint before making its directory (a kill in between left a
+directory the checkpoint did not know, so ``name_2`` after the resume), keeping a
+resumed iteration's ``iteration.out``; loop_step's HISTORY says a failed iteration
+under "exit the loop" also keeps its writes; the stager's side-file pass protects
+directories (``--filter=P */``; rsync's ``--delete`` also removed empty directories
+found only on one side) -- verified live to TinkerCliffs (GNU rsync 3.2.7) from the
+Mac (openrsync) in both directions, and MolSSI10 has GNU rsync 3.2.3; the RDKit
+seed changes no test that compares coordinates (forcefield_step_experimental's 25
+failures and 5 errors are the same with the released packages; xnn embeds with RDKit
+itself).
+
+Known, not changed (documented here):
+
+- A queue TIMEOUT seen only when a restarted evaluator reattaches is recorded as
+  lost without ``timed_out``, so the time doubling does not apply to that retry.
+- The doubled time is capped by ``bundle_walltime`` only, not by the queue's own
+  maximum unless ``bundle_walltime`` is set to it.
+- A job that finished but whose final ``job_data.json`` could not be staged back is
+  resubmitted with ``SEAMM_RESUME=1``; the evaluator finds the checkpoint
+  ``finished``, refuses to resume and runs from the top, up to ``max_resubmits``.
+- gaussian_step's basis-set append (``energy.py``) is not made safe to repeat.
+- The structured-dtype numpy arrays come back as raw bytes (``|V12``) and a
+  ``str`` Enum as its repr; neither occurs in SEAMM's variables today.
+- molsystem's ``with configuration:`` now creates the configuration's cell row (for
+  every configuration used in such a block).
