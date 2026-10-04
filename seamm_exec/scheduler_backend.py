@@ -97,6 +97,7 @@ class _Entry:
         self.job_name = job_name
         self.never_queued = False
         self.reason = None
+        self.timed_out = False
 
 
 class SchedulerBackend:
@@ -301,11 +302,14 @@ class SchedulerBackend:
         markers=None,
         on_prepared=None,
         bundle_walltime=None,
+        walltime_scale=1.0,
     ):
         """Submit ``tasks`` as one bundle: one batch job. Returns their ids.
 
         ``bundle_walltime`` (seconds) is the caller's limit on a bundle, used to
-        bound its time when the tasks give none.
+        bound its time when the tasks give none. ``walltime_scale`` multiplies
+        the time estimated for tasks that give none, e.g. 2 for a task whose
+        last attempt ran out of time (still within ``bundle_walltime``).
 
         ``on_prepared(tasks, info)`` is called before ``sbatch`` with the
         bundle's unique job name and directory, so the caller can record them:
@@ -319,11 +323,16 @@ class SchedulerBackend:
 
         # A bundle held earlier (queue full, cluster unreachable) is the same
         # bundle when it is tried again: same directory, same job name.
-        key = (bundle, tuple(t.key for t in tasks))
+        key = (bundle, tuple(t.key for t in tasks), walltime_scale)
         prepared = self._prepared.get(key)
         if prepared is None:
             prepared = self._prepare(
-                bundle, tasks, directories, markers, bundle_walltime=bundle_walltime
+                bundle,
+                tasks,
+                directories,
+                markers,
+                bundle_walltime=bundle_walltime,
+                walltime_scale=walltime_scale,
             )
             self._prepared[key] = prepared
         if on_prepared is not None:
@@ -390,7 +399,15 @@ class SchedulerBackend:
         )
         return self._register(tasks, directories, markers, prepared.bundle_dir, job_id)
 
-    def _prepare(self, bundle, tasks, directories, markers, bundle_walltime=None):
+    def _prepare(
+        self,
+        bundle,
+        tasks,
+        directories,
+        markers,
+        bundle_walltime=None,
+        walltime_scale=1.0,
+    ):
         """Write a bundle: its directory, the tasks' inputs, bundle.json, run.sh."""
         # <step dir>/tasks/_bundles/<bundle>.<n>
         bundles_dir = markers[0].parent / "_bundles"
@@ -429,7 +446,12 @@ class SchedulerBackend:
             "tasks": entries,
         }
         (bundle_dir / "bundle.json").write_text(json.dumps(bundle_json, indent=2))
-        script = self._script(tasks, bundle_dir, bundle_walltime=bundle_walltime)
+        script = self._script(
+            tasks,
+            bundle_dir,
+            bundle_walltime=bundle_walltime,
+            walltime_scale=walltime_scale,
+        )
         (bundle_dir / "run.sh").write_text(script)
         # Unique, so the queue can be asked whether it has this very bundle
         job_name = f"{self.job_name_prefix}-{bundle_dir.name}-{secrets.token_hex(3)}"
@@ -628,12 +650,18 @@ class SchedulerBackend:
             stdout=stdout,
             stderr=stderr,
             reason=entry.reason or "lost",
+            timed_out=entry.timed_out,
         )
 
     def reason(self, backend_id):
         """Why a task is lost, for the manifest."""
         entry = self._entries.get(backend_id)
         return None if entry is None else entry.reason
+
+    def timed_out(self, backend_id):
+        """Whether a lost task's job was stopped for running out of time."""
+        entry = self._entries.get(backend_id)
+        return False if entry is None else entry.timed_out
 
     def forget(self, backend_id):
         """Drop a task the TaskSet will submit again."""
@@ -662,7 +690,7 @@ class SchedulerBackend:
             "success_text": task.success_text,
         }
 
-    def _bundle_resources(self, tasks, bundle_walltime=None):
+    def _bundle_resources(self, tasks, bundle_walltime=None, walltime_scale=1.0):
         """One allocation big enough for the largest task in the bundle.
 
         A bundle is one batch job running the task worker and a local pool in
@@ -701,7 +729,8 @@ class SchedulerBackend:
                 for t, w in zip(tasks, walltimes)
             )
             if estimate > 0:
-                walltime = 2.0 * estimate + 600.0
+                # A retry after running out of time gets more (walltime_scale)
+                walltime = walltime_scale * (2.0 * estimate + 600.0)
                 if limit:
                     walltime = min(walltime, limit)
             else:
@@ -723,13 +752,15 @@ class SchedulerBackend:
             "qos": first("qos"),
         }
 
-    def _script(self, tasks, bundle_dir, bundle_walltime=None):
+    def _script(self, tasks, bundle_dir, bundle_walltime=None, walltime_scale=1.0):
         from seamm_scheduler import build_script
 
         scheduler = self.queue.scheduler
         where = self.where(bundle_dir)
         directives = scheduler.directives(
-            self._bundle_resources(tasks, bundle_walltime=bundle_walltime),
+            self._bundle_resources(
+                tasks, bundle_walltime=bundle_walltime, walltime_scale=walltime_scale
+            ),
             extra=self.directives,
         )
         directives.update(scheduler.log_directives(where))
@@ -893,6 +924,10 @@ class SchedulerBackend:
                     f"job {entry.job_id} ended ({status.state}) before the task "
                     "finished"
                 )
+                timed_out = getattr(status, "timed_out", None)
+                if timed_out is None:  # an older seamm_scheduler
+                    timed_out = (status.state or "").upper() == "TIMEOUT"
+                entry.timed_out = bool(timed_out)
             else:
                 entry.reason = (
                     f"job {entry.job_id} is no longer known to the queue and the "

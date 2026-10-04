@@ -187,6 +187,8 @@ class TaskResult:
         Why a task failed: its return code, a failed success check, ...
     archive : Path or None
         The tar holding the task's directory, once archived.
+    timed_out : bool
+        Whether the queue stopped it for running past the time limit.
     raw : dict or None
         The ``Base.run()``-style dictionary, for this run's results.
     """
@@ -205,6 +207,7 @@ class TaskResult:
     restored: bool = False
     archive: Path | None = None
     reason: str | None = None
+    timed_out: bool = False
     raw: dict | None = None
 
     @property
@@ -740,8 +743,15 @@ class TaskSet:
                                 reason = "lost"
                                 if hasattr(backend, "reason"):
                                     reason = backend.reason(backend_id) or reason
+                                timed_out = False
+                                if hasattr(backend, "timed_out"):
+                                    timed_out = backend.timed_out(backend_id)
                                 self._finish_attempt(
-                                    task.key, LOST, None, reason=reason
+                                    task.key,
+                                    LOST,
+                                    None,
+                                    reason=reason,
+                                    timed_out=timed_out,
                                 )
                                 if hasattr(backend, "forget"):
                                     backend.forget(backend_id)
@@ -850,9 +860,14 @@ class TaskSet:
         """Record the attempt and submit ``group`` to ``backend``."""
         now = _now()
         previous = {}
+        timeouts = 0
         for task in group:
             record = self.manifest.get(task.key) or {}
             previous[task.key] = dict(record)
+            timeouts = max(
+                timeouts,
+                sum(1 for h in record.get("history", []) if h.get("timed_out")),
+            )
             self.manifest.update(
                 task.key,
                 backend=backend.name,
@@ -874,6 +889,14 @@ class TaskSet:
             kwargs["on_prepared"] = self._on_prepared
             # Bounds the bundle's time when its tasks give none.
             kwargs["bundle_walltime"] = self.bundle_walltime
+            if timeouts > 0:
+                # It ran out of time before: twice as long each time, within
+                # the bundle limit, or it can never finish.
+                kwargs["walltime_scale"] = 2.0**timeouts
+                logger.info(
+                    f"Bundle {bundle}: a task ran out of time {timeouts} time(s); "
+                    f"asking for {2**timeouts} times the estimated time."
+                )
         try:
             ids = backend.submit(
                 group, [self.task_directory(t) for t in group], **kwargs
@@ -933,7 +956,9 @@ class TaskSet:
                 return
         time.sleep(self.poll_interval)
 
-    def _finish_attempt(self, key, state, returncode, reason=None, counted=True):
+    def _finish_attempt(
+        self, key, state, returncode, reason=None, counted=True, timed_out=False
+    ):
         """Record how an attempt ended; ``counted=False`` gives the attempt back."""
         record = self.manifest.get(key) or {}
         history = list(record.get("history", []))
@@ -941,6 +966,7 @@ class TaskSet:
             {
                 "attempt": record.get("attempts", 0),
                 "counted": counted,
+                "timed_out": timed_out,
                 "backend": record.get("backend"),
                 "id": record.get("id"),
                 "state": state,
@@ -996,7 +1022,11 @@ class TaskSet:
                 reason=state,
             )
         history = self._finish_attempt(
-            task.key, state, result.returncode, reason=result.reason
+            task.key,
+            state,
+            result.returncode,
+            reason=result.reason,
+            timed_out=result.timed_out,
         )
         record = self.manifest.get(task.key)
         result.attempts = record.get("attempts", 0)
