@@ -799,3 +799,24 @@ Known, not changed (documented here):
   ``str`` Enum as its repr; neither occurs in SEAMM's variables today.
 - molsystem's ``with configuration:`` now creates the configuration's cell row (for
   every configuration used in such a block).
+
+Released (2026-10-04)
+---------------------
+
+All eight on PyPI, in order: molsystem 2026.10.4 (PR #122), seamm 2026.10.4 (#223),
+seamm_scheduler 2026.10.4 (#3), seamm_exec 2026.10.4.1 (#43), loop_step 2026.10.4
+(#39), read_structure_step 2026.10.4.1 (#83), forcefield_step 2026.10.4 (#53),
+seamm_jobserver 2026.10.4 (#26); every checkout synced with ``make update``.
+
+On the way: two publish runs failed only on the macOS / Python 3.11 runner and
+passed on a re-run of that job (molsystem: PubChem tests over the network;
+seamm_exec: ``test_tasks_run_concurrently``, four 1-second tasks took 3.1 s against
+a 2.5 s limit -- worth loosening). seamm_exec's PR CI first failed because PyPI's
+*simple* index still listed seamm-scheduler only to 2026.10.3 minutes after the
+release (the release's own JSON page was already there): wait for the simple index
+before the next PR. loop_step's PR CI failed because its new resume tests import
+seamm_exec, which it did not declare; it is now a ``test`` extra, and each later
+package was first tested in a clean PyPI-only venv.
+
+Not rolled out to any installation; that waits for Paul's ask, and so does the
+cleanup above.
