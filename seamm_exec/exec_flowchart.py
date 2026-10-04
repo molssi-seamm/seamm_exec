@@ -555,7 +555,7 @@ def plan_start(root, options, flowchart, cmdline):
     checkpoint = seamm.read_checkpoint(path)
     ok, why = seamm.checkpoint.resumable(
         checkpoint,
-        flowchart.digest(strict=True),
+        seamm.checkpoint.flowchart_fingerprint(flowchart),
         comparable_command_line(cmdline),
     )
     if ok:
