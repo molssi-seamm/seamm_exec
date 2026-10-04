@@ -333,6 +333,8 @@ class TaskSet:
     it completes. Within a run a task that fails (nonzero return code) is not
     retried; a lost one is, up to ``max_lost_retries``. Across runs a failed or
     lost task is tried again until it has had ``max_attempts`` attempts in all.
+    A local task that stopped because the evaluator stopped (killed, out of
+    walltime) does not use up an attempt.
 
     Parameters
     ----------
@@ -931,12 +933,14 @@ class TaskSet:
                 return
         time.sleep(self.poll_interval)
 
-    def _finish_attempt(self, key, state, returncode, reason=None):
+    def _finish_attempt(self, key, state, returncode, reason=None, counted=True):
+        """Record how an attempt ended; ``counted=False`` gives the attempt back."""
         record = self.manifest.get(key) or {}
         history = list(record.get("history", []))
         history.append(
             {
                 "attempt": record.get("attempts", 0),
+                "counted": counted,
                 "backend": record.get("backend"),
                 "id": record.get("id"),
                 "state": state,
@@ -947,6 +951,9 @@ class TaskSet:
                 "finished": _now(),
             }
         )
+        attempts = record.get("attempts", 0)
+        if not counted:
+            attempts = max(0, attempts - 1)
         self.manifest.update(
             key,
             state=state,
@@ -954,6 +961,7 @@ class TaskSet:
             reason=reason,
             finished=_now(),
             history=history,
+            attempts=attempts,
         )
         return history
 
@@ -1168,9 +1176,26 @@ class TaskSet:
         for backend, records in by_backend.items():
             states = backend.reattach(records)
             for key, state in states.items():
-                if state == LOST:
+                if state != LOST:
+                    continue
+                if backend is self.local:
+                    # It ran in the evaluator's own pool, so it stopped because
+                    # the evaluator did (killed, out of walltime, a reboot): not
+                    # the task's failure, so not one of its attempts. How often
+                    # a job may be restarted is the JobServer's max_resubmits.
                     self._finish_attempt(
-                        key, LOST, None, reason="the evaluator stopped while it ran"
+                        key,
+                        LOST,
+                        None,
+                        reason="the evaluator stopped while it ran (not counted)",
+                        counted=False,
+                    )
+                else:
+                    self._finish_attempt(
+                        key,
+                        LOST,
+                        None,
+                        reason=f"lost by {backend.name} while the evaluator was stopped",
                     )
         # Jobs still running old inputs, which no adopted task needs, are
         # cancelled so they cannot write into the tasks' directories.
