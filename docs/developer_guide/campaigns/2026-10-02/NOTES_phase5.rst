@@ -820,3 +820,12 @@ package was first tested in a clean PyPI-only venv.
 
 Not rolled out to any installation; that waits for Paul's ask, and so does the
 cleanup above.
+
+Cleanup done (Paul OK, 2026-10-04): SEAMM_DEV moved to the released packages in a
+new versioned venv (``venvs/2026-10-04T15-17-18``, built from ``phase4-B`` with
+``update --latest`` of the eight; ``phase5-A``/``phase5-B`` deleted, the older
+versions kept); ``[tinkercliffs_phase5]`` removed from ``PaulVT.local.ini`` (back to
+``local``, ``molssi10``, ``molssi10-tasks``) and the services restarted;
+TinkerCliffs ``/projects/seamm/psaxe/phase5`` deleted (1.8 GB); local
+``Testing/phase5/runs`` and ``ab_runs`` deleted (the harness, specs and SDF data
+kept for phase 6). SEAMM_DEV jobs 4010-4012 are kept as the live-validation record.
