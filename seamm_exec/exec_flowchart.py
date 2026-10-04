@@ -40,6 +40,7 @@ import seamm_exec
 import seamm_util
 import seamm_util.printing as printing
 from ._version import __version__
+from .iteration import PARENT_JOB_ENVIRONMENT
 
 logger = logging.getLogger("seamm-exec")
 printer = printing.getPrinter()
@@ -70,6 +71,8 @@ class ExecFlowchart(object):
         self.flowchart = flowchart
         self.cmdline = [] if cmdline is None else list(cmdline)
         self.plan = plan
+        # How the one iteration of a parallel loop ended, for its evaluator
+        self.iteration = None
 
     def _archive_previous_database(self, options, root):
         moved = archive_previous_database(root, options)
@@ -198,6 +201,13 @@ class ExecFlowchart(object):
         seamm.flowchart_variables.set_variable("_system_db", db)
 
         self.flowchart.root_directory = root
+        # One iteration of a parallel loop: its steps' directories are in the
+        # parent job's tree, its own files (this database, job.out, job-level
+        # files) in its job directory.
+        parent = os.environ.get(PARENT_JOB_ENVIRONMENT)
+        if parent:
+            self.flowchart.job_directory = root
+            self.flowchart.root_directory = str((Path(root) / parent).resolve())
 
         # Correctly number the nodes
         self.flowchart.set_ids()
@@ -256,6 +266,7 @@ class ExecFlowchart(object):
         printer.job(("Running the flowchart\n" "---------------------"))
 
         failed = False
+        self.iteration = None
         try:
             next_node = self.flowchart.get_node("1")
             if checkpointer is not None:
@@ -269,6 +280,11 @@ class ExecFlowchart(object):
                     print("\nDeprecation warning: " + str(e))
                     traceback.print_exc(file=sys.stderr)
                     traceback.print_exc(file=sys.stdout)
+        except seamm.IterationDone as e:
+            # The one iteration of a parallel loop this evaluator ran is done.
+            self.iteration = {"done": True, "break": e.broke, "skip": e.skipped}
+            if checkpointer is not None:
+                checkpointer.iteration = self.iteration
         except BaseException:
             failed = True
             raise
@@ -283,7 +299,7 @@ class ExecFlowchart(object):
                     if configuration.n_atoms > 0:
                         # MMCIF file has bonds
                         filename = os.path.join(
-                            self.flowchart.root_directory, "final_structure.mmcif"
+                            self.flowchart.job_directory, "final_structure.mmcif"
                         )
                         text = None
                         try:
@@ -304,7 +320,7 @@ class ExecFlowchart(object):
                                 pass
                             if text is not None:
                                 filename = os.path.join(
-                                    self.flowchart.root_directory, "final_structure.cif"
+                                    self.flowchart.job_directory, "final_structure.cif"
                                 )
                                 with open(filename, "w") as fd:
                                     print(configuration.to_cif_text(), file=fd)
@@ -331,7 +347,7 @@ class ExecFlowchart(object):
                 seamm.checkpoint.set_checkpointer(None)
 
             # And print out the references
-            filename = os.path.join(self.flowchart.root_directory, "references.db")
+            filename = os.path.join(self.flowchart.job_directory, "references.db")
             try:
                 references = reference_handler.Reference_Handler(filename)
             except Exception as e:
@@ -562,6 +578,25 @@ def plan_start(root, options, flowchart, cmdline):
     )
     if ok:
         where = seamm.checkpoint.describe_position(checkpoint)
+    if os.environ.get(PARENT_JOB_ENVIRONMENT):
+        # One iteration of a parallel loop: it only ever resumes the checkpoint
+        # its parent wrote, or reports the iteration it already finished. Never
+        # from the top, which would run the whole flowchart on its snapshot.
+        if checkpoint is not None and "iteration" in checkpoint:
+            if checkpoint.get("state") == "finished":
+                return {
+                    "resume": None,
+                    "checkpointing": True,
+                    "message": "This iteration had already finished.",
+                    "iteration": checkpoint["iteration"],
+                }
+        if not ok:
+            raise RuntimeError(f"This iteration of a parallel loop cannot run: {why}.")
+        return {
+            "resume": checkpoint,
+            "checkpointing": True,
+            "message": f"Running one iteration of a parallel loop, at {where}.",
+        }
     if requested:
         if ok:
             message = (
@@ -732,7 +767,13 @@ def run(
 
     # Whether to just run as-is, without getting a job_id, using the
     # datastore, etc.
-    standalone = options["standalone"] or options["projects"] is None
+    # One iteration of a parallel loop is part of its parent's job, not a job
+    # of its own in the datastore.
+    standalone = (
+        options["standalone"]
+        or options["projects"] is None
+        or bool(os.environ.get(PARENT_JOB_ENVIRONMENT))
+    )
 
     # Setup the logging
     if setup_logging:
@@ -950,8 +991,15 @@ def run(
         # And run the flowchart
         logger.info("Executing the flowchart")
         try:
-            exec = ExecFlowchart(flowchart, cmdline=cmdline, plan=plan)
-            exec.run(root=wdir, job_id=job_id)
+            if plan.get("iteration") is not None:
+                # An iteration of a parallel loop rerun after it had finished
+                printer.job(plan["message"])
+                data["iteration"] = plan["iteration"]
+            else:
+                exec = ExecFlowchart(flowchart, cmdline=cmdline, plan=plan)
+                exec.run(root=wdir, job_id=job_id)
+                if exec.iteration is not None:
+                    data["iteration"] = exec.iteration
             data["state"] = "finished"
         except Exception as e:
             data["state"] = "error"

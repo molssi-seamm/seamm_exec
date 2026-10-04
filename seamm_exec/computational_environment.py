@@ -3,6 +3,7 @@
 """Helper routines for determining the computational environment from queueuing
 systems."""
 
+import json
 import os
 from pathlib import Path
 import re
@@ -47,7 +48,10 @@ def computational_environment(limits={}):
     """
 
     scheduler = running_scheduler()
-    if scheduler == "slurm":
+    if os.environ.get("SEAMM_CE"):
+        # An iteration of a parallel loop: its share of the machine
+        ce = json.loads(os.environ["SEAMM_CE"])
+    elif scheduler == "slurm":
         ce = _slurm()
     elif scheduler == "pbs":
         ce = _pbs()

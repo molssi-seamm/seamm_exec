@@ -688,6 +688,7 @@ class SchedulerBackend:
             "config": task.config if self.accepts_config else None,
             "fingerprint": task.digest(),
             "success_text": task.success_text,
+            "keep": list(task.keep),
         }
 
     def _bundle_resources(self, tasks, bundle_walltime=None, walltime_scale=1.0):

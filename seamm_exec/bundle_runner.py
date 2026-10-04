@@ -86,6 +86,7 @@ def run_seamm_bundle(bundle):
             config=entry.get("config"),
             fingerprint=entry.get("fingerprint"),
             success_text=entry.get("success_text"),
+            keep=list(entry.get("keep") or []),
         )
         tasks.append(task)
         directories.append(directory)

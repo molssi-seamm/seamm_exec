@@ -453,7 +453,10 @@ class LocalPool:
                 context.hooks = _Hooks(self, job)
             # A task run in place in the step directory must not prune the
             # tasks/ bookkeeping that other tasks write while it runs.
-            keep = [] if job.directory is None else [Path(job.directory) / "tasks"]
+            keep = []
+            if job.directory is not None:
+                keep = [Path(job.directory) / "tasks"]
+                keep += [Path(job.directory) / k for k in job.task.keep]
             job.raw = self.executor._run_task(
                 **self._arguments(job, concurrent), set_umask=False, keep=keep
             )
