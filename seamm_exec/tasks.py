@@ -1195,7 +1195,10 @@ class TaskSet:
                         key,
                         LOST,
                         None,
-                        reason=f"lost by {backend.name} while the evaluator was stopped",
+                        reason=(
+                            f"lost by {backend.name} while the evaluator was "
+                            "stopped"
+                        ),
                     )
         # Jobs still running old inputs, which no adopted task needs, are
         # cancelled so they cannot write into the tasks' directories.
