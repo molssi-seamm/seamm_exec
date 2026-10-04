@@ -88,7 +88,8 @@ def failed_job(tmp_path):
 
 
 def test_resume_reruns_from_the_failed_step(failed_job):
-    root, flowchart = failed_job
+    root, _ = failed_job
+    flowchart = make_flowchart(root, "A", "B", "C")  # read again: new uuids
     plan = execute(root, flowchart, {"SEAMM": {"resume": True}}, ["--resume"])
     assert plan["resume"] is not None
     assert "Resuming at step 2" in plan["message"]
@@ -100,7 +101,8 @@ def test_resume_reruns_from_the_failed_step(failed_job):
 
 
 def test_resume_by_environment(failed_job, monkeypatch):
-    root, flowchart = failed_job
+    root, _ = failed_job
+    flowchart = make_flowchart(root, "A", "B", "C")  # read again: new uuids
     monkeypatch.setenv(ef.RESUME_ENVIRONMENT, "1")
     plan = execute(root, flowchart, {"SEAMM": {}})
     assert plan["resume"] is not None
@@ -108,7 +110,8 @@ def test_resume_by_environment(failed_job, monkeypatch):
 
 
 def test_rerun_without_resume_starts_over(failed_job):
-    root, flowchart = failed_job
+    root, _ = failed_job
+    flowchart = make_flowchart(root, "A", "B", "C")  # read again: new uuids
     plan = execute(root, flowchart, {"SEAMM": {}})
     assert plan["resume"] is None
     assert "--resume" in plan["message"]
@@ -122,7 +125,8 @@ def test_rerun_without_resume_starts_over(failed_job):
 
 
 def test_resume_refused_for_other_command_line(failed_job):
-    root, flowchart = failed_job
+    root, _ = failed_job
+    flowchart = make_flowchart(root, "A", "B", "C")  # read again: new uuids
     plan = execute(root, flowchart, {"SEAMM": {"resume": True}}, ["--n", "4"])
     assert plan["resume"] is None
     assert "command line" in plan["message"]
@@ -169,7 +173,8 @@ def test_resume_requested_environment(monkeypatch, value, expected):
 
 def test_resume_after_a_version_change(failed_job):
     """Resuming with other package versions works, with a note saying so."""
-    root, flowchart = failed_job
+    root, _ = failed_job
+    flowchart = make_flowchart(root, "A", "B", "C")  # read again: new uuids
     db = sqlite3.connect(root / "seamm.db")
     document = json.loads(db.execute("SELECT document FROM _checkpoint").fetchone()[0])
     document["versions"]["seamm"] = "2026.1.1"
