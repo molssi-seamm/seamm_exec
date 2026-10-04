@@ -24,14 +24,14 @@ dependencies = [
    "docker",    
    "fasteners",
    "humanize",
-   "molsystem",
+   "molsystem>=2026.10.4",
    "psutil",
    "py-cpuinfo",
    "pyuca",
    "reference-handler",
-   "seamm>=2026.10.3",
+   "seamm>=2026.10.4",
    "seamm-datastore",
-   "seamm-scheduler>=2026.10.2",
+   "seamm-scheduler>=2026.10.4",
    "seamm-util",
 ]
 

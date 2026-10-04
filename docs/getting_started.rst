@@ -73,8 +73,10 @@ What this gives a step:
   the same directory restores finished tasks from their markers and never
   recomputes them; a task whose inputs changed is recomputed. A task that failed is
   not retried within a run, but is tried again on a rerun, up to three attempts in
-  all (the count resets when the inputs change). A process that a crashed run left
-  behind is killed on the rerun, after checking it is the same process.
+  all (the count resets when the inputs change). A task that stopped only because
+  the evaluator stopped (killed, out of walltime) does not count as an attempt. A
+  process that a crashed run left behind is killed on the rerun, after checking it
+  is the same process.
 * **Success beyond the exit code.** ``success_text`` names text that must appear in
   a result file; ORCA exits 0 on an error termination, for example.
 * **Archiving.** With ``archive=True`` finished task directories are packed into one
@@ -186,6 +188,9 @@ With ``tasks = queue`` the ``TaskSet`` submits them, in bundles, as batch jobs:
   ``shared_filesystem = yes`` (or the local transport) nothing is copied.
 - A rerun of the step polls bundles still in the queue rather than submitting
   them again, and a bundle that ran out of time leaves its finished tasks done.
+- A task whose bundle the queue stopped for running out of time is submitted
+  again with twice the estimated time, and twice that after a second timeout,
+  within ``bundle_walltime``. A walltime the task gives itself is used as given.
 - Tasks estimated to take less than ``inline_below`` seconds (default 60) run on
   the evaluator's machine when their program is installed there.
 - A task that carries its own ``config`` was configured for the evaluator's
@@ -195,3 +200,41 @@ With ``tasks = queue`` the ``TaskSet`` submits them, in bundles, as batch jobs:
 
 Bundle files are in ``<step>/tasks/_bundles/<bundle>.<n>/``: ``bundle.json``,
 ``run.sh`` and the scheduler's log.
+
+Resuming a job
+--------------
+
+Since 2026.10.4.1 a flowchart run in its own directory keeps a checkpoint, and a
+job that stopped part way -- killed, out of walltime on a cluster, the machine
+rebooted -- can continue from where it got to instead of starting again:
+
+.. code-block:: bash
+
+    run_flowchart flowchart.flow --resume      # in the job's directory
+
+``--resume`` continues at the first step that had not finished, or in a Loop at
+the iteration (and step) it had reached. The JobServer asks for it itself when it
+resubmits a job a cluster lost (it sets ``SEAMM_RESUME=1`` in the batch script).
+
+- **What is kept.** Each step's database writes (structures, properties, tables)
+  are one transaction, committed together with the checkpoint when the step
+  finishes. A step that was stopped part way has none of its writes kept, and runs
+  again; its finished calculations are reused from its task manifests. The
+  checkpoint also holds the flowchart's variables, the current system and each
+  Loop's position. It is stored in the job database, ``seamm.db``;
+  ``checkpoint.json`` beside it is a copy for people to read.
+- **When it resumes.** Only with ``--resume`` (or ``SEAMM_RESUME``), and only if
+  the flowchart and its command line are the same as before. A rerun without it
+  moves the previous run's ``seamm.db`` to ``previous/<date and time>/`` and starts
+  from the top, saying so in ``job.out``; if that run could have been resumed it
+  says that too. (A changed input file is not detected, which is why resuming is
+  never automatic.) Changed package versions are noted, not refused.
+- **Variables.** Numbers, strings, lists, dictionaries, numpy arrays, quantities,
+  paths, tables and the like are saved; a step that makes other objects saves
+  them itself (the Forcefield step does). Anything else, such as a function a
+  Custom step defined, is not available after a resume, and a step that uses it
+  stops with a message saying so.
+- **Not resumable:** a run with ``--read-only``, ``:memory:``, or a
+  ``--database`` outside the job directory.
+- **Visibility.** While a step runs, other programs reading the job's database
+  (the Dashboard, the web UI) see it as of the last finished step.

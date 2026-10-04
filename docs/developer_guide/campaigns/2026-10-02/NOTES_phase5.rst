@@ -557,8 +557,11 @@ Findings
   MOL block without the terminator counts as 0 records, and the default indices
   ``1:end`` then fail with "If stop < start, the step must be negative: 1".
   Pre-existing; to file.
-- forcefield_step's test suite has 223 pre-existing errors (a fixture calls
-  ``Forcefield._create_file``, missing from the installed seamm_ff_util).
+- (Corrected later: forcefield_step's suite passes, 231 tests, when run from its
+  own directory, as CI does. The 223 errors came from running it elsewhere, where
+  the fixtures' relative data paths do not resolve and seamm_ff_util falls into a
+  branch that calls a ``Forcefield._create_file`` it does not have -- a small
+  latent seamm_ff_util bug, not a phase 5 matter.)
 - **The strict digest blocks resuming after any update.**
   ``Flowchart.digest(strict=True)`` hashes each step's version, so a resume after a
   venv update or rollback (even a dev commit, in the soak) was refused as "the
@@ -701,3 +704,36 @@ retry after one asks for ``2**timeouts`` times the estimated time, within
 ``bundle_walltime``, both within a run and across runs; a walltime the task gives is
 used as given; the prepared bundle is keyed on the scale. Test: 1200, 2400, 4800 s
 for a task that times out twice.
+
+
+Release preparation (2026-10-04, not pushed or tagged)
+------------------------------------------------------
+
+HISTORY entries, pins and documentation are prepared on ``dev`` for: molsystem
+2026.10.4; seamm 2026.10.4 (``molsystem>=2026.10.4``); seamm_exec 2026.10.4.1
+(``molsystem``/``seamm``/``seamm-scheduler>=2026.10.4``; a "Resuming a job" section
+and the task retry rules in ``getting_started.rst``); loop_step 2026.10.4
+(``seamm>=2026.10.4``); read_structure_step 2026.10.4.1; forcefield_step 2026.10.4;
+seamm_scheduler 2026.10.4; seamm_jobserver 2026.10.4 (``seamm_scheduler>=2026.10.4``;
+the user guide's resubmit section rewritten). read_structure_step and
+forcefield_step drop ``devtools/conda-envs/test_env.yaml`` (uv CI). Versions are
+dated today; bump them if the merge is on a later day. Release order: molsystem,
+seamm, seamm_exec, loop_step / read_structure_step / forcefield_step,
+seamm_scheduler, seamm_jobserver (last; until a cluster's SEAMM has seamm_exec
+2026.10.4.1, a resubmit there reruns from the top, so keep ``max_resubmits`` low).
+
+Cleanup after the release (each needs Paul's OK)
+------------------------------------------------
+
+- ``~/SEAMM_DEV``: its venv is ``venvs/phase5-B`` (editable checkouts). After the
+  release, update it to the released packages (or switch back to ``phase4-B`` and
+  ``update --latest``), restart its services, and prune ``venvs/phase5-A`` and
+  ``venvs/phase5-B``.
+- ``~/SEAMM_DEV/PaulVT.local.ini``: remove the ``[tinkercliffs_phase5]`` section
+  (3-minute walltime, for the live test); the file before it is
+  ``PaulVT.local.ini.bak-2026-10-04-phase5``. Restart the JobServer after.
+- TinkerCliffs: ``/projects/seamm/psaxe/phase5`` (private venv, source copies,
+  ``remote_jobs/``, ``ref/``, ``alone/``, ``alone2/``, smoke test); 1.8 GB.
+- SEAMM_DEV test jobs 4010-4012 (project ``test``) can stay or be deleted.
+- ``Testing/phase5/runs`` and ``ab_runs`` (local, 306 MB and 114 MB) once the
+  results above are no longer needed.
