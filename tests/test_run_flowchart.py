@@ -95,20 +95,16 @@ def test_rerun_through_run_flowchart(tmp_path, monkeypatch):
 
 
 @pytest.mark.parametrize(
-    "options, checkpoint",
+    "options",
     [
-        ({"SEAMM": {"read_only": True}}, False),
-        ({"SEAMM": {"database": ":memory:"}}, False),
-        ({"SEAMM": {"database": "/somewhere/else/seamm.db"}}, False),
-        ({"SEAMM": {}}, True),
+        {"SEAMM": {"read_only": True}},
+        {"SEAMM": {"database": ":memory:"}},
+        {"SEAMM": {"database": "/somewhere/else/seamm.db"}},
     ],
 )
-def test_database_kept(tmp_path, options, checkpoint):
-    """Not for a database elsewhere, read-only or in memory, nor with a
-    checkpoint to resume from."""
+def test_database_kept(tmp_path, options):
+    """Not for a database elsewhere, read-only or in memory."""
     _previous_run(tmp_path)
-    if checkpoint:
-        (tmp_path / "checkpoint.json").write_text("{}")
     cwd = os.getcwd()
     try:
         os.chdir(tmp_path)
@@ -117,6 +113,15 @@ def test_database_kept(tmp_path, options, checkpoint):
         os.chdir(cwd)
     assert (tmp_path / "seamm.db").exists()
     assert not (tmp_path / "previous").exists()
+
+
+def test_checkpoint_mirror_archived_too(tmp_path):
+    """Whether to resume is decided elsewhere; the mirror goes with the db."""
+    _previous_run(tmp_path)
+    (tmp_path / "checkpoint.json").write_text("{}")
+    moved = ef.archive_previous_database(tmp_path, {"SEAMM": {}})
+    assert (moved / "checkpoint.json").read_text() == "{}"
+    assert not (tmp_path / "checkpoint.json").exists()
 
 
 def test_first_run_has_nothing_to_archive(tmp_path):

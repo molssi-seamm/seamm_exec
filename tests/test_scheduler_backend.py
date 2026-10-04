@@ -1248,3 +1248,67 @@ def test_bundle_walltime_from_estimates(job):
     # The walltimes the tasks give are used as they are.
     timed = [fake_task("t", resources=Resources(walltime=100))]
     assert backend._bundle_resources(timed, bundle_walltime=50)["walltime"] == 100
+
+
+def test_a_timed_out_task_gets_more_time(job):
+    """A bundle the queue stopped for its time limit is resubmitted with twice
+    the estimated time each time, within the bundle limit (mbe C.3b)."""
+    job, root = job
+    queue = FakeQueue(hold=True)
+    backend = make_backend(queue, job, root)
+    ts = TaskSet(directory=job / "step", backend=backend, bundle_walltime=6 * 3600)
+    ts.add(fake_task("slow", estimated_seconds=300))
+
+    def time_out_twice():
+        for n in (1, 2):
+            while len(queue.jobs) < n:
+                time.sleep(0.05)
+            queue.end(list(queue.jobs)[n - 1], "TIMEOUT")
+        queue.hold = False
+
+    threading.Thread(target=time_out_twice, daemon=True).start()
+    results = run_all(ts)
+    assert results["slow"].ok
+
+    def requested(script):
+        for line in script.splitlines():
+            if line.startswith("#SBATCH --time="):
+                h, m, s = line.split("=", 1)[1].split(":")
+                return 3600 * int(h) + 60 * int(m) + int(s)
+
+    times = [requested(s) for s in queue.scripts]
+    base = 2 * 300 + 600
+    assert times == [base, 2 * base, 4 * base]
+    record = json.loads((job / "step" / "tasks" / "manifest.json").read_text())
+    history = record["tasks"]["slow"]["history"]
+    assert [h["timed_out"] for h in history] == [True, True, False]
+
+
+def test_timed_out_retry_stays_within_the_bundle_limit(job):
+    job, root = job
+    backend = make_backend(FakeQueue(), job, root)
+    tasks = [fake_task("a", estimated_seconds=1000)]
+    base = 2 * 1000 + 600
+    assert backend._bundle_resources(tasks, 4 * base, walltime_scale=2)["walltime"] == (
+        2 * base
+    )
+    assert backend._bundle_resources(tasks, 3000, walltime_scale=4)["walltime"] == 3000
+    # A walltime the task gives is used as given.
+    timed = [fake_task("t", resources=Resources(walltime=100))]
+    assert backend._bundle_resources(timed, walltime_scale=4)["walltime"] == 100
+
+
+def test_job_status_timed_out():
+    from seamm_scheduler.scheduler import JobStatus
+
+    assert JobStatus("1", "TIMEOUT", "failed").timed_out
+    assert not JobStatus("1", "FAILED", "failed").timed_out
+    assert JobStatus("1", "F", "failed", exit_code="-29").timed_out
+    pbs = JobStatus(
+        "1",
+        "F",
+        "cancelled",
+        exit_code="271",
+        raw={"comment": "job killed: walltime 610 exceeded limit 600"},
+    )
+    assert pbs.timed_out

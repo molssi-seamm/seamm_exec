@@ -489,8 +489,49 @@ def test_killed_evaluator_resumes(tmp_path, sig):
     ran = (tmp_path / "ran.log").read_text().split()
     assert sorted(ran) == ["fast0", "fast1", "fast2", "slow", "slow"]
     record = json.loads(manifest.read_text())["tasks"]["slow"]
-    assert record["attempts"] == 2
+    # Stopped because the evaluator was killed: not one of the task's attempts.
+    assert record["attempts"] == 1
     assert [h["state"] for h in record["history"]] == ["lost", "finished"]
+    assert [h["counted"] for h in record["history"]] == [False, True]
+
+
+def test_evaluator_kills_do_not_use_up_attempts(tmp_path):
+    """A task cut short by the evaluator stopping, more times than max_attempts,
+    still runs when the job is resumed."""
+    log = tmp_path / "ran.log"
+
+    def make():
+        ts = TaskSet(directory=tmp_path / "step", backend=pool(), executor=Local())
+        ts.add(shell_task("a", f"echo a >> {log}"))
+        return ts
+
+    manifest = tmp_path / "step" / "tasks" / "manifest.json"
+    for _ in range(4):
+        # What a killed evaluator leaves: the task recorded as running here,
+        # its process gone, one more attempt counted when it was submitted.
+        ts = make()
+        ts.tasks_directory.mkdir(parents=True, exist_ok=True)
+        data = json.loads(manifest.read_text()) if manifest.exists() else None
+        record = {} if data is None else data["tasks"].get("a", {})
+        ts.manifest.update(
+            "a",
+            backend="local",
+            state="running",
+            fingerprint=ts.tasks["a"].digest(),
+            attempts=record.get("attempts", 0) + 1,
+            history=record.get("history", []),
+            pgid=None,
+        )
+        ts.manifest.flush(force=True)
+        ts._reattach([ts.tasks["a"]], {})
+        ts.manifest.flush(force=True)
+    record = json.loads(manifest.read_text())["tasks"]["a"]
+    assert record["attempts"] == 0
+    assert len(record["history"]) == 4
+
+    result = run_all(make())["a"]
+    assert result.state == "finished"
+    assert log.read_text() == "a\n"
 
 
 # ----------------------------------------------------------------------

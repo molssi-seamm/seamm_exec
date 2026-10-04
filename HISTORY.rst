@@ -1,6 +1,27 @@
 =======
 History
 =======
+2026.10.4.1 -- Resume a stopped flowchart; task retries
+    * ``run_flowchart --resume`` (or ``SEAMM_RESUME=1``, which the JobServer sets
+      when it resubmits a lost job) continues a job in its own directory from its
+      checkpoint: at the first step, or Loop iteration and step, that had not
+      finished. Each step's database writes are saved with the checkpoint when the
+      step finishes; a step stopped part way runs again and reuses its finished
+      calculations. A rerun without ``--resume`` starts from the top as before, and
+      says so if the previous run could have been resumed. See "Resuming a job" in
+      the documentation.
+    * Resuming keeps ``references.db``, adds to ``job.out``, records the resumes in
+      ``job_data.json`` and notes packages whose versions changed since the
+      checkpoint. A relative ``--database`` is relative to the job directory.
+    * A task that stopped only because the evaluator stopped (killed, out of
+      walltime) no longer uses up one of its three attempts, so a job resumed
+      several times still runs it.
+    * A task whose bundle the queue stopped for running out of time is retried with
+      twice the estimated time, and twice that again after a second timeout, within
+      ``bundle_walltime``. Before it was retried with the same time and could never
+      finish.
+    * Requires seamm 2026.10.4, molsystem 2026.10.4 and seamm-scheduler 2026.10.4.
+
 2026.10.4 -- Exit status on failure; rerunning a job in its own directory
     * ``run_flowchart`` exits with status 1 when the flowchart fails, after
       recording the failure as before, so batch scripts, pipelines and tasks see
