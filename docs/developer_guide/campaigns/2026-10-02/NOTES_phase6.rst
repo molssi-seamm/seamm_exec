@@ -518,3 +518,10 @@ run failed in the docs push to ``gh-pages`` (two pushes colliding), which skippe
 the PyPI job -- rerunning the failed jobs published it. The last three steps
 depend only on seamm, so their PRs went together (Paul). Phase 6 is opt-in; no
 rollout until the next planned one.
+
+Cleanup (2026-10-05, Paul OK): ``[tinkercliffs_phase6]`` removed from
+``~/SEAMM_DEV/PaulVT.local.ini`` (restored from its backup) and SEAMM_DEV's services
+restarted; TinkerCliffs ``/projects/seamm/psaxe/phase6`` (1.7 GB), local
+``Testing/phase6/runs`` and ``~/SEAMM_DEV/venvs/phase6-B`` deleted. SEAMM_DEV jobs
+4013 and 4014 are kept as the record of the live test; the specs and harnesses stay
+in ``Testing/phase6``.
