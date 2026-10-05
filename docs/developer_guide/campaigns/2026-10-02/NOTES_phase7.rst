@@ -329,3 +329,55 @@ own jobs through the queue as an option, switched on in SEAMM_DEV first; evaluat
 charged no cores. D4-D6 as proposed, except that the ssh validation uses the Mac mini at
 work (``macmini`` in ``~/.ssh/config``: 8 cores, 16 GB, its own ``~/SEAMM``) rather than
 paul.local. The rollout of phases 6 and 7 waits for Paul's word, timed with the EC pilot.
+
+Implementation (2026-10-05)
+---------------------------
+
+Local commits on ``dev``, not pushed; test venvs ``~/SEAMM_DEV/venvs/phase7-B``
+(released packages + editable checkouts) and ``phase7-webui``.
+
+- **seamm_scheduler**: ``taskserver.py`` -- the queue (``queue.db``, schema 2 with a
+  migration), scheduling passes with the atomic claim, first fit with the 30-minute
+  reservation, the runner (``time.monotonic`` limits, memory by the session's unique
+  set size with a 30 s grace, the machine-wide floor), the command line, and, found in
+  testing, two rules: evaluators charged no cores *and* never counted against tasks
+  (three 1-GB evaluators deadlocked a 2-GB queue through memory, not cores), and a
+  job whose runner vanished is stopped before it is marked lost (its script runs in a
+  session of its own and a rerun would have run beside it). ``seamm.py`` -- the
+  ``seamm`` scheduler (``#SEAMM`` directives, ``python -m seamm_scheduler.taskserver``
+  with the section's ``remote_python``/``remote_seamm_root``). ``max_walltime`` in
+  target sections. Staging: SQLite side files and ``loop_entry.db`` are mirrored by
+  listing them, not with rsync filters -- openrsync (macOS) protected the directories'
+  contents under ``P */``, so the phase 5 fix never removed a *nested* stale log
+  (found in the web UI: job 4014 kept a stale ``loop_entry.db``).
+- **seamm_exec**: ``computational_environment`` reads a TaskServer job; the retry
+  doubling capped by ``max_walltime``; a reattach-seen timeout is already doubled
+  (regression test; a job the queue has forgotten cannot be known to have timed out);
+  remote copies of a bundle removed once staged back; ``seamm_exec.timing``;
+  ``test_tasks_run_concurrently`` by overlap.
+- **mopac_step**: a stale ``success.dat`` no longer skips changed input; the MDI engine
+  by the environment's Python path (#161, not reproducible with conda 24.11.3 here).
+- **seamm_webui**: ``/api/jobs/{id}/tasks`` and the Files | Tasks switch; ``/files``
+  takes an optional ``depth`` (no default, so the file browser keeps its full tree).
+  Its ``test_sync`` tests expect seamm_scheduler's one-call stage-out and fail against
+  2026.10.4: the web UI must pin the new seamm_scheduler.
+
+Validation:
+
+- Unit tests: seamm_scheduler 212 (TaskServer 16, staging 17), seamm_exec 152, the web
+  UI 56, mopac_step 43. The web UI's Tasks tab checked in headless Chromium on job 4014
+  (24 iterations, 25 steps with tasks, jump to an iteration's ``job.out``).
+- **Two jobs sharing the Mac** (SEAMM_DEV ``[local] type = queue, scheduler = seamm``,
+  capacity 4 cores / 4 GB): jobs 4015 and 4016, each a parallel loop of 8 MOPAC
+  iterations at 1 core / 1 GB: 16 iteration tasks and 2 evaluators; at most 4 tasks
+  (4 cores, 4 GB) ever ran at once across both jobs, both evaluators alongside; both
+  finished, identical to each other (and within 0.07 kcal/mol of the TinkerCliffs
+  serial reference, a Linux MOPAC).
+- **Over ssh to macmini** (no shared filesystem): four MOPAC tasks in two bundles queued
+  and run by macmini's TaskServer (private venv ``~/phase7_test``), staged both ways,
+  results back, nothing left under ``remote_root``.
+- **Kill soak** on SEAMM_DEV: the evaluator of job 4018 killed mid-loop -- its queue job
+  failed (-9), the JobServer resubmitted it (``resubmit_count`` 1), the new evaluator
+  adopted the iteration tasks, identical results; the runner of an iteration task of
+  job 4019 killed -- the task lost and its job stopped, the iteration rerun and resumed,
+  identical results.
