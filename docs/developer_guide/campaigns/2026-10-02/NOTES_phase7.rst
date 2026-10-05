@@ -465,3 +465,8 @@ Kept, with reasons: the queue's root stays machine-wide (the default installatio
 root unless ``remote_seamm_root``), so that installations on one machine share its
 capacity rather than each using all of it; documented on the TaskServer page.
 Pins at release preparation: seamm_exec and the web UI on the new seamm_scheduler.
+
+Re-check (design session, 2026-10-05): approved for release preparation; agreed on
+the machine-wide queue root (the TaskServer page now says that an installation with
+``SEAMM_ROOT`` set gets its own queue). Nit for the next devops change: a summary line
+when the Release's docs deploy fails (it is now a red step in a green job).
