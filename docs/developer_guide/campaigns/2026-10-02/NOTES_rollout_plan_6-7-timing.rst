@@ -330,5 +330,53 @@ Risks
 Record of execution
 -------------------
 
-(to be filled in: date, per site the versions before/after, the new and rollback
-``venvs/<stamp>``, the test jobs and their results, anything unexpected)
+**Change of approach (Paul, 2026-10-05, mid-rollout):** the explicit list was
+the workaround for the installer hazard that seamm-manager 2026.10.5.1 and
+xnn-step 2026.10.5 remove, so after the first two Macs the rollout switched to
+the plain ``update --latest --all``, to see the new installer behave on a real
+hand-built environment. The Macs' environments are SEAMM's own, so the list
+made no difference there.
+
+2026-10-05, this Mac (``~/SEAMM``)
+    seamm-manager tool 2026.10.2.3 -> 2026.10.5.1. ``update --latest --force
+    <list>`` (the ``--force`` for the link-started MCP servers, Paul's standing
+    call; no jobs running; JobServer and web UI running, restarted by the
+    update). New ``venvs/2026-10-05T18-33-32``, rollback
+    ``venvs/2026-10-03T06-19-42``. seamm 2026.10.5, molsystem 2026.10.5,
+    seamm-exec 2026.10.5.2, orca-step 2026.10.5.2, mopac/loop/read-structure/
+    table/geometry-analysis/lammps/xnn-step 2026.10.5, forcefield-step
+    2026.10.4, seamm-webui 2026.10.5; ``uv pip check`` clean. Installers:
+    ``seamm-xnn`` got openssl 3.6.4 -> 3.6.5 (conda) and xnns 0.4.0 -> 0.7.0
+    (``xnns>=0.4.0``); torch 2.14.0 left alone; ``seamm-lammps`` unchanged.
+    ``import torch, xnn, mdi`` OK, MPS available. Test: water ORCA Energy
+    (B3LYP/def2-SVP via a Model Chemistry step) with ``run_flowchart``: "Ran
+    ORCA directly in the job directory", E = -76.31877069 Eh; first row in
+    ``~/.seamm.d/timing/orca.csv``, machine ``Apple M3 Pro``, wall 2.5 s,
+    ``nbf`` 24, 11 SCF cycles.
+
+2026-10-05, ``~/SEAMM_DEV``
+    ``--development update --latest seamm-exec orca-step``: new
+    ``venvs/2026-10-05T18-39-35`` (rollback ``2026-10-05T14-26-50``), both at
+    2026.10.5.2; then ``--development update --latest --all``: no further venv
+    change, every code installer ran, seamm-webui 2026.10.3 -> 2026.10.5. Same
+    ORCA test OK; second ``orca.csv`` row.
+
+2026-10-05, Mac mini (``paul.local``)
+    Tool -> 2026.10.5.1; ``update --latest <list>`` (no link-started
+    processes, no jobs). New ``venvs/2026-10-05T18-41-48`` (rollback
+    ``2026-10-03T06-27-01``); versions as on the Mac; seamm-webui 2026.8.13.1
+    -> 2026.10.5; ``uv pip check`` clean; services running. Both
+    ``seamm-xnn`` and ``seamm-lammps`` there were created by SEAMM (history
+    ``env create --file .../seamm-*.yml``).
+
+ChemAI (user ``seamm``), pre-checks 2026-10-05
+    ``venvs/2026-10-04T15-37-21``, Python 3.12.14, tool 2026.10.2.3; no SLURM
+    jobs, no running flowcharts; JobServer and web UI running. ``xnn.ini`` AND
+    ``lammps.ini`` name ``seamm-lammps-xnn060``, created by ``conda create
+    --clone seamm-lammps`` -- not SEAMM-made, no ``seamm-*.sha256`` records;
+    torch 2.13.0+cu126, xnns 0.6.0, e3nn 0.4.4, vesin-torch 0.6.1. Driver CUDA
+    12.2 (-> cu128 if torch were missing; it is present and must be left
+    alone). Snapshots in ``~seamm/rollout-snap/`` (conda explicit + pip
+    freeze of ``seamm-lammps-xnn060`` and ``seamm-lammps``, venv versions). The
+    ``--all`` update itself was not run by the Claude session (its permission
+    rules refused a change to the production machine); Paul runs it.
