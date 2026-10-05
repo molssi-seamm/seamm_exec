@@ -314,6 +314,7 @@ Not phase 8, recorded here for completeness
     ``phase7-B``, and the empty test queue ``~/SEAMM_DEV/taskserver`` with its
     test-sized ``taskserver.ini``. Their deletion was blocked by a permission
     check, so Paul is deleting them by hand.
-  - The local harness runs in ``Testing/phase4/runs`` (11 MB) and
-    ``Testing/phase2`` (the ``Job_9000xx`` runs and logs, 2.3 MB), on Paul's word.
+  - The local harness runs in ``Testing/phase4/runs`` and ``Testing/phase2`` (the
+    ``Job_9000xx`` runs and logs) were deleted on Paul's word (2026-10-05); the
+    harnesses and ``targets.ini`` stay.
 
