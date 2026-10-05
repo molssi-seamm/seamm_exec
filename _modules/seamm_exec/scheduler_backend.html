@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.scheduler_backend &#8212; SEAMM seamm-exec Plug-in 2026.10.5 documentation</title>
+    <title>seamm_exec.scheduler_backend &#8212; SEAMM seamm-exec Plug-in 2026.10.5.1 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=99beb745"></script>
+    <script src="../../_static/documentation_options.js?v=f9e9a9ea"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.5" />
+  <meta name="docsearch:version" content="2026.10.5.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -592,6 +592,7 @@
         <span class="n">max_queued</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">poll_interval</span><span class="o">=</span><span class="mf">30.0</span><span class="p">,</span>
         <span class="n">job_name_prefix</span><span class="o">=</span><span class="s2">"seamm"</span><span class="p">,</span>
+        <span class="n">max_walltime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">queue</span> <span class="o">=</span> <span class="n">queue</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
@@ -610,6 +611,8 @@
                 <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">executor</span><span class="si">}</span><span class="s2">'."</span>
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bundle_walltime</span> <span class="o">=</span> <span class="n">bundle_walltime</span>
+        <span class="c1"># The queue's longest walltime: retries after a timeout never ask more</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_walltime</span> <span class="o">=</span> <span class="n">max_walltime</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_queued</span> <span class="o">=</span> <span class="n">max_queued</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">poll_interval</span> <span class="o">=</span> <span class="n">poll_interval</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">job_name_prefix</span> <span class="o">=</span> <span class="n">job_name_prefix</span>
@@ -683,6 +686,7 @@
             <span class="n">executor</span><span class="o">=</span><span class="n">executor</span><span class="p">,</span>
             <span class="n">accepts_config</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">task_transport</span> <span class="o">==</span> <span class="s2">"local"</span><span class="p">,</span>
             <span class="n">bundle_walltime</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">bundle_walltime</span><span class="p">,</span>
+            <span class="n">max_walltime</span><span class="o">=</span><span class="n">_max_walltime</span><span class="p">(</span><span class="n">section</span><span class="p">),</span>
             <span class="n">max_queued</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">max_queued_tasks</span><span class="p">,</span>
             <span class="n">poll_interval</span><span class="o">=</span><span class="p">(</span>
                 <span class="n">section</span><span class="o">.</span><span class="n">poll_interval</span> <span class="k">if</span> <span class="n">section</span><span class="o">.</span><span class="n">poll_interval</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mf">30.0</span>
@@ -1209,10 +1213,13 @@
                 <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="n">walltimes</span><span class="p">)</span>
             <span class="p">)</span>
             <span class="k">if</span> <span class="n">estimate</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="c1"># A retry after running out of time gets more (walltime_scale)</span>
+                <span class="c1"># A retry after running out of time gets more (walltime_scale),</span>
+                <span class="c1"># within the bundle limit and the queue's longest walltime</span>
                 <span class="n">walltime</span> <span class="o">=</span> <span class="n">walltime_scale</span> <span class="o">*</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">estimate</span> <span class="o">+</span> <span class="mf">600.0</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">limit</span><span class="p">:</span>
                     <span class="n">walltime</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">walltime</span><span class="p">,</span> <span class="n">limit</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_walltime</span><span class="p">:</span>
+                    <span class="n">walltime</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">walltime</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_walltime</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">walltime</span> <span class="o">=</span> <span class="n">limit</span>
         <span class="n">ntasks</span> <span class="o">=</span> <span class="n">largest</span><span class="p">(</span><span class="s2">"ntasks"</span><span class="p">)</span>
@@ -1339,6 +1346,7 @@
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not stage back job </span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                 <span class="k">continue</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_pulled</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_remove_remote</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_pull</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job_ids</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Stage back the directories of the bundles whose jobs ended."""</span>
@@ -1352,6 +1360,35 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">stager</span><span class="o">.</span><span class="n">pull</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">remote_job_directory</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">job_directory</span><span class="p">),</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span>
             <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_remove_remote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Remove the remote copies of a bundle's directories, now staged back,</span>
+<span class="sd">        so they neither pile up under ``remote_root`` nor come back after the</span>
+<span class="sd">        task layer archives or prunes them here. A directory another task still</span>
+<span class="sd">        running uses (a step directory given to several) is kept."""</span>
+        <span class="n">mine</span><span class="p">,</span> <span class="n">others</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(),</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">relative</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">bundle_dir</span><span class="p">)),</span>
+                <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">relative</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">directory</span><span class="p">)),</span>
+                <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">relative</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">marker</span><span class="p">)),</span>
+            <span class="p">}</span>
+            <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">job_id</span> <span class="o">==</span> <span class="n">job_id</span><span class="p">:</span>
+                <span class="n">mine</span> <span class="o">|=</span> <span class="n">paths</span>
+            <span class="k">elif</span> <span class="n">entry</span><span class="o">.</span><span class="n">job_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pulled</span><span class="p">:</span>
+                <span class="n">others</span> <span class="o">|=</span> <span class="n">paths</span>
+        <span class="n">paths</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">mine</span> <span class="o">-</span> <span class="n">others</span> <span class="k">if</span> <span class="n">p</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">""</span><span class="p">,</span> <span class="s2">"."</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">paths</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="n">PurePosixPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_job_directory</span><span class="p">)</span>
+        <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"rm"</span><span class="p">,</span> <span class="s2">"-rf"</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">base</span> <span class="o">/</span> <span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rc</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">rc</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not remove the remote copies of </span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">err</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># Not fatal: they are copies</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not remove the remote copies of </span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_marker</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">""" "DONE", "FAILED" or None, from markers written for *this* task."""</span>
@@ -1423,6 +1460,25 @@
             <span class="k">return</span> <span class="n">QUEUED</span>
         <span class="k">return</span> <span class="n">RUNNING</span>  <span class="c1"># ended; its files are not back yet</span></div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_max_walltime</span><span class="p">(</span><span class="n">section</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The queue's longest walltime, in seconds, from a target section: its</span>
+<span class="sd">    ``max_walltime``, else the maximum of an overridable ``time``."""</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="s2">"max_walltime"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">limits</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="s2">"limits"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+    <span class="n">limit</span> <span class="o">=</span> <span class="n">limits</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"time"</span><span class="p">)</span>
+    <span class="n">maximum</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="s2">"maximum"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">maximum</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_scheduler.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">_parse_time</span>
+
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">_parse_time</span><span class="p">(</span><span class="n">maximum</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="kc">None</span>
 
 
 <div class="viewcode-block" id="parse_id">

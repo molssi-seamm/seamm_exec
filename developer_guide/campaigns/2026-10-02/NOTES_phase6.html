@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Phase 6 notes &#8212; SEAMM seamm-exec Plug-in 2026.10.5 documentation</title>
+    <title>Phase 6 notes &#8212; SEAMM seamm-exec Plug-in 2026.10.5.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../../_static/documentation_options.js?v=99beb745"></script>
+    <script src="../../../_static/documentation_options.js?v=f9e9a9ea"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -50,11 +50,11 @@
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="Rollout of 2026-10-04: ChemAI and TinkerCliffs" href="NOTES_rollout_2026-10-04.html" />
+    <link rel="next" title="Phase 7 notes" href="NOTES_phase7.html" />
     <link rel="prev" title="Phase 5 notes" href="NOTES_phase5.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.5" />
+  <meta name="docsearch:version" content="2026.10.5.1" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -930,6 +930,26 @@ Answers to the review’s questions: start-up cost documented, a warm evaluator 
 bundle is phase 7 material; whole-database snapshots stay up front, the disk cost
 documented.</p>
 </section>
+<section id="release-2026-10-05">
+<h2>Release (2026-10-05)<a class="headerlink" href="#release-2026-10-05" title="Link to this heading">#</a></h2>
+<p>All ten released as 2026.10.5, each PR reviewed by <code class="docutils literal notranslate"><span class="pre">seamm</span></code> and merged by Paul,
+Releases cut in order, <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">update</span></code> after each, and a clean PyPI-only venv
+test before each PR: molsystem #123, seamm #224, seamm_exec #44, loop_step #40,
+read_structure_step #84, table_step #99, properties_step #5, lammps_step #115,
+orca_step #43, geometry_analysis_step #12. Snags: loop_step’s PR CI failed twice
+on macOS because the runner’s restored uv cache still held PyPI’s index page from
+before seamm-exec 2026.10.5 (passed after ~10 minutes); properties_step’s Release
+run failed in the docs push to <code class="docutils literal notranslate"><span class="pre">gh-pages</span></code> (two pushes colliding), which skipped
+the PyPI job – rerunning the failed jobs published it. The last three steps
+depend only on seamm, so their PRs went together (Paul). Phase 6 is opt-in; no
+rollout until the next planned one.</p>
+<p>Cleanup (2026-10-05, Paul OK): <code class="docutils literal notranslate"><span class="pre">[tinkercliffs_phase6]</span></code> removed from
+<code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV/PaulVT.local.ini</span></code> (restored from its backup) and SEAMM_DEV’s services
+restarted; TinkerCliffs <code class="docutils literal notranslate"><span class="pre">/projects/seamm/psaxe/phase6</span></code> (1.7 GB), local
+<code class="docutils literal notranslate"><span class="pre">Testing/phase6/runs</span></code> and <code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV/venvs/phase6-B</span></code> deleted. SEAMM_DEV jobs
+4013 and 4014 are kept as the record of the live test; the specs and harnesses stay
+in <code class="docutils literal notranslate"><span class="pre">Testing/phase6</span></code>.</p>
+</section>
 </section>
 
 
@@ -952,11 +972,11 @@ documented.</p>
       </div>
     </a>
     <a class="right-next"
-       href="NOTES_rollout_2026-10-04.html"
+       href="NOTES_phase7.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Rollout of 2026-10-04: ChemAI and TinkerCliffs</p>
+        <p class="prev-next-title">Phase 7 notes</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -999,6 +1019,7 @@ documented.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#decisions-paul-2026-10-04">Decisions (Paul, 2026-10-04)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation-2026-10-04">Implementation (2026-10-04)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#code-review-design-session-2026-10-04-and-fixes">Code review (design session, 2026-10-04) and fixes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#release-2026-10-05">Release (2026-10-05)</a></li>
 </ul>
   </nav></div>
 

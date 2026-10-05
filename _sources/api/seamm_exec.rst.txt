@@ -124,6 +124,14 @@ seamm\_exec.tasks module
    :show-inheritance:
    :undoc-members:
 
+seamm\_exec.timing module
+-------------------------
+
+.. automodule:: seamm_exec.timing
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 Module contents
 ---------------
 

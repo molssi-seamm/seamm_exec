@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Phase 7 notes &#8212; SEAMM seamm-exec Plug-in 2026.10.5.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+
+    <script src="../../../_static/documentation_options.js?v=f9e9a9ea"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'developer_guide/campaigns/2026-10-02/NOTES_phase7';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Rollout of 2026-10-04: ChemAI and TinkerCliffs" href="NOTES_rollout_2026-10-04.html" />
+    <link rel="prev" title="Phase 6 notes" href="NOTES_phase6.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.10.5.1" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/SEAMM logo.png" class="logo__image only-light" alt=""/>
+    <img src="../../../_static/SEAMM Inverted 288x181.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">SEAMM-EXEC</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/seamm-exec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/seamm-exec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">Campaigns</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html">2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Developer Documentation</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Campaigns</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Phase 7 notes</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="phase-7-notes">
+<h1>Phase 7 notes<a class="headerlink" href="#phase-7-notes" title="Link to this heading">#</a></h1>
+<p>2026-10-05 – design note (draft for Paul and the design session)</p>
+<p>Phase 7 of the parallel-execution campaign: the <strong>TaskServer</strong> (the machine-wide queue
+for a computer without a queueing system), the <strong>Dashboard task view</strong>, the triage of
+the items deferred in phases 1-6, what the PBS test site needs, and the rollout of
+phases 6 and 7 together. PBS itself was done in phase 4/7 (2026-10-03, see the
+campaign index). Nothing here is coded yet.</p>
+<section id="scope">
+<h2>Scope<a class="headerlink" href="#scope" title="Link to this heading">#</a></h2>
+<p>From the campaign plan (“The TaskServer”; decision Q4: loopback only, reached through
+an ssh port-forward) and the design session’s list (2026-10-05):</p>
+<ol class="arabic simple">
+<li><p>A long-lived broker that owns a machine’s cores <strong>and memory</strong> and takes the tasks of
+<em>every</em> evaluator on that machine, so two jobs on one Mac no longer oversubscribe it
+(the problem <code class="docutils literal notranslate"><span class="pre">OMPI_MCA_hwloc_base_binding_policy=none</span></code> only papered over), with
+memory a first-class resource (the 16 GB laptop incidents); reachable from a remote
+evaluator; surviving its own and the evaluators’ restarts; and its relation to the
+JobServer’s local queue.</p></li>
+<li><p>A read-only Dashboard (web UI) task view from the files: per-step task counts and
+states, a parallel loop’s iterations as rows, the “as of the last finished step”
+wording for a running job.</p></li>
+<li><p>Triage of the deferred items.</p></li>
+<li><p>PBS: what MolSSI10 needs to stay a useful test site.</p></li>
+<li><p>A rollout plan for phases 6 and 7 together.</p></li>
+</ol>
+</section>
+<section id="survey-2026-10-05">
+<h2>Survey (2026-10-05)<a class="headerlink" href="#survey-2026-10-05" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><strong>The task layer already has the slot</strong>: a target with <code class="docutils literal notranslate"><span class="pre">tasks</span> <span class="pre">=</span> <span class="pre">taskserver</span></code> reaches
+<code class="docutils literal notranslate"><span class="pre">TaskSet.backend</span></code>, which raises “not yet” (<code class="docutils literal notranslate"><span class="pre">tasks.py</span></code>). Any <code class="docutils literal notranslate"><span class="pre">TaskBackend</span></code>
+(<code class="docutils literal notranslate"><span class="pre">submit</span></code>/<code class="docutils literal notranslate"><span class="pre">status</span></code>/<code class="docutils literal notranslate"><span class="pre">cancel</span></code>/<code class="docutils literal notranslate"><span class="pre">fetch</span></code>, optional <code class="docutils literal notranslate"><span class="pre">wait</span></code>/<code class="docutils literal notranslate"><span class="pre">adopt</span></code>/<code class="docutils literal notranslate"><span class="pre">reattach</span></code>/
+<code class="docutils literal notranslate"><span class="pre">capacity</span></code>) plugs in there.</p></li>
+<li><p><strong>A queueing system is one module</strong> in seamm_scheduler (<code class="docutils literal notranslate"><span class="pre">slurm.py</span></code>, <code class="docutils literal notranslate"><span class="pre">pbs.py</span></code>, about
+500 lines each): directives, the submit/poll/cancel/find commands and their parsing,
+the environment a job sees. <code class="docutils literal notranslate"><span class="pre">QueueBackend</span></code> pairs it with a transport (local or ssh)
+and a stager (rsync, or none on a shared filesystem). The task layer’s
+<code class="docutils literal notranslate"><span class="pre">SchedulerBackend</span></code> (bundles, the worker, adoption from manifest records, retries
+with <code class="docutils literal notranslate"><span class="pre">2**n</span></code> time) and the JobServer (<code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">queue</span></code>) both drive any scheduler
+module through it, and both were validated over ssh against SLURM (TinkerCliffs) and
+OpenPBS (MolSSI10), including laptop sleep and lost connections.</p></li>
+<li><p><strong>The JobServer has no private state</strong>: it reads and writes <code class="docutils literal notranslate"><span class="pre">jobs</span></code> in the
+datastore’s <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code> and rebuilds its in-memory view on restart from the pids and
+queue ids stored there; no HTTP or other IPC. Services are created by seamm-manager
+from a fixed list (<code class="docutils literal notranslate"><span class="pre">known_services</span></code> in <code class="docutils literal notranslate"><span class="pre">services.py</span></code>); launchd and systemd units
+are generic.</p></li>
+<li><p><strong>The web UI</strong> (FastAPI + React) finds a job’s directory from the datastore row,
+lists its files with an unbounded <code class="docutils literal notranslate"><span class="pre">rglob</span></code> (large for a parallel loop with many
+iterations), never reads <code class="docutils literal notranslate"><span class="pre">job_data.json</span></code> or any manifest, has no tabs on the job
+page and no auto-refresh (only a Refresh button, which first syncs a remote job’s
+files back). Backend tests use <code class="docutils literal notranslate"><span class="pre">TestClient</span></code> with fake job directories; the frontend
+has no tests (CI builds and lints it).</p></li>
+</ul>
+</section>
+<section id="the-taskserver">
+<h2>The TaskServer<a class="headerlink" href="#the-taskserver" title="Link to this heading">#</a></h2>
+<p>Two designs. <strong>(A)</strong> is the one decided in the campaign plan; <strong>(B)</strong> is proposed here
+because the survey shows how much of it already exists. Paul chooses (D1).</p>
+<p><strong>(A) As decided: an HTTP service.</strong> <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/tasks</span></code>, <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tasks/{id}</span></code>,
+<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tasks/{id}/files/{name}</span></code>, <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/tasks/{id}</span></code>, <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/programs</span></code>; files in
+the request, results fetched by GET; a pool and an SQLite queue inside the service;
+bound to <code class="docutils literal notranslate"><span class="pre">127.0.0.1</span></code>; a remote evaluator reaches it through <code class="docutils literal notranslate"><span class="pre">ssh</span> <span class="pre">-N</span> <span class="pre">-L</span></code> opened by a
+new <code class="docutils literal notranslate"><span class="pre">TaskServerClient</span></code> back end. New: the service, the protocol, its client, file
+transfer in the protocol, the tunnel’s life cycle (a laptop that sleeps or changes
+network drops it), adoption for the new back end.</p>
+<p><strong>(B) Proposed: the TaskServer as a queueing system.</strong> A small queue with a command
+line in the spirit of <code class="docutils literal notranslate"><span class="pre">sbatch</span></code>/<code class="docutils literal notranslate"><span class="pre">squeue</span></code>/<code class="docutils literal notranslate"><span class="pre">scancel</span></code>, and a <code class="docutils literal notranslate"><span class="pre">seamm</span></code> scheduler
+module in seamm_scheduler that speaks it:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>seamm-taskserver submit [--cores N --memory BYTES --time SECONDS --name NAME
+                         --chdir DIR --output FILE] SCRIPT      -&gt; prints the job id
+seamm-taskserver status [ID ...]          (JSON: state, exit code, reason, times)
+seamm-taskserver cancel ID ...
+seamm-taskserver find NAME                (ids of jobs with that name)
+seamm-taskserver queue                    (what is queued and running, for people)
+seamm-taskserver config                   (the machine's capacity)
+</pre></div>
+</div>
+<p>Everything that drives SLURM and PBS then drives it unchanged, locally or over ssh:
+bundling, the task worker, rsync staging, <code class="docutils literal notranslate"><span class="pre">adopt</span></code> after an evaluator restart, the
+retry rules, the queue-full and transient-failure handling, and the JobServer
+(<code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">queue</span></code>, <code class="docutils literal notranslate"><span class="pre">scheduler</span> <span class="pre">=</span> <span class="pre">seamm</span></code>) for whole jobs. Trust is the user’s ssh key, as
+Q4 intended, and stronger: nothing listens on any port, not even loopback, and there is
+no tunnel to keep alive across sleep and network changes. The client side is one
+scheduler module (~300 lines, simpler than PBS since we define the output format), plus
+an entry in <code class="docutils literal notranslate"><span class="pre">computational_environment()</span></code> so a job sees its allocation.</p>
+<p>The queue itself (both shapes need one):</p>
+<ul class="simple">
+<li><p><strong>State</strong> in one SQLite file per machine, <code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/taskserver/queue.db</span></code> (WAL; one
+short transaction per change), with each job’s script, request, state, pid, process
+start time, exit code and times. A versioned schema, so an upgrade of the package never
+loses or misreads queued and running jobs.</p></li>
+<li><p><strong>Resources</strong>: cores and memory, both first class. The machine’s capacity comes from
+<code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/taskserver.ini</span></code> (<code class="docutils literal notranslate"><span class="pre">cores</span></code>, <code class="docutils literal notranslate"><span class="pre">memory</span></code>), defaulting to the physical cores and
+<em>half</em> the RAM (the machine-wide memory rule; the desktop applications and the
+evaluators need the rest). A job without a memory request is charged a default per
+core (2 GB). A request larger than the capacity is refused at submission, never run
+“alone”.</p></li>
+<li><p><strong>Scheduling</strong>: first fit in submission order (a small job may start beside a large one
+waiting for room), with the oldest waiting job reserving room after 30 minutes so a
+large job cannot starve.</p></li>
+<li><p><strong>Running a job</strong>: in its own session, as <code class="docutils literal notranslate"><span class="pre">seamm-taskserver</span> <span class="pre">run-job</span> <span class="pre">ID</span></code>, a small
+runner that sets up the environment (<code class="docutils literal notranslate"><span class="pre">SEAMM_TASKSERVER_JOB_ID</span></code>, <code class="docutils literal notranslate"><span class="pre">..._NTASKS</span></code>,
+<code class="docutils literal notranslate"><span class="pre">..._MEM</span></code>: <code class="docutils literal notranslate"><span class="pre">computational_environment()</span></code> reads them as it reads SLURM’s), runs the
+script with the time limit (SIGTERM, then SIGKILL), records the exit code, and runs a
+scheduling pass so the next queued job starts.</p></li>
+<li><p><strong>No daemon</strong> (D2). Every <code class="docutils literal notranslate"><span class="pre">submit</span></code> and <code class="docutils literal notranslate"><span class="pre">status</span></code> call also runs a scheduling pass,
+and so does every runner when it ends; a <code class="docutils literal notranslate"><span class="pre">status</span></code> pass also checks that each running
+job’s runner is alive (pid and start time) and marks a vanished one <code class="docutils literal notranslate"><span class="pre">lost</span></code> (after a
+reboot, say). There is therefore nothing to keep running and no service to manage: the
+queue works whether or not anything is watching it, an upgrade or restart of anything
+never touches running jobs, and a laptop that sleeps simply resumes. <em>(Alternative: a
+``taskserver`` service created by seamm-manager, KeepAlive, polling every second,
+which can enforce limits and start jobs without waiting for a call; the survey lists
+the six places in seamm-manager that would learn its name.)</em></p></li>
+<li><p><strong>Where it lives</strong>: in seamm_scheduler (console script <code class="docutils literal notranslate"><span class="pre">seamm-taskserver</span></code>), which is
+already in every SEAMM venv, locally and on a remote workstation; no new package. It
+depends on nothing but the standard library and psutil, and runs scripts, not SEAMM
+code: it changes rarely.</p></li>
+</ul>
+<p><strong>Targets</strong> (evaluator side, in <code class="docutils literal notranslate"><span class="pre">&lt;host&gt;.ini</span></code> / <code class="docutils literal notranslate"><span class="pre">target.json</span></code>):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">workstation</span><span class="p">]</span>                 <span class="p">;</span> <span class="n">a</span> <span class="n">second</span> <span class="n">machine</span> <span class="n">without</span> <span class="n">a</span> <span class="n">queue</span>
+<span class="nb">type</span> <span class="o">=</span> <span class="n">local</span>
+<span class="n">tasks</span> <span class="o">=</span> <span class="n">queue</span>
+<span class="n">scheduler</span> <span class="o">=</span> <span class="n">seamm</span>
+<span class="n">transport</span> <span class="o">=</span> <span class="n">ssh</span>
+<span class="n">host</span> <span class="o">=</span> <span class="n">workstation</span><span class="o">.</span><span class="n">local</span>
+<span class="n">remote_root</span> <span class="o">=</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">paul</span><span class="o">/</span><span class="n">seamm_tasks</span>
+<span class="n">remote_python</span> <span class="o">=</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">paul</span><span class="o">/</span><span class="n">SEAMM</span><span class="o">/</span><span class="n">venv</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">python</span>
+
+<span class="p">[</span><span class="n">local</span><span class="p">]</span>                       <span class="p">;</span> <span class="n">this</span> <span class="n">Mac</span><span class="p">:</span> <span class="n">every</span> <span class="n">job</span><span class="s1">'s tasks share its queue</span>
+<span class="nb">type</span> <span class="o">=</span> <span class="n">queue</span>                  <span class="p">;</span> <span class="n">the</span> <span class="n">JobServer</span> <span class="n">submits</span> <span class="n">the</span> <span class="n">evaluators</span> <span class="n">to</span> <span class="n">it</span> <span class="n">too</span>
+<span class="n">scheduler</span> <span class="o">=</span> <span class="n">seamm</span>
+<span class="n">transport</span> <span class="o">=</span> <span class="n">local</span>
+<span class="n">tasks</span> <span class="o">=</span> <span class="n">queue</span>
+</pre></div>
+</div>
+<p>On the Mac, the JobServer’s <code class="docutils literal notranslate"><span class="pre">[local]</span></code> section can stay <code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">local</span></code> (evaluators as
+subprocesses, tasks in each evaluator’s own pool – today’s behaviour) or become
+<code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">queue,</span> <span class="pre">scheduler</span> <span class="pre">=</span> <span class="pre">seamm</span></code>, so the evaluators and all their tasks share one
+accounting of the machine (D3). The JobServer then <em>is</em> a TaskServer client, through
+the same scheduler module it already uses for SLURM and PBS; no new code in it.</p>
+<p><strong>Adoption and restarts</strong>: the evaluator’s manifest holds the queue’s job ids, so
+<code class="docutils literal notranslate"><span class="pre">SchedulerBackend.adopt</span></code> works as for SLURM. The queue survives its own “restart”
+trivially (there is no process); runners are independent of evaluators.</p>
+<p><strong>Validation</strong> (D4): unit tests of the queue (scheduling, limits, lost runners, a
+concurrent-submit soak against SQLite locking); the scheduler module against recorded
+output, as for PBS; on the Mac, two jobs of concurrent MOPAC tasks through the JobServer
+with <code class="docutils literal notranslate"><span class="pre">[local]</span> <span class="pre">type</span> <span class="pre">=</span> <span class="pre">queue</span></code> showing the core and memory limits held; one task run over
+ssh to a second machine (paul.local, with Paul’s OK) with staging; a kill soak of
+evaluators and runners. All small (MOPAC, a few tasks at once).</p>
+</section>
+<section id="dashboard-task-view">
+<h2>Dashboard task view<a class="headerlink" href="#dashboard-task-view" title="Link to this heading">#</a></h2>
+<p>Read-only, from files, no new database (D5):</p>
+<ul class="simple">
+<li><p><strong>Backend</strong>: <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/jobs/{id}/tasks</span></code> walks the job directory for
+<code class="docutils literal notranslate"><span class="pre">tasks/manifest.json</span></code> (skipping <code class="docutils literal notranslate"><span class="pre">_bundles</span></code>, bounded depth) and returns, per step
+directory, the counts by state and per task its key, state, attempts, back end and id,
+bundle and the reason of a failure; and for each parallel loop (a step directory whose
+iterations have <code class="docutils literal notranslate"><span class="pre">_evaluator/</span></code>), one row per iteration: its directory, its state (from
+<code class="docutils literal notranslate"><span class="pre">_evaluator/job_data.json</span></code>, read with the JobServer’s header tolerance, or the
+checkpoint), whether it has been merged or failed (from the parent’s checkpoint frame:
+<code class="docutils literal notranslate"><span class="pre">next</span></code>, <code class="docutils literal notranslate"><span class="pre">failed</span></code>, <code class="docutils literal notranslate"><span class="pre">directories</span></code>), with links to its <code class="docutils literal notranslate"><span class="pre">job.out</span></code> and
+<code class="docutils literal notranslate"><span class="pre">iteration.out</span></code>. Path safety through the existing <code class="docutils literal notranslate"><span class="pre">_resolve_job_file</span></code>. A cheaper
+file list for big jobs (a depth or a subtree parameter on <code class="docutils literal notranslate"><span class="pre">/files</span></code>) comes with it.</p></li>
+<li><p><strong>Frontend</strong>: a Files | Tasks switch on the job page; the Tasks panel a table grouped
+by step, iterations as rows (phase 6’s deferred “child rows” – inside the job, not as
+datastore rows); refreshed every 15 s while the job is running. For a remote job the
+panel says “as of the last sync” and the existing throttled sync runs first; the
+database-derived panes say “as of the last finished step” (a running job’s database
+shows only finished steps).</p></li>
+<li><p><strong>Tests</strong>: backend tests with fake job directories (manifests, iterations, a parallel
+checkpoint); the frontend is checked live in a browser with a real parallel-loop job
+(Playwright, as the web UI’s earlier features were).</p></li>
+</ul>
+</section>
+<section id="deferred-items">
+<h2>Deferred items<a class="headerlink" href="#deferred-items" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>item</p></th>
+<th class="head"><p>what</p></th>
+<th class="head"><p>why / how</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Dimer builder wall-walk per-point</p></td>
+<td><p>defer</p></td>
+<td><p>Dimer-builder work, not task-layer; with its</p></td>
+</tr>
+<tr class="row-odd"><td><p>TaskSets on a queue</p></td>
+<td></td>
+<td><p>next campaign.</p></td>
+</tr>
+<tr class="row-even"><td><p>MOPAC <code class="docutils literal notranslate"><span class="pre">success.dat</span></code> skip-rerun vs</p></td>
+<td><p>do</p></td>
+<td><p>A stale <code class="docutils literal notranslate"><span class="pre">success.dat</span></code> must not skip a task</p></td>
+</tr>
+<tr class="row-odd"><td><p>the task fingerprint</p></td>
+<td></td>
+<td><p>whose inputs changed: the fingerprint
+decides, <code class="docutils literal notranslate"><span class="pre">success.dat</span></code> only for legacy
+directories. Small, mopac_step.</p></td>
+</tr>
+<tr class="row-even"><td><p>Remote staging cleanup (stage-back</p></td>
+<td><p>do</p></td>
+<td><p>Pruned directories come back on the next</p></td>
+</tr>
+<tr class="row-odd"><td><p>of pruned directories)</p></td>
+<td></td>
+<td><p>stage-out; prune on the remote too. The
+TaskServer over ssh uses the same staging.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">run</span></code> PATH fragility</p></td>
+<td><p>do</p></td>
+<td><p>Launch the env’s own interpreter</p></td>
+</tr>
+<tr class="row-odd"><td><p>(mopac_step#161)</p></td>
+<td></td>
+<td><p>(<code class="docutils literal notranslate"><span class="pre">&lt;env&gt;/bin/python</span></code>) instead of
+<code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">run</span> <span class="pre">...</span> <span class="pre">python</span></code>; check ORCA’s MDI
+launch the same way (consider each code).</p></td>
+</tr>
+<tr class="row-even"><td><p>Warm evaluator per bundle (5 s</p></td>
+<td><p>defer</p></td>
+<td><p>Phase 8, if real loops need it: measure the</p></td>
+</tr>
+<tr class="row-odd"><td><p>start-up per iteration)</p></td>
+<td></td>
+<td><p>start-up on ChemAI/TC first.</p></td>
+</tr>
+<tr class="row-even"><td><p>TIMEOUT seen on reattach not doubled;</p></td>
+<td><p>do</p></td>
+<td><p>Small task-layer fixes: a timeout found when</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">2**n</span></code> capped only by</p></td>
+<td></td>
+<td><p>adopting counts like one seen live; cap the</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">bundle_walltime</span></code></p></td>
+<td></td>
+<td><p>doubling at the queue’s maximum walltime too.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Flaky</p></td>
+<td><p>do</p></td>
+<td><p>Make it measure overlap of the tasks’</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">test_tasks_run_concurrently</span></code></p></td>
+<td></td>
+<td><p>running intervals, not total elapsed &lt; 2.5 s.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Timing-file helper (vasp-step#18)</p></td>
+<td><p>do</p></td>
+<td><p>A locked, slim-row append helper in
+seamm_exec (<code class="docutils literal notranslate"><span class="pre">fcntl</span></code> lock, rotation by size);
+vasp-step adopts it in its own release.</p></td>
+</tr>
+<tr class="row-even"><td><p>seamm_manager#26 (migrate starts</p></td>
+<td><p>do</p></td>
+<td><p>Before the rollout: these change shared</p></td>
+</tr>
+<tr class="row-odd"><td><p>stopped services), #27 (recreate</p></td>
+<td></td>
+<td><p>environments, #28/#29 already damaged one.</p></td>
+</tr>
+<tr class="row-even"><td><p>–latest), #28 (installer applies its</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>yml to a hand-built env), #29 (update</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>runs refused packages’ installers)</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>Release vs docs <code class="docutils literal notranslate"><span class="pre">gh-pages</span></code> push</p></td>
+<td><p>do</p></td>
+<td><p>In devops: one concurrency group for every</p></td>
+</tr>
+<tr class="row-even"><td><p>collision (properties_step, twice)</p></td>
+<td></td>
+<td><p>workflow that pushes <code class="docutils literal notranslate"><span class="pre">gh-pages</span></code>, so the docs
+push of CI-on-main and of Release queue
+instead of failing (and skipping PyPI).</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="pbs-test-site-molssi10">
+<h2>PBS test site (MolSSI10)<a class="headerlink" href="#pbs-test-site-molssi10" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">job_history_enable</span></code> on with <code class="docutils literal notranslate"><span class="pre">job_history_duration</span></code> of at least 7 days, so
+<code class="docutils literal notranslate"><span class="pre">qstat</span> <span class="pre">-x</span></code> still reports a job that finished while the laptop was asleep for a long
+weekend (the JobServer and <code class="docutils literal notranslate"><span class="pre">SchedulerBackend</span></code> both rely on it to find terminal
+states).</p></li>
+<li><p>Remove the orphan test jobs and their remote directories left by the 2026-10-03
+validation (list them first; MolSSI10 is test-only, so with a one-line OK).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_resubmits</span></code>: PBS loses jobs the same ways SLURM does (node failure, <code class="docutils literal notranslate"><span class="pre">qdel</span></code> by
+an admin, walltime); the same guidance holds – 3 for production sections, more for a
+deliberately short-walltime test section – and the JobServer’s user guide says so for
+both schedulers.</p></li>
+</ul>
+</section>
+<section id="rollout-of-phases-6-and-7">
+<h2>Rollout of phases 6 and 7<a class="headerlink" href="#rollout-of-phases-6-and-7" title="Link to this heading">#</a></h2>
+<p>Paul decides when, timed with the EC pilot (D6). Phase 6 is opt-in and phase 7’s queue
+is opt-in, so the rollout only needs the packages, not a configuration change:</p>
+<ul class="simple">
+<li><p>Packages: molsystem, seamm, seamm-exec, loop-step, read-structure-step, table-step,
+properties-step, lammps-step, orca-step, geometry-analysis-step (phase 6, 2026.10.5);
+seamm-scheduler, seamm-exec, seamm-webui, seamm-manager and mopac-step at their phase 7
+versions.</p></li>
+<li><p>TinkerCliffs (<code class="docutils literal notranslate"><span class="pre">/projects/seamm/SEAMM</span></code>): <code class="docutils literal notranslate"><span class="pre">update</span></code> of exactly that list with
+<code class="docutils literal notranslate"><span class="pre">--dry-run</span></code> first, never <code class="docutils literal notranslate"><span class="pre">--all</span></code> (the xnn/lammps environment caveat); no services.</p></li>
+<li><p>ChemAI: hands-off except on Paul’s explicit ask, for this list only; restart its
+JobServer and web UI after, between jobs.</p></li>
+<li><p>Memory rule: nothing on the laptop beyond the small validation runs above.</p></li>
+</ul>
+</section>
+<section id="decisions-for-paul">
+<h2>Decisions for Paul<a class="headerlink" href="#decisions-for-paul" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><strong>D1 – the TaskServer’s shape.</strong> Recommended: <strong>(B)</strong>, the queue with a command line
+and a <code class="docutils literal notranslate"><span class="pre">seamm</span></code> scheduler module – the same trust as Q4 (ssh only) without a listener
+or a tunnel, and nearly all of the client already built and tested. (A) is the plan as
+written.</p></li>
+<li><p><strong>D2 – daemon or none.</strong> Recommended: no daemon (passes on every call and when a job
+ends); the alternative is a seamm-manager service.</p></li>
+<li><p><strong>D3 – the Mac’s own jobs.</strong> Recommended: offer <code class="docutils literal notranslate"><span class="pre">[local]</span> <span class="pre">type</span> <span class="pre">=</span> <span class="pre">queue,</span> <span class="pre">scheduler</span> <span class="pre">=</span>
+<span class="pre">seamm</span></code> as an option, switched on for SEAMM_DEV first; the default stays as today.</p></li>
+<li><p><strong>D4 – validation</strong> as above, including one ssh run to paul.local.</p></li>
+<li><p><strong>D5 – the task view</strong> as above, read-only from files, iterations as rows within the
+job.</p></li>
+<li><p><strong>D6 – the deferred items and the rollout</strong> as triaged above; the rollout when Paul
+says.</p></li>
+</ul>
+</section>
+<section id="packages-and-order">
+<h2>Packages and order<a class="headerlink" href="#packages-and-order" title="Link to this heading">#</a></h2>
+<p>seamm_scheduler (the queue, <code class="docutils literal notranslate"><span class="pre">seamm-taskserver</span></code>, the <code class="docutils literal notranslate"><span class="pre">seamm</span></code> scheduler module) →
+seamm_exec (<code class="docutils literal notranslate"><span class="pre">computational_environment</span></code>, the retry fixes, the timing helper, the flaky
+test) → seamm_webui (task view) → mopac_step (<code class="docutils literal notranslate"><span class="pre">success.dat</span></code>, #161) → seamm_manager
+(#26-#29) → devops (the <code class="docutils literal notranslate"><span class="pre">gh-pages</span></code> concurrency group). The PBS site items are
+configuration on MolSSI10, not releases.</p>
+</section>
+<section id="review-design-session-2026-10-05">
+<h2>Review (design session, 2026-10-05)<a class="headerlink" href="#review-design-session-2026-10-05" title="Link to this heading">#</a></h2>
+<p>The design session recommends (B). Folded in:</p>
+<ol class="arabic simple">
+<li><p><strong>No deadlock with D3.</strong> With the Mac’s evaluators in the same queue as their tasks,
+N one-core evaluators on N cores would hold every core while their tasks wait. Rule:
+a job submitted by the JobServer as an evaluator is charged <strong>no cores</strong> and a small
+memory (1 GB) – evaluators are light and mostly waiting; only tasks are charged their
+cores. Tested with capacity 2 and three jobs each with a 2-core task.</p></li>
+<li><p><strong>Atomic claim without a daemon.</strong> Passes run from concurrent callers (several
+evaluators’ status polls, runners ending), so a pass claims a queued job with one
+<code class="docutils literal notranslate"><span class="pre">UPDATE</span> <span class="pre">...</span> <span class="pre">SET</span> <span class="pre">state</span> <span class="pre">=</span> <span class="pre">'starting'</span> <span class="pre">WHERE</span> <span class="pre">id</span> <span class="pre">=</span> <span class="pre">?</span> <span class="pre">AND</span> <span class="pre">state</span> <span class="pre">=</span> <span class="pre">'queued'</span></code> in a short
+<code class="docutils literal notranslate"><span class="pre">BEGIN</span> <span class="pre">IMMEDIATE</span></code> transaction and starts it only if one row changed; the soak runs
+concurrent passes as well as concurrent submissions.</p></li>
+<li><p><strong>Time limits across sleep.</strong> A job’s time is measured with <code class="docutils literal notranslate"><span class="pre">time.monotonic()</span></code>,
+which stops while the machine sleeps on both macOS and Linux (Linux’s
+<code class="docutils literal notranslate"><span class="pre">CLOCK_MONOTONIC</span></code> excludes suspend; <code class="docutils literal notranslate"><span class="pre">CLOCK_BOOTTIME</span></code> is the one that does not), so
+a laptop closed overnight does not time out its jobs on waking. A sleeping runner is
+never “lost”: only a vanished pid, or a pid whose start time differs, is.</p></li>
+<li><p><strong>Memory enforced, not just accounted.</strong> The runner watches its job’s process tree
+(the job’s session, so detached MPI ranks too) and stops the job – SIGTERM, then
+SIGKILL – when it uses more than 125 % of its request for 30 s, recording <code class="docutils literal notranslate"><span class="pre">memory</span></code>
+as the reason. On macOS RSS misses compressed and swapped pages (the
+<code class="docutils literal notranslate"><span class="pre">mac-memory-guard-rss-blind</span></code> lesson), so the measure is the process footprint where
+psutil offers it (<code class="docutils literal notranslate"><span class="pre">memory_full_info().uss</span></code>), and a second guard watches the
+machine: below 10 % available memory the newest job is stopped. seamm-manager writes
+the capacity into <code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/taskserver.ini</span></code> on install, explicitly (physical cores,
+half the RAM), rather than leaving a silent default; the 2-4 GB rule for the Claude
+sessions’ own local work is separate and unchanged.</p></li>
+</ol>
+<p>Nits taken: over ssh the queue is invoked as <code class="docutils literal notranslate"><span class="pre">&lt;remote_python&gt;</span> <span class="pre">-m</span>
+<span class="pre">seamm_scheduler.taskserver</span> <span class="pre">...</span></code>, never a command on the PATH (the <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">run</span></code> lesson);
+a versioned <code class="docutils literal notranslate"><span class="pre">queue.db</span></code> schema with a migration test; <code class="docutils literal notranslate"><span class="pre">seamm-taskserver</span> <span class="pre">queue</span></code> shows
+memory as well as cores; the task view refreshes only while the job is running, and the
+<code class="docutils literal notranslate"><span class="pre">/files</span></code> depth parameter defaults to 2; seamm-mbe and mbe-step join the ChemAI rollout
+list only if Paul wants them there; the PBS orphan-job removal waits for Paul’s one-line
+OK.</p>
+</section>
+<section id="decisions-paul-2026-10-05">
+<h2>Decisions (Paul, 2026-10-05)<a class="headerlink" href="#decisions-paul-2026-10-05" title="Link to this heading">#</a></h2>
+<p>D1 (B): the TaskServer is a queue with a command line and a <code class="docutils literal notranslate"><span class="pre">seamm</span></code> scheduler module.
+D2: no daemon, with the atomic claim and sleep-safe timing of the review. D3: the Mac’s
+own jobs through the queue as an option, switched on in SEAMM_DEV first; evaluators
+charged no cores. D4-D6 as proposed, except that the ssh validation uses the Mac mini at
+work (<code class="docutils literal notranslate"><span class="pre">macmini</span></code> in <code class="docutils literal notranslate"><span class="pre">~/.ssh/config</span></code>: 8 cores, 16 GB, its own <code class="docutils literal notranslate"><span class="pre">~/SEAMM</span></code>) rather than
+paul.local. The rollout of phases 6 and 7 waits for Paul’s word, timed with the EC pilot.</p>
+</section>
+<section id="implementation-2026-10-05">
+<h2>Implementation (2026-10-05)<a class="headerlink" href="#implementation-2026-10-05" title="Link to this heading">#</a></h2>
+<p>Local commits on <code class="docutils literal notranslate"><span class="pre">dev</span></code>, not pushed; test venvs <code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV/venvs/phase7-B</span></code>
+(released packages + editable checkouts) and <code class="docutils literal notranslate"><span class="pre">phase7-webui</span></code>.</p>
+<ul class="simple">
+<li><p><strong>seamm_scheduler</strong>: <code class="docutils literal notranslate"><span class="pre">taskserver.py</span></code> – the queue (<code class="docutils literal notranslate"><span class="pre">queue.db</span></code>, schema 2 with a
+migration), scheduling passes with the atomic claim, first fit with the 30-minute
+reservation, the runner (<code class="docutils literal notranslate"><span class="pre">time.monotonic</span></code> limits, memory by the session’s unique
+set size with a 30 s grace, the machine-wide floor), the command line, and, found in
+testing, two rules: evaluators charged no cores <em>and</em> never counted against tasks
+(three 1-GB evaluators deadlocked a 2-GB queue through memory, not cores), and a
+job whose runner vanished is stopped before it is marked lost (its script runs in a
+session of its own and a rerun would have run beside it). <code class="docutils literal notranslate"><span class="pre">seamm.py</span></code> – the
+<code class="docutils literal notranslate"><span class="pre">seamm</span></code> scheduler (<code class="docutils literal notranslate"><span class="pre">#SEAMM</span></code> directives, <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">seamm_scheduler.taskserver</span></code>
+with the section’s <code class="docutils literal notranslate"><span class="pre">remote_python</span></code>/<code class="docutils literal notranslate"><span class="pre">remote_seamm_root</span></code>). <code class="docutils literal notranslate"><span class="pre">max_walltime</span></code> in
+target sections. Staging: SQLite side files and <code class="docutils literal notranslate"><span class="pre">loop_entry.db</span></code> are mirrored by
+listing them, not with rsync filters – openrsync (macOS) protected the directories’
+contents under <code class="docutils literal notranslate"><span class="pre">P</span> <span class="pre">*/</span></code>, so the phase 5 fix never removed a <em>nested</em> stale log
+(found in the web UI: job 4014 kept a stale <code class="docutils literal notranslate"><span class="pre">loop_entry.db</span></code>).</p></li>
+<li><p><strong>seamm_exec</strong>: <code class="docutils literal notranslate"><span class="pre">computational_environment</span></code> reads a TaskServer job; the retry
+doubling capped by <code class="docutils literal notranslate"><span class="pre">max_walltime</span></code>; a reattach-seen timeout is already doubled
+(regression test; a job the queue has forgotten cannot be known to have timed out);
+remote copies of a bundle removed once staged back; <code class="docutils literal notranslate"><span class="pre">seamm_exec.timing</span></code>;
+<code class="docutils literal notranslate"><span class="pre">test_tasks_run_concurrently</span></code> by overlap.</p></li>
+<li><p><strong>mopac_step</strong>: a stale <code class="docutils literal notranslate"><span class="pre">success.dat</span></code> no longer skips changed input; the MDI engine
+by the environment’s Python path (#161, not reproducible with conda 24.11.3 here).</p></li>
+<li><p><strong>seamm_webui</strong>: <code class="docutils literal notranslate"><span class="pre">/api/jobs/{id}/tasks</span></code> and the Files | Tasks switch; <code class="docutils literal notranslate"><span class="pre">/files</span></code>
+takes an optional <code class="docutils literal notranslate"><span class="pre">depth</span></code> (no default, so the file browser keeps its full tree).
+Its <code class="docutils literal notranslate"><span class="pre">test_sync</span></code> tests expect seamm_scheduler’s one-call stage-out and fail against
+2026.10.4: the web UI must pin the new seamm_scheduler.</p></li>
+</ul>
+<p>Validation:</p>
+<ul class="simple">
+<li><p>Unit tests: seamm_scheduler 212 (TaskServer 16, staging 17), seamm_exec 152, the web
+UI 56, mopac_step 43. The web UI’s Tasks tab checked in headless Chromium on job 4014
+(24 iterations, 25 steps with tasks, jump to an iteration’s <code class="docutils literal notranslate"><span class="pre">job.out</span></code>).</p></li>
+<li><p><strong>Two jobs sharing the Mac</strong> (SEAMM_DEV <code class="docutils literal notranslate"><span class="pre">[local]</span> <span class="pre">type</span> <span class="pre">=</span> <span class="pre">queue,</span> <span class="pre">scheduler</span> <span class="pre">=</span> <span class="pre">seamm</span></code>,
+capacity 4 cores / 4 GB): jobs 4015 and 4016, each a parallel loop of 8 MOPAC
+iterations at 1 core / 1 GB: 16 iteration tasks and 2 evaluators; at most 4 tasks
+(4 cores, 4 GB) ever ran at once across both jobs, both evaluators alongside; both
+finished, identical to each other (and within 0.07 kcal/mol of the TinkerCliffs
+serial reference, a Linux MOPAC).</p></li>
+<li><p><strong>Over ssh to macmini</strong> (no shared filesystem): four MOPAC tasks in two bundles queued
+and run by macmini’s TaskServer (private venv <code class="docutils literal notranslate"><span class="pre">~/phase7_test</span></code>), staged both ways,
+results back, nothing left under <code class="docutils literal notranslate"><span class="pre">remote_root</span></code>.</p></li>
+<li><p><strong>Kill soak</strong> on SEAMM_DEV: the evaluator of job 4018 killed mid-loop – its queue job
+failed (-9), the JobServer resubmitted it (<code class="docutils literal notranslate"><span class="pre">resubmit_count</span></code> 1), the new evaluator
+adopted the iteration tasks, identical results; the runner of an iteration task of
+job 4019 killed – the task lost and its job stopped, the iteration rerun and resumed,
+identical results.</p></li>
+</ul>
+<p>The rest (2026-10-05):</p>
+<ul class="simple">
+<li><p><strong>seamm_manager</strong> (#26-#29 and the TaskServer’s capacity): a service recreated by an
+environment change is no longer started when it was stopped (<code class="docutils literal notranslate"><span class="pre">create_service(...,</span>
+<span class="pre">start=...)</span></code>), and updates restart the JobServer and web UI only if they ran
+(<code class="docutils literal notranslate"><span class="pre">restart_if_running</span></code>); <code class="docutils literal notranslate"><span class="pre">environment</span> <span class="pre">recreate</span> <span class="pre">--latest</span></code>; an installer leaves
+alone a conda environment named in its .ini that SEAMM did not make (no
+<code class="docutils literal notranslate"><span class="pre">seamm-*.sha256</span></code> record and not SEAMM’s name – note: the TinkerCliffs
+<code class="docutils literal notranslate"><span class="pre">seamm-lammps-xnndev</span></code> got such records in the 2026-10-04 incident; remove them by
+hand before relying on this); <code class="docutils literal notranslate"><span class="pre">update</span></code> runs no installer for a refused package;
+<code class="docutils literal notranslate"><span class="pre">install</span></code> writes <code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/taskserver.ini</span></code> if missing.</p></li>
+<li><p><strong>devops</strong> (local branch <code class="docutils literal notranslate"><span class="pre">release-docs-nonblocking</span></code>, not pushed): the Release
+workflow’s docs deploy is <code class="docutils literal notranslate"><span class="pre">continue-on-error</span></code>. The collision was with the
+package’s own Docs workflow (<code class="docutils literal notranslate"><span class="pre">on:</span> <span class="pre">push</span></code>, its <code class="docutils literal notranslate"><span class="pre">buildDocs.sh</span></code> pushing
+<code class="docutils literal notranslate"><span class="pre">gh-pages</span></code>) for the merge to main and <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">update</span></code>’s push to dev; a concurrency
+group would not do, since GitHub cancels all but one <em>pending</em> job in a group.</p></li>
+<li><p><strong>seamm_jobserver</strong>: user guide – <code class="docutils literal notranslate"><span class="pre">max_resubmits</span></code> for SLURM, PBS and the
+TaskServer, and PBS job history.</p></li>
+<li><p><strong>seamm_scheduler</strong> docs: a TaskServer page.</p></li>
+<li><p><strong>PBS (MolSSI10)</strong>: <code class="docutils literal notranslate"><span class="pre">job_history_enable</span> <span class="pre">=</span> <span class="pre">True</span></code>, <code class="docutils literal notranslate"><span class="pre">job_history_duration</span> <span class="pre">=</span>
+<span class="pre">168:00:00</span></code> already; no jobs queued or running; the 22 leftover staged directories
+(<code class="docutils literal notranslate"><span class="pre">~/seamm_dev_remote_jobs</span></code>, 38 MB, 2026-08-09 to 2026-10-03) removed with Paul’s OK
+(2026-10-05). The devops change is devops#3, merged 2026-10-05.</p></li>
+</ul>
+<p>State left for the soak: SEAMM_DEV runs from <code class="docutils literal notranslate"><span class="pre">venvs/phase7-B</span></code> with <code class="docutils literal notranslate"><span class="pre">[local]</span> <span class="pre">type</span> <span class="pre">=</span>
+<span class="pre">queue,</span> <span class="pre">scheduler</span> <span class="pre">=</span> <span class="pre">seamm</span></code> (backup <code class="docutils literal notranslate"><span class="pre">PaulVT.local.ini.bak-2026-10-05-phase7</span></code>) and
+<code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV/taskserver.ini</span></code> (4 cores, 4 GB); macmini has <code class="docutils literal notranslate"><span class="pre">~/phase7_test</span></code> (a
+private venv and a queue); <code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV/venvs/phase7-webui</span></code>. SEAMM_DEV jobs
+4015-4019 are the validation record.</p>
+<p>Answers from the design session (2026-10-05, to the three questions with the code):</p>
+<ol class="arabic simple">
+<li><p><em>The evaluator rule</em> (tasks never count evaluators) is right; its failure mode is
+recorded here: N evaluators can use more than their 1 GB charge each (one holding
+a large job database or a parallel loop’s snapshots), and the machine-wide floor
+then stops the <em>newest</em> job, which may be a task rather than the evaluator that
+caused it. The stopped job’s reason says why (“the machine was low on memory …
+the newest job was stopped”). The real protection is the JobServer’s
+<code class="docutils literal notranslate"><span class="pre">max_concurrent_jobs</span></code>, which caps the evaluators running at once.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/files</span></code> without a default depth is fine (the browser needs the full tree); the
+walk for <code class="docutils literal notranslate"><span class="pre">/tasks</span></code> stays bounded, and <code class="docutils literal notranslate"><span class="pre">depth</span></code> is documented for API users (the
+route’s docstring, in the API’s OpenAPI page).</p></li>
+<li><p>No TaskServer service: the runners check the floor while anything runs, and when
+nothing runs there is nothing to protect; memory eaten by <em>other</em> processes while
+TaskServer jobs run is covered by the same check.</p></li>
+</ol>
+</section>
+<section id="code-review-design-session-2026-10-05-and-fixes">
+<h2>Code review (design session, 2026-10-05) and fixes<a class="headerlink" href="#code-review-design-session-2026-10-05-and-fixes" title="Link to this heading">#</a></h2>
+<p>The review found the queue’s core sound (atomic claim, migration, lost detection,
+cancel, staging) and three blocking defects, all fixed (seamm_scheduler 95d86ee):</p>
+<ol class="arabic simple">
+<li><p><strong>The 30-minute reservation could deadlock the queue</strong>: the oldest queued job could
+be an evaluator, whose <code class="docutils literal notranslate"><span class="pre">break</span></code> then held up every task – including those of the
+running evaluators, which therefore never finished. Now only a task reserves, and
+only against later tasks; a task larger than a lowered capacity fails instead of
+reserving for ever. Tested (four evaluators fill a 2 GB queue, a fifth waits an
+hour, the running ones’ task still starts).</p></li>
+<li><p><strong>A slow runner could be marked lost while starting its script</strong> (check’s SELECT,
+then finish): now one guarded <code class="docutils literal notranslate"><span class="pre">UPDATE</span> <span class="pre">...</span> <span class="pre">AND</span> <span class="pre">pid</span> <span class="pre">IS</span> <span class="pre">NULL</span></code>.</p></li>
+<li><p><strong>A job inherited the environment of whoever made the scheduling pass</strong> (another
+job’s <code class="docutils literal notranslate"><span class="pre">SEAMM_CE</span></code>, threads, ids): a job’s script now starts from a minimal
+environment, as <code class="docutils literal notranslate"><span class="pre">export=NONE</span></code>; the local transport drops <code class="docutils literal notranslate"><span class="pre">SEAMM_TASKSERVER_</span></code> and
+<code class="docutils literal notranslate"><span class="pre">SEAMM_CE</span></code>. Tested.</p></li>
+</ol>
+<p>Also: the machine-wide floor waits its grace and stops one job per low-memory episode
+(state in <code class="docutils literal notranslate"><span class="pre">meta</span></code>; read-only while memory is fine); a job’s processes include
+descendants with sessions of their own (a pool’s codes) for stopping and for memory;
+the runner always records its job’s end (try/finally); over ssh the queue needs
+<code class="docutils literal notranslate"><span class="pre">remote_python</span></code>; the evaluator charge is at most a quarter of a small queue’s
+memory. The timing helper’s rotation race (a writer waiting on a set-aside file
+rotating the new one onto the same name) is fixed with an inode check and unique
+names (seamm_exec d779a10). mopac_step: <code class="docutils literal notranslate"><span class="pre">reuse_previous_run</span></code> with a test, and
+<code class="docutils literal notranslate"><span class="pre">_conda_python</span></code> takes a path or asks conda (8a4d8d8) – checked with a real MOPAC
+flowchart after lint caught a <code class="docutils literal notranslate"><span class="pre">success</span></code> variable left behind, which no unit test
+exercises. Web UI (0291f63): nested parallel loops find their frame in the
+iteration’s own checkpoint; <code class="docutils literal notranslate"><span class="pre">/files?depth</span></code> prunes its walk and rejects <code class="docutils literal notranslate"><span class="pre">depth</span> <span class="pre">&lt;</span>
+<span class="pre">1</span></code>.</p>
+<p>Kept, with reasons: the queue’s root stays machine-wide (the default installation’s
+root unless <code class="docutils literal notranslate"><span class="pre">remote_seamm_root</span></code>), so that installations on one machine share its
+capacity rather than each using all of it; documented on the TaskServer page.
+Pins at release preparation: seamm_exec and the web UI on the new seamm_scheduler.</p>
+<p>Re-check (design session, 2026-10-05): approved for release preparation; agreed on
+the machine-wide queue root (the TaskServer page now says that an installation with
+<code class="docutils literal notranslate"><span class="pre">SEAMM_ROOT</span></code> set gets its own queue). Nit for the next devops change: a summary line
+when the Release’s docs deploy fails (it is now a red step in a green job).</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="NOTES_phase6.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Phase 6 notes</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="NOTES_rollout_2026-10-04.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Rollout of 2026-10-04: ChemAI and TinkerCliffs</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#scope">Scope</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#survey-2026-10-05">Survey (2026-10-05)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-taskserver">The TaskServer</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dashboard-task-view">Dashboard task view</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deferred-items">Deferred items</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pbs-test-site-molssi10">PBS test site (MolSSI10)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rollout-of-phases-6-and-7">Rollout of phases 6 and 7</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#decisions-for-paul">Decisions for Paul</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#packages-and-order">Packages and order</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#review-design-session-2026-10-05">Review (design session, 2026-10-05)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#decisions-paul-2026-10-05">Decisions (Paul, 2026-10-05)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation-2026-10-05">Implementation (2026-10-05)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#code-review-design-session-2026-10-05-and-fixes">Code review (design session, 2026-10-05) and fixes</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../../_sources/developer_guide/campaigns/2026-10-02/NOTES_phase7.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

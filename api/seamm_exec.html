@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.5 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.5.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=99beb745"></script>
+    <script src="../_static/documentation_options.js?v=f9e9a9ea"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="seamm_exec" href="modules.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.5" />
+  <meta name="docsearch:version" content="2026.10.5.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -1445,7 +1445,7 @@ recorded as queued, so that a restart looks for the job by name.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="seamm_exec.scheduler_backend.SchedulerBackend">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.scheduler_backend.</span></span><span class="sig-name descname"><span class="pre">SchedulerBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queue</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'queue'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stager</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_job_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directives</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">setup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'local'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">accepts_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bundle_walltime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_queued</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poll_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_name_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'seamm'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#SchedulerBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.scheduler_backend.</span></span><span class="sig-name descname"><span class="pre">SchedulerBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queue</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'queue'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stager</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_job_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directives</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">setup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'local'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">accepts_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bundle_walltime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_queued</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poll_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_name_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'seamm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_walltime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#SchedulerBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A <code class="docutils literal notranslate"><span class="pre">TaskBackend</span></code> that submits bundles of tasks to a queueing system.</p>
 <dl class="field-list simple">
@@ -2275,6 +2275,74 @@ runs somewhere other than <code class="docutils literal notranslate"><span class
 </dd></dl>
 
 </section>
+<section id="module-seamm_exec.timing">
+<span id="seamm-exec-timing-module"></span><h2>seamm_exec.timing module<a class="headerlink" href="#module-seamm_exec.timing" title="Link to this heading">#</a></h2>
+<p>Timing records of the calculations steps run, shared by the plug-ins.</p>
+<p>Each plug-in appends one row per calculation to
+<code class="docutils literal notranslate"><span class="pre">~/.seamm.d/timing/&lt;program&gt;.csv</span></code> (the files Gaussian, LAMMPS, VASP and MOPAC
+already keep), which are fitted to estimate the cost of later calculations.
+Many runs append to the same file at once – on a cluster from many nodes, on a
+network file system – so rows are written under a lock and in one write, and the
+file is set aside when it grows past a size instead of growing without bound
+(vasp-step#18). Rows should hold numbers that characterize the calculation
+(atoms, electrons, basis or cutoff, k-points, cores, node, wall time), not its
+input files.</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing.DEFAULT_DIRECTORY">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing.</span></span><span class="sig-name descname"><span class="pre">DEFAULT_DIRECTORY</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">PosixPath('~/.seamm.d/timing')</span></span><a class="headerlink" href="#seamm_exec.timing.DEFAULT_DIRECTORY" title="Link to this definition">#</a></dt>
+<dd><p>Where the timing files are</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing.MAX_BYTES">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing.</span></span><span class="sig-name descname"><span class="pre">MAX_BYTES</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">52428800</span></span><a class="headerlink" href="#seamm_exec.timing.MAX_BYTES" title="Link to this definition">#</a></dt>
+<dd><p>A file larger than this is set aside (renamed with the date) and begun again</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing.append_timing">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing.</span></span><span class="sig-name descname"><span class="pre">append_timing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fieldnames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_bytes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">52428800</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing.html#append_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing.append_timing" title="Link to this definition">#</a></dt>
+<dd><p>Append one timing row for <code class="docutils literal notranslate"><span class="pre">program</span></code>, safely with concurrent writers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>program</strong> (<em>str</em>) – Names the file, <code class="docutils literal notranslate"><span class="pre">&lt;program&gt;.csv</span></code>.</p></li>
+<li><p><strong>row</strong> (<em>dict</em>) – The row. Values are written as text; newlines in them are replaced by
+spaces, so a row is always one line.</p></li>
+<li><p><strong>fieldnames</strong> (<em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – The columns, in order, for a new file. Default: the row’s keys. A row is
+written with the file’s existing header; keys it does not have are
+dropped (with a warning), missing ones left empty.</p></li>
+<li><p><strong>directory</strong> (<em>str</em><em> or </em><em>Path</em><em>, </em><em>optional</em>) – Default <code class="docutils literal notranslate"><span class="pre">~/.seamm.d/timing</span></code>.</p></li>
+<li><p><strong>max_bytes</strong> (<em>int</em>) – Set the file aside, as <code class="docutils literal notranslate"><span class="pre">&lt;program&gt;-&lt;YYYYmmdd-HHMMSS&gt;[-n].csv</span></code>, when it is
+larger than this.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The file written.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pathlib.Path</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The lock is a POSIX <code class="docutils literal notranslate"><span class="pre">lockf</span></code> lock, which network file systems honour through
+their lock daemon; on a file system whose lock daemon has hung, the call
+waits for it.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing.read_timings">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing.</span></span><span class="sig-name descname"><span class="pre">read_timings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing.html#read_timings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing.read_timings" title="Link to this definition">#</a></dt>
+<dd><p>The rows of <code class="docutils literal notranslate"><span class="pre">program</span></code>’s timing file, as dicts (the current file only).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing.timing_path">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing.</span></span><span class="sig-name descname"><span class="pre">timing_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing.html#timing_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing.timing_path" title="Link to this definition">#</a></dt>
+<dd><p>The timing file of <code class="docutils literal notranslate"><span class="pre">program</span></code>.</p>
+</dd></dl>
+
+</section>
 <section id="module-seamm_exec">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-seamm_exec" title="Link to this heading">#</a></h2>
 <p>Classes to execute background codes for SEAMM</p>
@@ -2604,6 +2672,14 @@ runs somewhere other than <code class="docutils literal notranslate"><span class
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.WORKER_SCRIPT"><code class="docutils literal notranslate"><span class="pre">WORKER_SCRIPT</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.run_task"><code class="docutils literal notranslate"><span class="pre">run_task()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.timing">seamm_exec.timing module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing.DEFAULT_DIRECTORY"><code class="docutils literal notranslate"><span class="pre">DEFAULT_DIRECTORY</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing.MAX_BYTES"><code class="docutils literal notranslate"><span class="pre">MAX_BYTES</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing.append_timing"><code class="docutils literal notranslate"><span class="pre">append_timing()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing.read_timings"><code class="docutils literal notranslate"><span class="pre">read_timings()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing.timing_path"><code class="docutils literal notranslate"><span class="pre">timing_path()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec">Module contents</a><ul class="pst-show_toc_level nav section-nav flex-column">
