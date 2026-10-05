@@ -402,9 +402,9 @@ The rest (2026-10-05):
   TaskServer, and PBS job history.
 - **seamm_scheduler** docs: a TaskServer page.
 - **PBS (MolSSI10)**: ``job_history_enable = True``, ``job_history_duration =
-  168:00:00`` already; no jobs queued or running; 22 leftover staged directories
-  (``~/seamm_dev_remote_jobs``, 38 MB, 2026-08-09 to 2026-10-03) -- removal waits for
-  Paul's OK.
+  168:00:00`` already; no jobs queued or running; the 22 leftover staged directories
+  (``~/seamm_dev_remote_jobs``, 38 MB, 2026-08-09 to 2026-10-03) removed with Paul's OK
+  (2026-10-05). The devops change is PR devops#3.
 
 State left for the soak: SEAMM_DEV runs from ``venvs/phase7-B`` with ``[local] type =
 queue, scheduler = seamm`` (backup ``PaulVT.local.ini.bak-2026-10-05-phase7``) and
