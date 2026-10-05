@@ -4,8 +4,8 @@ Rollout plan: phases 6 and 7, the orca.ini fix and the timing records
 Status: PLAN, written 2026-10-05 at Paul's ask ("fully update all installations
 here, and on ChemAI, MolSSI10, ARC and the Mac mini"). To be executed once
 seamm-exec and orca-step 2026.10.5.2 and seamm-manager 2026.10.5.1 are on PyPI
-(all three released 2026-10-05: seamm_exec PR #46, orca_step PR #46,
-seamm_manager PR #32; xnn-step 2026.10.5 follows seamm-manager onto PyPI). The record of what was actually done goes below the plan, as
+(all four released 2026-10-05: seamm_exec PR #46, orca_step PR #46,
+seamm_manager PR #32, xnn_step PR #7). The record of what was actually done goes below the plan, as
 ``NOTES_rollout_2026-10-04.rst`` did for the last one.
 
 What this rollout carries
@@ -30,9 +30,11 @@ What this rollout carries
    needs PyTorch installs the build for the machine's NVIDIA driver and checks
    it (#31); ``update`` runs no installer for a refused package (#29); a service
    stopped on purpose stays stopped (#26).
-5. **xnn-step 2026.10.5**, once released: its installer uses that torch path,
-   and ``torch`` is out of ``seamm-xnn.yml``. This is what lets the xnn-step hold
-   on the clusters be lifted.
+5. **xnn-step 2026.10.5**: its installer uses that torch path, and ``torch`` is
+   out of ``seamm-xnn.yml``. This is what lets the xnn-step hold on the clusters
+   be lifted. It requires Python 3.12 or later (seamm-manager 2026.10.5.1 has no
+   3.11 release); every seamm-manager venv is 3.12, but check each site's
+   ``<root>/venv/bin/python --version`` before its update.
 
 Versions
 --------
@@ -164,7 +166,7 @@ execution and fill in the table).
      - 2026.10.3 (HOLD, below)
      - (not installed)
    * - xnn-step
-     - 2026.10.5 (when released)
+     - 2026.10.5
      - 2026.9.28
      - (not installed)
      - 2026.9.28
@@ -266,6 +268,7 @@ Before:
   and which are hand-built.
 - No job uses the venv; services stopped between jobs where there are services.
 - Record ``readlink <root>/venv`` (the rollback) and the versions (the table).
+- ``<root>/venv/bin/python --version`` is 3.12 or later (xnn-step 2026.10.5 needs it).
 
 Do:
 
