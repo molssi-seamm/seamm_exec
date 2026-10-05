@@ -11,7 +11,19 @@ file is set aside when it grows past a size instead of growing without bound
 (vasp-step#18). Rows should hold numbers that characterize the calculation
 (atoms, electrons, basis or cutoff, k-points, cores, node, wall time), not its
 input files.
+
+A code step writes its row with :func:`record_task_timing` once it has run a
+:class:`seamm_exec.Task` and parsed the output: the common columns (the machine
+class, the task's resources, the wall time from the task manifest, the outcome)
+come from here, the descriptors of the calculation from the step. The design,
+the model fitted to the rows and the descriptors each code records are in
+``docs/developer_guide/campaigns/2026-10-05``.
 """
+
+from datetime import datetime, timezone
+import platform
+import socket
+import subprocess
 
 import csv
 import io
@@ -26,6 +38,31 @@ logger = logging.getLogger("seamm-exec")
 DEFAULT_DIRECTORY = Path("~/.seamm.d/timing")
 #: A file larger than this is set aside (renamed with the date) and begun again
 MAX_BYTES = 50 * 1024 * 1024
+#: The version of the record written by :func:`record_task_timing`
+SCHEMA = 1
+#: The common columns of a record, before the step's descriptors
+COMMON_COLUMNS = (
+    "schema",
+    "date",
+    "machine",
+    "cluster",
+    "partition",
+    "cpu_model",
+    "cpu_cores",
+    "gpu_model",
+    "host",
+    "program",
+    "ntasks",
+    "cpus_per_task",
+    "mem_per_cpu",
+    "ngpus",
+    "wall",
+    "estimated",
+    "state",
+    "timed_out",
+    "attempts",
+    "in_situ",
+)
 
 
 def timing_path(program, directory=None):
@@ -46,8 +83,10 @@ def append_timing(program, row, fieldnames=None, directory=None, max_bytes=MAX_B
         spaces, so a row is always one line.
     fieldnames : [str], optional
         The columns, in order, for a new file. Default: the row's keys. A row is
-        written with the file's existing header; keys it does not have are
-        dropped (with a warning), missing ones left empty.
+        written with the file's existing header, missing columns left empty. A
+        row with columns the header lacks sets the file aside and begins a new
+        one whose header is the old columns followed by the new, so a change of
+        schema never loses columns and never mixes two schemas in one file.
     directory : str or Path, optional
         Default ``~/.seamm.d/timing``.
     max_bytes : int
@@ -99,12 +138,15 @@ def append_timing(program, row, fieldnames=None, directory=None, max_bytes=MAX_B
                     fd.seek(0)
                     header = next(csv.reader([fd.readline()]), fieldnames)
                     fd.seek(0, os.SEEK_END)
-                extra = set(clean) - set(header)
+                extra = [k for k in clean if k not in header]
                 if extra:
-                    logger.warning(
-                        f"Timing file {path} has no columns {sorted(extra)}; not "
-                        "written."
+                    aside = _aside_name(path)
+                    os.replace(path, aside)
+                    logger.info(
+                        f"Set the timing file aside as {aside}: new columns {extra}"
                     )
+                    fieldnames = list(header) + extra
+                    continue  # and write to a new file with the wider header
                 text = io.StringIO()
                 csv.DictWriter(text, fieldnames=header, extrasaction="ignore").writerow(
                     clean
@@ -129,13 +171,194 @@ def _aside_name(path):
     return aside
 
 
-def read_timings(program, directory=None):
-    """The rows of ``program``'s timing file, as dicts (the current file only)."""
+def read_timings(program, directory=None, all_files=False):
+    """The rows of ``program``'s timing file, as dicts.
+
+    ``all_files=True`` also reads the files set aside
+    (``<program>-<stamp>.csv``), oldest first, as a fit does; their columns may
+    differ, so a row only has the keys of its own file.
+    """
     path = timing_path(program, directory)
-    if not path.exists():
-        return []
-    with open(path, newline="") as fd:
-        return list(csv.DictReader(fd))
+    paths = []
+    if all_files:
+        paths = sorted(
+            p
+            for p in path.parent.glob(f"{path.stem}-*{path.suffix}")
+            if p.stem[len(path.stem) + 1 :].replace("-", "").isdigit()
+        )
+    if path.exists():
+        paths.append(path)
+    rows = []
+    for p in paths:
+        with open(p, newline="") as fd:
+            rows.extend(csv.DictReader(fd))
+    return rows
+
+
+# ----------------------------------------------------------------------
+# The record of a task
+# ----------------------------------------------------------------------
+_machine = None
+
+
+def machine_class(gpu_model=None):
+    """The class of machine this process runs on: the columns that separate
+    machines of different speed in the timing records.
+
+    Returns
+    -------
+    dict
+        ``machine`` -- the key, ``cluster:partition:cpu_model`` with empty parts
+        omitted (and ``:gpu_model`` appended when given); plus ``cluster``,
+        ``partition``, ``cpu_model``, ``cpu_cores`` (physical cores of the node),
+        ``gpu_model`` and ``host``.
+
+    The cluster and partition come from the scheduler's environment; a laptop has
+    neither, and its key is just the CPU model. The result is cached per process
+    (except for the GPU, which depends on the task).
+    """
+    global _machine
+    if _machine is None:
+        env = os.environ
+        cluster = env.get("SLURM_CLUSTER_NAME") or env.get("PBS_SERVER") or ""
+        partition = env.get("SLURM_JOB_PARTITION") or env.get("PBS_QUEUE") or ""
+        cores = None
+        try:
+            import psutil
+
+            cores = psutil.cpu_count(logical=False)
+        except Exception:
+            pass
+        _machine = {
+            "cluster": cluster.split(".")[0] if cluster else "",
+            "partition": partition,
+            "cpu_model": _cpu_model(),
+            "cpu_cores": cores or os.cpu_count() or "",
+            "host": socket.gethostname(),
+        }
+    result = dict(_machine)
+    result["gpu_model"] = gpu_model or ""
+    parts = [result["cluster"], result["partition"], result["cpu_model"]]
+    if gpu_model:
+        parts.append(gpu_model)
+    result["machine"] = ":".join(p for p in parts if p)
+    return result
+
+
+def _cpu_model():
+    """The CPU's model name, e.g. 'AMD EPYC 7702 64-Core Processor' or
+    'Apple M3 Pro'."""
+    try:
+        if platform.system() == "Darwin":
+            out = subprocess.run(
+                ["sysctl", "-n", "machdep.cpu.brand_string"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            if out.returncode == 0 and out.stdout.strip():
+                return " ".join(out.stdout.split())
+        elif Path("/proc/cpuinfo").exists():
+            for line in Path("/proc/cpuinfo").read_text().splitlines():
+                if line.lower().startswith(("model name", "hardware", "cpu model")):
+                    return " ".join(line.split(":", 1)[1].split())
+    except Exception as e:
+        logger.debug(f"Could not get the CPU model: {e}")
+    return " ".join(x for x in (platform.machine(), platform.processor()) if x)
+
+
+def task_wall_seconds(result):
+    """The wall time of a task's last attempt, from its history, or None."""
+    history = getattr(result, "history", None) or []
+    for attempt in reversed(history):
+        started = attempt.get("started")
+        finished = attempt.get("finished")
+        if started is not None and finished is not None:
+            return float(finished) - float(started)
+    return None
+
+
+def record_task_timing(task, result, descriptors=None, directory=None):
+    """Append the timing record of a task that has run.
+
+    Parameters
+    ----------
+    task : seamm_exec.Task
+        The task as it was run: its program, resources and estimate.
+    result : seamm_exec.TaskResult
+        Its result: the wall time comes from the attempts' history, the outcome
+        from the state. A restored result (an earlier run's, found again) is not
+        recorded, and the function returns None.
+    descriptors : dict, optional
+        The step's description of the calculation: numbers and short categorical
+        values (see the campaign document for each code's), written after the
+        common columns. Keys that clash with a common column are ignored.
+    directory : str or Path, optional
+        The timing directory; default ``~/.seamm.d/timing``.
+
+    Returns
+    -------
+    pathlib.Path or None
+        The file written, or None if nothing was recorded.
+
+    Never raises: a problem writing a timing record is logged, since it must not
+    stop the calculation that produced it.
+    """
+    try:
+        if getattr(result, "restored", False):
+            return None
+        resources = getattr(task, "resources", None)
+        ngpus = getattr(resources, "ngpus", 0) or 0
+        gpu = os.environ.get("SLURM_JOB_GPUS") or os.environ.get("CUDA_VISIBLE_DEVICES")
+        machine = machine_class(
+            gpu_model=(descriptors or {}).get("gpu_model")
+            or ("gpu" if ngpus and gpu else None)
+        )
+        wall = task_wall_seconds(result)
+        row = {
+            "schema": SCHEMA,
+            "date": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "machine": machine["machine"],
+            "cluster": machine["cluster"],
+            "partition": machine["partition"],
+            "cpu_model": machine["cpu_model"],
+            "cpu_cores": machine["cpu_cores"],
+            "gpu_model": machine["gpu_model"],
+            "host": machine["host"],
+            "program": getattr(task, "program", ""),
+            "ntasks": getattr(resources, "ntasks", None),
+            "cpus_per_task": getattr(resources, "cpus_per_task", None),
+            "mem_per_cpu": getattr(resources, "mem_per_cpu", None),
+            "ngpus": ngpus,
+            "wall": None if wall is None else f"{wall:.3f}",
+            "estimated": _number(getattr(task, "estimated_seconds", None)),
+            "state": getattr(result, "state", ""),
+            "timed_out": int(bool(getattr(result, "timed_out", False))),
+            "attempts": getattr(result, "attempts", None),
+            "in_situ": _flag(getattr(result, "in_situ", None)),
+        }
+        for key, value in (descriptors or {}).items():
+            if key not in row:
+                row[key] = _number(value)
+        return append_timing(row["program"], row, directory=directory)
+    except Exception as e:
+        logger.warning(
+            f"Could not record the timing of task {getattr(task, 'key', '?')}: {e}"
+        )
+        return None
+
+
+def _number(value):
+    """Floats to a short text; bools to 0/1; anything else as is."""
+    if isinstance(value, bool):
+        return int(value)
+    if isinstance(value, float):
+        return f"{value:.6g}"
+    return value
+
+
+def _flag(value):
+    return "" if value is None else int(bool(value))
 
 
 def _lock(fd):

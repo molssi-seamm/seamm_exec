@@ -1,6 +1,20 @@
 =======
 History
 =======
+2026.10.6 -- Timing records that a cost model can be fitted to
+    * ``seamm_exec.timing.record_task_timing(task, result, descriptors)``: one call
+      by which a code step writes the timing record of a run it has made through
+      the task layer. The common columns -- the machine class, the task's
+      resources, the wall time from the task manifest, the estimate it was given,
+      the outcome -- come from here; the step adds the numbers that describe the
+      calculation. ``machine_class()`` keys a machine by cluster, partition and CPU
+      model rather than by hostname, so rows from the nodes of one partition pool
+      and those of different clusters separate.
+    * A timing row with new columns sets the file aside and begins a new one with
+      the wider header, rather than dropping the columns; ``read_timings(...,
+      all_files=True)`` reads the files set aside too.
+    * The design of the records, the model to be fitted to them and the per-code
+      descriptors: ``docs/developer_guide/campaigns/2026-10-05``.
 2026.10.5.1 -- Calculations on the TaskServer; retries within the queue's limit
     * A calculation run by the TaskServer (seamm_scheduler 2026.10.5) sees its own
       cores and memory.
