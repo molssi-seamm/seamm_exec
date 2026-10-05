@@ -24,7 +24,7 @@ Summary
 3   Packaging: sdists that cannot be built (8 packages)         S       decided
 4   Dashboard: child iterations as datastore rows               M-L     defer
 5   devops: a summary line when the docs deploy fails           S       decided
-6   mopac_step: a smoke test of the run path                    S       do
+6   Run-path tests of the code steps (mopac, ORCA first)        S-M     decided
 7   Legacy structure-handling wording (strain_step)             S       do
 8   seamm_exec test flakiness: the timing-sensitive tests       S       do
 9   PBS site: job history and ``max_resubmits``                 S       done;
@@ -169,22 +169,63 @@ on the deploy step, and a step that runs on failure, writing a ``::warning::`` a
 ``$GITHUB_STEP_SUMMARY`` line) into the next devops change, and the same into
 seamm_webui's own ``Release.yaml``.
 
-6. mopac_step: a smoke test of the run path
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+6. Run-path tests of the code steps
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-*What.* A test that drives ``MOPAC.run`` end to end, with a stub or a tiny real MOPAC.
+*What.* An end-to-end test of each code step's run path:
 
-*Why deferred.* Found in the phase 7 review fixes. Lint caught a leftover ``success``
-variable in ``mopac.py`` that would have crashed every MOPAC run, and no unit test
-exercised that path. It was checked with a real flowchart at the time.
+- writing the input;
+- finding the program through ``<code>.ini``;
+- running the task;
+- reading and analyzing the output;
+- reporting the results.
 
-*Evidence.* mopac_step has 46 unit tests, none of them through ``run()``.
+No code step had one. In phase 7, lint alone caught a leftover ``success``
+variable in ``MOPAC.run()`` that would have crashed every MOPAC run.
 
-*Effort.* S: a fake ``mopac`` executable writing a minimal ``.out``/``.aux``, or
-``pytest.importorskip`` on a real MOPAC.
+*Decision and plan (Paul, 2026-10-05).*
 
-*Recommendation.* Do it. The same gap probably exists in other code steps; check
-orca_step and lammps_step when they are next touched.
+- **Two tests per code.** A *fake* program replays a real run's recorded output, so
+  the whole path runs in CI. The *real* program is found as SEAMM finds it
+  (``$<PROGRAM>_EXE``, the PATH, the installation's ``<code>.ini``), and its test
+  is skipped where the code is not installed.
+- **A shared harness, ``seamm_exec.testing``.** ``run_spec`` builds a flowchart
+  from a spec and runs it with ``run_flowchart``, with its own ``HOME`` and
+  ``SEAMM_ROOT``, so the user's timing files and ini files are never touched, plus
+  a tiny ``Water`` step. ``fake_program``, ``find_program`` and ``table_value``
+  complete it. Each code's test is then about 20 lines plus its recorded output.
+- **Done (2026-10-05):**
+
+  - mopac_step: ``tests/test_run_path.py`` (fe3c248, on dev). It was checked to
+    fail on the old ``success`` bug, and it moves to the harness once seamm_exec
+    is released.
+  - The harness, in seamm_exec 6a8914a.
+  - The ORCA test (B3LYP/def2-SVP water, 1 core). It found two problems:
+
+    - **A sub-step's tasks lost the SEAMM root** (fixed, seamm_exec afb3e6d).
+      ``TaskSet`` and ``Evaluator`` read ``node.global_options``, which is empty on
+      a sub-step, so ORCA's Energy, Optimization and BSSE tasks never read
+      ``<root>/orca.ini`` and took ``orca`` from the PATH. ORCA must be started by
+      its full path. On ChemAI and MolSSI10, ``/usr/bin/orca`` is the Debian screen
+      reader, and TinkerCliffs has no ``orca`` on the PATH. No ChemAI job since the
+      2026-10-04 rollout used the ORCA step, so production had not hit it yet.
+      The orca.ini files: ChemAI and TinkerCliffs name the full ORCA 6.1.1 path and
+      the OpenMPI library path; the Mac's is the same ORCA as its PATH; MolSSI10's
+      ``[local]`` has no ``code``.
+    - **ORCA 6.1.1 aborts water on 11 processes** (the grid error "the number of
+      points read from the grid does not match the expectation"). orca_step gives
+      even a 3-atom molecule every core it sees. A cap for small molecules is a
+      separate decision.
+
+- **Next, each when its package is next released:** Gaussian (g09 on the Mac), then
+  VASP. VASP is not on the Mac; it is on ChemAI, MolSSI10 and ARC, so its real-code
+  test runs there.
+- **MDI codes (LAMMPS, xnn) separately.** They need a fake MDI engine, a design
+  question of its own.
+- **Rarely used codes** (dftbplus, packmol, torchani, fhi_aims, atomic_charges,
+  psi4, xtb): only when someone works on them.
+- **Release order:** seamm_exec (harness and root fix, pin ``seamm-util>=2026.9.27.1``)
+  first, then orca_step and mopac_step pinned to it.
 
 7. Legacy structure-handling wording (strain_step)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
