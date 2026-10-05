@@ -381,3 +381,33 @@ Validation:
   adopted the iteration tasks, identical results; the runner of an iteration task of
   job 4019 killed -- the task lost and its job stopped, the iteration rerun and resumed,
   identical results.
+
+The rest (2026-10-05):
+
+- **seamm_manager** (#26-#29 and the TaskServer's capacity): a service recreated by an
+  environment change is no longer started when it was stopped (``create_service(...,
+  start=...)``), and updates restart the JobServer and web UI only if they ran
+  (``restart_if_running``); ``environment recreate --latest``; an installer leaves
+  alone a conda environment named in its .ini that SEAMM did not make (no
+  ``seamm-*.sha256`` record and not SEAMM's name -- note: the TinkerCliffs
+  ``seamm-lammps-xnndev`` got such records in the 2026-10-04 incident; remove them by
+  hand before relying on this); ``update`` runs no installer for a refused package;
+  ``install`` writes ``<root>/taskserver.ini`` if missing.
+- **devops** (local branch ``release-docs-nonblocking``, not pushed): the Release
+  workflow's docs deploy is ``continue-on-error``. The collision was with the
+  package's own Docs workflow (``on: push``, its ``buildDocs.sh`` pushing
+  ``gh-pages``) for the merge to main and ``make update``'s push to dev; a concurrency
+  group would not do, since GitHub cancels all but one *pending* job in a group.
+- **seamm_jobserver**: user guide -- ``max_resubmits`` for SLURM, PBS and the
+  TaskServer, and PBS job history.
+- **seamm_scheduler** docs: a TaskServer page.
+- **PBS (MolSSI10)**: ``job_history_enable = True``, ``job_history_duration =
+  168:00:00`` already; no jobs queued or running; 22 leftover staged directories
+  (``~/seamm_dev_remote_jobs``, 38 MB, 2026-08-09 to 2026-10-03) -- removal waits for
+  Paul's OK.
+
+State left for the soak: SEAMM_DEV runs from ``venvs/phase7-B`` with ``[local] type =
+queue, scheduler = seamm`` (backup ``PaulVT.local.ini.bak-2026-10-05-phase7``) and
+``~/SEAMM_DEV/taskserver.ini`` (4 cores, 4 GB); macmini has ``~/phase7_test`` (a
+private venv and a queue); ``~/SEAMM_DEV/venvs/phase7-webui``. SEAMM_DEV jobs
+4015-4019 are the validation record.
