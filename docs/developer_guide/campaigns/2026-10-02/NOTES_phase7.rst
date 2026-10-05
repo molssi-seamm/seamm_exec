@@ -427,3 +427,41 @@ Answers from the design session (2026-10-05, to the three questions with the cod
 3. No TaskServer service: the runners check the floor while anything runs, and when
    nothing runs there is nothing to protect; memory eaten by *other* processes while
    TaskServer jobs run is covered by the same check.
+
+Code review (design session, 2026-10-05) and fixes
+--------------------------------------------------
+
+The review found the queue's core sound (atomic claim, migration, lost detection,
+cancel, staging) and three blocking defects, all fixed (seamm_scheduler 95d86ee):
+
+1. **The 30-minute reservation could deadlock the queue**: the oldest queued job could
+   be an evaluator, whose ``break`` then held up every task -- including those of the
+   running evaluators, which therefore never finished. Now only a task reserves, and
+   only against later tasks; a task larger than a lowered capacity fails instead of
+   reserving for ever. Tested (four evaluators fill a 2 GB queue, a fifth waits an
+   hour, the running ones' task still starts).
+2. **A slow runner could be marked lost while starting its script** (check's SELECT,
+   then finish): now one guarded ``UPDATE ... AND pid IS NULL``.
+3. **A job inherited the environment of whoever made the scheduling pass** (another
+   job's ``SEAMM_CE``, threads, ids): a job's script now starts from a minimal
+   environment, as ``export=NONE``; the local transport drops ``SEAMM_TASKSERVER_`` and
+   ``SEAMM_CE``. Tested.
+
+Also: the machine-wide floor waits its grace and stops one job per low-memory episode
+(state in ``meta``; read-only while memory is fine); a job's processes include
+descendants with sessions of their own (a pool's codes) for stopping and for memory;
+the runner always records its job's end (try/finally); over ssh the queue needs
+``remote_python``; the evaluator charge is at most a quarter of a small queue's
+memory. The timing helper's rotation race (a writer waiting on a set-aside file
+rotating the new one onto the same name) is fixed with an inode check and unique
+names (seamm_exec d779a10). mopac_step: ``reuse_previous_run`` with a test, and
+``_conda_python`` takes a path or asks conda (8a4d8d8) -- checked with a real MOPAC
+flowchart after lint caught a ``success`` variable left behind, which no unit test
+exercises. Web UI (0291f63): nested parallel loops find their frame in the
+iteration's own checkpoint; ``/files?depth`` prunes its walk and rejects ``depth <
+1``.
+
+Kept, with reasons: the queue's root stays machine-wide (the default installation's
+root unless ``remote_seamm_root``), so that installations on one machine share its
+capacity rather than each using all of it; documented on the TaskServer page.
+Pins at release preparation: seamm_exec and the web UI on the new seamm_scheduler.
