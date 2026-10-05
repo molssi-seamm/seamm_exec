@@ -47,17 +47,23 @@ def append_timing(program, row, fieldnames=None, directory=None, max_bytes=MAX_B
     fieldnames : [str], optional
         The columns, in order, for a new file. Default: the row's keys. A row is
         written with the file's existing header; keys it does not have are
-        dropped (with a warning once per call), missing ones left empty.
+        dropped (with a warning), missing ones left empty.
     directory : str or Path, optional
         Default ``~/.seamm.d/timing``.
     max_bytes : int
-        Set the file aside, as ``<program>-<YYYYmmdd-HHMMSS>.csv``, when it is
+        Set the file aside, as ``<program>-<YYYYmmdd-HHMMSS>[-n].csv``, when it is
         larger than this.
 
     Returns
     -------
     pathlib.Path
         The file written.
+
+    Notes
+    -----
+    The lock is a POSIX ``lockf`` lock, which network file systems honour through
+    their lock daemon; on a file system whose lock daemon has hung, the call
+    waits for it.
     """
     path = timing_path(program, directory)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -66,43 +72,61 @@ def append_timing(program, row, fieldnames=None, directory=None, max_bytes=MAX_B
         k: ("" if v is None else str(v).replace("\r", " ").replace("\n", " "))
         for k, v in row.items()
     }
-    with open(path, "a+", newline="") as fd:
-        _lock(fd)
-        try:
-            fd.seek(0, os.SEEK_END)
-            if fd.tell() > max_bytes:
-                stamp = time.strftime("%Y%m%d-%H%M%S")
-                aside = path.with_name(f"{path.stem}-{stamp}{path.suffix}")
-                os.replace(path, aside)
-                logger.info(f"Set the timing file aside as {aside}")
-                _unlock(fd)
-                fd.close()
-                return append_timing(program, row, fieldnames, directory, max_bytes)
-            if fd.tell() == 0:
-                header = fieldnames
-                text = io.StringIO()
-                csv.writer(text).writerow(header)
-                fd.write(text.getvalue())
-            else:
-                fd.seek(0)
-                header = next(csv.reader([fd.readline()]), fieldnames)
+    for _ in range(10):
+        with open(path, "a+", newline="") as fd:
+            _lock(fd)
+            try:
+                # Another writer may have set the file aside while this one
+                # waited for the lock: then this is the old file, not the file
+                # at the path. Start again with the new one.
+                try:
+                    if os.fstat(fd.fileno()).st_ino != os.stat(path).st_ino:
+                        continue
+                except FileNotFoundError:
+                    continue
                 fd.seek(0, os.SEEK_END)
-            extra = set(clean) - set(header)
-            if extra:
-                logger.warning(
-                    f"Timing file {path} has no columns {sorted(extra)}; not written."
+                if fd.tell() > max_bytes:
+                    aside = _aside_name(path)
+                    os.replace(path, aside)
+                    logger.info(f"Set the timing file aside as {aside}")
+                    continue  # and write to a new file
+                if fd.tell() == 0:
+                    header = fieldnames
+                    text = io.StringIO()
+                    csv.writer(text).writerow(header)
+                    fd.write(text.getvalue())
+                else:
+                    fd.seek(0)
+                    header = next(csv.reader([fd.readline()]), fieldnames)
+                    fd.seek(0, os.SEEK_END)
+                extra = set(clean) - set(header)
+                if extra:
+                    logger.warning(
+                        f"Timing file {path} has no columns {sorted(extra)}; not "
+                        "written."
+                    )
+                text = io.StringIO()
+                csv.DictWriter(text, fieldnames=header, extrasaction="ignore").writerow(
+                    clean
                 )
-            text = io.StringIO()
-            csv.DictWriter(text, fieldnames=header, extrasaction="ignore").writerow(
-                clean
-            )
-            fd.write(text.getvalue())  # one write: one line
-            fd.flush()
-            os.fsync(fd.fileno())
-        finally:
-            if not fd.closed:
+                fd.write(text.getvalue())  # one write: one line
+                fd.flush()
+                os.fsync(fd.fileno())
+                return path
+            finally:
                 _unlock(fd)
-    return path
+    raise RuntimeError(f"Could not write to the timing file {path}")
+
+
+def _aside_name(path):
+    """A name not yet used for setting ``path`` aside (it is held locked)."""
+    stamp = time.strftime("%Y%m%d-%H%M%S")
+    aside = path.with_name(f"{path.stem}-{stamp}{path.suffix}")
+    n = 1
+    while aside.exists():
+        aside = path.with_name(f"{path.stem}-{stamp}-{n}{path.suffix}")
+        n += 1
+    return aside
 
 
 def read_timings(program, directory=None):

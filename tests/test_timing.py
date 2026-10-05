@@ -58,3 +58,23 @@ def test_concurrent_writers(tmp_path):
     for w in range(8):
         mine = [int(r["i"]) for r in rows if r["writer"] == str(w)]
         assert mine == list(range(100))
+
+
+def test_concurrent_rotation_keeps_every_row(tmp_path):
+    """Writers racing at rotation: no set-aside file is overwritten, no row lost."""
+    code = (
+        "import sys; from seamm_exec.timing import append_timing\n"
+        "for i in range(25):\n"
+        "    append_timing('code', {'writer': sys.argv[1], 'i': i, 'pad': 'z' * 100},"
+        f" directory={str(tmp_path)!r}, max_bytes=1000)\n"
+    )
+    procs = [subprocess.Popen([sys.executable, "-c", code, str(w)]) for w in range(4)]
+    for p in procs:
+        assert p.wait(timeout=120) == 0
+    rows = []
+    for path in sorted(tmp_path.glob("code*.csv")):
+        rows += read_timings(path.stem, directory=tmp_path)
+    assert len(rows) == 100
+    for w in range(4):
+        mine = sorted(int(r["i"]) for r in rows if r["writer"] == str(w))
+        assert mine == list(range(25))
