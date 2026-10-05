@@ -411,3 +411,19 @@ queue, scheduler = seamm`` (backup ``PaulVT.local.ini.bak-2026-10-05-phase7``) a
 ``~/SEAMM_DEV/taskserver.ini`` (4 cores, 4 GB); macmini has ``~/phase7_test`` (a
 private venv and a queue); ``~/SEAMM_DEV/venvs/phase7-webui``. SEAMM_DEV jobs
 4015-4019 are the validation record.
+
+Answers from the design session (2026-10-05, to the three questions with the code):
+
+1. *The evaluator rule* (tasks never count evaluators) is right; its failure mode is
+   recorded here: N evaluators can use more than their 1 GB charge each (one holding
+   a large job database or a parallel loop's snapshots), and the machine-wide floor
+   then stops the *newest* job, which may be a task rather than the evaluator that
+   caused it. The stopped job's reason says why ("the machine was low on memory ...
+   the newest job was stopped"). The real protection is the JobServer's
+   ``max_concurrent_jobs``, which caps the evaluators running at once.
+2. ``/files`` without a default depth is fine (the browser needs the full tree); the
+   walk for ``/tasks`` stays bounded, and ``depth`` is documented for API users (the
+   route's docstring, in the API's OpenAPI page).
+3. No TaskServer service: the runners check the floor while anything runs, and when
+   nothing runs there is nothing to protect; memory eaten by *other* processes while
+   TaskServer jobs run is covered by the same check.
