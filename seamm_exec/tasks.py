@@ -333,6 +333,33 @@ def _now():
     return time.time()
 
 
+def node_root(node):
+    """The SEAMM root for a step's tasks, holding the ``<program>.ini`` files.
+
+    The first ``root`` in the global options of ``node`` or its parents -- a
+    sub-step's own (ORCA's Energy, ...) are empty, its step's hold them -- else
+    the run's root (``seamm_util.current_root``: the ``--root`` given, else
+    ``SEAMM_ROOT``, else the installation's). Without it a task would not read
+    ``<root>/<program>.ini`` and would fall back to the program on the PATH.
+    """
+    seen = set()
+    while node is not None and id(node) not in seen:
+        seen.add(id(node))
+        try:
+            root = node.global_options.get("root")
+        except Exception:
+            root = None
+        if root:
+            return root
+        node = getattr(node, "parent", None)
+    try:
+        from seamm_util import current_root
+
+        return str(current_root())
+    except Exception:
+        return None
+
+
 class TaskSet:
     """What a step uses: add tasks, then iterate over their results.
 
@@ -417,10 +444,7 @@ class TaskSet:
             executor = node.flowchart.executor
         self.executor = executor
         if root is None and node is not None:
-            try:
-                root = node.global_options.get("root")
-            except Exception:
-                root = None
+            root = node_root(node)
         self.root = root
         self.archive = archive
         self.max_attempts = max_attempts

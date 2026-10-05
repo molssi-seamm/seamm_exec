@@ -32,7 +32,7 @@ dependencies = [
    "seamm>=2026.10.5",
    "seamm-datastore",
    "seamm-scheduler>=2026.10.5",
-   "seamm-util",
+   "seamm-util>=2026.9.27.1",
 ]
 
 # Update the urls once the hosting is set up.

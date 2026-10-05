@@ -291,10 +291,9 @@ class Evaluator:
                 job_directory = node.flowchart.root_directory
             except Exception:
                 job_directory = None
-            try:
-                root = node.global_options.get("root")
-            except Exception:
-                root = None
+            from .tasks import node_root
+
+            root = node_root(node) if node is not None else None
             target = find_target(job_directory=job_directory, root=root)
         self.target = target
         self.path = path or choose_path(model_chemistry, self.provider, target)
