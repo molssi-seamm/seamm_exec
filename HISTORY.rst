@@ -1,6 +1,17 @@
 =======
 History
 =======
+2026.10.5.1 -- Calculations on the TaskServer; retries within the queue's limit
+    * A calculation run by the TaskServer (seamm_scheduler 2026.10.5) sees its own
+      cores and memory.
+    * A task that ran out of time is retried with more time, but never more than the
+      queue's longest walltime (``max_walltime``).
+    * The copies of a bundle's directories left on a cluster without a shared
+      filesystem are removed once they have been brought back.
+    * ``seamm_exec.timing``: plug-ins can append their timing records to
+      ``~/.seamm.d/timing/<program>.csv`` safely when many runs write at once, and the
+      files are set aside when large instead of growing without bound.
+    * Requires seamm-scheduler 2026.10.5.
 2026.10.5 -- The iterations of a parallel loop as tasks
     * Each iteration of a loop run in parallel (loop_step 2026.10.5) is a task of the
       program ``seamm``, whose resolver runs ``run_flowchart`` on the machine that
