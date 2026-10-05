@@ -24,12 +24,12 @@ dependencies = [
    "docker",    
    "fasteners",
    "humanize",
-   "molsystem>=2026.10.4",
+   "molsystem>=2026.10.5",
    "psutil",
    "py-cpuinfo",
    "pyuca",
    "reference-handler",
-   "seamm>=2026.10.4",
+   "seamm>=2026.10.5",
    "seamm-datastore",
    "seamm-scheduler>=2026.10.4",
    "seamm-util",
@@ -49,6 +49,9 @@ test = [
 [project.scripts]
 run_flowchart = "seamm_exec:run"
 run_from_jobserver = "seamm_exec:run_from_jobserver"
+
+[project.entry-points."org.molssi.seamm.exec.resolvers"]
+seamm = "seamm_exec.iteration:resolve"
 
 [tool.setuptools]
 # This subkey is a beta stage development and keys may change in the future, see https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html for more details

@@ -1,6 +1,18 @@
 =======
 History
 =======
+2026.10.5 -- The iterations of a parallel loop as tasks
+    * Each iteration of a loop run in parallel (loop_step 2026.10.5) is a task of the
+      program ``seamm``, whose resolver runs ``run_flowchart`` on the machine that
+      runs it, within the iteration's share of cores and memory (``SEAMM_CE``). The
+      iteration's evaluator resumes the job's flowchart into just that iteration,
+      never from the top, and keeps its files in the iteration's ``_evaluator``
+      directory; ``seamm_exec.iteration`` merges what it did back: the database, the
+      job-level files (appended parts in order, other files as the last iteration
+      left them) and the citations, all safe to redo after an interruption.
+    * ``Task.keep`` leaves files in place when a task run in its directory finishes;
+      a ``TaskSet`` finds the job's ``target.json`` in the job directory.
+    * Requires molsystem and seamm 2026.10.5.
 2026.10.4.1 -- Resume a stopped flowchart; task retries
     * ``run_flowchart --resume`` (or ``SEAMM_RESUME=1``, which the JobServer sets
       when it resubmits a lost job) continues a job in its own directory from its

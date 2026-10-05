@@ -126,6 +126,10 @@ class Task:
         an error termination): each file must contain its text (or all of its
         texts), or the task failed, gets no ``DONE`` and is tried again on the
         next run.
+    keep : [str]
+        Paths in the task's directory that the cleanup of a task run in place
+        leaves as they are, without reading them as ``return_files`` are;
+        ``"."`` keeps everything (an iteration of a parallel loop).
     """
 
     key: str
@@ -144,6 +148,7 @@ class Task:
     config: dict | None = None
     fingerprint: str | None = None
     success_text: dict | None = None
+    keep: list = field(default_factory=list)
 
     def digest(self):
         """The fingerprint of the inputs, used to detect a changed task."""
@@ -426,7 +431,13 @@ class TaskSet:
         self.job_directory = None
         if node is not None:
             try:
-                self.job_directory = Path(node.flowchart.root_directory)
+                # Its own for an iteration of a parallel loop, where the
+                # parent leaves target.json for "separate" placement only
+                flowchart = node.flowchart
+                self.job_directory = Path(
+                    getattr(flowchart, "job_directory", None)
+                    or flowchart.root_directory
+                )
             except Exception:
                 self.job_directory = None
         self.target_section = None
