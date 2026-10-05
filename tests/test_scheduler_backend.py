@@ -1345,22 +1345,30 @@ def test_bundles_through_the_taskserver(job, tmp_path):
     for i in range(5):
         words = results[f"t{i}"].files["out.txt"].split()
         assert words == [f"t{i}", "1"]  # the task's share of the bundle's cores
-    # The queue ran three bundles, as TaskServer jobs
-    rows = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "seamm_scheduler.taskserver",
-            "--root",
-            str(queue_root),
-            "status",
-            "--json",
-        ],
-        capture_output=True,
-        text=True,
-    ).stdout
-    jobs = json.loads(rows)
-    assert len(jobs) == 3 and all(j["state"] == "completed" for j in jobs)
+    # The queue ran three bundles, as TaskServer jobs. A bundle's results are
+    # back a moment before its runner records the job as completed, so wait for
+    # the queue to catch up.
+    deadline = time.monotonic() + 30
+    while True:
+        rows = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "seamm_scheduler.taskserver",
+                "--root",
+                str(queue_root),
+                "status",
+                "--json",
+            ],
+            capture_output=True,
+            text=True,
+        ).stdout
+        jobs = json.loads(rows)
+        done = all(j["state"] == "completed" for j in jobs)
+        if done or time.monotonic() > deadline:
+            break
+        time.sleep(0.5)
+    assert len(jobs) == 3 and done, jobs
     # A rerun restores everything without submitting
     ts = TaskSet(directory=job / "step", backend=make_backend(queue, job, root))
     for i in range(5):
