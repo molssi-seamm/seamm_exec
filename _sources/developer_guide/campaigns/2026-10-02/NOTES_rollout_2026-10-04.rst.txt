@@ -179,3 +179,70 @@ clean and ``MBE`` is registered under ``org.molssi.seamm``. mbe-step has no
 installer (no code environment). No service restart: each job imports the
 plug-ins afresh. Until the two are in the package list, a later
 ``update --all`` keeps them but ``environment recreate`` would drop them.
+
+Phase 5 rollout (2026-10-04, afternoon)
+=======================================
+
+Paul's explicit ask (relayed by the design session, confirmed by Paul): ChemAI and
+TinkerCliffs together, by explicit package list only -- never ``--all``, no
+xnn-step/lammps-step, no code installers (none of the eight packages has one).
+
+============================ ============== ============
+Package                      Before         After
+============================ ============== ============
+molsystem                    2026.10.3      2026.10.4
+seamm                        2026.10.3      2026.10.4
+seamm-scheduler              2026.10.3      2026.10.4
+seamm-exec                   2026.10.4      2026.10.4.1
+loop-step                    2026.10.3      2026.10.4
+read-structure-step          2026.10.4      2026.10.4.1
+forcefield-step              2026.9.27      2026.10.4
+seamm-jobserver              2026.10.3      2026.10.4
+============================ ============== ============
+
+Same on both sites. ``seamm-manager update --latest molsystem seamm seamm-exec
+loop-step read-structure-step forcefield-step seamm-jobserver``; seamm-scheduler is
+not in the package list ("not a SEAMM package") and came in through seamm-exec's
+requirement. ``uv pip check`` clean on both.
+
+- **TinkerCliffs** (``/projects/seamm/SEAMM``, no services): none of the 50-odd
+  running jobs used the venv (ORCA/VASP farm scripts under ``/projects/seamm/psaxe``,
+  checked by each job's command). New ``venvs/2026-10-04T15-23-39``; rollback
+  ``venvs/2026-10-04T06-12-15``.
+- **ChemAI**: nothing in SLURM for ``seamm``, nothing running or submitted in the
+  datastore (2482 jobs; the 112 stale "started" rows as before). JobServer and web
+  UI stopped, updated: new ``venvs/2026-10-04T15-37-21``; rollback
+  ``venvs/2026-10-04T06-18-41``. mbe-step 2026.10.4, seamm-mbe 2026.10.3.1 and the
+  held xnn-step 2026.9.28 carried over unchanged. The update reported starting the
+  JobServer but it was not running (seamm_manager#26 again); started it, then the
+  web UI; all 16 queues listed.
+
+Test jobs (job 5165's flowchart, three molecules from SMILES, MOPAC):
+
+- ChemAI job **5167**, queue ``ChemAI``: finished.
+- ChemAI job **5168**, queue ``tinkercliffs_debug`` (run in TinkerCliffs' new venv):
+  finished, identical to 5167.
+
+Both differ from this morning's 5165/5166 (e.g. -11.3502818 vs -11.3070296
+kcal/mol) because of molsystem 2026.10.4's fixed RDKit seed: the SMILES give other
+starting conformers. Shown, not assumed: the same flowchart run locally with
+molsystem 2026.10.3 reproduces 5165/5166 and with 2026.10.4 reproduces 5167/5168,
+to every printed digit.
+
+Since both sites moved together, no ``max_resubmits`` change was needed on ChemAI's
+ARC queues.
+
+MBE on TinkerCliffs (2026-10-04, Paul's ask)
+--------------------------------------------
+
+So that MBE runs use the main install instead of the MBE session's private venv:
+``uv pip install mbe-step==2026.10.4 seamm-mbe==2026.10.3.1`` into
+``/projects/seamm/SEAMM/venv`` (``venvs/2026-10-04T15-23-39``), in place as on ChemAI
+this morning (``seamm-manager install`` refuses packages not in the package list).
+A dry run first showed only these two; nothing used the venv. ``uv pip check``
+clean; ``MBE`` registered under ``org.molssi.seamm`` and listed by
+``seamm-flowchart steps``. ``vasp.ini`` there (changed by the MBE session with
+Paul's OK; backup ``vasp.ini.bak-2026-10-04``) names ``dftd4 =
+/projects/seamm/conda-envs/dftd4/bin/dftd4``; neither package has an installer, so
+nothing rewrote it. Until mbe-step and seamm-mbe are in the package list
+(seamm_packaging PR #3), ``environment recreate`` would drop them.

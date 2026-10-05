@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Phase 6 notes &#8212; SEAMM seamm-exec Plug-in 2026.10.5 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+
+    <script src="../../../_static/documentation_options.js?v=99beb745"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'developer_guide/campaigns/2026-10-02/NOTES_phase6';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Rollout of 2026-10-04: ChemAI and TinkerCliffs" href="NOTES_rollout_2026-10-04.html" />
+    <link rel="prev" title="Phase 5 notes" href="NOTES_phase5.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.10.5" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/SEAMM logo.png" class="logo__image only-light" alt=""/>
+    <img src="../../../_static/SEAMM Inverted 288x181.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">SEAMM-EXEC</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/seamm-exec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/seamm-exec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">Campaigns</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html">2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Developer Documentation</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Campaigns</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Phase 6 notes</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="phase-6-notes">
+<h1>Phase 6 notes<a class="headerlink" href="#phase-6-notes" title="Link to this heading">#</a></h1>
+<section id="design-note-draft-for-paul-and-the-design-session">
+<h2>2026-10-04 – design note (draft for Paul and the design session)<a class="headerlink" href="#design-note-draft-for-paul-and-the-design-session" title="Link to this heading">#</a></h2>
+<p>Phase 6 adds a <code class="docutils literal notranslate"><span class="pre">parallel</span></code> option to the Loop step: its iterations run at the same
+time, each in its own evaluator with its own job database, and the parent merges
+what they did back into the job. Nothing is coded yet. This note records the survey,
+the proposed design and the decisions Paul needs to make, marked <strong>D1</strong> to <strong>D8</strong>.</p>
+<p>Inputs: the design doc’s “The parallel Loop” section (decided 2026-10-02: iterations
+are evaluator tasks with a declared independence contract; the snapshot holds the
+selected configurations by default, the whole database as an option, Q5); phase 4’s
+change journal “for the phase 6 merge”; phase 5’s checkpoint (frames, frozen items,
+<code class="docutils literal notranslate"><span class="pre">run_id</span></code>, restore hooks); and the design session’s ten points and five follow-ups
+(2026-10-04), each answered below.</p>
+</section>
+<section id="the-idea-an-iteration-is-a-resume">
+<h2>The idea: an iteration is a resume<a class="headerlink" href="#the-idea-an-iteration-is-a-resume" title="Link to this heading">#</a></h2>
+<p>A child evaluator runs <strong>the parent’s own flowchart file</strong>, resumed from a checkpoint
+the parent synthesizes: the Loop’s frame holds the frozen items and iteration <em>k</em>,
+the next node is the body’s first, and the frame is marked “this iteration only”. The
+child is started like any resume (<code class="docutils literal notranslate"><span class="pre">SEAMM_RESUME=1</span></code>). When iteration <em>k</em> ends, the
+Loop sees the mark, leaves without advancing, and the evaluator stops there instead
+of running the rest of the flowchart.</p>
+<p>Everything phase 5 built then applies unchanged: the variables at loop entry (the
+codec, the restore hooks keyed by step id, <code class="docutils literal notranslate"><span class="pre">Unrestorable</span></code> markers), the current
+system, the Loop’s frozen item list and directory name, nested loops, and the
+fingerprint, which matches by construction because it is the same flowchart. Step
+numbering is the parent’s (<code class="docutils literal notranslate"><span class="pre">3.iter_0017.2</span></code>), so step directories and headers are
+what a serial loop gives.</p>
+<p><em>The alternative</em> is to cut the loop body out as a standalone flowchart
+(<code class="docutils literal notranslate"><span class="pre">format3.tree</span></code> → the Loop’s item → <code class="docutils literal notranslate"><span class="pre">_steps_data</span></code> → <code class="docutils literal notranslate"><span class="pre">from_data</span></code>) and start it
+with injected state. The survey found it workable but worse: there is no way today
+to inject variables or the current system at start (a new mechanism), the child
+numbers its steps from 1 (directories and headers shift), nested loops and restore
+hooks would need the same treatment again, and it is a second code path for running
+a body. Resume reuses tested machinery; this note goes with it.</p>
+</section>
+<section id="survey-2026-10-04">
+<h2>Survey (2026-10-04)<a class="headerlink" href="#survey-2026-10-04" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><strong>No cross-database copy or merge exists in molsystem.</strong> Only same-database
+<code class="docutils literal notranslate"><span class="pre">copy_configuration</span></code>/<code class="docutils literal notranslate"><span class="pre">create_combined_system</span></code>; <code class="docutils literal notranslate"><span class="pre">attach</span></code> and <code class="docutils literal notranslate"><span class="pre">_Table.copy</span></code>
+(whole SQL tables) are the tools. Primary keys are plain <code class="docutils literal notranslate"><span class="pre">INTEGER</span> <span class="pre">PRIMARY</span> <span class="pre">KEY</span></code>,
+so every child allocates the same new ids: the merge must remap every new object
+and its foreign keys (system → configuration → atomset/bondset/cell/symmetry →
+atoms, bonds, coordinates, velocities, gradients; subsets, templates). Properties
+are rows keyed by a per-database property id: map by name.</p></li>
+<li><p><strong>The table journal has no values</strong> (op, table, row, column only), does not record
+<code class="docutils literal notranslate"><span class="pre">current_row</span></code>/metadata/index changes, and appended rowids collide across
+children (<code class="docutils literal notranslate"><span class="pre">append_rows</span></code> starts at the copy’s own maximum).</p></li>
+<li><p><strong>Job-level paths follow the root.</strong> <code class="docutils literal notranslate"><span class="pre">Node.directory</span></code> and <code class="docutils literal notranslate"><span class="pre">Node.job_path</span></code> are
+both <code class="docutils literal notranslate"><span class="pre">flowchart.root_directory</span></code>; <code class="docutils literal notranslate"><span class="pre">/name</span></code> and <code class="docutils literal notranslate"><span class="pre">job:NAME</span></code> paths (Write Structure,
+Read Structure, LAMMPS, MBE’s labels file “so a loop gathers every configuration
+into one file”, ORCA checkpoints, Properties’ <code class="docutils literal notranslate"><span class="pre">&lt;table&gt;.csv</span></code>) resolve against it.</p></li>
+<li><p><strong>No “run_flowchart” program for the task layer</strong>: a program needs a <code class="docutils literal notranslate"><span class="pre">config</span></code>,
+an ini, or a resolver (only orca, mopac, vasp register one).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">safe_filename</span></code> de-duplicates by looking at the disk, so directory names are fixed
+by the parent before dispatch (the frozen frame already holds them).
+<code class="docutils literal notranslate"><span class="pre">BreakLoop</span></code>/<code class="docutils literal notranslate"><span class="pre">ContinueLoop</span></code>/<code class="docutils literal notranslate"><span class="pre">SkipIteration</span></code> are exceptions inside a process.</p></li>
+<li><p>Each child writes its own <code class="docutils literal notranslate"><span class="pre">references.db</span></code> and <code class="docutils literal notranslate"><span class="pre">final_structure.*</span></code>.</p></li>
+</ul>
+</section>
+<section id="the-design">
+<h2>The design<a class="headerlink" href="#the-design" title="Link to this heading">#</a></h2>
+<section id="where-a-child-runs-design-follow-up-2">
+<h3>Where a child runs (design follow-up 2)<a class="headerlink" href="#where-a-child-runs-design-follow-up-2" title="Link to this heading">#</a></h3>
+<p>The flowchart gets a <code class="docutils literal notranslate"><span class="pre">job_directory</span></code> beside <code class="docutils literal notranslate"><span class="pre">root_directory</span></code> (defaulting to it,
+so nothing changes for a normal job): <code class="docutils literal notranslate"><span class="pre">Node.directory</span></code> stays under
+<code class="docutils literal notranslate"><span class="pre">root_directory</span></code>, <code class="docutils literal notranslate"><span class="pre">Node.job_path</span></code> (<code class="docutils literal notranslate"><span class="pre">/name</span></code>, <code class="docutils literal notranslate"><span class="pre">job:</span></code>) and the evaluator’s own
+files move to <code class="docutils literal notranslate"><span class="pre">job_directory</span></code>. A child runs with</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">root_directory</span></code> = the parent’s job directory, so its step directories are the
+serial loop’s <code class="docutils literal notranslate"><span class="pre">&lt;loop&gt;/&lt;iter</span> <span class="pre">dir&gt;/&lt;step&gt;</span></code> – distinct per iteration, so children
+never share one;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">job_directory</span></code> = <code class="docutils literal notranslate"><span class="pre">&lt;loop&gt;/&lt;iter</span> <span class="pre">dir&gt;/_evaluator/</span></code>: its <code class="docutils literal notranslate"><span class="pre">job.out</span></code>,
+<code class="docutils literal notranslate"><span class="pre">job_data.json</span></code>, <code class="docutils literal notranslate"><span class="pre">seamm.db</span></code> (the snapshot it writes), <code class="docutils literal notranslate"><span class="pre">baseline.db</span></code> (the
+untouched snapshot, read-only), <code class="docutils literal notranslate"><span class="pre">checkpoint.json</span></code>, <code class="docutils literal notranslate"><span class="pre">references.db</span></code>, and any
+job-level file the body writes (<code class="docutils literal notranslate"><span class="pre">/name</span></code>).</p></li>
+</ul>
+<p>So no two evaluators ever write one database (the one-writer rule), and nothing the
+child writes collides with the parent or a sibling. On a target without a shared
+filesystem the iteration’s directory is staged out and back as a unit.</p>
+</section>
+<section id="the-snapshot-design-1-follow-up-4">
+<h3>The snapshot (design 1, follow-up 4)<a class="headerlink" href="#the-snapshot-design-1-follow-up-4" title="Link to this heading">#</a></h3>
+<p>Built by the parent, committed state only, into <code class="docutils literal notranslate"><span class="pre">_evaluator/seamm.db</span></code>:</p>
+<ul class="simple">
+<li><p><strong>default</strong> (Q5): the iteration’s selected configurations – the current
+configuration (a loop over systems), plus any configurations the frozen frame names
+– each with its system, atoms, bonds, cell, symmetry, coordinates, velocities,
+gradients and properties, copied with <strong>their parent ids</strong>; all user tables with
+their rows, registry and rowids (copying only “the tables the body reads” is not
+knowable in general; tables are small next to structures); the property
+definitions; an empty journal. A new molsystem <code class="docutils literal notranslate"><span class="pre">SystemDB.snapshot(path,</span>
+<span class="pre">configurations=...,</span> <span class="pre">whole=False)</span></code> does it with <code class="docutils literal notranslate"><span class="pre">ATTACH</span></code> and <code class="docutils literal notranslate"><span class="pre">INSERT</span> <span class="pre">…</span> <span class="pre">SELECT</span></code>,
+following the foreign keys. Keeping parent ids makes “unchanged” mean “same id,
+same rows”, and only new objects need remapping on merge.</p></li>
+<li><p><strong>whole database</strong> (Loop option): <code class="docutils literal notranslate"><span class="pre">sqlite3</span></code> backup API, a consistent copy of the
+committed parent.</p></li>
+</ul>
+<p>Then <code class="docutils literal notranslate"><span class="pre">baseline.db</span></code> = a copy of the snapshot, kept read-only: the merge diffs against
+it. The checkpoint row is written into the snapshot last (<code class="docutils literal notranslate"><span class="pre">run_id</span></code> new for the child
+– its <code class="docutils literal notranslate"><span class="pre">appended_files</span></code> records are its own).</p>
+</section>
+<section id="what-comes-back-the-merge-design-2-3">
+<h3>What comes back: the merge (design 2, 3)<a class="headerlink" href="#what-comes-back-the-merge-design-2-3" title="Link to this heading">#</a></h3>
+<p>The parent merges iterations <strong>in iteration order</strong>, each in one transaction together
+with its checkpoint (the merged prefix in the Loop frame), so a kill mid-merge leaves
+either nothing or the whole iteration merged. A finished iteration waits for the ones
+before it; merging is cheap next to running.</p>
+<ul class="simple">
+<li><p><strong>Tables</strong> (authority: the child’s journal). Replay in journal order: <code class="docutils literal notranslate"><span class="pre">create</span></code> and
+<code class="docutils literal notranslate"><span class="pre">add_column</span></code> if missing; <code class="docutils literal notranslate"><span class="pre">append</span></code> → a new parent row (renumbered: never promise
+rowid stability; the user-visible key is the index column or position); <code class="docutils literal notranslate"><span class="pre">set</span></code> on a
+baseline row → the same parent row; <code class="docutils literal notranslate"><span class="pre">set</span></code> on an appended row → its renumbered row.
+Values are read from the child’s database by (table, row, column) at merge time: the
+final value is the one that matters, and the journal stays small (decision: no value
+column). Two iterations setting the same cell of a baseline row: <strong>D3</strong>.</p></li>
+<li><p><strong>Properties</strong>: values the child added or changed on configurations it had from the
+parent go onto the same parent configurations (property ids mapped by name).</p></li>
+<li><p><strong>Structures</strong>: <strong>D1</strong> – what to bring back.</p></li>
+<li><p><strong>Files</strong>: the step directories are already in place. Job-level files in
+<code class="docutils literal notranslate"><span class="pre">_evaluator/</span></code>: a file Write Structure <em>appended</em> (its <code class="docutils literal notranslate"><span class="pre">appended_files.json</span></code>
+record says from which size) has the appended bytes appended to the parent’s file,
+in iteration order; any other job-level file is copied to the parent’s job
+directory, later iterations replacing earlier ones (what a serial loop leaves);
+tables a child exported (<code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">as</span></code>) are re-exported from the merged table at the
+end of the loop. The evaluator’s own files stay in <code class="docutils literal notranslate"><span class="pre">_evaluator/</span></code>.</p></li>
+<li><p><strong>Citations</strong>: the child’s <code class="docutils literal notranslate"><span class="pre">references.db</span></code> entries are cited in the parent’s.</p></li>
+<li><p><strong>Variables</strong>: not merged. A variable set in the body is not visible after the loop
+(the contract); the loop variables are removed as now.</p></li>
+<li><p>A body that <em>reads</em> a table or structure another iteration writes sees it as it was
+at loop entry (snapshot semantics), unlike a serial loop.</p></li>
+</ul>
+</section>
+<section id="the-contract-design-3">
+<h3>The contract (design 3)<a class="headerlink" href="#the-contract-design-3" title="Link to this heading">#</a></h3>
+<p>Documented in the Loop’s help and user guide, declared by choosing <code class="docutils literal notranslate"><span class="pre">parallel</span></code>, not
+verified: iterations are independent; each sees the job as at loop entry; what comes
+back is what D1 decides plus table rows, properties and files; variables set in the
+body are not visible after the loop; <code class="docutils literal notranslate"><span class="pre">break</span></code> / <code class="docutils literal notranslate"><span class="pre">continue</span></code> / <code class="docutils literal notranslate"><span class="pre">skip</span></code> work per
+iteration (a <code class="docutils literal notranslate"><span class="pre">break</span></code> in iteration <em>k</em>: iterations after <em>k</em> are cancelled or not
+merged, so the result is the serial one).</p>
+</section>
+<section id="running-children-placement-and-resources-design-5-7-follow-up-5">
+<h3>Running children: placement and resources (design 5, 7; follow-up 5)<a class="headerlink" href="#running-children-placement-and-resources-design-5-7-follow-up-5" title="Link to this heading">#</a></h3>
+<p>Each iteration is a <code class="docutils literal notranslate"><span class="pre">Task</span></code> in the Loop step’s <code class="docutils literal notranslate"><span class="pre">TaskSet</span></code> (manifest under the loop’s
+<code class="docutils literal notranslate"><span class="pre">tasks/</span></code>), program <code class="docutils literal notranslate"><span class="pre">seamm</span></code> – a new resolver in seamm_exec gives the evaluator
+command for the target: the parent’s own interpreter locally, the target’s
+<code class="docutils literal notranslate"><span class="pre">remote_python</span></code> (<code class="docutils literal notranslate"><span class="pre">-m</span> <span class="pre">seamm_exec.exec_flowchart</span></code>) on a cluster – with
+<code class="docutils literal notranslate"><span class="pre">SEAMM_RESUME=1</span></code> in the task’s environment. Resources per iteration come from the
+Loop (cores, memory, walltime estimate).</p>
+<ul class="simple">
+<li><p><strong>Placement</strong> (design doc): <em>inline</em> (default) – the body’s codes run in the
+iteration’s own allocation through the child’s <code class="docutils literal notranslate"><span class="pre">LocalPool</span></code>; <em>separate tasks</em> –
+the child submits its codes to the target like any job.</p></li>
+<li><p><strong>Shapes</strong>: on the laptop the parent’s <code class="docutils literal notranslate"><span class="pre">LocalPool</span></code> runs <code class="docutils literal notranslate"><span class="pre">cores</span> <span class="pre">/</span> <span class="pre">cores</span> <span class="pre">per</span>
+<span class="pre">iteration</span></code> children at once; with a queue target the iteration evaluators are
+bundled several per allocation (the task layer’s bundling); on ARC alone the same
+from a queued parent.</p></li>
+<li><p><strong>No deadlock</strong> (the rule): a child’s own codes and a nested parallel loop inside it
+use the <em>child’s</em> pool and the <em>target</em>, never the parent’s pool; the parent’s pool
+slots hold only iteration evaluators, and the parent waits on nothing else. A nested
+parallel loop is a child spawning children against the target.</p></li>
+<li><p>A child’s lost or timed-out allocation is retried by the task layer’s rules
+(<code class="docutils literal notranslate"><span class="pre">max_attempts</span></code>; the <code class="docutils literal notranslate"><span class="pre">2**n</span></code> time for timeouts); the retried child resumes from its
+own checkpoint.</p></li>
+</ul>
+</section>
+<section id="errors-design-6">
+<h3>Errors (design 6)<a class="headerlink" href="#errors-design-6" title="Link to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">errors</span></code> parameter applies per iteration: <em>continue</em> – the failed iteration is
+reported (in <code class="docutils literal notranslate"><span class="pre">job.out</span></code> and the Loop frame’s <code class="docutils literal notranslate"><span class="pre">failed</span></code> list) and <strong>never merged</strong>,
+unlike a serial loop, which keeps a failed iteration’s partial writes (phase 5 D1);
+<em>exit</em> – no new iterations start, running ones are cancelled, and the iterations
+before the failed one are merged; <em>raise</em> – as <em>exit</em>, then the job fails.</p>
+</section>
+<section id="checkpoint-and-restart-design-4">
+<h3>Checkpoint and restart (design 4)<a class="headerlink" href="#checkpoint-and-restart-design-4" title="Link to this heading">#</a></h3>
+<p>The parent’s Loop frame keeps the frozen items, <code class="docutils literal notranslate"><span class="pre">parallel:</span> <span class="pre">true</span></code>, the merged prefix
+and the failed list; the per-iteration states (pending, running, done, failed) are the
+<code class="docutils literal notranslate"><span class="pre">TaskSet</span></code> manifest’s, as for any task. A resumed parent re-plans from them: done
+and unmerged → merged; running → reattached (queue) or rerun (local, the child
+resumes itself); pending → submitted. A child uses the same <code class="docutils literal notranslate"><span class="pre">_checkpoint</span></code> row and
+<code class="docutils literal notranslate"><span class="pre">checkpoint.json</span></code> as any job.</p>
+</section>
+<section id="dashboard-design-8">
+<h3>Dashboard (design 8)<a class="headerlink" href="#dashboard-design-8" title="Link to this heading">#</a></h3>
+<p>First release: the Loop’s <code class="docutils literal notranslate"><span class="pre">job.out</span></code> reports iterations started, finished, failed and
+merged; the task counts are in the manifest. Child iterations as rows of their own
+(<code class="docutils literal notranslate"><span class="pre">parent_id</span></code>) later.</p>
+</section>
+</section>
+<section id="decisions-for-paul">
+<h2>Decisions for Paul<a class="headerlink" href="#decisions-for-paul" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><strong>D1 – structures.</strong> Recommended: bring back everything an iteration did to
+structures – new systems and configurations are added to the parent (ids
+remapped), and configurations from the parent that the iteration changed (e.g.
+optimized with “overwrite the current configuration”) replace the parent’s. This
+keeps the common serial loops (“create a structure from SMILES, optimize it, store
+results”) giving the same database. Two iterations changing the same configuration
+(possible only with the whole-database snapshot) is an error. <em>The design doc’s
+stricter contract – table rows, properties and files only – is the alternative;
+it is less work but silently drops the structures such loops make.</em></p></li>
+<li><p><strong>D2 – snapshot content by default</strong>: the selected configurations and all user
+tables (recommended), not only “the tables the body reads”, which cannot be known.</p></li>
+<li><p><strong>D3 – the same cell written by two iterations</strong>: an error by default, a Loop option
+to let the later iteration win with a warning (design session’s recommendation).</p></li>
+<li><p><strong>D4 – failed iterations</strong> under <em>continue</em> are not merged (design doc), unlike a
+serial loop, which keeps their partial writes.</p></li>
+<li><p><strong>D5 – job-level files</strong>: appended files gathered in iteration order, other files
+last-iteration-wins, exported tables re-exported after the merge (recommended).</p></li>
+<li><p><strong>D6 – the Loop’s new parameters</strong>: <code class="docutils literal notranslate"><span class="pre">parallel</span></code> (no / yes), <code class="docutils literal notranslate"><span class="pre">iterations</span> <span class="pre">at</span> <span class="pre">once</span></code>
+(default: as many as the cores allow), <code class="docutils literal notranslate"><span class="pre">cores</span> <span class="pre">per</span> <span class="pre">iteration</span></code> (default 1),
+<code class="docutils literal notranslate"><span class="pre">memory</span> <span class="pre">per</span> <span class="pre">iteration</span></code>, <code class="docutils literal notranslate"><span class="pre">snapshot</span></code> (selected structures / whole database),
+<code class="docutils literal notranslate"><span class="pre">placement</span></code> (inline / separate tasks), <code class="docutils literal notranslate"><span class="pre">same-cell</span> <span class="pre">writes</span></code> (error / later wins).
+Grayed or hidden when <code class="docutils literal notranslate"><span class="pre">parallel</span></code> is no (the GUI rule).</p></li>
+<li><p><strong>D7 – scope of the first release</strong>: all four loop types; <code class="docutils literal notranslate"><span class="pre">break</span></code> handled as
+above; Dashboard child rows later.</p></li>
+<li><p><strong>D8 – validation</strong>: an A/B harness comparing serial and parallel runs of the same
+flowcharts (tables, properties, structures, files; identical, row order aside where
+the table has an index); the kill soak extended to kill a child, the parent, and
+both; a live run on TinkerCliffs with iterations bundled as queue jobs. Local runs
+stay small (MOPAC, a few iterations at once; the 2-4 GB rule).</p></li>
+</ul>
+</section>
+<section id="packages-and-order">
+<h2>Packages and order<a class="headerlink" href="#packages-and-order" title="Link to this heading">#</a></h2>
+<p>molsystem (<code class="docutils literal notranslate"><span class="pre">snapshot</span></code>, structure import with id remapping, table journal replay
+helpers) → seamm (<code class="docutils literal notranslate"><span class="pre">job_directory</span></code>, the “iteration only” frame, the snapshot
+checkpoint) → seamm_exec (the <code class="docutils literal notranslate"><span class="pre">seamm</span></code> resolver, child mode in <code class="docutils literal notranslate"><span class="pre">ExecFlowchart</span></code>,
+merge driver) → loop_step (the <code class="docutils literal notranslate"><span class="pre">parallel</span></code> option, dispatch, merge in order, GUI)
+and the six steps that build job-level paths from <code class="docutils literal notranslate"><span class="pre">root_directory</span></code> (read_structure,
+table, properties, lammps, orca, geometry_analysis; review point 6).
+seamm_scheduler only if bundling evaluators needs it. Opt-in, default off: no soak
+switch; pins to the phase 5 versions.</p>
+</section>
+<section id="review-design-session-2026-10-04">
+<h2>Review (design session, 2026-10-04)<a class="headerlink" href="#review-design-session-2026-10-04" title="Link to this heading">#</a></h2>
+<p>The design session reviewed the draft and approved the design (child as a resume,
+<code class="docutils literal notranslate"><span class="pre">job_directory</span></code> beside <code class="docutils literal notranslate"><span class="pre">root_directory</span></code>). Folded in:</p>
+<ol class="arabic simple">
+<li><p><em>Must:</em> <strong>no snapshot or merge through the parent’s deferred connection.</strong> An
+<code class="docutils literal notranslate"><span class="pre">ATTACH</span></code> + <code class="docutils literal notranslate"><span class="pre">INSERT</span> <span class="pre">…</span> <span class="pre">SELECT</span></code> on the parent’s connection would be part of its
+open transaction (not visible to the child until the parent commits), and with
+<code class="docutils literal notranslate"><span class="pre">detach</span></code> a no-op while deferring, one attachment per iteration would hit
+SQLite’s limit of 10. So: the Loop writes the iteration’s frame and commits
+(checkpoint) <strong>before</strong> dispatch; <code class="docutils literal notranslate"><span class="pre">SystemDB.snapshot()</span></code> reads committed state
+through its <strong>own short-lived connection</strong> (or the backup API for the whole
+database). The merge runs in the parent’s per-iteration transaction but reads the
+child’s database through a <strong>separate read-only connection</strong>, never an <code class="docutils literal notranslate"><span class="pre">ATTACH</span></code>
+on the parent’s.</p></li>
+<li><p><em>Must:</em> <strong>what a child needs on a target without a shared filesystem.</strong> Stage in:
+the flowchart, <code class="docutils literal notranslate"><span class="pre">&lt;loop&gt;/&lt;iter</span> <span class="pre">dir&gt;/</span></code> (with <code class="docutils literal notranslate"><span class="pre">_evaluator/</span></code>), and the job
+directory’s top-level <em>files</em> (inputs read by <code class="docutils literal notranslate"><span class="pre">/name</span></code> or <code class="docutils literal notranslate"><span class="pre">job:</span></code>: structure,
+forcefield, control-parameter files) – not other iterations’ or steps’
+directories; a Loop option adds paths. Stage out: <code class="docutils literal notranslate"><span class="pre">&lt;loop&gt;/&lt;iter</span> <span class="pre">dir&gt;/</span></code> only. So a
+500-iteration loop does not copy the job 500 times.</p></li>
+<li><p><strong>Current row after the loop</strong>: as a serial loop leaves it – for each table an
+iteration moved, the current row of the last merged iteration (mapped to the
+parent’s row); otherwise unchanged.</p></li>
+<li><p><strong>New property definitions</strong> a child created (<code class="docutils literal notranslate"><span class="pre">store_results</span></code>) are created in the
+parent before values are mapped by name, as a child’s new tables are; a child’s
+<code class="docutils literal notranslate"><span class="pre">add_column</span></code> whose type or default differs from the parent’s column is an error.</p></li>
+<li><p><strong>Iterations at once</strong>, memory-aware: <code class="docutils literal notranslate"><span class="pre">min(cores</span> <span class="pre">//</span> <span class="pre">cores</span> <span class="pre">per</span> <span class="pre">iteration,</span>
+<span class="pre">memory</span> <span class="pre">//</span> <span class="pre">memory</span> <span class="pre">per</span> <span class="pre">iteration)</span></code>, memory per iteration defaulting to 2 GB – on a
+16 GB laptop 4-8 MOPAC children but 1-2 ORCA (the machine-wide 2-4 GB rule).</p></li>
+<li><p><strong>Everything job-level keys off ``job_directory``</strong> in a child: <code class="docutils literal notranslate"><span class="pre">plan_start</span></code>,
+<code class="docutils literal notranslate"><span class="pre">archive_previous_database</span></code>, <code class="docutils literal notranslate"><span class="pre">checkpoint.json</span></code>, <code class="docutils literal notranslate"><span class="pre">job_data.json</span></code>, <code class="docutils literal notranslate"><span class="pre">job:</span></code> and
+<code class="docutils literal notranslate"><span class="pre">/name</span></code>. Direct uses of <code class="docutils literal notranslate"><span class="pre">flowchart.root_directory</span></code> for job-level paths, which
+must move to <code class="docutils literal notranslate"><span class="pre">Node.job_path</span></code> (else a child writes into the parent’s job
+directory): read_structure_step <code class="docutils literal notranslate"><span class="pre">write_structure.py:180</span></code> and
+<code class="docutils literal notranslate"><span class="pre">read_structure.py:204,209,213</span></code> (<code class="docutils literal notranslate"><span class="pre">213</span></code> derives other jobs’ directories for
+<code class="docutils literal notranslate"><span class="pre">job://&lt;n&gt;</span></code> and must use the <em>parent</em> job’s directory); table_step
+<code class="docutils literal notranslate"><span class="pre">table.py:305</span></code> (<code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">as</span> <span class="pre">/name</span></code>); properties_step <code class="docutils literal notranslate"><span class="pre">properties.py:286</span></code>;
+lammps_step <code class="docutils literal notranslate"><span class="pre">nve.py:485</span></code>; orca_step <code class="docutils literal notranslate"><span class="pre">energy.py:655</span></code> (checkpoints);
+geometry_analysis_step <code class="docutils literal notranslate"><span class="pre">geometry_analysis.py:230</span></code>. The code steps’ uses that pass
+the root to their subflowcharts stay (step directories), and gaussian_step’s are
+its own install root. So phase 6 also touches these six step packages.</p></li>
+<li><p><strong>Errors</strong>, completed: under <em>exit</em>/<em>raise</em>, iterations after the failed one that
+had already finished are not merged (as for <code class="docutils literal notranslate"><span class="pre">break</span></code>) and their directories are
+kept and reported; under <em>continue</em>, a failed iteration’s step directories and
+<code class="docutils literal notranslate"><span class="pre">_evaluator/</span></code> stay for debugging.</p></li>
+</ol>
+<p>Nits taken: D3’s same-cell rule covers the index column; citations merge by key
+(no duplicates); each child’s iteration gets the usual banner in the parent’s
+<code class="docutils literal notranslate"><span class="pre">iteration.out</span></code>; the parent’s <code class="docutils literal notranslate"><span class="pre">job_data.json</span></code> records iterations run, failed and
+merged.</p>
+<p>The design session’s recommendations on D1-D8 match the ones above, with D6’s
+memory-aware default (5).</p>
+</section>
+<section id="decisions-paul-2026-10-04">
+<h2>Decisions (Paul, 2026-10-04)<a class="headerlink" href="#decisions-paul-2026-10-04" title="Link to this heading">#</a></h2>
+<p>D1-D8 approved as recommended (with the review’s memory-aware D6): structures come
+back with ids remapped; the default snapshot is the selected structures and all
+tables; the same cell from two iterations is an error unless the Loop allows the
+later to win; failed iterations are never merged; job-level files as in D5; the new
+Loop parameters; all four loop types with inline and separate placement; validation
+by serial-vs-parallel comparison, kill soak on parent and children, and a live
+TinkerCliffs run.</p>
+</section>
+<section id="implementation-2026-10-04">
+<h2>Implementation (2026-10-04)<a class="headerlink" href="#implementation-2026-10-04" title="Link to this heading">#</a></h2>
+<p>Local commits on <code class="docutils literal notranslate"><span class="pre">dev</span></code>, not pushed; all ten packages installed editable in
+<code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV/venvs/phase6-B</span></code>.</p>
+<ul class="simple">
+<li><p><strong>molsystem</strong> <code class="docutils literal notranslate"><span class="pre">molsystem/snapshot.py</span></code>: <code class="docutils literal notranslate"><span class="pre">snapshot</span></code> (own connection; selected
+configurations with their ids, or the whole database by the backup API),
+<code class="docutils literal notranslate"><span class="pre">baseline</span></code> (read-only copy) and <code class="docutils literal notranslate"><span class="pre">merge</span></code> (property definitions by name, id
+tables remapped, row tables, property data, the table journal replayed with
+values read from the child, <code class="docutils literal notranslate"><span class="pre">MergeConflict</span></code>). Found in testing: an iteration
+adds <em>columns</em> – per-atom attributes of the structure tables (MOPAC’s charges)
+and table columns after rows it appended (MOPAC results) – so the merge adds
+new columns first and reads the baseline with NULL for them.
+<code class="docutils literal notranslate"><span class="pre">System.copy_configuration</span></code> fixed on the way (it copied from the new
+configuration, not the previous one).</p></li>
+<li><p><strong>seamm</strong>: <code class="docutils literal notranslate"><span class="pre">Flowchart.job_directory</span></code> (defaults to <code class="docutils literal notranslate"><span class="pre">root_directory</span></code>);
+<code class="docutils literal notranslate"><span class="pre">Node.job_path</span></code> follows it, <code class="docutils literal notranslate"><span class="pre">Node.job_file(name)</span></code> reads the iteration’s own
+file else the job’s (inputs read by <code class="docutils literal notranslate"><span class="pre">/name</span></code> or <code class="docutils literal notranslate"><span class="pre">job:NAME</span></code>); citations go to
+<code class="docutils literal notranslate"><span class="pre">job_directory</span></code>; <code class="docutils literal notranslate"><span class="pre">IterationDone(broke,</span> <span class="pre">skipped)</span></code>; <code class="docutils literal notranslate"><span class="pre">Checkpointer.write_child</span></code>
+(the child’s checkpoint, written into its snapshot), <code class="docutils literal notranslate"><span class="pre">parallel_loop</span></code> (the
+parallel frame, committed), and <code class="docutils literal notranslate"><span class="pre">iteration</span></code> kept in the final checkpoint.</p></li>
+<li><p><strong>seamm_exec</strong> <code class="docutils literal notranslate"><span class="pre">seamm_exec/iteration.py</span></code>: the <code class="docutils literal notranslate"><span class="pre">seamm</span></code> resolver (entry point;
+<code class="docutils literal notranslate"><span class="pre">run_flowchart</span></code> beside the interpreter; the child’s share of the machine as
+<code class="docutils literal notranslate"><span class="pre">SEAMM_CE</span></code>, which <code class="docutils literal notranslate"><span class="pre">computational_environment</span></code> honours), <code class="docutils literal notranslate"><span class="pre">iteration_task</span></code>
+(shell command with relative flowchart and parent paths, <code class="docutils literal notranslate"><span class="pre">SEAMM_RESUME=1</span></code>,
+<code class="docutils literal notranslate"><span class="pre">SEAMM_PARENT_JOB</span></code>, <code class="docutils literal notranslate"><span class="pre">SEAMM_TARGET=&quot;&quot;</span></code> for inline placement, <code class="docutils literal notranslate"><span class="pre">target.json</span></code>
+copied for separate), <code class="docutils literal notranslate"><span class="pre">iteration_outcome</span></code>, <code class="docutils literal notranslate"><span class="pre">merge_database</span></code>,
+<code class="docutils literal notranslate"><span class="pre">plan_files</span></code>/<code class="docutils literal notranslate"><span class="pre">merge_files</span></code> (appends from Write Structure’s records, by run id;
+other files copied; redone exactly from the plan), <code class="docutils literal notranslate"><span class="pre">merge_citations</span></code> (not the
+SEAMM citation every evaluator adds). Child mode in <code class="docutils literal notranslate"><span class="pre">exec_flowchart</span></code>: forced
+standalone (no datastore job of its own); resumes only its parent’s checkpoint,
+never from the top; a rerun after the iteration finished reports it from the
+checkpoint. <code class="docutils literal notranslate"><span class="pre">Task.keep</span></code> (<code class="docutils literal notranslate"><span class="pre">&quot;.&quot;</span></code> for an iteration) so an in-situ task’s
+cleanup leaves the evaluator’s files; <code class="docutils literal notranslate"><span class="pre">TaskSet</span></code> looks for <code class="docutils literal notranslate"><span class="pre">target.json</span></code> in
+<code class="docutils literal notranslate"><span class="pre">job_directory</span></code>.</p></li>
+<li><p><strong>loop_step</strong>: the D6 parameters, shown only when parallel is yes. <code class="docutils literal notranslate"><span class="pre">run()</span></code>
+refactored around <code class="docutils literal notranslate"><span class="pre">_prepare</span></code> / <code class="docutils literal notranslate"><span class="pre">_setup_iteration(k)</span></code> / <code class="docutils literal notranslate"><span class="pre">_end_loop</span></code> shared
+by the serial loop, the child (<code class="docutils literal notranslate"><span class="pre">only</span></code>) and the parent. The parent:
+<code class="docutils literal notranslate"><span class="pre">parallel_loop</span></code> frame (frozen items, directories given out, <code class="docutils literal notranslate"><span class="pre">next</span></code> to merge,
+failed, merge state, exports, pending file merge); <code class="docutils literal notranslate"><span class="pre">loop_entry.db</span></code> (the
+committed database at loop entry, rollback journal) from which every snapshot
+is taken; per iteration its set-up, directory name committed before the
+directory exists, snapshot + <code class="docutils literal notranslate"><span class="pre">write_child</span></code> + baseline, then a task; the
+<code class="docutils literal notranslate"><span class="pre">TaskSet</span></code> with a <code class="docutils literal notranslate"><span class="pre">LocalPool</span></code> of <code class="docutils literal notranslate"><span class="pre">iterations</span> <span class="pre">at</span> <span class="pre">once</span></code>; merge in order (one
+transaction + checkpoint each, then files and citations from a committed plan);
+for a loop over rows the iteration’s row is made current before the merged
+current rows are applied (the merge cannot see a move back to the entry’s
+current row). An evaluator that stopped before its iteration ended (its
+checkpoint still ‘running’: killed, out of memory) is run again, resuming, up
+to twice; one that ended in error is a failed iteration. Errors: <em>continue</em>
+records and goes on; <em>exit</em> records and stops; <em>stop the job</em> raises without
+recording, so a resume runs the iteration again. <code class="docutils literal notranslate"><span class="pre">break</span></code> stops dispatching
+and merging after the iteration; skipped iterations are merged and their
+directory removed, as serially.</p></li>
+<li><p><strong>The six steps</strong> (read_structure, table, properties, lammps, orca,
+geometry_analysis): job-level writes to <code class="docutils literal notranslate"><span class="pre">job_path</span></code>, reads through
+<code class="docutils literal notranslate"><span class="pre">job_file</span></code>; <code class="docutils literal notranslate"><span class="pre">job://&lt;n&gt;</span></code> keeps <code class="docutils literal notranslate"><span class="pre">root_directory</span></code> (the parent job in a child);
+ORCA’s read-only checkpoint lookup falls back to the job’s checkpoints.</p></li>
+</ul>
+<p>Validation so far (<code class="docutils literal notranslate"><span class="pre">Testing/phase6</span></code>: <code class="docutils literal notranslate"><span class="pre">ab_parallel.py</span></code> builds each spec serial
+and parallel with <code class="docutils literal notranslate"><span class="pre">seamm-flowchart</span></code> and compares databases and files;
+<code class="docutils literal notranslate"><span class="pre">kill_parallel.py</span></code> kills the parent, a child, or both, resumes, and compares
+with the serial run):</p>
+<p>Differences that are the contract, not bugs: variables set in the body (and the
+row variables of a rows loop) are not visible after a parallel loop; the order of
+the table journal (merge bookkeeping). A loop whose iterations are <em>not</em>
+independent (Read Structure overwriting the current system that iteration 1
+created) differs, as documented in the Loop’s user guide.</p>
+<p>Timing: each iteration pays ~5 s of evaluator start-up, so the tiny MOPAC test
+loops run slower in parallel (p1: 11 s serial, 21 s parallel with 2 at once).</p>
+<p>Kill soak (<code class="docutils literal notranslate"><span class="pre">kill_parallel.py</span></code>, local, 2026-10-04): every trial resumed and matched
+the serial run – p1 rows: parent 3/3, child 4/4, both 6/6 (rerun after the fix
+below); p2 systems: parent 3/3, both 3/3; p3 parallel outer: parent 3/3, both 3/3;
+p4 parallel inner: parent 3/3, both 3/3. Killed iterations were run again and
+resumed from their own checkpoints; orphaned evaluators of a killed parent were
+killed by the resumed parent’s <code class="docutils literal notranslate"><span class="pre">TaskSet</span></code> before it reran them. Found: an evaluator
+killed <em>as it exited</em>, after its iteration had finished, was counted a failed
+iteration (return code -9) and dropped under <em>continue</em> – now the iteration’s own
+final checkpoint decides, whatever the return code (loop_step 92d9ac8).</p>
+<p>Live TinkerCliffs (2026-10-04), flowchart <code class="docutils literal notranslate"><span class="pre">p8_tc</span></code> (a parallel Foreach over SMILES:
+From SMILES as a new system, a row, MOPAC PM7 optimization into the row, Write
+Structure appending <code class="docutils literal notranslate"><span class="pre">/all.sdf</span></code>), private venv <code class="docutils literal notranslate"><span class="pre">/projects/seamm/psaxe/phase6</span></code>:</p>
+<p>The iterations are short (about 10 s of MOPAC each), so evaluator start-up hides
+any speed-up; the runs validate correctness, placement and the queue bundling,
+not performance. <strong>The live validation (D8) is complete</strong> for inline placement,
+iterations bundled as queue jobs from a parent on a compute node, and the
+JobServer’s resubmit-and-resume of a parallel loop. Separate placement (the
+children’s codes as tasks on the target) is not yet tested live.</p>
+<p>The two remaining A/B cases (2026-10-04): <strong>p6, whole-database snapshot</strong> – a loop
+over systems with each iteration given the whole database (each baseline holds all
+six systems): identical to serial. <strong>p7, two iterations setting the same cell</strong> of a
+row that existed before the loop: by default the parallel job stops with
+<code class="docutils literal notranslate"><span class="pre">MergeConflict</span></code> at iteration 2 (iteration 1 merged and committed, iteration 2’s
+merge rolled back; the message now names the Loop setting, loop_step b7423f1);
+with “the later iteration wins” it is identical to serial, with a warning per
+overwritten cell (in the log, not <code class="docutils literal notranslate"><span class="pre">job.out</span></code> – a review point).</p>
+<p>Left to clean up after the review: <code class="docutils literal notranslate"><span class="pre">[tinkercliffs_phase6]</span></code> in
+<code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV/PaulVT.local.ini</span></code> (backup <code class="docutils literal notranslate"><span class="pre">PaulVT.local.ini.bak-2026-10-04-phase6</span></code>;
+restart the services after); TinkerCliffs <code class="docutils literal notranslate"><span class="pre">/projects/seamm/psaxe/phase6</span></code>;
+SEAMM_DEV jobs 4013 and 4014 (project <code class="docutils literal notranslate"><span class="pre">test</span></code>); local <code class="docutils literal notranslate"><span class="pre">Testing/phase6/runs</span></code> and
+<code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV/venvs/phase6-B</span></code>.</p>
+</section>
+<section id="code-review-design-session-2026-10-04-and-fixes">
+<h2>Code review (design session, 2026-10-04) and fixes<a class="headerlink" href="#code-review-design-session-2026-10-04-and-fixes" title="Link to this heading">#</a></h2>
+<p>The review verified the design and the driver’s kill/retry/break/exit semantics,
+and found merge defects the A/B and live runs had not reached (none looped over
+several configurations of one system, or changed the shared current structure in
+two iterations). Fixed:</p>
+<ul class="simple">
+<li><p><strong>M1</strong> (molsystem): an unchanged row referring to a row outside the snapshot (a
+system’s default configuration) was rewritten to NULL. Now a reference to a row
+the iteration did not create keeps its id, deferred updates are only for
+changed rows, and the snapshot includes each selected system’s default
+configuration (so the system is usable in the child and a change of default is
+visible; rewriting the default in the snapshot instead hid the iteration’s
+choice).</p></li>
+<li><p><strong>M2</strong> (molsystem, loop_step): a loop over several configurations of one system
+raised a spurious conflict (each iteration makes its configuration current).
+<code class="docutils literal notranslate"><span class="pre">system.default_configuration</span></code> is merged without a conflict, the last merged
+change left; the Loop makes the iteration’s configuration current before
+merging it (the case the merge cannot see: back to the entry’s default).</p></li>
+<li><p><strong>M3</strong> (molsystem): two iterations changing the coordinates (velocities,
+gradients, attributes, links) of one configuration were not detected; now a
+conflict on the configuration. The note’s claim that only whole-database
+snapshots share structures was wrong: the current configuration is in every
+snapshot.</p></li>
+<li><p><strong>M4</strong> (seamm): <code class="docutils literal notranslate"><span class="pre">Node.job_path</span></code> falls back to <code class="docutils literal notranslate"><span class="pre">root_directory</span></code> for a
+flowchart without <code class="docutils literal notranslate"><span class="pre">job_directory</span></code> (13 orca_step tests used such fakes).</p></li>
+<li><p><strong>S1</strong> appends replayed as appends, as serially (two rows with one index
+value), superseding the index rule; <strong>S2</strong> property definitions must agree in
+type and units; <strong>S3</strong> <code class="docutils literal notranslate"><span class="pre">Node.job_file</span></code> walks the enclosing iterations
+(<code class="docutils literal notranslate"><span class="pre">Flowchart.job_read_directories</span></code>, passed as <code class="docutils literal notranslate"><span class="pre">SEAMM_JOB_READ</span></code>) and the
+guide says a job-level file is read live; <strong>S4</strong> citations planned with the
+job’s counts in the committed plan, merged by setting counts, so a redo does not
+double them; <strong>S5</strong> an iteration’s <code class="docutils literal notranslate"><span class="pre">OMP_NUM_THREADS</span></code> is its share of cores,
+not the pool’s one per core asked for; <strong>S6</strong> tables re-exported and
+<code class="docutils literal notranslate"><span class="pre">loop_entry.db</span></code> removed after a break or <em>exit</em> too (kept after <em>stop the
+job</em>, whose resume reruns the failed iteration); <strong>S7</strong> tables made in the body
+are variables after the merge; <strong>S8</strong> <code class="docutils literal notranslate"><span class="pre">loop_step/tests/test_parallel.py</span></code>: a
+serial-vs-parallel run, black-box, with a fake step plug-in installed on
+<code class="docutils literal notranslate"><span class="pre">PYTHONPATH</span></code> (no external codes; ~40 s).</p></li>
+<li><p>Nits: URIs quoted; no NOT NULL without a default; later-wins warnings in
+<code class="docutils literal notranslate"><span class="pre">job.out</span></code>; the user guide marks separate placement experimental and states the
+start-up and whole-snapshot disk costs.</p></li>
+</ul>
+<p>Pins, at release preparation: seamm_exec <code class="docutils literal notranslate"><span class="pre">molsystem&gt;=</span></code> and <code class="docutils literal notranslate"><span class="pre">seamm&gt;=</span></code> the phase
+6 versions; loop_step now requires <code class="docutils literal notranslate"><span class="pre">molsystem</span></code> and <code class="docutils literal notranslate"><span class="pre">seamm-exec</span></code> (floors raised
+to the phase 6 versions at release, with <code class="docutils literal notranslate"><span class="pre">seamm</span></code>); read_structure_step
+<code class="docutils literal notranslate"><span class="pre">seamm&gt;=</span></code> phase 6 (<code class="docutils literal notranslate"><span class="pre">job_file</span></code>); the other five steps bumped for consistency.
+Answers to the review’s questions: start-up cost documented, a warm evaluator per
+bundle is phase 7 material; whole-database snapshots stay up front, the disk cost
+documented.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="NOTES_phase5.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Phase 5 notes</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="NOTES_rollout_2026-10-04.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Rollout of 2026-10-04: ChemAI and TinkerCliffs</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#design-note-draft-for-paul-and-the-design-session">2026-10-04 – design note (draft for Paul and the design session)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-idea-an-iteration-is-a-resume">The idea: an iteration is a resume</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#survey-2026-10-04">Survey (2026-10-04)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-design">The design</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#where-a-child-runs-design-follow-up-2">Where a child runs (design follow-up 2)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-snapshot-design-1-follow-up-4">The snapshot (design 1, follow-up 4)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-comes-back-the-merge-design-2-3">What comes back: the merge (design 2, 3)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-contract-design-3">The contract (design 3)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#running-children-placement-and-resources-design-5-7-follow-up-5">Running children: placement and resources (design 5, 7; follow-up 5)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#errors-design-6">Errors (design 6)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#checkpoint-and-restart-design-4">Checkpoint and restart (design 4)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dashboard-design-8">Dashboard (design 8)</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#decisions-for-paul">Decisions for Paul</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#packages-and-order">Packages and order</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#review-design-session-2026-10-04">Review (design session, 2026-10-04)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#decisions-paul-2026-10-04">Decisions (Paul, 2026-10-04)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation-2026-10-04">Implementation (2026-10-04)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#code-review-design-session-2026-10-04-and-fixes">Code review (design session, 2026-10-04) and fixes</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../../_sources/developer_guide/campaigns/2026-10-02/NOTES_phase6.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

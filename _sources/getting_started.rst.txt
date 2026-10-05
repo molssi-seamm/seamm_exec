@@ -238,3 +238,20 @@ resubmits a job a cluster lost (it sets ``SEAMM_RESUME=1`` in the batch script).
   ``--database`` outside the job directory.
 - **Visibility.** While a step runs, other programs reading the job's database
   (the Dashboard, the web UI) see it as of the last finished step.
+
+Parallel loops
+--------------
+
+Since 2026.10.5 a Loop can run its iterations in parallel (loop_step's "Run
+iterations in parallel"). Each iteration is a task of the program ``seamm``: its
+resolver (``seamm_exec.iteration``) runs ``run_flowchart`` on the machine that
+runs it, with the iteration's share of cores and memory in ``SEAMM_CE``. The
+iteration's evaluator resumes the job's flowchart into just that iteration, from a
+checkpoint the Loop writes into a snapshot of the job's database in the
+iteration's ``_evaluator`` directory; its step directories are where a serial loop
+puts them. The tasks go where any tasks go -- the evaluator's own pool, or bundled
+into queue jobs when the job's target sends tasks to a queue -- and the Loop
+merges each iteration back in order when it is done. With "inline" placement an
+iteration's own calculations run in its share (its ``SEAMM_TARGET`` is empty); with
+"separate tasks" (experimental) they go to the job's target. The Loop's user guide
+describes the options and the contract.

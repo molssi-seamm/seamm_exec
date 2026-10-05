@@ -52,6 +52,14 @@ seamm\_exec.exec\_flowchart module
    :show-inheritance:
    :undoc-members:
 
+seamm\_exec.iteration module
+----------------------------
+
+.. automodule:: seamm_exec.iteration
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 seamm\_exec.local module
 ------------------------
 

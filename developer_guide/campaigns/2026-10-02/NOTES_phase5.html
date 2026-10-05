@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Phase 5 notes &#8212; SEAMM seamm-exec Plug-in 2026.10.4.1 documentation</title>
+    <title>Phase 5 notes &#8212; SEAMM seamm-exec Plug-in 2026.10.5 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../../_static/documentation_options.js?v=883ce3b3"></script>
+    <script src="../../../_static/documentation_options.js?v=99beb745"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -50,11 +50,11 @@
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="Rollout of 2026-10-04: ChemAI and TinkerCliffs" href="NOTES_rollout_2026-10-04.html" />
+    <link rel="next" title="Phase 6 notes" href="NOTES_phase6.html" />
     <link rel="prev" title="Phase 4 notes" href="NOTES_phase4.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.4.1" />
+  <meta name="docsearch:version" content="2026.10.5" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -1290,6 +1290,32 @@ resubmitted with <code class="docutils literal notranslate"><span class="pre">SE
 every configuration used in such a block).</p></li>
 </ul>
 </section>
+<section id="released-2026-10-04">
+<h2>Released (2026-10-04)<a class="headerlink" href="#released-2026-10-04" title="Link to this heading">#</a></h2>
+<p>All eight on PyPI, in order: molsystem 2026.10.4 (PR #122), seamm 2026.10.4 (#223),
+seamm_scheduler 2026.10.4 (#3), seamm_exec 2026.10.4.1 (#43), loop_step 2026.10.4
+(#39), read_structure_step 2026.10.4.1 (#83), forcefield_step 2026.10.4 (#53),
+seamm_jobserver 2026.10.4 (#26); every checkout synced with <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">update</span></code>.</p>
+<p>On the way: two publish runs failed only on the macOS / Python 3.11 runner and
+passed on a re-run of that job (molsystem: PubChem tests over the network;
+seamm_exec: <code class="docutils literal notranslate"><span class="pre">test_tasks_run_concurrently</span></code>, four 1-second tasks took 3.1 s against
+a 2.5 s limit – worth loosening). seamm_exec’s PR CI first failed because PyPI’s
+<em>simple</em> index still listed seamm-scheduler only to 2026.10.3 minutes after the
+release (the release’s own JSON page was already there): wait for the simple index
+before the next PR. loop_step’s PR CI failed because its new resume tests import
+seamm_exec, which it did not declare; it is now a <code class="docutils literal notranslate"><span class="pre">test</span></code> extra, and each later
+package was first tested in a clean PyPI-only venv.</p>
+<p>Not rolled out to any installation; that waits for Paul’s ask, and so does the
+cleanup above.</p>
+<p>Cleanup done (Paul OK, 2026-10-04): SEAMM_DEV moved to the released packages in a
+new versioned venv (<code class="docutils literal notranslate"><span class="pre">venvs/2026-10-04T15-17-18</span></code>, built from <code class="docutils literal notranslate"><span class="pre">phase4-B</span></code> with
+<code class="docutils literal notranslate"><span class="pre">update</span> <span class="pre">--latest</span></code> of the eight; <code class="docutils literal notranslate"><span class="pre">phase5-A</span></code>/<code class="docutils literal notranslate"><span class="pre">phase5-B</span></code> deleted, the older
+versions kept); <code class="docutils literal notranslate"><span class="pre">[tinkercliffs_phase5]</span></code> removed from <code class="docutils literal notranslate"><span class="pre">PaulVT.local.ini</span></code> (back to
+<code class="docutils literal notranslate"><span class="pre">local</span></code>, <code class="docutils literal notranslate"><span class="pre">molssi10</span></code>, <code class="docutils literal notranslate"><span class="pre">molssi10-tasks</span></code>) and the services restarted;
+TinkerCliffs <code class="docutils literal notranslate"><span class="pre">/projects/seamm/psaxe/phase5</span></code> deleted (1.8 GB); local
+<code class="docutils literal notranslate"><span class="pre">Testing/phase5/runs</span></code> and <code class="docutils literal notranslate"><span class="pre">ab_runs</span></code> deleted (the harness, specs and SDF data
+kept for phase 6). SEAMM_DEV jobs 4010-4012 are kept as the live-validation record.</p>
+</section>
 </section>
 
 
@@ -1312,11 +1338,11 @@ every configuration used in such a block).</p></li>
       </div>
     </a>
     <a class="right-next"
-       href="NOTES_rollout_2026-10-04.html"
+       href="NOTES_phase6.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Rollout of 2026-10-04: ChemAI and TinkerCliffs</p>
+        <p class="prev-next-title">Phase 6 notes</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -1364,6 +1390,7 @@ every configuration used in such a block).</p></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#release-preparation-2026-10-04-not-pushed-or-tagged">Release preparation (2026-10-04, not pushed or tagged)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cleanup-after-the-release-each-needs-paul-s-ok">Cleanup after the release (each needs Paul’s OK)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#code-review-design-session-2026-10-04">Code review (design session, 2026-10-04)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#released-2026-10-04">Released (2026-10-04)</a></li>
 </ul>
   </nav></div>
 

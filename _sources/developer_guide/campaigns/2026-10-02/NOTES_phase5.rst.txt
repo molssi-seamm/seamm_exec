@@ -799,3 +799,33 @@ Known, not changed (documented here):
   ``str`` Enum as its repr; neither occurs in SEAMM's variables today.
 - molsystem's ``with configuration:`` now creates the configuration's cell row (for
   every configuration used in such a block).
+
+Released (2026-10-04)
+---------------------
+
+All eight on PyPI, in order: molsystem 2026.10.4 (PR #122), seamm 2026.10.4 (#223),
+seamm_scheduler 2026.10.4 (#3), seamm_exec 2026.10.4.1 (#43), loop_step 2026.10.4
+(#39), read_structure_step 2026.10.4.1 (#83), forcefield_step 2026.10.4 (#53),
+seamm_jobserver 2026.10.4 (#26); every checkout synced with ``make update``.
+
+On the way: two publish runs failed only on the macOS / Python 3.11 runner and
+passed on a re-run of that job (molsystem: PubChem tests over the network;
+seamm_exec: ``test_tasks_run_concurrently``, four 1-second tasks took 3.1 s against
+a 2.5 s limit -- worth loosening). seamm_exec's PR CI first failed because PyPI's
+*simple* index still listed seamm-scheduler only to 2026.10.3 minutes after the
+release (the release's own JSON page was already there): wait for the simple index
+before the next PR. loop_step's PR CI failed because its new resume tests import
+seamm_exec, which it did not declare; it is now a ``test`` extra, and each later
+package was first tested in a clean PyPI-only venv.
+
+Not rolled out to any installation; that waits for Paul's ask, and so does the
+cleanup above.
+
+Cleanup done (Paul OK, 2026-10-04): SEAMM_DEV moved to the released packages in a
+new versioned venv (``venvs/2026-10-04T15-17-18``, built from ``phase4-B`` with
+``update --latest`` of the eight; ``phase5-A``/``phase5-B`` deleted, the older
+versions kept); ``[tinkercliffs_phase5]`` removed from ``PaulVT.local.ini`` (back to
+``local``, ``molssi10``, ``molssi10-tasks``) and the services restarted;
+TinkerCliffs ``/projects/seamm/psaxe/phase5`` deleted (1.8 GB); local
+``Testing/phase5/runs`` and ``ab_runs`` deleted (the harness, specs and SDF data
+kept for phase 6). SEAMM_DEV jobs 4010-4012 are kept as the live-validation record.

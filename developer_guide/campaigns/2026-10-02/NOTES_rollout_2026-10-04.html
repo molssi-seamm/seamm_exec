@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Rollout of 2026-10-04: ChemAI and TinkerCliffs &#8212; SEAMM seamm-exec Plug-in 2026.10.4.1 documentation</title>
+    <title>Rollout of 2026-10-04: ChemAI and TinkerCliffs &#8212; SEAMM seamm-exec Plug-in 2026.10.5 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../../_static/documentation_options.js?v=883ce3b3"></script>
+    <script src="../../../_static/documentation_options.js?v=99beb745"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -50,10 +50,10 @@
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="prev" title="Phase 5 notes" href="NOTES_phase5.html" />
+    <link rel="prev" title="Phase 6 notes" href="NOTES_phase6.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.4.1" />
+  <meta name="docsearch:version" content="2026.10.5" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -673,6 +673,99 @@ plug-ins afresh. Until the two are in the package list, a later
 <code class="docutils literal notranslate"><span class="pre">update</span> <span class="pre">--all</span></code> keeps them but <code class="docutils literal notranslate"><span class="pre">environment</span> <span class="pre">recreate</span></code> would drop them.</p>
 </section>
 </section>
+<section id="phase-5-rollout-2026-10-04-afternoon">
+<h1>Phase 5 rollout (2026-10-04, afternoon)<a class="headerlink" href="#phase-5-rollout-2026-10-04-afternoon" title="Link to this heading">#</a></h1>
+<p>Paul’s explicit ask (relayed by the design session, confirmed by Paul): ChemAI and
+TinkerCliffs together, by explicit package list only – never <code class="docutils literal notranslate"><span class="pre">--all</span></code>, no
+xnn-step/lammps-step, no code installers (none of the eight packages has one).</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Package</p></th>
+<th class="head"><p>Before</p></th>
+<th class="head"><p>After</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>molsystem</p></td>
+<td><p>2026.10.3</p></td>
+<td><p>2026.10.4</p></td>
+</tr>
+<tr class="row-odd"><td><p>seamm</p></td>
+<td><p>2026.10.3</p></td>
+<td><p>2026.10.4</p></td>
+</tr>
+<tr class="row-even"><td><p>seamm-scheduler</p></td>
+<td><p>2026.10.3</p></td>
+<td><p>2026.10.4</p></td>
+</tr>
+<tr class="row-odd"><td><p>seamm-exec</p></td>
+<td><p>2026.10.4</p></td>
+<td><p>2026.10.4.1</p></td>
+</tr>
+<tr class="row-even"><td><p>loop-step</p></td>
+<td><p>2026.10.3</p></td>
+<td><p>2026.10.4</p></td>
+</tr>
+<tr class="row-odd"><td><p>read-structure-step</p></td>
+<td><p>2026.10.4</p></td>
+<td><p>2026.10.4.1</p></td>
+</tr>
+<tr class="row-even"><td><p>forcefield-step</p></td>
+<td><p>2026.9.27</p></td>
+<td><p>2026.10.4</p></td>
+</tr>
+<tr class="row-odd"><td><p>seamm-jobserver</p></td>
+<td><p>2026.10.3</p></td>
+<td><p>2026.10.4</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Same on both sites. <code class="docutils literal notranslate"><span class="pre">seamm-manager</span> <span class="pre">update</span> <span class="pre">--latest</span> <span class="pre">molsystem</span> <span class="pre">seamm</span> <span class="pre">seamm-exec</span>
+<span class="pre">loop-step</span> <span class="pre">read-structure-step</span> <span class="pre">forcefield-step</span> <span class="pre">seamm-jobserver</span></code>; seamm-scheduler is
+not in the package list (“not a SEAMM package”) and came in through seamm-exec’s
+requirement. <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span> <span class="pre">check</span></code> clean on both.</p>
+<ul class="simple">
+<li><p><strong>TinkerCliffs</strong> (<code class="docutils literal notranslate"><span class="pre">/projects/seamm/SEAMM</span></code>, no services): none of the 50-odd
+running jobs used the venv (ORCA/VASP farm scripts under <code class="docutils literal notranslate"><span class="pre">/projects/seamm/psaxe</span></code>,
+checked by each job’s command). New <code class="docutils literal notranslate"><span class="pre">venvs/2026-10-04T15-23-39</span></code>; rollback
+<code class="docutils literal notranslate"><span class="pre">venvs/2026-10-04T06-12-15</span></code>.</p></li>
+<li><p><strong>ChemAI</strong>: nothing in SLURM for <code class="docutils literal notranslate"><span class="pre">seamm</span></code>, nothing running or submitted in the
+datastore (2482 jobs; the 112 stale “started” rows as before). JobServer and web
+UI stopped, updated: new <code class="docutils literal notranslate"><span class="pre">venvs/2026-10-04T15-37-21</span></code>; rollback
+<code class="docutils literal notranslate"><span class="pre">venvs/2026-10-04T06-18-41</span></code>. mbe-step 2026.10.4, seamm-mbe 2026.10.3.1 and the
+held xnn-step 2026.9.28 carried over unchanged. The update reported starting the
+JobServer but it was not running (seamm_manager#26 again); started it, then the
+web UI; all 16 queues listed.</p></li>
+</ul>
+<p>Test jobs (job 5165’s flowchart, three molecules from SMILES, MOPAC):</p>
+<ul class="simple">
+<li><p>ChemAI job <strong>5167</strong>, queue <code class="docutils literal notranslate"><span class="pre">ChemAI</span></code>: finished.</p></li>
+<li><p>ChemAI job <strong>5168</strong>, queue <code class="docutils literal notranslate"><span class="pre">tinkercliffs_debug</span></code> (run in TinkerCliffs’ new venv):
+finished, identical to 5167.</p></li>
+</ul>
+<p>Both differ from this morning’s 5165/5166 (e.g. -11.3502818 vs -11.3070296
+kcal/mol) because of molsystem 2026.10.4’s fixed RDKit seed: the SMILES give other
+starting conformers. Shown, not assumed: the same flowchart run locally with
+molsystem 2026.10.3 reproduces 5165/5166 and with 2026.10.4 reproduces 5167/5168,
+to every printed digit.</p>
+<p>Since both sites moved together, no <code class="docutils literal notranslate"><span class="pre">max_resubmits</span></code> change was needed on ChemAI’s
+ARC queues.</p>
+<section id="mbe-on-tinkercliffs-2026-10-04-paul-s-ask">
+<h2>MBE on TinkerCliffs (2026-10-04, Paul’s ask)<a class="headerlink" href="#mbe-on-tinkercliffs-2026-10-04-paul-s-ask" title="Link to this heading">#</a></h2>
+<p>So that MBE runs use the main install instead of the MBE session’s private venv:
+<code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">mbe-step==2026.10.4</span> <span class="pre">seamm-mbe==2026.10.3.1</span></code> into
+<code class="docutils literal notranslate"><span class="pre">/projects/seamm/SEAMM/venv</span></code> (<code class="docutils literal notranslate"><span class="pre">venvs/2026-10-04T15-23-39</span></code>), in place as on ChemAI
+this morning (<code class="docutils literal notranslate"><span class="pre">seamm-manager</span> <span class="pre">install</span></code> refuses packages not in the package list).
+A dry run first showed only these two; nothing used the venv. <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span> <span class="pre">check</span></code>
+clean; <code class="docutils literal notranslate"><span class="pre">MBE</span></code> registered under <code class="docutils literal notranslate"><span class="pre">org.molssi.seamm</span></code> and listed by
+<code class="docutils literal notranslate"><span class="pre">seamm-flowchart</span> <span class="pre">steps</span></code>. <code class="docutils literal notranslate"><span class="pre">vasp.ini</span></code> there (changed by the MBE session with
+Paul’s OK; backup <code class="docutils literal notranslate"><span class="pre">vasp.ini.bak-2026-10-04</span></code>) names <code class="docutils literal notranslate"><span class="pre">dftd4</span> <span class="pre">=</span>
+<span class="pre">/projects/seamm/conda-envs/dftd4/bin/dftd4</span></code>; neither package has an installer, so
+nothing rewrote it. Until mbe-step and seamm-mbe are in the package list
+(seamm_packaging PR #3), <code class="docutils literal notranslate"><span class="pre">environment</span> <span class="pre">recreate</span></code> would drop them.</p>
+</section>
+</section>
 
 
                 </article>
@@ -685,12 +778,12 @@ plug-ins afresh. Until the two are in the package list, a later
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="NOTES_phase5.html"
+       href="NOTES_phase6.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Phase 5 notes</p>
+        <p class="prev-next-title">Phase 6 notes</p>
       </div>
     </a>
 </div>
@@ -712,12 +805,20 @@ plug-ins afresh. Until the two are in the package list, a later
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Rollout of 2026-10-04: ChemAI and TinkerCliffs</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#versions">Versions</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#chemai">ChemAI</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tinkercliffs">TinkerCliffs</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#test-jobs">Test jobs</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mbe-on-chemai">MBE on ChemAI</a></li>
 </ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#phase-5-rollout-2026-10-04-afternoon">Phase 5 rollout (2026-10-04, afternoon)</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mbe-on-tinkercliffs-2026-10-04-paul-s-ask">MBE on TinkerCliffs (2026-10-04, Paul’s ask)</a></li>
+</ul>
+</li>
+</ul>
+
   </nav></div>
 
   <div class="sidebar-secondary-item">

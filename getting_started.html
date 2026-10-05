@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.4.1 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.5 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="_static/documentation_options.js?v=883ce3b3"></script>
+    <script src="_static/documentation_options.js?v=99beb745"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="Welcome to SEAMM exec’s documentation!" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.4.1" />
+  <meta name="docsearch:version" content="2026.10.5" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -662,6 +662,22 @@ stops with a message saying so.</p></li>
 (the Dashboard, the web UI) see it as of the last finished step.</p></li>
 </ul>
 </section>
+<section id="parallel-loops">
+<h2>Parallel loops<a class="headerlink" href="#parallel-loops" title="Link to this heading">#</a></h2>
+<p>Since 2026.10.5 a Loop can run its iterations in parallel (loop_step’s “Run
+iterations in parallel”). Each iteration is a task of the program <code class="docutils literal notranslate"><span class="pre">seamm</span></code>: its
+resolver (<code class="docutils literal notranslate"><span class="pre">seamm_exec.iteration</span></code>) runs <code class="docutils literal notranslate"><span class="pre">run_flowchart</span></code> on the machine that
+runs it, with the iteration’s share of cores and memory in <code class="docutils literal notranslate"><span class="pre">SEAMM_CE</span></code>. The
+iteration’s evaluator resumes the job’s flowchart into just that iteration, from a
+checkpoint the Loop writes into a snapshot of the job’s database in the
+iteration’s <code class="docutils literal notranslate"><span class="pre">_evaluator</span></code> directory; its step directories are where a serial loop
+puts them. The tasks go where any tasks go – the evaluator’s own pool, or bundled
+into queue jobs when the job’s target sends tasks to a queue – and the Loop
+merges each iteration back in order when it is done. With “inline” placement an
+iteration’s own calculations run in its share (its <code class="docutils literal notranslate"><span class="pre">SEAMM_TARGET</span></code> is empty); with
+“separate tasks” (experimental) they go to the job’s target. The Loop’s user guide
+describes the options and the contract.</p>
+</section>
 </section>
 
 
@@ -716,6 +732,7 @@ stops with a message saying so.</p></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#many-structures-one-model-chemistry">Many structures, one model chemistry</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#where-things-run">Where things run</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resuming-a-job">Resuming a job</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#parallel-loops">Parallel loops</a></li>
 </ul>
   </nav></div>
 
