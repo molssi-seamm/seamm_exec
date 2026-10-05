@@ -618,9 +618,11 @@ def test_staged_bundle_runs_in_the_remote_copy(job, tmp_path):
     ts.add(fake_task("b"))
     results = run_all(ts)
     assert all(r.ok for r in results.values())
-    # It ran in the "remote" copy and came back
-    assert (remote / "step" / "tasks" / "a" / "out.txt").exists()
+    # It ran in the "remote" copy (see bundle.json below) and came back; the
+    # remote copies were then removed, so they cannot pile up or come back
     assert (job / "step" / "tasks" / "a" / "out.txt").read_text().startswith("a ")
+    assert not (remote / "step" / "tasks" / "a").exists()
+    assert not (remote / "step" / "tasks" / "_bundles" / "bundle_0000.1").exists()
     assert len(stager.pushes) == 1 and len(stager.pulls) == 1
     assert "step/tasks/_bundles/bundle_0000.1" in stager.pushes[0]
     bundle = json.loads(

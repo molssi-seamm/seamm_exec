@@ -867,6 +867,7 @@ class SchedulerBackend:
                 logger.warning(f"Could not stage back job {job_id}: {e}")
                 continue
             self._pulled.add(job_id)
+            self._remove_remote(job_id)
 
     def _pull(self, job_ids):
         """Stage back the directories of the bundles whose jobs ended."""
@@ -880,6 +881,35 @@ class SchedulerBackend:
             self.stager.pull(
                 self.remote_job_directory, str(self.job_directory), sorted(paths)
             )
+
+    def _remove_remote(self, job_id):
+        """Remove the remote copies of a bundle's directories, now staged back,
+        so they neither pile up under ``remote_root`` nor come back after the
+        task layer archives or prunes them here. A directory another task still
+        running uses (a step directory given to several) is kept."""
+        mine, others = set(), set()
+        for entry in self._entries.values():
+            paths = {
+                str(self.relative(entry.bundle_dir)),
+                str(self.relative(entry.directory)),
+                str(self.relative(entry.marker)),
+            }
+            if entry.job_id == job_id:
+                mine |= paths
+            elif entry.job_id not in self._pulled:
+                others |= paths
+        paths = sorted(p for p in mine - others if p not in ("", "."))
+        if not paths:
+            return
+        base = PurePosixPath(self.remote_job_directory)
+        argv = ["rm", "-rf", "--"] + [str(base / p) for p in paths]
+        try:
+            rc, out, err = self.queue._run(argv)
+            if rc != 0:
+                logger.warning(f"Could not remove the remote copies of {job_id}: {err}")
+        except Exception as e:
+            # Not fatal: they are copies
+            logger.warning(f"Could not remove the remote copies of {job_id}: {e}")
 
     def _marker(self, entry):
         """ "DONE", "FAILED" or None, from markers written for *this* task."""
