@@ -280,3 +280,42 @@ seamm_exec (``computational_environment``, the retry fixes, the timing helper, t
 test) → seamm_webui (task view) → mopac_step (``success.dat``, #161) → seamm_manager
 (#26-#29) → devops (the ``gh-pages`` concurrency group). The PBS site items are
 configuration on MolSSI10, not releases.
+
+Review (design session, 2026-10-05)
+-----------------------------------
+
+The design session recommends (B). Folded in:
+
+1. **No deadlock with D3.** With the Mac's evaluators in the same queue as their tasks,
+   N one-core evaluators on N cores would hold every core while their tasks wait. Rule:
+   a job submitted by the JobServer as an evaluator is charged **no cores** and a small
+   memory (1 GB) -- evaluators are light and mostly waiting; only tasks are charged their
+   cores. Tested with capacity 2 and three jobs each with a 2-core task.
+2. **Atomic claim without a daemon.** Passes run from concurrent callers (several
+   evaluators' status polls, runners ending), so a pass claims a queued job with one
+   ``UPDATE ... SET state = 'starting' WHERE id = ? AND state = 'queued'`` in a short
+   ``BEGIN IMMEDIATE`` transaction and starts it only if one row changed; the soak runs
+   concurrent passes as well as concurrent submissions.
+3. **Time limits across sleep.** A job's time is measured with ``time.monotonic()``,
+   which stops while the machine sleeps on both macOS and Linux (Linux's
+   ``CLOCK_MONOTONIC`` excludes suspend; ``CLOCK_BOOTTIME`` is the one that does not), so
+   a laptop closed overnight does not time out its jobs on waking. A sleeping runner is
+   never "lost": only a vanished pid, or a pid whose start time differs, is.
+4. **Memory enforced, not just accounted.** The runner watches its job's process tree
+   (the job's session, so detached MPI ranks too) and stops the job -- SIGTERM, then
+   SIGKILL -- when it uses more than 125 % of its request for 30 s, recording ``memory``
+   as the reason. On macOS RSS misses compressed and swapped pages (the
+   ``mac-memory-guard-rss-blind`` lesson), so the measure is the process footprint where
+   psutil offers it (``memory_full_info().uss``), and a second guard watches the
+   machine: below 10 % available memory the newest job is stopped. seamm-manager writes
+   the capacity into ``<root>/taskserver.ini`` on install, explicitly (physical cores,
+   half the RAM), rather than leaving a silent default; the 2-4 GB rule for the Claude
+   sessions' own local work is separate and unchanged.
+
+Nits taken: over ssh the queue is invoked as ``<remote_python> -m
+seamm_scheduler.taskserver ...``, never a command on the PATH (the ``conda run`` lesson);
+a versioned ``queue.db`` schema with a migration test; ``seamm-taskserver queue`` shows
+memory as well as cores; the task view refreshes only while the job is running, and the
+``/files`` depth parameter defaults to 2; seamm-mbe and mbe-step join the ChemAI rollout
+list only if Paul wants them there; the PBS orphan-job removal waits for Paul's one-line
+OK.
