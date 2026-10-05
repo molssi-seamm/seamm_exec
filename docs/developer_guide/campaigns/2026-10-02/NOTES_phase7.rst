@@ -319,3 +319,13 @@ memory as well as cores; the task view refreshes only while the job is running, 
 ``/files`` depth parameter defaults to 2; seamm-mbe and mbe-step join the ChemAI rollout
 list only if Paul wants them there; the PBS orphan-job removal waits for Paul's one-line
 OK.
+
+Decisions (Paul, 2026-10-05)
+----------------------------
+
+D1 (B): the TaskServer is a queue with a command line and a ``seamm`` scheduler module.
+D2: no daemon, with the atomic claim and sleep-safe timing of the review. D3: the Mac's
+own jobs through the queue as an option, switched on in SEAMM_DEV first; evaluators
+charged no cores. D4-D6 as proposed, except that the ssh validation uses the Mac mini at
+work (``macmini`` in ``~/.ssh/config``: 8 cores, 16 GB, its own ``~/SEAMM``) rather than
+paul.local. The rollout of phases 6 and 7 waits for Paul's word, timed with the EC pilot.
