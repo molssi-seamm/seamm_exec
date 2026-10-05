@@ -12,7 +12,7 @@ import psutil
 
 # The queueing systems whose allocations are recognized, in order. Each names
 # the variable that marks a job (``env_names["job_id"]``) in seamm_scheduler.
-SCHEDULERS = ("slurm", "pbs")
+SCHEDULERS = ("slurm", "pbs", "seamm")
 
 
 def scheduler_job_variables():
@@ -22,7 +22,7 @@ def scheduler_job_variables():
 
         return tuple(get_scheduler(n).env_names["job_id"] for n in SCHEDULERS)
     except ImportError:
-        return ("SLURM_JOB_ID", "PBS_JOBID")
+        return ("SLURM_JOB_ID", "PBS_JOBID", "SEAMM_TASKSERVER_JOB_ID")
 
 
 def running_scheduler():
@@ -55,6 +55,8 @@ def computational_environment(limits={}):
         ce = _slurm()
     elif scheduler == "pbs":
         ce = _pbs()
+    elif scheduler == "seamm":
+        ce = _seamm()
     else:
         ce = _local()
 
@@ -161,6 +163,27 @@ def _slurm_normalize_memory(ce):
         ce["MEM_PER_NODE"] = available
         ce["MEM_PER_CPU"] = available // cores_per_node
     return ce
+
+
+def _seamm():
+    """The cores and memory of a TaskServer job (seamm_scheduler.taskserver)."""
+    job_id = os.environ.get("SEAMM_TASKSERVER_JOB_ID")
+    if job_id is None:
+        raise RuntimeError("This does not appear to be a TaskServer job.")
+    ntasks = max(1, int(os.environ.get("SEAMM_TASKSERVER_NTASKS", "1") or 1))
+    memory = int(os.environ.get("SEAMM_TASKSERVER_MEMORY", "0") or 0)
+    if memory <= 0:
+        memory = psutil.virtual_memory().available
+    return {
+        "type": "seamm",
+        "JOB_ID": job_id,
+        "NTASKS": ntasks,
+        "NNODES": 1,
+        "NTASKS_PER_NODE": ntasks,
+        "CPUS_PER_TASK": 1,
+        "MEM_PER_NODE": memory,
+        "MEM_PER_CPU": memory // ntasks,
+    }
 
 
 def _pbs():

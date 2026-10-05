@@ -158,6 +158,7 @@ class SchedulerBackend:
         max_queued=None,
         poll_interval=30.0,
         job_name_prefix="seamm",
+        max_walltime=None,
     ):
         self.queue = queue
         self.name = name
@@ -176,6 +177,8 @@ class SchedulerBackend:
                 f"'{executor}'."
             )
         self.bundle_walltime = bundle_walltime
+        # The queue's longest walltime: retries after a timeout never ask more
+        self.max_walltime = max_walltime
         self.max_queued = max_queued
         self.poll_interval = poll_interval
         self.job_name_prefix = job_name_prefix
@@ -247,6 +250,7 @@ class SchedulerBackend:
             executor=executor,
             accepts_config=section.task_transport == "local",
             bundle_walltime=section.bundle_walltime,
+            max_walltime=_max_walltime(section),
             max_queued=section.max_queued_tasks,
             poll_interval=(
                 section.poll_interval if section.poll_interval is not None else 30.0
@@ -730,10 +734,13 @@ class SchedulerBackend:
                 for t, w in zip(tasks, walltimes)
             )
             if estimate > 0:
-                # A retry after running out of time gets more (walltime_scale)
+                # A retry after running out of time gets more (walltime_scale),
+                # within the bundle limit and the queue's longest walltime
                 walltime = walltime_scale * (2.0 * estimate + 600.0)
                 if limit:
                     walltime = min(walltime, limit)
+                if self.max_walltime:
+                    walltime = min(walltime, self.max_walltime)
             else:
                 walltime = limit
         ntasks = largest("ntasks")
@@ -943,6 +950,25 @@ class SchedulerBackend:
                 return RUNNING
             return QUEUED
         return RUNNING  # ended; its files are not back yet
+
+
+def _max_walltime(section):
+    """The queue's longest walltime, in seconds, from a target section: its
+    ``max_walltime``, else the maximum of an overridable ``time``."""
+    value = getattr(section, "max_walltime", None)
+    if value:
+        return float(value)
+    limits = getattr(section, "limits", None) or {}
+    limit = limits.get("time")
+    maximum = getattr(limit, "maximum", None) if limit is not None else None
+    if maximum:
+        try:
+            from seamm_scheduler.config import _parse_time
+
+            return float(_parse_time(maximum))
+        except Exception:
+            return None
+    return None
 
 
 def parse_id(backend_id):
