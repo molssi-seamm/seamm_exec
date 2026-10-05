@@ -108,17 +108,28 @@ def test_base_run_subdir_return(tmp_path):
 # LocalPool: concurrency and slots
 # ----------------------------------------------------------------------
 def test_tasks_run_concurrently(tmp_path):
+    """Four one-core tasks in a four-core pool all run at the same time.
+
+    Judged by their running intervals overlapping, not by the total elapsed
+    time, which a busy CI machine stretches."""
+    stamp = f"{sys.executable} -c 'import time; print(time.time())'"
     ts = TaskSet(directory=tmp_path, backend=pool(cores=4), executor=Local())
     for i in range(4):
         ts.add(
             shell_task(
-                f"t{i}", "sleep 1; echo {NTASKS} > n.txt", resources=Resources(1)
+                f"t{i}",
+                f"{stamp} > start.txt; sleep 2; {stamp} > end.txt; "
+                "echo {NTASKS} > n.txt",
+                resources=Resources(1),
             )
         )
-    t0 = time.monotonic()
     results = run_all(ts)
-    elapsed = time.monotonic() - t0
-    assert elapsed < 2.5, f"4 one-second tasks on 4 cores took {elapsed:.1f} s"
+    starts, ends = [], []
+    for i in range(4):
+        directory = tmp_path / "tasks" / f"t{i}"
+        starts.append(float((directory / "start.txt").read_text()))
+        ends.append(float((directory / "end.txt").read_text()))
+    assert max(starts) < min(ends), f"not all running at once: {starts} {ends}"
     for i in range(4):
         r = results[f"t{i}"]
         assert r.ok and r.returncode == 0 and r.attempts == 1

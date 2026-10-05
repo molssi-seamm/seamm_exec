@@ -618,9 +618,11 @@ def test_staged_bundle_runs_in_the_remote_copy(job, tmp_path):
     ts.add(fake_task("b"))
     results = run_all(ts)
     assert all(r.ok for r in results.values())
-    # It ran in the "remote" copy and came back
-    assert (remote / "step" / "tasks" / "a" / "out.txt").exists()
+    # It ran in the "remote" copy (see bundle.json below) and came back; the
+    # remote copies were then removed, so they cannot pile up or come back
     assert (job / "step" / "tasks" / "a" / "out.txt").read_text().startswith("a ")
+    assert not (remote / "step" / "tasks" / "a").exists()
+    assert not (remote / "step" / "tasks" / "_bundles" / "bundle_0000.1").exists()
     assert len(stager.pushes) == 1 and len(stager.pulls) == 1
     assert "step/tasks/_bundles/bundle_0000.1" in stager.pushes[0]
     bundle = json.loads(
@@ -1312,3 +1314,109 @@ def test_job_status_timed_out():
         raw={"comment": "job killed: walltime 610 exceeded limit 600"},
     )
     assert pbs.timed_out
+
+
+# ---- through the real TaskServer (seamm_scheduler.taskserver) ---------------
+
+
+def test_bundles_through_the_taskserver(job, tmp_path):
+    """The 'seamm' scheduler: bundles queued and run by the machine's queue."""
+    from seamm_scheduler.backend import QueueBackend
+    from seamm_scheduler.local import LocalTransport
+    from seamm_scheduler.seamm import Seamm
+
+    job, root = job
+    queue_root = tmp_path / "queue_root"
+    queue_root.mkdir()
+    (queue_root / "taskserver.ini").write_text(
+        "[taskserver]\ncores = 2\nmemory = 2 GB\n"
+    )
+    queue = QueueBackend(Seamm(root=str(queue_root)), LocalTransport())
+    backend = make_backend(queue, job, root)
+    ts = TaskSet(directory=job / "step", backend=backend, bundle_tasks=2)
+    for i in range(5):
+        ts.add(
+            fake_task(f"t{i}", resources=Resources(ntasks=1, mem_per_cpu=100 * 2**20))
+        )
+    results = run_all(ts)
+    assert all(r.ok for r in results.values()), {
+        k: (r.state, r.reason) for k, r in results.items()
+    }
+    for i in range(5):
+        words = results[f"t{i}"].files["out.txt"].split()
+        assert words == [f"t{i}", "1"]  # the task's share of the bundle's cores
+    # The queue ran three bundles, as TaskServer jobs. A bundle's results are
+    # back a moment before its runner records the job as completed, so wait for
+    # the queue to catch up.
+    deadline = time.monotonic() + 30
+    while True:
+        rows = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "seamm_scheduler.taskserver",
+                "--root",
+                str(queue_root),
+                "status",
+                "--json",
+            ],
+            capture_output=True,
+            text=True,
+        ).stdout
+        jobs = json.loads(rows)
+        done = all(j["state"] == "completed" for j in jobs)
+        if done or time.monotonic() > deadline:
+            break
+        time.sleep(0.5)
+    assert len(jobs) == 3 and done, jobs
+    # A rerun restores everything without submitting
+    ts = TaskSet(directory=job / "step", backend=make_backend(queue, job, root))
+    for i in range(5):
+        ts.add(
+            fake_task(f"t{i}", resources=Resources(ntasks=1, mem_per_cpu=100 * 2**20))
+        )
+    assert all(r.restored for r in run_all(ts).values())
+
+
+def test_a_timeout_seen_on_reattach_gets_more_time(job):
+    """The queue stopped the bundle for its time while the evaluator was away:
+    the restarted evaluator's retry still gets twice the time."""
+    job, root = job
+    queue = FakeQueue(hold=True)
+    first = make_backend(queue, job, root, poll_interval=10000)
+    ts = TaskSet(directory=job / "step", backend=first, bundle_walltime=6 * 3600)
+    ts.add(fake_task("slow", estimated_seconds=300))
+    with pytest.raises(TimeoutError):
+        _first_with_timeout(ts.run(), 1.0)
+    (job_id,) = queue.jobs
+    queue.end(job_id, "TIMEOUT")  # while no evaluator watches
+    queue.hold = False
+    ts = TaskSet(
+        directory=job / "step",
+        backend=make_backend(queue, job, root),
+        bundle_walltime=6 * 3600,
+    )
+    ts.add(fake_task("slow", estimated_seconds=300))
+    results = run_all(ts)
+    assert results["slow"].ok
+    base = 2 * 300 + 600
+    times = []
+    for script in queue.scripts:
+        for line in script.splitlines():
+            if line.startswith("#SBATCH --time="):
+                h, m, s = line.split("=", 1)[1].split(":")
+                times.append(3600 * int(h) + 60 * int(m) + int(s))
+    assert times == [base, 2 * base]
+
+
+def test_timed_out_retry_stays_within_the_queue_maximum(job):
+    job, root = job
+    backend = make_backend(FakeQueue(), job, root, max_walltime=3000)
+    tasks = [fake_task("a", estimated_seconds=1000)]
+    assert backend._bundle_resources(tasks, walltime_scale=4)["walltime"] == 3000
+    section = TargetSection.from_settings(
+        {"name": "q", "transport": "local", "host": None, "max_walltime": 7200}
+    )
+    from seamm_exec.scheduler_backend import _max_walltime
+
+    assert _max_walltime(section) == 7200

@@ -158,6 +158,7 @@ class SchedulerBackend:
         max_queued=None,
         poll_interval=30.0,
         job_name_prefix="seamm",
+        max_walltime=None,
     ):
         self.queue = queue
         self.name = name
@@ -176,6 +177,8 @@ class SchedulerBackend:
                 f"'{executor}'."
             )
         self.bundle_walltime = bundle_walltime
+        # The queue's longest walltime: retries after a timeout never ask more
+        self.max_walltime = max_walltime
         self.max_queued = max_queued
         self.poll_interval = poll_interval
         self.job_name_prefix = job_name_prefix
@@ -247,6 +250,7 @@ class SchedulerBackend:
             executor=executor,
             accepts_config=section.task_transport == "local",
             bundle_walltime=section.bundle_walltime,
+            max_walltime=_max_walltime(section),
             max_queued=section.max_queued_tasks,
             poll_interval=(
                 section.poll_interval if section.poll_interval is not None else 30.0
@@ -730,10 +734,13 @@ class SchedulerBackend:
                 for t, w in zip(tasks, walltimes)
             )
             if estimate > 0:
-                # A retry after running out of time gets more (walltime_scale)
+                # A retry after running out of time gets more (walltime_scale),
+                # within the bundle limit and the queue's longest walltime
                 walltime = walltime_scale * (2.0 * estimate + 600.0)
                 if limit:
                     walltime = min(walltime, limit)
+                if self.max_walltime:
+                    walltime = min(walltime, self.max_walltime)
             else:
                 walltime = limit
         ntasks = largest("ntasks")
@@ -860,6 +867,7 @@ class SchedulerBackend:
                 logger.warning(f"Could not stage back job {job_id}: {e}")
                 continue
             self._pulled.add(job_id)
+            self._remove_remote(job_id)
 
     def _pull(self, job_ids):
         """Stage back the directories of the bundles whose jobs ended."""
@@ -873,6 +881,35 @@ class SchedulerBackend:
             self.stager.pull(
                 self.remote_job_directory, str(self.job_directory), sorted(paths)
             )
+
+    def _remove_remote(self, job_id):
+        """Remove the remote copies of a bundle's directories, now staged back,
+        so they neither pile up under ``remote_root`` nor come back after the
+        task layer archives or prunes them here. A directory another task still
+        running uses (a step directory given to several) is kept."""
+        mine, others = set(), set()
+        for entry in self._entries.values():
+            paths = {
+                str(self.relative(entry.bundle_dir)),
+                str(self.relative(entry.directory)),
+                str(self.relative(entry.marker)),
+            }
+            if entry.job_id == job_id:
+                mine |= paths
+            elif entry.job_id not in self._pulled:
+                others |= paths
+        paths = sorted(p for p in mine - others if p not in ("", "."))
+        if not paths:
+            return
+        base = PurePosixPath(self.remote_job_directory)
+        argv = ["rm", "-rf", "--"] + [str(base / p) for p in paths]
+        try:
+            rc, out, err = self.queue._run(argv)
+            if rc != 0:
+                logger.warning(f"Could not remove the remote copies of {job_id}: {err}")
+        except Exception as e:
+            # Not fatal: they are copies
+            logger.warning(f"Could not remove the remote copies of {job_id}: {e}")
 
     def _marker(self, entry):
         """ "DONE", "FAILED" or None, from markers written for *this* task."""
@@ -943,6 +980,25 @@ class SchedulerBackend:
                 return RUNNING
             return QUEUED
         return RUNNING  # ended; its files are not back yet
+
+
+def _max_walltime(section):
+    """The queue's longest walltime, in seconds, from a target section: its
+    ``max_walltime``, else the maximum of an overridable ``time``."""
+    value = getattr(section, "max_walltime", None)
+    if value:
+        return float(value)
+    limits = getattr(section, "limits", None) or {}
+    limit = limits.get("time")
+    maximum = getattr(limit, "maximum", None) if limit is not None else None
+    if maximum:
+        try:
+            from seamm_scheduler.config import _parse_time
+
+            return float(_parse_time(maximum))
+        except Exception:
+            return None
+    return None
 
 
 def parse_id(backend_id):
