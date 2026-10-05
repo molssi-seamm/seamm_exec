@@ -23,7 +23,7 @@ Summary
 2   Dimer builder wall-walk as per-point TaskSets on a queue    M       defer
 3   Packaging: sdists that cannot be built (8 packages)         S       decided
 4   Dashboard: child iterations as datastore rows               M-L     defer
-5   devops: a summary line when the docs deploy fails           S       do
+5   devops: a summary line when the docs deploy fails           S       decided
 6   mopac_step: a smoke test of the run path                    S       do
 7   Legacy structure-handling wording (strain_step)             S       do
 8   seamm_exec test flakiness: the timing-sensitive tests       S       do
@@ -157,6 +157,17 @@ proposed one concurrency group for every workflow that pushes ``gh-pages``, but 
 release notes rejected it: GitHub cancels all but one *pending* job in a group, so a
 Release's deploy could be dropped. A retry with a ``git pull --rebase`` of
 ``gh-pages`` before the push would remove the collision itself.
+
+*Measured (2026-10-05).* The docs deploy succeeded in the latest Release run of all 15
+packages released in phases 6 and 7, properties_step's included. The only failures on
+record are properties_step's two in phase 6, before devops#3. A failed deploy costs
+nothing visible, since the package's Docs workflow publishes the same docs when the
+merge lands on main.
+
+*Decision (Paul, 2026-10-05).* No change of its own. Fold the ~10 lines (an ``id``
+on the deploy step, and a step that runs on failure, writing a ``::warning::`` and a
+``$GITHUB_STEP_SUMMARY`` line) into the next devops change, and the same into
+seamm_webui's own ``Release.yaml``.
 
 6. mopac_step: a smoke test of the run path
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
