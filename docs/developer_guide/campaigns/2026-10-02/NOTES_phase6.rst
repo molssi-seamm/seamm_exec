@@ -503,3 +503,18 @@ to the phase 6 versions at release, with ``seamm``); read_structure_step
 Answers to the review's questions: start-up cost documented, a warm evaluator per
 bundle is phase 7 material; whole-database snapshots stay up front, the disk cost
 documented.
+
+Release (2026-10-05)
+--------------------
+
+All ten released as 2026.10.5, each PR reviewed by ``seamm`` and merged by Paul,
+Releases cut in order, ``make update`` after each, and a clean PyPI-only venv
+test before each PR: molsystem #123, seamm #224, seamm_exec #44, loop_step #40,
+read_structure_step #84, table_step #99, properties_step #5, lammps_step #115,
+orca_step #43, geometry_analysis_step #12. Snags: loop_step's PR CI failed twice
+on macOS because the runner's restored uv cache still held PyPI's index page from
+before seamm-exec 2026.10.5 (passed after ~10 minutes); properties_step's Release
+run failed in the docs push to ``gh-pages`` (two pushes colliding), which skipped
+the PyPI job -- rerunning the failed jobs published it. The last three steps
+depend only on seamm, so their PRs went together (Paul). Phase 6 is opt-in; no
+rollout until the next planned one.
