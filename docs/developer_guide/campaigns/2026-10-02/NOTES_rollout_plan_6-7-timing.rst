@@ -269,6 +269,15 @@ Before:
 
 Do:
 
+- Right after a release, uv may still see the old versions even with
+  ``--refresh``: it reads the JSON form of PyPI's simple index (``Accept:
+  application/vnd.pypi.simple.v1+json``), which PyPI's CDN caches separately
+  from the HTML page. Before an install that needs a new version, check that
+  form shows it::
+
+      curl -s -H 'Accept: application/vnd.pypi.simple.v1+json' \
+          https://pypi.org/simple/seamm-manager/ | grep -o '2026\.10\.5\.1' | head -1
+
 - ``uv tool install --force --python 3.12 seamm-manager==2026.10.5.1`` (the tool,
   not the venv).
 - ``seamm-manager update --latest --dry-run <list>``; read it.
