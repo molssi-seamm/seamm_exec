@@ -308,12 +308,11 @@ Not phase 8, recorded here for completeness
 - **The phase 6+7 rollout:** Paul decides when, timed with the EC pilot.
   ChemAI only on an explicit ask; TinkerCliffs with an explicit package list and a
   dry run, never ``--all``.
-- **Cleanup still to do (2026-10-05):**
+- **Cleanup (2026-10-05), all done:**
 
   - The idle test venvs ``~/SEAMM_DEV/venvs/phase4-A``, ``phase4-B`` and
     ``phase7-B``, and the empty test queue ``~/SEAMM_DEV/taskserver`` with its
-    test-sized ``taskserver.ini``. Their deletion was blocked by a permission
-    check, so Paul is deleting them by hand.
+    test-sized ``taskserver.ini``: deleted by Paul (2026-10-05).
   - The local harness runs in ``Testing/phase4/runs`` and ``Testing/phase2`` (the
     ``Job_9000xx`` runs and logs) were deleted on Paul's word (2026-10-05); the
     harnesses and ``targets.ini`` stay.
