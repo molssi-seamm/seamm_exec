@@ -1,7 +1,13 @@
 =======
 History
 =======
-2026.10.6 -- Timing records that a cost model can be fitted to
+2026.10.5.2 -- Timing records for a cost model; sub-steps find the SEAMM root again
+    * Bugfix: a calculation started by a sub-step -- ORCA's Energy, Optimization and
+      Frequencies, and its counterpoise jobs -- did not know the SEAMM root, so
+      ``<root>/orca.ini`` was not read and ORCA was taken from the PATH: on Debian
+      and Ubuntu systems ``/usr/bin/orca`` is a screen reader of the same name, and
+      clusters that load ORCA as a module have none. The root now comes from the
+      step, else the run's root (``--root``, ``SEAMM_ROOT``, the installation's).
     * ``seamm_exec.timing.record_task_timing(task, result, descriptors)``: one call
       by which a code step writes the timing record of a run it has made through
       the task layer. The common columns -- the machine class, the task's
@@ -15,6 +21,11 @@ History
       all_files=True)`` reads the files set aside too.
     * The design of the records, the model to be fitted to them and the per-code
       descriptors: ``docs/developer_guide/campaigns/2026-10-05``.
+    * ``seamm_exec.testing``: helpers for testing a code step's run path end to
+      end -- a flowchart built from a spec and run by ``run_flowchart`` with its
+      own HOME and root, a fake program replaying a real run's output for CI, the
+      installed program found as SEAMM finds it, and the results read back.
+    * Requires seamm-util 2026.9.27.1.
 2026.10.5.1 -- Calculations on the TaskServer; retries within the queue's limit
     * A calculation run by the TaskServer (seamm_scheduler 2026.10.5) sees its own
       cores and memory.

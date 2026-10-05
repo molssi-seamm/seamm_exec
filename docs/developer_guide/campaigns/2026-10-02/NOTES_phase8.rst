@@ -38,6 +38,7 @@ Summary
 13  Timing helper adoption by the plug-ins (vasp-step#18)       S each  do, per
                                                                         code
 14  molsystem#121: periodicity 0 on an empty configuration      S       do
+15  orca_step: cap the cores for small molecules               S       do
 ==  ==========================================================  ======  =========
 
 The items
@@ -359,6 +360,26 @@ whose cluster runs share a file over NFS.
 *Effort.* S.
 
 *Recommendation.* Do it with the next molsystem release.
+
+15. orca_step: cap the cores for small molecules
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+*What.* orca_step gives a calculation every core it sees: ``%pal nprocs`` is the
+available cores, capped only by the step's or the global ``ncores``. ORCA 6.1.1 then
+aborts small molecules in its start-up.
+
+*Evidence (2026-10-05).* Water at B3LYP/def2-SVP on the Mac with 11 processes
+aborted in ORCA's start-up: "the number of points read from the grid does not
+match the expectation" (``orca_startup_mpi``). On 1 core it runs in 3.7 s. Found
+while writing the run-path test (item 6), which runs on one core for that reason.
+
+*Effort.* S. Cap ``n_cores`` by the size of the calculation, for example by atoms or
+basis functions, using the same descriptors the timing records now hold. The cap
+belongs in ``orca_base`` where ``%pal`` is set. The threshold needs a few measured
+points: at what size does ORCA accept 2, 4 or 11 processes?
+
+*Recommendation.* Do it (Paul, 2026-10-05: its own item). Measure the threshold on
+the Mac first, then check it on a cluster node with more cores.
 
 Not phase 8, recorded here for completeness
 -------------------------------------------
