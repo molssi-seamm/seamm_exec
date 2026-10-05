@@ -379,4 +379,31 @@ ChemAI (user ``seamm``), pre-checks 2026-10-05
     alone). Snapshots in ``~seamm/rollout-snap/`` (conda explicit + pip
     freeze of ``seamm-lammps-xnn060`` and ``seamm-lammps``, venv versions). The
     ``--all`` update itself was not run by the Claude session (its permission
-    rules refused a change to the production machine); Paul runs it.
+    rules refused a change to the production machine); Paul ran it.
+
+2026-10-05, ChemAI, ``update --latest --all`` (Paul, from his terminal)
+    Tool -> 2026.10.5.1. New ``venvs/2026-10-05T19-00-48``, rollback
+    ``2026-10-04T15-37-21``; it took longer than expected (the twelve code
+    installers each probe their environment). Changed: seamm 2026.10.5,
+    molsystem 2026.10.5, seamm-exec 2026.10.5.2, orca-step 2026.10.5.2,
+    mopac/loop/read-structure/table/geometry-analysis/lammps/mbe-step 2026.10.5,
+    **xnn-step 2026.9.28 -> 2026.10.5 (the hold lifted)**, seamm-manager in
+    the venv 2026.10.5.1; strain-step 2026.10.5 appeared (a new requirement).
+    ``uv pip check`` clean. JobServer and web UI restarted (systemd user units).
+    **The hand-built ``seamm-lammps-xnn060`` is byte-for-byte unchanged**
+    (conda explicit list and pip freeze identical before and after; torch
+    2.13.0+cu126 still sees the GPU; ``import torch, xnn, mdi`` OK), as is
+    ``seamm-lammps``: the history-based ownership rule (#31) held on the first
+    real case. Test: the water ORCA Energy flowchart run as ``seamm`` with
+    ``run_flowchart``: "Ran ORCA directly in the job directory", E =
+    -76.31877069 Eh (identical to the Macs), so ``orca.ini`` is read and the
+    Debian screen reader is no longer picked up. ``orca.csv`` row: machine
+    ``AMD EPYC 7763 64-Core Processor`` (no cluster/partition: the test ran
+    outside SLURM; a job through the ``ChemAI`` queue will carry them), wall
+    5.4 s.
+
+Remaining: TinkerCliffs (``/projects/seamm/SEAMM``) and MolSSI10, both with
+``update --latest --all``; the Claude session's permission rules will refuse
+those too, so Paul runs them or approves them. On TinkerCliffs, afterwards,
+check that ``seamm-lammps-xnndev`` is unchanged as above (it carries stale
+``seamm-*.sha256`` records; the history rule should still say "not SEAMM's").
