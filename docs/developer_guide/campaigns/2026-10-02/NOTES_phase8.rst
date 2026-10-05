@@ -21,7 +21,7 @@ Summary
 1   Warm evaluator per bundle (parallel-loop start-up)          L       measure
                                                                         first
 2   Dimer builder wall-walk as per-point TaskSets on a queue    M       defer
-3   Packaging: MANIFEST.in gaps and no ``pyproject.toml``        S       do
+3   Packaging: sdists that cannot be built (8 packages)         S       decided
 4   Dashboard: child iterations as datastore rows               M-L     defer
 5   devops: a summary line when the docs deploy fails           S       do
 6   mopac_step: a smoke test of the run path                    S       do
@@ -82,32 +82,38 @@ turn inside the step.
 
 *Recommendation.* Defer to the dimer builder's next campaign.
 
-3. Packaging: MANIFEST.in gaps and no ``pyproject.toml``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3. Packaging: sdists that cannot be built
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-*What.* The problems:
+*What.* A source distribution from which no wheel can be built. Measured
+2026-10-05 by building every package in the workspace with ``uv build``, which builds
+the wheel from the sdist as ``pip`` does: 67 of 83 build. The released packages that
+fail have two causes:
 
-- loop_step's and forcefield_step's ``setup.py`` read ``requirements.txt`` and import
-  ``versioneer``, but their ``MANIFEST.in`` ships neither, so a wheel cannot be built
-  from their sdist.
-- None of the three has a ``pyproject.toml`` declaring ``versioneer`` as a build
-  dependency, so an isolated ``uv build`` fails (``No module named 'versioneer'``).
+- **The sdist misses files ``setup.py`` reads** (``versioneer.py``,
+  ``requirements.txt``): custom_step, forcefield_step, loop_step, supercell_step,
+  table_step. The fix is two ``MANIFEST.in`` lines (``include requirements*``,
+  ``include versioneer.py``). seamm_jobserver had the same gap, fixed in 2026.10.5.
+- **An old vendored ``versioneer.py`` calling ``configparser.SafeConfigParser``**,
+  removed in Python 3.12, so nothing builds at all: strain_step (last released
+  2022), crystal_builder_step (2022), set_cell_step (2021). Their next release would
+  fail in CI. The fix is the current ``versioneer.py`` from the cookiecutter template.
 
-seamm_jobserver's ``MANIFEST.in`` was fixed in 2026.10.5, but it still has no
-``pyproject.toml``.
+The other failures are local prototypes with no repository (conformer_search, data_sources,
+pyscf, query, trajectory_analysis) or stale side copies (``forcefield_step_experimental``,
+``strain_step_sv``).
 
-*Why deferred.* Found during the phase 7 release; the Release workflow builds from the
-source tree, which works, so it was not blocking.
+A ``pyproject.toml`` is *not* needed: the 67 that build have none. The first version
+of this item said otherwise.
 
-*Evidence.* seamm_jobserver: ``python -m build`` failed building the wheel from the
-sdist until the two files were added to ``MANIFEST.in``. ``uv build`` fails for all
-three.
+*Impact.* None for users today. Every release ships a wheel, which ``pip``/``uv``
+install, so the sdist is only used by something building from source.
 
-*Effort.* S per package: two ``MANIFEST.in`` lines and a minimal
-``[build-system]``. Ride along with each package's next release.
-
-*Recommendation.* Do it. It's also worth a ``grep`` across the workspace for other
-``setup.py``-only packages with the same gaps.
+*Decision (Paul, 2026-10-05).* Fix each package as part of its next release, not in
+releases of its own; strain_step together with item 7. The release skill's pre-flight
+now runs ``uv build && twine check`` and says to fix a failing build, never to fall back
+to ``python -m build --sdist --wheel``, which builds both from the source tree and hid
+seamm_jobserver's gap.
 
 4. Dashboard: child iterations as datastore rows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
