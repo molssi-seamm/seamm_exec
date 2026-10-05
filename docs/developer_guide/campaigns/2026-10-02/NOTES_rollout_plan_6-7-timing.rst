@@ -3,8 +3,9 @@ Rollout plan: phases 6 and 7, the orca.ini fix and the timing records
 
 Status: PLAN, written 2026-10-05 at Paul's ask ("fully update all installations
 here, and on ChemAI, MolSSI10, ARC and the Mac mini"). To be executed once
-seamm-exec and orca-step 2026.10.5.2 are on PyPI (seamm_exec 2026.10.5.2 was
-released 2026-10-05, PR #46; orca_step follows). The record of what was actually done goes below the plan, as
+seamm-exec and orca-step 2026.10.5.2 and seamm-manager 2026.10.5.1 are on PyPI
+(all three released 2026-10-05: seamm_exec PR #46, orca_step PR #46,
+seamm_manager PR #32; xnn-step 2026.10.5 follows seamm-manager onto PyPI). The record of what was actually done goes below the plan, as
 ``NOTES_rollout_2026-10-04.rst`` did for the last one.
 
 What this rollout carries
@@ -23,9 +24,15 @@ What this rollout carries
 3. **The timing records** (same releases, campaign ``2026-10-05``): every ORCA
    run appends a row to ``~/.seamm.d/timing/orca.csv`` with the machine class.
    The clusters are where the useful rows come from.
-4. **seamm-manager 2026.10.5**: a plug-in installer leaves alone a conda
-   environment it did not make (#28); ``update`` runs no installer for a refused
-   package (#29); a service stopped on purpose stays stopped (#26).
+4. **seamm-manager 2026.10.5.1** (and 2026.10.5): a plug-in installer leaves
+   alone a conda environment it did not make, now read from conda's own history
+   rather than SEAMM's marker records alone (#28, #31); a plug-in whose code
+   needs PyTorch installs the build for the machine's NVIDIA driver and checks
+   it (#31); ``update`` runs no installer for a refused package (#29); a service
+   stopped on purpose stays stopped (#26).
+5. **xnn-step 2026.10.5**, once released: its installer uses that torch path,
+   and ``torch`` is out of ``seamm-xnn.yml``. This is what lets the xnn-step hold
+   on the clusters be lifted.
 
 Versions
 --------
@@ -45,7 +52,7 @@ execution and fill in the table).
      - ChemAI
      - TinkerCliffs
    * - seamm-manager (tool)
-     - 2026.10.5
+     - 2026.10.5.1
      - 2026.10.2.3
      - 2026.10.5
      - 2026.10.2.3
@@ -157,7 +164,7 @@ execution and fill in the table).
      - 2026.10.3 (HOLD, below)
      - (not installed)
    * - xnn-step
-     - 2026.10.2
+     - 2026.10.5 (when released)
      - 2026.9.28
      - (not installed)
      - 2026.9.28
@@ -199,21 +206,22 @@ every site, and read the dry run for anything not on the list.
 Their installers apply ``seamm-xnn.yml``/``seamm-lammps.yml`` to the environment
 ``xnn.ini``/``lammps.ini`` names, which on ChemAI (``seamm-lammps``, shared with
 Sina) and TinkerCliffs (``seamm-lammps-xnndev``) is hand-built. seamm-manager
-2026.10.5 is meant to leave such environments alone (#28), but:
-
-- the protection keys on a ``seamm-*.sha256`` record in the environment, and the
-  TinkerCliffs ``seamm-lammps-xnndev`` got those records in the 2026-10-04
-  incident, so it *looks* SEAMM-made -- remove the ``seamm-xnn-step`` and
-  ``seamm-lammps-step`` records by hand before relying on #28 there; check
-  ChemAI's ``seamm-lammps`` for the same;
-- #28 has not yet been exercised on a live hand-built environment.
+2026.10.5.1 leaves such an environment alone, deciding from conda's history
+that SEAMM did not create it (#31; the 2026.10.5 rule keyed on SEAMM's
+``seamm-*.sha256`` records alone, which the TinkerCliffs environment acquired in
+the 2026-10-04 incident, so it looked SEAMM-made). The rule has been tested
+against real histories on the Mac, not yet on a live cluster environment.
 
 So: this round updates the list above with the two steps excluded; a **separate,
-deliberate step** afterwards lifts the hold on one site (TinkerCliffs first, where
-the environment is not shared with another user), with ``conda list --explicit``
-and ``pip freeze`` of the MLFF environment taken before and diffed after. Only if
-that diff is empty does ChemAI follow. On the Macs the two steps update freely:
-their ``seamm-xnn``/``seamm-lammps`` environments are SEAMM's own.
+deliberate step** afterwards -- with seamm-manager 2026.10.5.1 as the tool and
+xnn-step 2026.10.5 on PyPI -- lifts the hold on one site, TinkerCliffs first,
+where the environment is not shared with another user: ``conda list --explicit``
+and ``pip freeze`` of the MLFF environment before, ``update --latest xnn-step``,
+the same after, and the diff must be empty (the installer should print that the
+environment "was not created by SEAMM, so it is left as it is"). Only then does
+ChemAI follow. On the Macs the two steps update freely: their
+``seamm-xnn``/``seamm-lammps`` environments are SEAMM's own, and the Mac's
+``seamm-xnn`` gets torch chosen for it (PyPI's wheel, with MPS).
 
 Order of sites, and why
 -----------------------
@@ -261,7 +269,7 @@ Before:
 
 Do:
 
-- ``uv tool install --force --python 3.12 seamm-manager==2026.10.5`` (the tool,
+- ``uv tool install --force --python 3.12 seamm-manager==2026.10.5.1`` (the tool,
   not the venv).
 - ``seamm-manager update --latest --dry-run <list>``; read it.
 - ``seamm-manager update --latest <list>`` (+ ``seamm-webui`` where it has one).
