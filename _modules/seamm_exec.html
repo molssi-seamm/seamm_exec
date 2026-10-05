@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec &#8212; SEAMM seamm-exec Plug-in 2026.10.5.1 documentation</title>
+    <title>seamm_exec &#8212; SEAMM seamm-exec Plug-in 2026.10.5.2 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=f9e9a9ea"></script>
+    <script src="../_static/documentation_options.js?v=ce112380"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.5.1" />
+  <meta name="docsearch:version" content="2026.10.5.2" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -434,6 +434,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">.docker</span><span class="w"> </span><span class="kn">import</span> <span class="n">Docker</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.tasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">Resources</span><span class="p">,</span> <span class="n">Task</span><span class="p">,</span> <span class="n">TaskResult</span><span class="p">,</span> <span class="n">TaskSet</span><span class="p">,</span> <span class="n">TaskBackend</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.tasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_task</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.timing</span><span class="w"> </span><span class="kn">import</span> <span class="n">machine_class</span><span class="p">,</span> <span class="n">record_task_timing</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.local_pool</span><span class="w"> </span><span class="kn">import</span> <span class="n">LocalPool</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.scheduler_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">SchedulerBackend</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.targets</span><span class="w"> </span><span class="kn">import</span> <span class="n">find_target</span><span class="p">,</span> <span class="n">write_target</span>  <span class="c1"># noqa: F401</span>

@@ -124,6 +124,14 @@ seamm\_exec.tasks module
    :show-inheritance:
    :undoc-members:
 
+seamm\_exec.testing module
+--------------------------
+
+.. automodule:: seamm_exec.testing
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 seamm\_exec.timing module
 -------------------------
 

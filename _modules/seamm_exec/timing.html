@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.timing &#8212; SEAMM seamm-exec Plug-in 2026.10.5.1 documentation</title>
+    <title>seamm_exec.timing &#8212; SEAMM seamm-exec Plug-in 2026.10.5.2 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=f9e9a9ea"></script>
+    <script src="../../_static/documentation_options.js?v=ce112380"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.5.1" />
+  <meta name="docsearch:version" content="2026.10.5.2" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -440,7 +440,19 @@
 <span class="sd">(vasp-step#18). Rows should hold numbers that characterize the calculation</span>
 <span class="sd">(atoms, electrons, basis or cutoff, k-points, cores, node, wall time), not its</span>
 <span class="sd">input files.</span>
+
+<span class="sd">A code step writes its row with :func:`record_task_timing` once it has run a</span>
+<span class="sd">:class:`seamm_exec.Task` and parsed the output: the common columns (the machine</span>
+<span class="sd">class, the task's resources, the wall time from the task manifest, the outcome)</span>
+<span class="sd">come from here, the descriptors of the calculation from the step. The design,</span>
+<span class="sd">the model fitted to the rows and the descriptors each code records are in</span>
+<span class="sd">``docs/developer_guide/campaigns/2026-10-05``.</span>
 <span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timezone</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">platform</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">socket</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">csv</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
@@ -455,6 +467,31 @@
 <span class="n">DEFAULT_DIRECTORY</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"~/.seamm.d/timing"</span><span class="p">)</span>
 <span class="c1">#: A file larger than this is set aside (renamed with the date) and begun again</span>
 <span class="n">MAX_BYTES</span> <span class="o">=</span> <span class="mi">50</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>
+<span class="c1">#: The version of the record written by :func:`record_task_timing`</span>
+<span class="n">SCHEMA</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="c1">#: The common columns of a record, before the step's descriptors</span>
+<span class="n">COMMON_COLUMNS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">"schema"</span><span class="p">,</span>
+    <span class="s2">"date"</span><span class="p">,</span>
+    <span class="s2">"machine"</span><span class="p">,</span>
+    <span class="s2">"cluster"</span><span class="p">,</span>
+    <span class="s2">"partition"</span><span class="p">,</span>
+    <span class="s2">"cpu_model"</span><span class="p">,</span>
+    <span class="s2">"cpu_cores"</span><span class="p">,</span>
+    <span class="s2">"gpu_model"</span><span class="p">,</span>
+    <span class="s2">"host"</span><span class="p">,</span>
+    <span class="s2">"program"</span><span class="p">,</span>
+    <span class="s2">"ntasks"</span><span class="p">,</span>
+    <span class="s2">"cpus_per_task"</span><span class="p">,</span>
+    <span class="s2">"mem_per_cpu"</span><span class="p">,</span>
+    <span class="s2">"ngpus"</span><span class="p">,</span>
+    <span class="s2">"wall"</span><span class="p">,</span>
+    <span class="s2">"estimated"</span><span class="p">,</span>
+    <span class="s2">"state"</span><span class="p">,</span>
+    <span class="s2">"timed_out"</span><span class="p">,</span>
+    <span class="s2">"attempts"</span><span class="p">,</span>
+    <span class="s2">"in_situ"</span><span class="p">,</span>
+<span class="p">)</span>
 
 
 <div class="viewcode-block" id="timing_path">
@@ -480,8 +517,10 @@
 <span class="sd">        spaces, so a row is always one line.</span>
 <span class="sd">    fieldnames : [str], optional</span>
 <span class="sd">        The columns, in order, for a new file. Default: the row's keys. A row is</span>
-<span class="sd">        written with the file's existing header; keys it does not have are</span>
-<span class="sd">        dropped (with a warning), missing ones left empty.</span>
+<span class="sd">        written with the file's existing header, missing columns left empty. A</span>
+<span class="sd">        row with columns the header lacks sets the file aside and begins a new</span>
+<span class="sd">        one whose header is the old columns followed by the new, so a change of</span>
+<span class="sd">        schema never loses columns and never mixes two schemas in one file.</span>
 <span class="sd">    directory : str or Path, optional</span>
 <span class="sd">        Default ``~/.seamm.d/timing``.</span>
 <span class="sd">    max_bytes : int</span>
@@ -533,12 +572,15 @@
                     <span class="n">fd</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
                     <span class="n">header</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">([</span><span class="n">fd</span><span class="o">.</span><span class="n">readline</span><span class="p">()]),</span> <span class="n">fieldnames</span><span class="p">)</span>
                     <span class="n">fd</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">SEEK_END</span><span class="p">)</span>
-                <span class="n">extra</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">clean</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
+                <span class="n">extra</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">clean</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">header</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">extra</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">"Timing file </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> has no columns </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">extra</span><span class="p">)</span><span class="si">}</span><span class="s2">; not "</span>
-                        <span class="s2">"written."</span>
+                    <span class="n">aside</span> <span class="o">=</span> <span class="n">_aside_name</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">aside</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"Set the timing file aside as </span><span class="si">{</span><span class="n">aside</span><span class="si">}</span><span class="s2">: new columns </span><span class="si">{</span><span class="n">extra</span><span class="si">}</span><span class="s2">"</span>
                     <span class="p">)</span>
+                    <span class="n">fieldnames</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">header</span><span class="p">)</span> <span class="o">+</span> <span class="n">extra</span>
+                    <span class="k">continue</span>  <span class="c1"># and write to a new file with the wider header</span>
                 <span class="n">text</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
                 <span class="n">csv</span><span class="o">.</span><span class="n">DictWriter</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="n">header</span><span class="p">,</span> <span class="n">extrasaction</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">)</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span>
                     <span class="n">clean</span>
@@ -566,14 +608,204 @@
 
 <div class="viewcode-block" id="read_timings">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing.read_timings">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">read_timings</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""The rows of ``program``'s timing file, as dicts (the current file only)."""</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">timing_path</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-        <span class="k">return</span> <span class="p">[]</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">""</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">csv</span><span class="o">.</span><span class="n">DictReader</span><span class="p">(</span><span class="n">fd</span><span class="p">))</span></div>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_timings</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">all_files</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The rows of ``program``'s timing file, as dicts.</span>
 
+<span class="sd">    ``all_files=True`` also reads the files set aside</span>
+<span class="sd">    (``&lt;program&gt;-&lt;stamp&gt;.csv``), oldest first, as a fit does; their columns may</span>
+<span class="sd">    differ, so a row only has the keys of its own file.</span>
+<span class="sd">    """</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">timing_path</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
+    <span class="n">paths</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">all_files</span><span class="p">:</span>
+        <span class="n">paths</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="n">p</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s2">-*</span><span class="si">{</span><span class="n">path</span><span class="o">.</span><span class="n">suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">stem</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">stem</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"-"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">""</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+            <span class="n">rows</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">csv</span><span class="o">.</span><span class="n">DictReader</span><span class="p">(</span><span class="n">fd</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">rows</span></div>
+
+
+
+<span class="c1"># ----------------------------------------------------------------------</span>
+<span class="c1"># The record of a task</span>
+<span class="c1"># ----------------------------------------------------------------------</span>
+<span class="n">_machine</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="machine_class">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing.machine_class">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">machine_class</span><span class="p">(</span><span class="n">gpu_model</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The class of machine this process runs on: the columns that separate</span>
+<span class="sd">    machines of different speed in the timing records.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        ``machine`` -- the key, ``cluster:partition:cpu_model`` with empty parts</span>
+<span class="sd">        omitted (and ``:gpu_model`` appended when given); plus ``cluster``,</span>
+<span class="sd">        ``partition``, ``cpu_model``, ``cpu_cores`` (physical cores of the node),</span>
+<span class="sd">        ``gpu_model`` and ``host``.</span>
+
+<span class="sd">    The cluster and partition come from the scheduler's environment; a laptop has</span>
+<span class="sd">    neither, and its key is just the CPU model. The result is cached per process</span>
+<span class="sd">    (except for the GPU, which depends on the task).</span>
+<span class="sd">    """</span>
+    <span class="k">global</span> <span class="n">_machine</span>
+    <span class="k">if</span> <span class="n">_machine</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span>
+        <span class="n">cluster</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"SLURM_CLUSTER_NAME"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"PBS_SERVER"</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">""</span>
+        <span class="n">partition</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"SLURM_JOB_PARTITION"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"PBS_QUEUE"</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">""</span>
+        <span class="n">cores</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">psutil</span>
+
+            <span class="n">cores</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">(</span><span class="n">logical</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="n">_machine</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"cluster"</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"."</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">cluster</span> <span class="k">else</span> <span class="s2">""</span><span class="p">,</span>
+            <span class="s2">"partition"</span><span class="p">:</span> <span class="n">partition</span><span class="p">,</span>
+            <span class="s2">"cpu_model"</span><span class="p">:</span> <span class="n">_cpu_model</span><span class="p">(),</span>
+            <span class="s2">"cpu_cores"</span><span class="p">:</span> <span class="n">cores</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">,</span>
+            <span class="s2">"host"</span><span class="p">:</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">(),</span>
+        <span class="p">}</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">_machine</span><span class="p">)</span>
+    <span class="n">result</span><span class="p">[</span><span class="s2">"gpu_model"</span><span class="p">]</span> <span class="o">=</span> <span class="n">gpu_model</span> <span class="ow">or</span> <span class="s2">""</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="n">result</span><span class="p">[</span><span class="s2">"cluster"</span><span class="p">],</span> <span class="n">result</span><span class="p">[</span><span class="s2">"partition"</span><span class="p">],</span> <span class="n">result</span><span class="p">[</span><span class="s2">"cpu_model"</span><span class="p">]]</span>
+    <span class="k">if</span> <span class="n">gpu_model</span><span class="p">:</span>
+        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gpu_model</span><span class="p">)</span>
+    <span class="n">result</span><span class="p">[</span><span class="s2">"machine"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">":"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parts</span> <span class="k">if</span> <span class="n">p</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_cpu_model</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""The CPU's model name, e.g. 'AMD EPYC 7702 64-Core Processor' or</span>
+<span class="sd">    'Apple M3 Pro'."""</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"Darwin"</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                <span class="p">[</span><span class="s2">"sysctl"</span><span class="p">,</span> <span class="s2">"-n"</span><span class="p">,</span> <span class="s2">"machdep.cpu.brand_string"</span><span class="p">],</span>
+                <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">out</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">out</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+                <span class="k">return</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"/proc/cpuinfo"</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"/proc/cpuinfo"</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s2">"model name"</span><span class="p">,</span> <span class="s2">"hardware"</span><span class="p">,</span> <span class="s2">"cpu model"</span><span class="p">)):</span>
+                    <span class="k">return</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">":"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not get the CPU model: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="n">platform</span><span class="o">.</span><span class="n">machine</span><span class="p">(),</span> <span class="n">platform</span><span class="o">.</span><span class="n">processor</span><span class="p">())</span> <span class="k">if</span> <span class="n">x</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="task_wall_seconds">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing.task_wall_seconds">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">task_wall_seconds</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The wall time of a task's last attempt, from its history, or None."""</span>
+    <span class="n">history</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s2">"history"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">history</span><span class="p">):</span>
+        <span class="n">started</span> <span class="o">=</span> <span class="n">attempt</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"started"</span><span class="p">)</span>
+        <span class="n">finished</span> <span class="o">=</span> <span class="n">attempt</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"finished"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">started</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">finished</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">finished</span><span class="p">)</span> <span class="o">-</span> <span class="nb">float</span><span class="p">(</span><span class="n">started</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="record_task_timing">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing.record_task_timing">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">record_task_timing</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">descriptors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Append the timing record of a task that has run.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    task : seamm_exec.Task</span>
+<span class="sd">        The task as it was run: its program, resources and estimate.</span>
+<span class="sd">    result : seamm_exec.TaskResult</span>
+<span class="sd">        Its result: the wall time comes from the attempts' history, the outcome</span>
+<span class="sd">        from the state. A restored result (an earlier run's, found again) is not</span>
+<span class="sd">        recorded, and the function returns None.</span>
+<span class="sd">    descriptors : dict, optional</span>
+<span class="sd">        The step's description of the calculation: numbers and short categorical</span>
+<span class="sd">        values (see the campaign document for each code's), written after the</span>
+<span class="sd">        common columns. Keys that clash with a common column are ignored.</span>
+<span class="sd">    directory : str or Path, optional</span>
+<span class="sd">        The timing directory; default ``~/.seamm.d/timing``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pathlib.Path or None</span>
+<span class="sd">        The file written, or None if nothing was recorded.</span>
+
+<span class="sd">    Never raises: a problem writing a timing record is logged, since it must not</span>
+<span class="sd">    stop the calculation that produced it.</span>
+<span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s2">"restored"</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s2">"resources"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">ngpus</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">resources</span><span class="p">,</span> <span class="s2">"ngpus"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">0</span>
+        <span class="n">gpu</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"SLURM_JOB_GPUS"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"CUDA_VISIBLE_DEVICES"</span><span class="p">)</span>
+        <span class="n">machine</span> <span class="o">=</span> <span class="n">machine_class</span><span class="p">(</span>
+            <span class="n">gpu_model</span><span class="o">=</span><span class="p">(</span><span class="n">descriptors</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"gpu_model"</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="p">(</span><span class="s2">"gpu"</span> <span class="k">if</span> <span class="n">ngpus</span> <span class="ow">and</span> <span class="n">gpu</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">wall</span> <span class="o">=</span> <span class="n">task_wall_seconds</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"schema"</span><span class="p">:</span> <span class="n">SCHEMA</span><span class="p">,</span>
+            <span class="s2">"date"</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(</span><span class="n">timespec</span><span class="o">=</span><span class="s2">"seconds"</span><span class="p">),</span>
+            <span class="s2">"machine"</span><span class="p">:</span> <span class="n">machine</span><span class="p">[</span><span class="s2">"machine"</span><span class="p">],</span>
+            <span class="s2">"cluster"</span><span class="p">:</span> <span class="n">machine</span><span class="p">[</span><span class="s2">"cluster"</span><span class="p">],</span>
+            <span class="s2">"partition"</span><span class="p">:</span> <span class="n">machine</span><span class="p">[</span><span class="s2">"partition"</span><span class="p">],</span>
+            <span class="s2">"cpu_model"</span><span class="p">:</span> <span class="n">machine</span><span class="p">[</span><span class="s2">"cpu_model"</span><span class="p">],</span>
+            <span class="s2">"cpu_cores"</span><span class="p">:</span> <span class="n">machine</span><span class="p">[</span><span class="s2">"cpu_cores"</span><span class="p">],</span>
+            <span class="s2">"gpu_model"</span><span class="p">:</span> <span class="n">machine</span><span class="p">[</span><span class="s2">"gpu_model"</span><span class="p">],</span>
+            <span class="s2">"host"</span><span class="p">:</span> <span class="n">machine</span><span class="p">[</span><span class="s2">"host"</span><span class="p">],</span>
+            <span class="s2">"program"</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s2">"program"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
+            <span class="s2">"ntasks"</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">resources</span><span class="p">,</span> <span class="s2">"ntasks"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="s2">"cpus_per_task"</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">resources</span><span class="p">,</span> <span class="s2">"cpus_per_task"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="s2">"mem_per_cpu"</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">resources</span><span class="p">,</span> <span class="s2">"mem_per_cpu"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="s2">"ngpus"</span><span class="p">:</span> <span class="n">ngpus</span><span class="p">,</span>
+            <span class="s2">"wall"</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">wall</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">wall</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+            <span class="s2">"estimated"</span><span class="p">:</span> <span class="n">_number</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s2">"estimated_seconds"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)),</span>
+            <span class="s2">"state"</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s2">"state"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
+            <span class="s2">"timed_out"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s2">"timed_out"</span><span class="p">,</span> <span class="kc">False</span><span class="p">))),</span>
+            <span class="s2">"attempts"</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s2">"attempts"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="s2">"in_situ"</span><span class="p">:</span> <span class="n">_flag</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s2">"in_situ"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)),</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">(</span><span class="n">descriptors</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">row</span><span class="p">:</span>
+                <span class="n">row</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">_number</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">append_timing</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">"program"</span><span class="p">],</span> <span class="n">row</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="n">directory</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Could not record the timing of task </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span><span class="w"> </span><span class="s1">'key'</span><span class="p">,</span><span class="w"> </span><span class="s1">'?'</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_number</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Floats to a short text; bools to 0/1; anything else as is."""</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">return</span> <span class="n">value</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_flag</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s2">""</span> <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_lock</span><span class="p">(</span><span class="n">fd</span><span class="p">):</span>

@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.tasks &#8212; SEAMM seamm-exec Plug-in 2026.10.5.1 documentation</title>
+    <title>seamm_exec.tasks &#8212; SEAMM seamm-exec Plug-in 2026.10.5.2 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=f9e9a9ea"></script>
+    <script src="../../_static/documentation_options.js?v=ce112380"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.5.1" />
+  <meta name="docsearch:version" content="2026.10.5.2" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -807,6 +807,33 @@
     <span class="k">return</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">node_root</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The SEAMM root for a step's tasks, holding the ``&lt;program&gt;.ini`` files.</span>
+
+<span class="sd">    The first ``root`` in the global options of ``node`` or its parents -- a</span>
+<span class="sd">    sub-step's own (ORCA's Energy, ...) are empty, its step's hold them -- else</span>
+<span class="sd">    the run's root (``seamm_util.current_root``: the ``--root`` given, else</span>
+<span class="sd">    ``SEAMM_ROOT``, else the installation's). Without it a task would not read</span>
+<span class="sd">    ``&lt;root&gt;/&lt;program&gt;.ini`` and would fall back to the program on the PATH.</span>
+<span class="sd">    """</span>
+    <span class="n">seen</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">while</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">id</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
+        <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">root</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">global_options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"root"</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">root</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">root</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">root</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">"parent"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_util</span><span class="w"> </span><span class="kn">import</span> <span class="n">current_root</span>
+
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">current_root</span><span class="p">())</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+
 <div class="viewcode-block" id="TaskSet">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.tasks.TaskSet">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TaskSet</span><span class="p">:</span>
@@ -893,10 +920,7 @@
             <span class="n">executor</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">executor</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">executor</span> <span class="o">=</span> <span class="n">executor</span>
         <span class="k">if</span> <span class="n">root</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">root</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">global_options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"root"</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-                <span class="n">root</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">root</span> <span class="o">=</span> <span class="n">node_root</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="n">root</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">archive</span> <span class="o">=</span> <span class="n">archive</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_attempts</span> <span class="o">=</span> <span class="n">max_attempts</span>

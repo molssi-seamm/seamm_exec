@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Phase 8 notes &#8212; SEAMM seamm-exec Plug-in 2026.10.5.2 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+
+    <script src="../../../_static/documentation_options.js?v=ce112380"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'developer_guide/campaigns/2026-10-02/NOTES_phase8';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Rollout of 2026-10-04: ChemAI and TinkerCliffs" href="NOTES_rollout_2026-10-04.html" />
+    <link rel="prev" title="Phase 7 notes" href="NOTES_phase7.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.10.5.2" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/SEAMM logo.png" class="logo__image only-light" alt=""/>
+    <img src="../../../_static/SEAMM Inverted 288x181.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">SEAMM-EXEC</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/seamm-exec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/seamm-exec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">Campaigns</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html">2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li class="toctree-l2"><a class="reference internal" href="../2026-10-05/index.html">2026-10-05 – Predicting the time of calculations from timing records</a></li>
+
+
+
+
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Developer Documentation</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Campaigns</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">2026-10-02 – Parallel execution: the task layer, schedulers and parallel loops</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Phase 8 notes</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="phase-8-notes">
+<h1>Phase 8 notes<a class="headerlink" href="#phase-8-notes" title="Link to this heading">#</a></h1>
+<p>2026-10-05 – candidate list for Paul (no design yet)</p>
+<p>Phases 0-7 of the parallel-execution campaign are released. This page gathers what
+was deferred along the way. The items were scattered through the phase 6 and 7 notes,
+their reviews and the design session’s messages. For each one: what it is, why it was
+deferred, the evidence so far, a rough effort, and a recommendation. Paul picks; a
+design note follows for whatever is chosen.</p>
+<p>Effort: <em>S</em> is under a day, including the release; <em>M</em> is a few days; <em>L</em> is a week
+or more, or needs live runs on the clusters.</p>
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Link to this heading">#</a></h2>
+</section>
+<section id="the-items">
+<h2>The items<a class="headerlink" href="#the-items" title="Link to this heading">#</a></h2>
+<section id="warm-evaluator-per-bundle">
+<h3>1. Warm evaluator per bundle<a class="headerlink" href="#warm-evaluator-per-bundle" title="Link to this heading">#</a></h3>
+<p><em>What.</em> A bundle of parallel-loop iterations would run in one long-lived evaluator,
+instead of starting a fresh <code class="docutils literal notranslate"><span class="pre">run_from_jobserver</span></code> for each iteration.</p>
+<p><em>Why deferred.</em> Phases 6 and 7 aimed at correctness and placement, and the start-up
+cost had not been measured where it matters.</p>
+<p><em>Evidence.</em> About 5 s of evaluator start-up per iteration on the Mac. In the
+tiny MOPAC loop, p1 took 11 s serial against 21 s in parallel with 2 at once. On
+TinkerCliffs (<code class="docutils literal notranslate"><span class="pre">p8_tc</span></code>, about 10 s of MOPAC per iteration) start-up hid any speed-up:
+1:48 serial, 1:50 inline with 4 at once, and 2:27 bundled as queue jobs. Nothing has
+been measured on ChemAI, nor TC’s start-up on its own (imports over GPFS, the plug-in
+scan).</p>
+<p><em>Effort.</em> L. The iteration’s independence contract (its own database snapshot,
+checkpoint and merge) has to hold for several iterations in one process, with no
+state leaking between them. The kill and resume soaks would need repeating.</p>
+<p><em>Recommendation.</em> Measure first (S): time <code class="docutils literal notranslate"><span class="pre">run_from_jobserver</span></code> start-up alone on
+ChemAI and on a TC compute node, and set it against the EC pilot’s real iteration
+times. Build it only if start-up is a meaningful share of a real loop.</p>
+</section>
+<section id="dimer-builder-wall-walk-as-per-point-tasksets">
+<h3>2. Dimer builder wall-walk as per-point TaskSets<a class="headerlink" href="#dimer-builder-wall-walk-as-per-point-tasksets" title="Link to this heading">#</a></h3>
+<p><em>What.</em> The wall walk’s points would be TaskSets on a queue, rather than run in
+turn inside the step.</p>
+<p><em>Why deferred.</em> This is dimer-builder work, not task-layer work; triaged in phase 7 as
+“with its next campaign”.</p>
+<p><em>Evidence.</em> None new.</p>
+<p><em>Effort.</em> M.</p>
+<p><em>Recommendation.</em> Defer to the dimer builder’s next campaign.</p>
+</section>
+<section id="packaging-sdists-that-cannot-be-built">
+<h3>3. Packaging: sdists that cannot be built<a class="headerlink" href="#packaging-sdists-that-cannot-be-built" title="Link to this heading">#</a></h3>
+<p><em>What.</em> A source distribution from which no wheel can be built. Measured
+2026-10-05 by building every package in the workspace with <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">build</span></code>, which builds
+the wheel from the sdist as <code class="docutils literal notranslate"><span class="pre">pip</span></code> does: 67 of 83 build. The released packages that
+fail have two causes:</p>
+<ul class="simple">
+<li><p><strong>The sdist misses files ``setup.py`` reads</strong> (<code class="docutils literal notranslate"><span class="pre">versioneer.py</span></code>,
+<code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code>): custom_step, forcefield_step, loop_step, supercell_step,
+table_step. The fix is two <code class="docutils literal notranslate"><span class="pre">MANIFEST.in</span></code> lines (<code class="docutils literal notranslate"><span class="pre">include</span> <span class="pre">requirements*</span></code>,
+<code class="docutils literal notranslate"><span class="pre">include</span> <span class="pre">versioneer.py</span></code>). seamm_jobserver had the same gap, fixed in 2026.10.5.</p></li>
+<li><p><strong>An old vendored ``versioneer.py`` calling ``configparser.SafeConfigParser``</strong>,
+removed in Python 3.12, so nothing builds at all: strain_step (last released
+2022), crystal_builder_step (2022), set_cell_step (2021). Their next release would
+fail in CI. The fix is the current <code class="docutils literal notranslate"><span class="pre">versioneer.py</span></code> from the cookiecutter template.</p></li>
+</ul>
+<p>The other failures are local prototypes with no repository (conformer_search, data_sources,
+pyscf, query, trajectory_analysis) or stale side copies (<code class="docutils literal notranslate"><span class="pre">forcefield_step_experimental</span></code>,
+<code class="docutils literal notranslate"><span class="pre">strain_step_sv</span></code>).</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> is <em>not</em> needed: the 67 that build have none. The first version
+of this item said otherwise.</p>
+<p><em>Impact.</em> None for users today. Every release ships a wheel, which <code class="docutils literal notranslate"><span class="pre">pip</span></code>/<code class="docutils literal notranslate"><span class="pre">uv</span></code>
+install, so the sdist is only used by something building from source.</p>
+<p><em>Decision (Paul, 2026-10-05).</em> Fix each package as part of its next release, not in
+releases of its own; strain_step together with item 7. The release skill’s pre-flight
+now runs <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">build</span> <span class="pre">&amp;&amp;</span> <span class="pre">twine</span> <span class="pre">check</span></code> and says to fix a failing build, never to fall back
+to <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">build</span> <span class="pre">--sdist</span> <span class="pre">--wheel</span></code>, which builds both from the source tree and hid
+seamm_jobserver’s gap.</p>
+</section>
+<section id="dashboard-child-iterations-as-datastore-rows">
+<h3>4. Dashboard: child iterations as datastore rows<a class="headerlink" href="#dashboard-child-iterations-as-datastore-rows" title="Link to this heading">#</a></h3>
+<p><em>What.</em> Each parallel-loop iteration would be a row in the jobs database
+(<code class="docutils literal notranslate"><span class="pre">parent_id</span></code>), listed, filtered and linked like a job.</p>
+<p><em>Why deferred.</em> Phase 6 left it for “later”. Phase 7 delivered the in-job task view
+instead: iterations and tasks read from the job’s files, with no schema change.</p>
+<p><em>Evidence.</em> The task view works on job 4014 (24 iterations, 25 steps with tasks).
+Nobody has asked for cross-job queries over iterations.</p>
+<p><em>Effort.</em> M-L. It needs:</p>
+<ul class="simple">
+<li><p>a datastore migration;</p></li>
+<li><p>the JobServer and evaluator writing the rows;</p></li>
+<li><p>the web UI showing them;</p></li>
+<li><p>the rows kept consistent with resume and merge.</p></li>
+</ul>
+<p><em>Recommendation.</em> Defer until a concrete need appears, such as searching iterations
+across jobs or showing per-iteration status for remote jobs without fetching files.</p>
+</section>
+<section id="devops-a-summary-line-when-the-docs-deploy-fails">
+<h3>5. devops: a summary line when the docs deploy fails<a class="headerlink" href="#devops-a-summary-line-when-the-docs-deploy-fails" title="Link to this heading">#</a></h3>
+<p><em>What.</em> The Release workflow’s docs deploy is <code class="docutils literal notranslate"><span class="pre">continue-on-error</span></code>. That came from
+devops#3 and the same change in seamm_webui’s own copy. A failure is therefore only a
+red step in a green job. A <code class="docutils literal notranslate"><span class="pre">$GITHUB_STEP_SUMMARY</span></code> line or a warning annotation
+would make it visible.</p>
+<p><em>Why deferred.</em> A nit from the phase 7 re-check.</p>
+<p><em>Evidence.</em> properties_step’s Release hit the <code class="docutils literal notranslate"><span class="pre">gh-pages</span></code> push collision twice in
+phase 6.</p>
+<p><em>Effort.</em> S.</p>
+<p><em>Recommendation.</em> Do it with the next devops change. The phase 7 triage first
+proposed one concurrency group for every workflow that pushes <code class="docutils literal notranslate"><span class="pre">gh-pages</span></code>, but the
+release notes rejected it: GitHub cancels all but one <em>pending</em> job in a group, so a
+Release’s deploy could be dropped. A retry with a <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">pull</span> <span class="pre">--rebase</span></code> of
+<code class="docutils literal notranslate"><span class="pre">gh-pages</span></code> before the push would remove the collision itself.</p>
+<p><em>Measured (2026-10-05).</em> The docs deploy succeeded in the latest Release run of all 15
+packages released in phases 6 and 7, properties_step’s included. The only failures on
+record are properties_step’s two in phase 6, before devops#3. A failed deploy costs
+nothing visible, since the package’s Docs workflow publishes the same docs when the
+merge lands on main.</p>
+<p><em>Decision (Paul, 2026-10-05).</em> No change of its own. Fold the ~10 lines (an <code class="docutils literal notranslate"><span class="pre">id</span></code>
+on the deploy step, and a step that runs on failure, writing a <code class="docutils literal notranslate"><span class="pre">::warning::</span></code> and a
+<code class="docutils literal notranslate"><span class="pre">$GITHUB_STEP_SUMMARY</span></code> line) into the next devops change, and the same into
+seamm_webui’s own <code class="docutils literal notranslate"><span class="pre">Release.yaml</span></code>.</p>
+</section>
+<section id="run-path-tests-of-the-code-steps">
+<h3>6. Run-path tests of the code steps<a class="headerlink" href="#run-path-tests-of-the-code-steps" title="Link to this heading">#</a></h3>
+<p><em>What.</em> An end-to-end test of each code step’s run path:</p>
+<ul class="simple">
+<li><p>writing the input;</p></li>
+<li><p>finding the program through <code class="docutils literal notranslate"><span class="pre">&lt;code&gt;.ini</span></code>;</p></li>
+<li><p>running the task;</p></li>
+<li><p>reading and analyzing the output;</p></li>
+<li><p>reporting the results.</p></li>
+</ul>
+<p>No code step had one. In phase 7, lint alone caught a leftover <code class="docutils literal notranslate"><span class="pre">success</span></code>
+variable in <code class="docutils literal notranslate"><span class="pre">MOPAC.run()</span></code> that would have crashed every MOPAC run.</p>
+<p><em>Decision and plan (Paul, 2026-10-05).</em></p>
+<ul class="simple">
+<li><p><strong>Two tests per code.</strong> A <em>fake</em> program replays a real run’s recorded output, so
+the whole path runs in CI. The <em>real</em> program is found as SEAMM finds it
+(<code class="docutils literal notranslate"><span class="pre">$&lt;PROGRAM&gt;_EXE</span></code>, the PATH, the installation’s <code class="docutils literal notranslate"><span class="pre">&lt;code&gt;.ini</span></code>), and its test
+is skipped where the code is not installed.</p></li>
+<li><p><strong>A shared harness, ``seamm_exec.testing``.</strong> <code class="docutils literal notranslate"><span class="pre">run_spec</span></code> builds a flowchart
+from a spec and runs it with <code class="docutils literal notranslate"><span class="pre">run_flowchart</span></code>, with its own <code class="docutils literal notranslate"><span class="pre">HOME</span></code> and
+<code class="docutils literal notranslate"><span class="pre">SEAMM_ROOT</span></code>, so the user’s timing files and ini files are never touched, plus
+a tiny <code class="docutils literal notranslate"><span class="pre">Water</span></code> step. <code class="docutils literal notranslate"><span class="pre">fake_program</span></code>, <code class="docutils literal notranslate"><span class="pre">find_program</span></code> and <code class="docutils literal notranslate"><span class="pre">table_value</span></code>
+complete it. Each code’s test is then about 20 lines plus its recorded output.</p></li>
+<li><p><strong>Done (2026-10-05):</strong></p>
+<ul>
+<li><p>mopac_step: <code class="docutils literal notranslate"><span class="pre">tests/test_run_path.py</span></code> (fe3c248, on dev). It was checked to
+fail on the old <code class="docutils literal notranslate"><span class="pre">success</span></code> bug, and it moves to the harness once seamm_exec
+is released.</p></li>
+<li><p>The harness, in seamm_exec 6a8914a.</p></li>
+<li><p>The ORCA test (B3LYP/def2-SVP water, 1 core). It found two problems:</p>
+<ul>
+<li><p><strong>A sub-step’s tasks lost the SEAMM root</strong> (fixed, seamm_exec afb3e6d).
+<code class="docutils literal notranslate"><span class="pre">TaskSet</span></code> and <code class="docutils literal notranslate"><span class="pre">Evaluator</span></code> read <code class="docutils literal notranslate"><span class="pre">node.global_options</span></code>, which is empty on
+a sub-step, so ORCA’s Energy, Optimization and BSSE tasks never read
+<code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/orca.ini</span></code> and took <code class="docutils literal notranslate"><span class="pre">orca</span></code> from the PATH. ORCA must be started by
+its full path. On ChemAI and MolSSI10, <code class="docutils literal notranslate"><span class="pre">/usr/bin/orca</span></code> is the Debian screen
+reader, and TinkerCliffs has no <code class="docutils literal notranslate"><span class="pre">orca</span></code> on the PATH. No ChemAI job since the
+2026-10-04 rollout used the ORCA step, so production had not hit it yet.
+The orca.ini files: ChemAI and TinkerCliffs name the full ORCA 6.1.1 path and
+the OpenMPI library path; the Mac’s is the same ORCA as its PATH; MolSSI10’s
+<code class="docutils literal notranslate"><span class="pre">[local]</span></code> has no <code class="docutils literal notranslate"><span class="pre">code</span></code>.</p></li>
+<li><p><strong>ORCA 6.1.1 aborts water on 11 processes</strong> (the grid error “the number of
+points read from the grid does not match the expectation”). orca_step gives
+even a 3-atom molecule every core it sees. A cap for small molecules is a
+separate decision.</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>Next, each when its package is next released:</strong> Gaussian (g09 on the Mac), then
+VASP. VASP is not on the Mac; it is on ChemAI, MolSSI10 and ARC, so its real-code
+test runs there.</p></li>
+<li><p><strong>MDI codes (LAMMPS, xnn) separately.</strong> They need a fake MDI engine, a design
+question of its own.</p></li>
+<li><p><strong>Rarely used codes</strong> (dftbplus, packmol, torchani, fhi_aims, atomic_charges,
+psi4, xtb): only when someone works on them.</p></li>
+<li><p><strong>Release order:</strong> seamm_exec (harness and root fix, pin <code class="docutils literal notranslate"><span class="pre">seamm-util&gt;=2026.9.27.1</span></code>)
+first, then orca_step and mopac_step pinned to it.</p></li>
+</ul>
+</section>
+<section id="legacy-structure-handling-wording-strain-step">
+<h3>7. Legacy structure-handling wording (strain_step)<a class="headerlink" href="#legacy-structure-handling-wording-strain-step" title="Link to this heading">#</a></h3>
+<p><em>What.</em> seamm#221 (closed) translates legacy <code class="docutils literal notranslate"><span class="pre">structure</span> <span class="pre">handling</span></code> spellings such as
+“be put in a new configuration” when parameters are read, so old flowcharts run. But
+strain_step still <em>defines</em> its own parameter with the old wording: its default and
+enumeration in <code class="docutils literal notranslate"><span class="pre">strain_step/__init__.py</span></code>.</p>
+<p><em>Why deferred.</em> Outside the campaign’s packages.</p>
+<p><em>Evidence.</em> <code class="docutils literal notranslate"><span class="pre">strain_step/__init__.py:24</span></code>: <code class="docutils literal notranslate"><span class="pre">&quot;default&quot;:</span> <span class="pre">&quot;be</span> <span class="pre">put</span> <span class="pre">in</span> <span class="pre">a</span> <span class="pre">new</span>
+<span class="pre">configuration&quot;</span></code>.</p>
+<p><em>Effort.</em> S: switch to seamm’s standard <code class="docutils literal notranslate"><span class="pre">structure_handling_parameters</span></code> and the
+current choices, plus a release.</p>
+<p><em>Recommendation.</em> Do it, and grep the other steps for local copies of the old
+wording.</p>
+</section>
+<section id="seamm-exec-test-flakiness">
+<h3>8. seamm_exec test flakiness<a class="headerlink" href="#seamm-exec-test-flakiness" title="Link to this heading">#</a></h3>
+<p><em>What.</em> Timing-sensitive tests that fail on loaded CI runners.</p>
+<p><em>History.</em></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">test_tasks_run_concurrently</span></code> asserted a total elapsed time under 2.5 s. Phase 7
+changed it to measure the overlap of the tasks’ running intervals.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">test_bundles_through_the_taskserver</span></code> failed on Ubuntu with Python 3.12 in the
+2026.10.5.1 PR. The backend has a bundle’s results a moment before the runner marks
+the TaskServer job completed. It now polls for up to 30 s (02b59d2, test-only).</p></li>
+</ul>
+<p><em>Evidence.</em> Two cases in three releases, each fixed in the test, not the code.</p>
+<p><em>Effort.</em> S.</p>
+<p><em>Recommendation.</em> Do a sweep: grep the tests for <code class="docutils literal notranslate"><span class="pre">time.sleep</span></code> and elapsed-time
+assertions, and give each one a poll with a deadline.</p>
+</section>
+<section id="pbs-site-job-history-and-max-resubmits">
+<h3>9. PBS site: job history and <code class="docutils literal notranslate"><span class="pre">max_resubmits</span></code><a class="headerlink" href="#pbs-site-job-history-and-max-resubmits" title="Link to this heading">#</a></h3>
+<p><em>What.</em> MolSSI10 is the PBS test site. <code class="docutils literal notranslate"><span class="pre">qstat</span> <span class="pre">-x</span></code> must keep finished jobs long
+enough for a laptop asleep over a long weekend; the phase 7 note asks for
+<code class="docutils literal notranslate"><span class="pre">job_history_enable</span></code> and at least 7 days of <code class="docutils literal notranslate"><span class="pre">job_history_duration</span></code>. The
+<code class="docutils literal notranslate"><span class="pre">max_resubmits</span></code> guidance is the same as for SLURM.</p>
+<p><em>Status.</em></p>
+<ul class="simple">
+<li><p>The jobserver user guide now covers <code class="docutils literal notranslate"><span class="pre">max_resubmits</span></code> for SLURM, PBS and the
+TaskServer, and how long PBS must keep job history (seamm_jobserver 2026.10.5).</p></li>
+<li><p>The phase 7 notes record <code class="docutils literal notranslate"><span class="pre">job_history_duration</span></code> at <code class="docutils literal notranslate"><span class="pre">168:00:00</span></code> on MolSSI10.</p></li>
+<li><p>The 22 stale staged directories were removed on 2026-10-05, and
+<code class="docutils literal notranslate"><span class="pre">~/seamm_dev_remote_jobs</span></code> was empty when checked again later that day.</p></li>
+</ul>
+<p><em>Effort.</em> None, unless the check fails.</p>
+<p><em>Recommendation.</em> Done. Re-verify <code class="docutils literal notranslate"><span class="pre">qmgr</span> <span class="pre">-c</span> <span class="pre">'p</span> <span class="pre">s'</span></code> once at the next MolSSI10 visit.</p>
+</section>
+<section id="task-view-at-500-iterations">
+<h3>10. Task view at 500 iterations<a class="headerlink" href="#task-view-at-500-iterations" title="Link to this heading">#</a></h3>
+<p><em>What.</em> <code class="docutils literal notranslate"><span class="pre">/api/jobs/{id}/tasks</span></code> walks the job’s files and reads every iteration’s
+<code class="docutils literal notranslate"><span class="pre">job_data.json</span></code> and manifests on each 15 s refresh.</p>
+<p><em>Why deferred.</em> It was only exercised at 24 iterations.</p>
+<p><em>Evidence.</em> No measurement at scale.</p>
+<p><em>Effort.</em> S to measure, with a synthetic job of 500 iteration directories in the test
+fixture’s layout. M if it needs caching, for example by the files’ modification
+times.</p>
+<p><em>Recommendation.</em> Measure, and act only if a refresh costs more than about 1 s.</p>
+</section>
+<section id="taskserver-as-the-default-local-queue">
+<h3>11. TaskServer as the default local queue<a class="headerlink" href="#taskserver-as-the-default-local-queue" title="Link to this heading">#</a></h3>
+<p><em>What.</em> Make <code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">queue,</span> <span class="pre">scheduler</span> <span class="pre">=</span> <span class="pre">seamm</span></code> the default <code class="docutils literal notranslate"><span class="pre">[local]</span></code> section of a
+new installation, instead of <code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">local</span></code>.</p>
+<p><em>Why deferred.</em> Paul’s D3 made it opt-in, SEAMM_DEV first.</p>
+<p><em>Evidence.</em> The soak on SEAMM_DEV ran jobs 4015-4019, two jobs sharing 4 cores and
+4 GB, and the kill soak. The soak setting was removed on 2026-10-05, when SEAMM_DEV
+went back to <code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">local</span></code> on the released packages.</p>
+<p><em>Effort.</em> S in seamm_manager’s install. The real cost is the soak time.</p>
+<p><em>Recommendation.</em> Defer. Opt in on one everyday installation, the Mac’s <code class="docutils literal notranslate"><span class="pre">~/SEAMM</span></code> or
+paul.local, for a few weeks of real use after the 6+7 rollout, then decide.</p>
+</section>
+<section id="separate-placement-live">
+<h3>12. Separate placement, live<a class="headerlink" href="#separate-placement-live" title="Link to this heading">#</a></h3>
+<p><em>What.</em> A parallel loop with <code class="docutils literal notranslate"><span class="pre">placement</span> <span class="pre">=</span> <span class="pre">separate</span> <span class="pre">tasks</span></code>, where the iterations’
+codes are tasks on the target rather than run inline.</p>
+<p><em>Why deferred.</em> Phase 6 validated inline placement and bundled iterations live, but
+not separate placement. The Loop’s user guide marks it experimental.</p>
+<p><em>Evidence.</em> Unit tests and local runs only.</p>
+<p><em>Effort.</em> M, with live TC runs.</p>
+<p><em>Recommendation.</em> Validate with the EC pilot, which is the first real loop that needs
+it, before removing the “experimental” label.</p>
+</section>
+<section id="timing-helper-adoption">
+<h3>13. Timing helper adoption<a class="headerlink" href="#timing-helper-adoption" title="Link to this heading">#</a></h3>
+<p><em>What.</em> <code class="docutils literal notranslate"><span class="pre">seamm_exec.timing</span></code> (2026.10.5.1) gives a locked, rotating append for
+<code class="docutils literal notranslate"><span class="pre">~/.seamm.d/timing/&lt;program&gt;.csv</span></code>. No plug-in uses it yet; mopac_step, lammps_step,
+gaussian_step and vasp-step write their own files.</p>
+<p><em>Why deferred.</em> Each code adopts it in its own release (vasp-step#18, still open).</p>
+<p><em>Effort.</em> S per plug-in.</p>
+<p><em>Recommendation.</em> Do it as each code step is next released, starting with vasp-step,
+whose cluster runs share a file over NFS.</p>
+</section>
+<section id="molsystem-121">
+<h3>14. molsystem#121<a class="headerlink" href="#molsystem-121" title="Link to this heading">#</a></h3>
+<p><em>What.</em> Setting <code class="docutils literal notranslate"><span class="pre">periodicity</span> <span class="pre">=</span> <span class="pre">0</span></code> on an empty periodic configuration raises.</p>
+<p><em>Why deferred.</em> Filed during the phase 4/5 work; not on the campaign’s path.</p>
+<p><em>Effort.</em> S.</p>
+<p><em>Recommendation.</em> Do it with the next molsystem release.</p>
+</section>
+<section id="orca-step-cap-the-cores-for-small-molecules">
+<h3>15. orca_step: cap the cores for small molecules<a class="headerlink" href="#orca-step-cap-the-cores-for-small-molecules" title="Link to this heading">#</a></h3>
+<p><em>What.</em> orca_step gives a calculation every core it sees: <code class="docutils literal notranslate"><span class="pre">%pal</span> <span class="pre">nprocs</span></code> is the
+available cores, capped only by the step’s or the global <code class="docutils literal notranslate"><span class="pre">ncores</span></code>. ORCA 6.1.1 then
+aborts small molecules in its start-up.</p>
+<p><em>Evidence (2026-10-05).</em> Water at B3LYP/def2-SVP on the Mac with 11 processes
+aborted in ORCA’s start-up: “the number of points read from the grid does not
+match the expectation” (<code class="docutils literal notranslate"><span class="pre">orca_startup_mpi</span></code>). On 1 core it runs in 3.7 s. Found
+while writing the run-path test (item 6), which runs on one core for that reason.</p>
+<p><em>Effort.</em> S. Cap <code class="docutils literal notranslate"><span class="pre">n_cores</span></code> by the size of the calculation, for example by atoms or
+basis functions, using the same descriptors the timing records now hold. The cap
+belongs in <code class="docutils literal notranslate"><span class="pre">orca_base</span></code> where <code class="docutils literal notranslate"><span class="pre">%pal</span></code> is set. The threshold needs a few measured
+points: at what size does ORCA accept 2, 4 or 11 processes?</p>
+<p><em>Recommendation.</em> Do it (Paul, 2026-10-05: its own item). Measure the threshold on
+the Mac first, then check it on a cluster node with more cores.</p>
+</section>
+</section>
+<section id="not-phase-8-recorded-here-for-completeness">
+<h2>Not phase 8, recorded here for completeness<a class="headerlink" href="#not-phase-8-recorded-here-for-completeness" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><strong>The phase 6+7 rollout:</strong> Paul decides when, timed with the EC pilot.
+ChemAI only on an explicit ask; TinkerCliffs with an explicit package list and a
+dry run, never <code class="docutils literal notranslate"><span class="pre">--all</span></code>.</p></li>
+<li><p><strong>Cleanup (2026-10-05), all done:</strong></p>
+<ul>
+<li><p>The idle test venvs <code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV/venvs/phase4-A</span></code>, <code class="docutils literal notranslate"><span class="pre">phase4-B</span></code> and
+<code class="docutils literal notranslate"><span class="pre">phase7-B</span></code>, and the empty test queue <code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV/taskserver</span></code> with its
+test-sized <code class="docutils literal notranslate"><span class="pre">taskserver.ini</span></code>: deleted by Paul (2026-10-05).</p></li>
+<li><p>The local harness runs in <code class="docutils literal notranslate"><span class="pre">Testing/phase4/runs</span></code> and <code class="docutils literal notranslate"><span class="pre">Testing/phase2</span></code> (the
+<code class="docutils literal notranslate"><span class="pre">Job_9000xx</span></code> runs and logs) were deleted on Paul’s word (2026-10-05); the
+harnesses and <code class="docutils literal notranslate"><span class="pre">targets.ini</span></code> stay.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="NOTES_phase7.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Phase 7 notes</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="NOTES_rollout_2026-10-04.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Rollout of 2026-10-04: ChemAI and TinkerCliffs</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-items">The items</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#warm-evaluator-per-bundle">1. Warm evaluator per bundle</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dimer-builder-wall-walk-as-per-point-tasksets">2. Dimer builder wall-walk as per-point TaskSets</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#packaging-sdists-that-cannot-be-built">3. Packaging: sdists that cannot be built</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dashboard-child-iterations-as-datastore-rows">4. Dashboard: child iterations as datastore rows</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#devops-a-summary-line-when-the-docs-deploy-fails">5. devops: a summary line when the docs deploy fails</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#run-path-tests-of-the-code-steps">6. Run-path tests of the code steps</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#legacy-structure-handling-wording-strain-step">7. Legacy structure-handling wording (strain_step)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm-exec-test-flakiness">8. seamm_exec test flakiness</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pbs-site-job-history-and-max-resubmits">9. PBS site: job history and <code class="docutils literal notranslate"><span class="pre">max_resubmits</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#task-view-at-500-iterations">10. Task view at 500 iterations</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#taskserver-as-the-default-local-queue">11. TaskServer as the default local queue</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#separate-placement-live">12. Separate placement, live</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#timing-helper-adoption">13. Timing helper adoption</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#molsystem-121">14. molsystem#121</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#orca-step-cap-the-cores-for-small-molecules">15. orca_step: cap the cores for small molecules</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#not-phase-8-recorded-here-for-completeness">Not phase 8, recorded here for completeness</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../../_sources/developer_guide/campaigns/2026-10-02/NOTES_phase8.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
