@@ -36,7 +36,9 @@ from datetime import datetime, timezone
 import json
 import logging
 import math
+import os
 from pathlib import Path
+import time
 
 import numpy as np
 
@@ -129,6 +131,11 @@ QUANTILES = (0.5, 0.68, 0.84, 0.95, 0.99)
 MACHINE_SHRINK = 5.0
 #: Ridge penalty on the slopes and class/task offsets
 RIDGE = 1e-3
+#: A model is refitted by :func:`predict` when its records have grown by this
+#: fraction since the fit ...
+REFIT_GROWTH = 0.2
+#: ... or when it is older than this many days and the records have changed at all
+REFIT_DAYS = 7.0
 
 
 def models_directory(directory=None):
@@ -137,6 +144,25 @@ def models_directory(directory=None):
 
 def model_path(program, directory=None):
     return models_directory(directory) / f"{program}.json"
+
+
+def records_state(program, directory=None):
+    """``(bytes, mtime)`` over the program's record files, current and set
+    aside: a cheap measure of how much the records have grown (no read)."""
+    path = Path(directory or DEFAULT_DIRECTORY).expanduser()
+    total = 0
+    latest = 0.0
+    for p in path.glob(f"{program}*.csv"):
+        stem = p.stem
+        if stem != program and not stem[len(program) + 1 :].replace("-", "").isdigit():
+            continue
+        try:
+            st = p.stat()
+        except OSError:
+            continue
+        total += st.st_size
+        latest = max(latest, st.st_mtime)
+    return total, latest
 
 
 # ----------------------------------------------------------------------
@@ -287,7 +313,11 @@ def fit(program, directory=None, spec=None, min_rows=8):
     if best is None:
         return None
     best["feature_log_means"] = feature_log_means
-    return _assemble(program, spec, features, best)
+    model = _assemble(program, spec, features, best)
+    size, mtime = records_state(program, directory)
+    model["records_bytes"] = size
+    model["records_mtime"] = mtime
+    return model
 
 
 def _fit_rows(all_rows, features, t0, spec, min_rows):
@@ -474,10 +504,112 @@ def _assemble(program, spec, features, f):
 
 
 def save_model(model, directory=None):
+    """Write the model, atomically (a reader never sees a partial file)."""
     path = model_path(model["program"], directory)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(model, indent=2))
+    tmp = path.with_suffix(f".{os.getpid()}.tmp")
+    tmp.write_text(json.dumps(model, indent=2))
+    os.replace(tmp, path)
     return path
+
+
+def refresh_if_stale(
+    program,
+    directory=None,
+    growth=REFIT_GROWTH,
+    max_age_days=REFIT_DAYS,
+    min_rows=8,
+):
+    """Refit the program's model if its records have grown or it is old.
+
+    Stale: no model but enough records for one; the records' bytes have grown
+    by more than ``growth`` since the fit; or the model is older than
+    ``max_age_days`` and the records have changed since. The refit runs under a
+    non-blocking lock (another process refitting means this one uses the model
+    as it is), and a new model replaces the old one only if it is fitted to at
+    least as many rows and predicts within 2x at least as often, or nearly so.
+    Never raises.
+
+    Returns
+    -------
+    str
+        ``"refitted"``, ``"fresh"``, ``"locked"``, ``"no records"`` or
+        ``"failed"``.
+    """
+    try:
+        model = load_model(program, directory)
+        size, mtime = records_state(program, directory)
+        if size == 0:
+            return "no records"
+        if model is not None:
+            old_size = model.get("records_bytes", 0) or 0
+            fitted = model.get("fitted", "")
+            try:
+                age_days = (
+                    time.time() - datetime.fromisoformat(fitted).timestamp()
+                ) / 86400.0
+            except ValueError:
+                age_days = float("inf")
+            grown = size > (1.0 + growth) * old_size
+            aged = age_days > max_age_days and mtime > (model.get("records_mtime") or 0)
+            if not (grown or aged):
+                return "fresh"
+        lock_path = model_path(program, directory).with_suffix(".lock")
+        lock_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(lock_path, "w") as lock:
+            if not _try_lock(lock):
+                return "locked"
+            try:
+                new = fit(program, directory, min_rows=min_rows)
+                if new is None:
+                    return "no records"
+                if model is not None:
+                    enough = new["rows"] >= 0.9 * model["rows"]
+                    as_good = new["report"]["within_2x"] >= (
+                        model["report"]["within_2x"] - 0.1
+                    )
+                    if not (enough and as_good):
+                        logger.warning(
+                            f"The refitted {program} timing model is worse "
+                            f"({new['rows']} rows, {new['report']['within_2x']:.0%} "
+                            f"within 2x) than the one kept ({model['rows']} rows, "
+                            f"{model['report']['within_2x']:.0%}); not replaced."
+                        )
+                        # Remember the records' state so this is not retried on
+                        # every prediction until they grow again
+                        model["records_bytes"] = size
+                        model["records_mtime"] = mtime
+                        save_model(model, directory)
+                        return "failed"
+                save_model(new, directory)
+                logger.info(
+                    f"Refitted the {program} timing model to {new['rows']} rows."
+                )
+                return "refitted"
+            finally:
+                _unlock(lock)
+    except Exception as e:
+        logger.warning(f"Could not refresh the {program} timing model: {e}")
+        return "failed"
+
+
+def _try_lock(fd):
+    try:
+        import fcntl
+
+        fcntl.lockf(fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return True
+    except (ImportError, OSError):
+        return False
+
+
+def _unlock(fd):
+    try:
+        import fcntl
+
+        fcntl.lockf(fd.fileno(), fcntl.LOCK_UN)
+    except (ImportError, OSError, ValueError):
+        pass
 
 
 _cache = {}
@@ -530,6 +662,7 @@ def predict(
     units=None,
     directory=None,
     model=None,
+    refresh=True,
 ):
     """The predicted wall time of a calculation.
 
@@ -551,6 +684,9 @@ def predict(
         else the task's distribution at the same quantile.
     directory, model : optional
         The timing directory, or a model already loaded.
+    refresh : bool
+        Refit the model first if its records have grown by a fifth or it is a
+        week old (:func:`refresh_if_stale`); a model given is used as it is.
 
     Returns
     -------
@@ -560,7 +696,10 @@ def predict(
         and rows); None when there is no model or the descriptors lack every
         size variable.
     """
-    model = model or load_model(program, directory)
+    if model is None:
+        if refresh:
+            refresh_if_stale(program, directory)
+        model = load_model(program, directory)
     if model is None:
         return None
     spec = SPECS.get(program, DEFAULT_SPEC)

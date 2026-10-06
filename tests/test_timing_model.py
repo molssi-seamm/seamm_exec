@@ -238,3 +238,97 @@ def test_size_dependent_parallel_exponent(tmp_path):
     b8 = tm.predict("orca", big, ntasks=8, machine="m", quantile=0.5, model=model)
     assert s1["median"] / s8["median"] < 1.5  # little gain for the small one
     assert b1["median"] / b8["median"] > 2.5  # a real gain for the big one
+
+
+def test_predict_refits_when_the_records_grow(tmp_path, monkeypatch):
+    _synthetic(tmp_path, n=200, seed=5)
+    d = {"task": "energy", "method_class": "global hybrid", "nbf": 240}
+    # No model yet: the first prediction fits one
+    assert tm.load_model("orca", tmp_path) is None
+    assert tm.predict("orca", d, machine="fast:q:CPU-A", directory=tmp_path) is not None
+    first = tm.load_model("orca", tmp_path)
+    assert first["rows"] >= 190
+    # Fresh: predicting again does not refit
+    assert tm.refresh_if_stale("orca", tmp_path) == "fresh"
+    # A tenth more records: still fresh; a third more: refitted to more rows
+    _synthetic(tmp_path, n=20, seed=6)
+    assert tm.refresh_if_stale("orca", tmp_path) == "fresh"
+    _synthetic(tmp_path, n=80, seed=7)
+    tm.predict("orca", d, machine="fast:q:CPU-A", directory=tmp_path)
+    second = tm.load_model("orca", tmp_path)
+    assert second["rows"] > first["rows"] and second["fitted"] >= first["fitted"]
+    # Old and changed: refitted even without growth
+    second["fitted"] = "2020-01-01T00:00:00+00:00"
+    second["records_mtime"] = 0
+    tm.save_model(second, tmp_path)
+    assert tm.refresh_if_stale("orca", tmp_path) == "refitted"
+    # Old but unchanged records: not refitted
+    model = tm.load_model("orca", tmp_path)
+    model["fitted"] = "2020-01-01T00:00:00+00:00"
+    tm.save_model(model, tmp_path)
+    assert tm.refresh_if_stale("orca", tmp_path) == "fresh"
+
+
+def test_refit_keeps_a_better_old_model(tmp_path, monkeypatch):
+    _synthetic(tmp_path, n=200, seed=8)
+    tm.save_model(tm.fit("orca", tmp_path), tmp_path)
+    old = tm.load_model("orca", tmp_path)
+    # Pretend the records grew, and make the refit come out worse
+    old["records_bytes"] = 1
+    tm.save_model(old, tmp_path)
+    worse = dict(old)
+    worse["rows"] = 50
+    monkeypatch.setattr(tm, "fit", lambda *a, **k: worse)
+    assert tm.refresh_if_stale("orca", tmp_path) == "failed"
+    kept = tm.load_model("orca", tmp_path)
+    assert kept["rows"] == old["rows"]
+    assert kept["records_bytes"] > 1  # the state was noted, so no retry storm
+    assert tm.refresh_if_stale("orca", tmp_path) == "fresh"
+
+
+def test_refit_failure_leaves_the_model_alone(tmp_path, monkeypatch):
+    _synthetic(tmp_path, n=200, seed=9)
+    tm.save_model(tm.fit("orca", tmp_path), tmp_path)
+    old = tm.load_model("orca", tmp_path)
+    old["records_bytes"] = 1
+    tm.save_model(old, tmp_path)
+
+    def boom(*a, **k):
+        raise RuntimeError("no")
+
+    monkeypatch.setattr(tm, "fit", boom)
+    assert tm.refresh_if_stale("orca", tmp_path) == "failed"
+    d = {"task": "energy", "method_class": "global hybrid", "nbf": 240}
+    assert tm.predict("orca", d, machine="fast:q:CPU-A", directory=tmp_path) is not None
+
+
+def test_refit_skipped_while_another_process_holds_the_lock(tmp_path):
+    """lockf locks are per process, so the holder must be another process."""
+    import time as _time
+
+    _synthetic(tmp_path, n=200, seed=10)
+    tm.save_model(tm.fit("orca", tmp_path), tmp_path)
+    old = tm.load_model("orca", tmp_path)
+    old["records_bytes"] = 1
+    tm.save_model(old, tmp_path)
+    lock_path = tm.model_path("orca", tmp_path).with_suffix(".lock")
+    holder = subprocess.Popen(
+        [
+            sys.executable,
+            "-c",
+            "import fcntl, sys, time; fd = open(sys.argv[1], 'w'); "
+            "fcntl.lockf(fd.fileno(), fcntl.LOCK_EX); print('held', flush=True); "
+            "time.sleep(30)",
+            str(lock_path),
+        ],
+        stdout=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        assert holder.stdout.readline().strip() == "held"
+        assert tm.refresh_if_stale("orca", tmp_path) == "locked"
+    finally:
+        holder.kill()
+        holder.wait()
+    _time.sleep(0.1)
+    assert tm.refresh_if_stale("orca", tmp_path) == "refitted"

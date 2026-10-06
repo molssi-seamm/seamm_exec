@@ -22,6 +22,11 @@ History
       spec with the installed plug-ins and run with ``run_flowchart``; its rows
       carry ``benchmark=<set>``. ``python -m seamm_exec.timing_benchmark --codes
       orca,mopac --cores 1,4,8 --fit``.
+    * A model keeps itself current: ``predict`` refits it when its records have
+      grown by a fifth since the fit, or when it is a week old and the records
+      have changed, under a lock so concurrent runs do not all refit; a refit
+      fitted to fewer rows or predicting worse is not taken. The first prediction
+      on an installation with records but no model fits one.
 2026.10.6 -- Timing records from every code step
     * ``seamm_exec.timing.record_timing`` writes the timing record of a run made
       outside the task layer (a step that still runs its code with

@@ -294,6 +294,13 @@ whether this machine class was in the fit (an unseen class gets no offset and a
 wider spread). The 95th percentile is the right choice for a queue walltime,
 the median for packing tasks into a bundle.
 
+The models keep themselves current: a prediction refits the model when the
+records have grown by a fifth since the fit, or when it is a week old and the
+records have changed, under a lock so that concurrent runs do not all refit,
+and only replaces the old model when the new one is fitted to at least as many
+rows and predicts at least as well. The ``fit`` command remains for a report, or
+to refit on demand.
+
 A machine the model has not seen is placed by the seed benchmark, a few minutes
 of standard runs whose rows the fit can tell apart (``benchmark=<set>``)::
 

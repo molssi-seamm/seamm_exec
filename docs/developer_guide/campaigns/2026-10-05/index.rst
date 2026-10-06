@@ -249,6 +249,16 @@ size, ``alpha = a0 + a1 (log size - mean)``, because small molecules gain
 nothing from more cores while caffeine ran 3x faster on 5 cores than on 1 -- a
 single exponent fitted to both came out as zero.
 
+*Keeping the model current (2026-10-06):* ``predict`` calls
+``refresh_if_stale`` first: the model records the bytes and date of the record
+files it was fitted from (a stat, not a read, tells whether they have grown);
+growth of a fifth, or a week's age with changed records, triggers a refit under
+a non-blocking ``lockf`` lock (another process refitting means this one uses the
+model as it is), and the new model replaces the old only if it has at least 90%
+of the rows and predicts within 2x at least as often, less a tenth. A refit that
+fails or is refused notes the records' state so it is not retried on every
+prediction. The ``fit`` command stays for reports and refits on demand.
+
 *And from the core sweep:* a sweep must stay within one kind of core. This
 Mac has 5 performance and 6 efficiency cores; its 8-process ORCA runs were
 slower than its 4- and 5-process ones, and one aborted in OpenMPI's shared-memory
