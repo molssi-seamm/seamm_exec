@@ -11,6 +11,8 @@ from seamm_exec.timing import (
     machine_class,
     read_timings,
     record_task_timing,
+    record_timing,
+    structure_descriptors,
     timing_path,
 )
 
@@ -166,3 +168,34 @@ def test_concurrent_rotation_keeps_every_row(tmp_path):
     for w in range(4):
         mine = sorted(int(r["i"]) for r in rows if r["writer"] == str(w))
         assert mine == list(range(25))
+
+
+def test_record_timing_without_a_task(tmp_path):
+    path = record_timing(
+        "code", 12.3456, {"n_atoms": 7}, ntasks=8, estimated=10.0, directory=tmp_path
+    )
+    (row,) = read_timings("code", directory=tmp_path)
+    assert path == timing_path("code", tmp_path)
+    assert row["wall"] == "12.346" and row["ntasks"] == "8" and row["n_atoms"] == "7"
+    assert row["state"] == "finished" and row["attempts"] == "1"
+    assert row["machine"] == machine_class()["machine"]
+
+
+def test_structure_descriptors():
+    from types import SimpleNamespace
+
+    conf = SimpleNamespace(
+        atoms=SimpleNamespace(atomic_numbers=[8, 1, 1, 17]),
+        charge=-1,
+        spin_multiplicity=1,
+        periodicity=3,
+        volume=1000.0,
+    )
+    d = structure_descriptors(conf)
+    assert d["n_atoms"] == 4 and d["n_heavy"] == 2 and d["n_ghosts"] == 0
+    assert d["n_electrons"] == 8 + 1 + 1 + 17 + 1
+    assert d["periodicity"] == 3 and d["volume"] == 1000.0
+    d = structure_descriptors(conf, atom_indices=[0, 1, 2, 3], ghost_atoms={3})
+    assert d["n_atoms"] == 3 and d["n_heavy"] == 1 and d["n_ghosts"] == 1
+    assert "n_electrons" not in d  # a subset: the charge is not the subset's
+    assert structure_descriptors(object()) == {}

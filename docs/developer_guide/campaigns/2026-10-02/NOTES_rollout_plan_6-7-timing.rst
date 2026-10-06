@@ -402,8 +402,27 @@ ChemAI (user ``seamm``), pre-checks 2026-10-05
     outside SLURM; a job through the ``ChemAI`` queue will carry them), wall
     5.4 s.
 
-Remaining: TinkerCliffs (``/projects/seamm/SEAMM``) and MolSSI10, both with
-``update --latest --all``; the Claude session's permission rules will refuse
-those too, so Paul runs them or approves them. On TinkerCliffs, afterwards,
-check that ``seamm-lammps-xnndev`` is unchanged as above (it carries stale
-``seamm-*.sha256`` records; the history rule should still say "not SEAMM's").
+2026-10-06, TinkerCliffs (``/projects/seamm/SEAMM``), ``update --latest --all``
+    Paul's ask ("include the mbe packages"); run by the Claude session over
+    ssh (this one was not refused). Tool -> 2026.10.5.1. New
+    ``venvs/2026-10-06T06-46-45``, rollback ``2026-10-04T15-23-39``; about 40
+    minutes, most of it the format-2.0 flowchart scan over the NFS jobs (see
+    below) and the thirteen code installers. seamm 2026.10.5, molsystem
+    2026.10.6, seamm-exec 2026.10.5.2, orca-step 2026.10.5.2, mopac/lammps/
+    xnn-step 2026.10.5 (xnn-step 2026.10.2 -> 2026.10.5), **mbe-step 2026.10.6
+    and seamm-mbe 2026.10.6** (now in the package list, so ``--all`` took
+    them), strain-step 2026.10.5, vasp-step 2026.10.3.1 (unchanged); ``uv pip
+    check`` clean; no services there. Both ``xnn.ini`` and ``lammps.ini`` name
+    ``seamm-lammps-xnn060`` (a clone, like ChemAI's); it and
+    ``seamm-lammps-xnndev`` (the clone with the stale ``seamm-*.sha256``
+    records from 2026-10-04) are **byte-for-byte unchanged**: the history rule
+    held on both. ORCA test: on the login node the real ORCA started (so
+    ``orca.ini`` is read) but was too slow to finish water in 10 minutes;
+    repeated on a compute node through ``srun`` (result recorded below).
+
+MolSSI10 remains (test-only; no ORCA there): ``update --latest --all``.
+
+The format-2.0 flowchart scan: ``update`` scanned every job's flowchart on
+every run (about 15 minutes on TinkerCliffs' NFS). seamm-manager 2026.10.6
+(dev) records a clean scan in ``<root>/installation.ini`` and skips it
+afterwards; ``flowcharts status`` always scans and refreshes the record.

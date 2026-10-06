@@ -8,7 +8,12 @@ from .local import Local  # noqa: F401
 from .docker import Docker  # noqa: F401
 from .tasks import Resources, Task, TaskResult, TaskSet, TaskBackend  # noqa: F401
 from .tasks import run_task  # noqa: F401
-from .timing import machine_class, record_task_timing  # noqa: F401
+from .timing import (  # noqa: F401
+    machine_class,
+    record_task_timing,
+    record_timing,
+    structure_descriptors,
+)
 from .local_pool import LocalPool  # noqa: F401
 from .scheduler_backend import SchedulerBackend  # noqa: F401
 from .targets import find_target, write_target  # noqa: F401

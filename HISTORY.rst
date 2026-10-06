@@ -1,6 +1,14 @@
 =======
 History
 =======
+2026.10.6 -- Timing records from every code step
+    * ``seamm_exec.timing.record_timing`` writes the timing record of a run made
+      outside the task layer (a step that still runs its code with
+      ``executor.run``), with the same common columns as ``record_task_timing``;
+      ``structure_descriptors`` gives the atoms, heavy atoms, electrons, charge,
+      multiplicity, periodicity and volume every code's record shares. The code
+      steps' own CSV writers (MOPAC, Gaussian, VASP, LAMMPS, Psi4, DFTB+) move to
+      these (vasp-step#18; parallel-execution campaign phase 8 item 13).
 2026.10.5.2 -- Timing records for a cost model; sub-steps find the SEAMM root again
     * Bugfix: a calculation started by a sub-step -- ORCA's Energy, Optimization and
       Frequencies, and its counterpoise jobs -- did not know the SEAMM root, so
