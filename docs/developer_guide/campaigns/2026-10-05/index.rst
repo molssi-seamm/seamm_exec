@@ -1,10 +1,20 @@
 2026-10-05 -- Predicting the time of calculations from timing records
 =====================================================================
 
-Status: design written 2026-10-05 and discussed with Paul; Phase 0 (the record and
-the machine class, in ``seamm_exec.timing``) and Phase 1 (ORCA writes the new
-records) are implemented in this package and in ``orca_step``, not yet released.
-Phases 2-5 are planned. The campaign continues the parallel-execution campaign
+Status: design written 2026-10-05 and discussed with Paul. Phases 0 and 1 (the
+record, the machine class, ORCA's records) released 2026-10-05 (seamm-exec and
+orca-step 2026.10.5.2); Phases 4 and 5 (MOPAC, VASP, Gaussian, LAMMPS, Psi4 and
+DFTB+ writing the record through ``record_timing``) released 2026-10-06
+(seamm-exec and the six steps 2026.10.6) and rolled out to every installation
+the same day. Phase 2 (the fit, the model file and ``predict``, in
+``seamm_exec.timing_model``, and the seed benchmark in
+``seamm_exec.timing_benchmark``) implemented 2026-10-06 on dev. Phase 3 (ORCA's
+``estimated_seconds`` from ``predict``) implemented 2026-10-06 on orca_step dev:
+``orca_base.predicted_seconds`` builds the run's descriptors before it runs --
+the basis functions counted from the Basis Set Exchange's definition of the
+basis for the atoms and ghosts -- and asks the model for the median (the task
+layer adds its own margin), falling back to the hand formula without a model.
+On this Mac's model, water B3LYP/def2-SVP is predicted at 1.44 s and took 1.24. The campaign continues the parallel-execution campaign
 (``campaigns/2026-10-02``), whose task layer already carries an
 ``estimated_seconds`` for each task and turns it into a queue walltime
 (``scheduler_backend``) and into the inline rule (``TaskSet``), and whose MBE
@@ -218,6 +228,56 @@ may later refine residuals *within* the range of the data.
 4. Fitting, storing and using the model
 ---------------------------------------
 
+*Implemented 2026-10-06 as* ``seamm_exec.timing_model`` *(Phase 2). Notes from
+the implementation:* size variables whose log values correlate above 0.98
+(electrons and basis functions of one basis set) are reduced to the first, since
+the fit cannot tell them apart and would split a slope arbitrarily; the
+start-up constant is a fraction of the 5th percentile of each machine's smallest
+runs, the fraction (0, 0.3, 0.6 or 0.9) chosen by the fit that leaves the
+smallest residuals; machine offsets are shrunk by 5 rows toward the pooled fit
+and centred into the intercept; residual quantiles are kept per task and
+overall; a size variable missing at prediction time takes the records' mean.
+The model is pure numpy and the file is JSON, as designed. The ``seamm-exec
+timing fit`` subcommand below is ``python -m seamm_exec.timing_model fit``.
+
+*Two refinements from the first benchmark on the Mac (2026-10-06):* where the
+code reports its own time, the start-up constant is measured directly as the
+median of wall minus code time (about 1 s for MOPAC, 0.2 s for ORCA here), and
+runs whose time is nearly all start-up are left out of the power-law fit (they
+are predicted by the constant alone); and the parallel exponent depends on
+size, ``alpha = a0 + a1 (log size - mean)``, because small molecules gain
+nothing from more cores while caffeine ran 3x faster on 5 cores than on 1 -- a
+single exponent fitted to both came out as zero.
+
+*Where the specification lives (2026-10-06, Paul's ask):* each code step
+declares what its cost model is made of (``TIMING_SPEC`` in the step: size
+variables, method-class columns, task column, unit column, multiplier, default
+parallel exponent) and passes it when it records a run; seamm-exec writes it
+once as ``~/.seamm.d/timing/<program>.spec.json`` and the fit reads it from
+there. So the spec travels with the data, the fit imports no plug-in, a
+third-party code joins by writing records and a spec, and ``predict`` needs no
+spec at all (the model file carries its columns). VASP's computed grid variable
+became a descriptor the step writes. A fallback table for the 2026.10.6 steps
+stays in seamm-exec until each has released its spec.
+
+*Keeping the model current (2026-10-06):* ``predict`` calls
+``refresh_if_stale`` first: the model records the bytes and date of the record
+files it was fitted from (a stat, not a read, tells whether they have grown);
+growth of a fifth, or a week's age with changed records, triggers a refit under
+a non-blocking ``lockf`` lock (another process refitting means this one uses the
+model as it is), and the new model replaces the old only if it has at least 90%
+of the rows and predicts within 2x at least as often, less a tenth. A refit that
+fails or is refused notes the records' state so it is not retried on every
+prediction. The ``fit`` command stays for reports and refits on demand.
+
+*And from the core sweep:* a sweep must stay within one kind of core. This
+Mac has 5 performance and 6 efficiency cores; its 8-process ORCA runs were
+slower than its 4- and 5-process ones, and one aborted in OpenMPI's shared-memory
+set-up. The driver therefore sweeps only to the performance cores on Apple
+silicon (``hw.perflevel0.physicalcpu``), to the physical cores elsewhere; the
+Mac's 8-core rows were removed from its records. On a cluster node the cores
+are alike and the sweep can go to the node's width.
+
 ``seamm-exec timing fit [program]`` (a subcommand, or ``python -m
 seamm_exec.timing``) reads every timing file of a program, drops rows whose
 schema it does not know, fits the model above and writes
@@ -256,6 +316,14 @@ Where predictions are used, in order of adoption:
 
 5. Seeding a new machine class
 ------------------------------
+
+*Implemented 2026-10-06 as* ``seamm_exec.timing_benchmark`` *(the rest of
+Phase 2). The flowchart is built from a spec at run time with the installed
+plug-ins rather than shipped, since a shipped flowchart would pin plug-in
+versions; molecules are water, ethanol, toluene, caffeine, icosane (62 atoms)
+and hectane (302 atoms, MOPAC only, in both regimes); the core sweep is run
+by capping* ``SEAMM_CE`` *per run. The installer and JobServer hooks below are
+not yet written.*
 
 A standard flowchart, ``seamm_exec/data/timing_benchmark.flow`` (Phase 2), runs
 per code a few molecules spanning two orders of magnitude of size, two or three

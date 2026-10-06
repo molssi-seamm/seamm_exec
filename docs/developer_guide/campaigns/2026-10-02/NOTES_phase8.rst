@@ -38,7 +38,7 @@ Summary
 13  Timing helper adoption by the plug-ins (vasp-step#18)       S each  timing
                                                                         campaign
 14  molsystem#121: periodicity 0 on an empty configuration      S       done
-15  orca_step: cap the cores for small molecules               S       do
+15  orca_step: cap the cores for small molecules               S       not needed
 ==  ==========================================================  ======  =========
 
 The items
@@ -415,6 +415,17 @@ points: at what size does ORCA accept 2, 4 or 11 processes?
 
 *Recommendation.* Do it (Paul, 2026-10-05: its own item). Measure the threshold on
 the Mac first, then check it on a cluster node with more cores.
+
+*Result (2026-10-06): not needed.* ORCA 6.1.1 ran water, methane, ethanol,
+benzene, hexane and decane (3-32 atoms) on 2, 4, 6, 8 and 11 processes without a
+single failure, and so did the failing run's exact input and the same flowchart
+through SEAMM. The abort reproduces only with Homebrew's OpenMPI 5.0.8 first on
+the PATH: ORCA 6.1.1 needs OpenMPI 4.1.x on macOS, which orca_step puts on the PATH
+from ``library-path`` in ``orca.ini``. The failing run predates the sub-step root
+fix (seamm-exec 2026.10.5.2), so ``orca.ini`` was not read and ORCA used Homebrew's
+``mpirun``. Follow-up done (Paul, 2026-10-06): orca_step 2026.10.6 checks, before a
+parallel run, the ``mpirun`` ORCA will use and stops with a clear message if it is
+OpenMPI 5 or missing (skipped on one core and for ``installation = modules``).
 
 Not phase 8, recorded here for completeness
 -------------------------------------------

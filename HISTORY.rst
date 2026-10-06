@@ -1,6 +1,39 @@
 =======
 History
 =======
+2026.10.6.1 -- A cost model fitted to the timing records, and predictions from it
+    * ``seamm_exec.timing_model``: ``fit`` reads a program's timing records (all
+      files, schema 1) and fits the separable model of the 2026-10-05 campaign --
+      a start-up constant per machine class, a unit cost as a power law in the
+      program's size variables with an intercept per method class and an offset
+      per task, a parallel exponent when the records span core counts, and a
+      shrunk offset per machine class -- by ridge regression in numpy, and writes
+      it to ``~/.seamm.d/timing/models/<program>.json`` with a report (R^2, the
+      fraction within 1.3x and 2x). ``predict`` evaluates a model for a
+      calculation's descriptors, cores and machine at a chosen quantile of the
+      residuals (the 95th for a queue walltime, the median for packing), taking the
+      task's iteration count from its fitted distribution unless given, and
+      widening the spread for a machine class it has not seen. Command line:
+      ``python -m seamm_exec.timing_model fit|predict``.
+    * ``seamm_exec.timing_benchmark``: the seed benchmark that places a machine
+      class in the model -- per code a few molecules spanning two orders of
+      magnitude of size, two or three method classes, single points and
+      optimizations, run once per core count for a parallel code -- built from a
+      spec with the installed plug-ins and run with ``run_flowchart``; its rows
+      carry ``benchmark=<set>``. ``python -m seamm_exec.timing_benchmark --codes
+      orca,mopac --cores 1,4,8 --fit``.
+    * What a program's cost model is made of -- its size variables, method class,
+      task and unit columns -- is declared by the code step and passed when it
+      records a run (``record_timing(..., spec=)``, ``seamm_exec.TimingSpec``);
+      seamm-exec writes it once beside the records as ``<program>.spec.json`` and
+      the fit reads it from there, so no plug-in is imported and any code can
+      join. The specs of the 2026.10.6 steps remain as a fallback until each step
+      writes its own.
+    * A model keeps itself current: ``predict`` refits it when its records have
+      grown by a fifth since the fit, or when it is a week old and the records
+      have changed, under a lock so concurrent runs do not all refit; a refit
+      fitted to fewer rows or predicting worse is not taken. The first prediction
+      on an installation with records but no model fits one.
 2026.10.6 -- Timing records from every code step
     * ``seamm_exec.timing.record_timing`` writes the timing record of a run made
       outside the task layer (a step that still runs its code with
