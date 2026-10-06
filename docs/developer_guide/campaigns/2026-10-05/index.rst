@@ -7,8 +7,14 @@ orca-step 2026.10.5.2); Phases 4 and 5 (MOPAC, VASP, Gaussian, LAMMPS, Psi4 and
 DFTB+ writing the record through ``record_timing``) released 2026-10-06
 (seamm-exec and the six steps 2026.10.6) and rolled out to every installation
 the same day. Phase 2 (the fit, the model file and ``predict``, in
-``seamm_exec.timing_model``) implemented 2026-10-06 on dev; the seed benchmark
-flowchart and Phase 3 (ORCA's ``estimated_seconds`` from ``predict``) are next. The campaign continues the parallel-execution campaign
+``seamm_exec.timing_model``, and the seed benchmark in
+``seamm_exec.timing_benchmark``) implemented 2026-10-06 on dev. Phase 3 (ORCA's
+``estimated_seconds`` from ``predict``) implemented 2026-10-06 on orca_step dev:
+``orca_base.predicted_seconds`` builds the run's descriptors before it runs --
+the basis functions counted from the Basis Set Exchange's definition of the
+basis for the atoms and ghosts -- and asks the model for the median (the task
+layer adds its own margin), falling back to the hand formula without a model.
+On this Mac's model, water B3LYP/def2-SVP is predicted at 1.44 s and took 1.24. The campaign continues the parallel-execution campaign
 (``campaigns/2026-10-02``), whose task layer already carries an
 ``estimated_seconds`` for each task and turns it into a queue walltime
 (``scheduler_backend``) and into the inline rule (``TaskSet``), and whose MBE
