@@ -446,3 +446,36 @@ The format-2.0 flowchart scan: ``update`` scanned every job's flowchart on
 every run (about 15 minutes on TinkerCliffs' NFS). seamm-manager 2026.10.6
 (dev) records a clean scan in ``<root>/installation.ini`` and skips it
 afterwards; ``flowcharts status`` always scans and refreshes the record.
+
+Second round, 2026-10-06: the 2026.10.6 releases
+================================================
+
+Paul's ask, once seamm-exec, seamm-manager and the six code steps were on
+PyPI (the item-13 timing records and the scan-once fix). Tool
+``seamm-manager==2026.10.6`` then ``update --latest --all`` everywhere; the
+installer behaviour on the hand-built environments having been proven the
+day before, no snapshots this time. ``--all`` also brought in what the first
+round's explicit list had skipped (strain-step, energy/dimer-builder/
+normal-mode-sampling steps, molsystem 2026.10.6.1).
+
+================ ======================= ====================== ==============================
+Site             new venv                rollback               notes
+================ ======================= ====================== ==============================
+Mac ``~/SEAMM``  2026-10-06T10-39-42     2026-10-05T18-33-32    MOPAC test: old 62 MB mopac.csv
+                                                                set aside, new schema row
+``~/SEAMM_DEV``  2026-10-06T10-42-14     2026-10-05T18-39-35
+MolSSI10         2026-10-06T10-44-04     2026-10-06T07-22-19    flowchart record written
+ChemAI           2026-10-06T10-45-12     2026-10-05T19-00-48    job 5175 was running (below)
+Mac mini         2026-10-06T10-49-50     2026-10-05T18-41-48    reachable from work after all
+TinkerCliffs     2026-10-06T10-46-31     2026-10-06T06-46-45    (completion recorded below)
+================ ======================= ====================== ==============================
+
+``uv pip check`` clean and services running on every site; every site's
+``installation.ini`` now has ``[flowcharts] format = 3.0``, so the next update
+skips the scan.
+
+**ChemAI, a lapse:** the update ran while job 5175 (``seamm-5175``, 37 min in)
+was running. The versioned switch left its venv (``2026-10-05T19-00-48``) in
+place and the job continued on it; the restarted JobServer reattached ("previous
+jobs: 2"). No harm, by design -- but the rule is to wait for running jobs, and
+the pre-check should gate the update, not just print.
