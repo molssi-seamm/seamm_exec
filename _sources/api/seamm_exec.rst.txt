@@ -140,6 +140,22 @@ seamm\_exec.timing module
    :show-inheritance:
    :undoc-members:
 
+seamm\_exec.timing\_benchmark module
+------------------------------------
+
+.. automodule:: seamm_exec.timing_benchmark
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+seamm\_exec.timing\_model module
+--------------------------------
+
+.. automodule:: seamm_exec.timing_model
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 Module contents
 ---------------
 

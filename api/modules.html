@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec &#8212; SEAMM seamm-exec Plug-in 2026.10.6 documentation</title>
+    <title>seamm_exec &#8212; SEAMM seamm-exec Plug-in 2026.10.6.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=ae463d2f"></script>
+    <script src="../_static/documentation_options.js?v=6b967701"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="API Documentation" href="../api.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.6" />
+  <meta name="docsearch:version" content="2026.10.6.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -742,6 +742,52 @@
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing.structure_descriptors"><code class="docutils literal notranslate"><span class="pre">structure_descriptors()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing.task_wall_seconds"><code class="docutils literal notranslate"><span class="pre">task_wall_seconds()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing.timing_path"><code class="docutils literal notranslate"><span class="pre">timing_path()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="seamm_exec.html#module-seamm_exec.timing_benchmark">seamm_exec.timing_benchmark module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_benchmark.CODES"><code class="docutils literal notranslate"><span class="pre">CODES</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_benchmark.MOLECULES"><code class="docutils literal notranslate"><span class="pre">MOLECULES</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_benchmark.build_flowchart"><code class="docutils literal notranslate"><span class="pre">build_flowchart()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_benchmark.build_spec"><code class="docutils literal notranslate"><span class="pre">build_spec()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_benchmark.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_benchmark.performance_cores"><code class="docutils literal notranslate"><span class="pre">performance_cores()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_benchmark.run"><code class="docutils literal notranslate"><span class="pre">run()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="seamm_exec.html#module-seamm_exec.timing_model">seamm_exec.timing_model module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.FALLBACK_SPECS"><code class="docutils literal notranslate"><span class="pre">FALLBACK_SPECS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.MACHINE_SHRINK"><code class="docutils literal notranslate"><span class="pre">MACHINE_SHRINK</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.MODELS_SUBDIR"><code class="docutils literal notranslate"><span class="pre">MODELS_SUBDIR</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.MODEL_VERSION"><code class="docutils literal notranslate"><span class="pre">MODEL_VERSION</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.QUANTILES"><code class="docutils literal notranslate"><span class="pre">QUANTILES</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.REFIT_DAYS"><code class="docutils literal notranslate"><span class="pre">REFIT_DAYS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.REFIT_GROWTH"><code class="docutils literal notranslate"><span class="pre">REFIT_GROWTH</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.RIDGE"><code class="docutils literal notranslate"><span class="pre">RIDGE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.Spec"><code class="docutils literal notranslate"><span class="pre">Spec</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.Spec.default_alpha"><code class="docutils literal notranslate"><span class="pre">Spec.default_alpha</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.Spec.from_dict"><code class="docutils literal notranslate"><span class="pre">Spec.from_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.Spec.klass"><code class="docutils literal notranslate"><span class="pre">Spec.klass</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.Spec.multiplier"><code class="docutils literal notranslate"><span class="pre">Spec.multiplier</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.Spec.size"><code class="docutils literal notranslate"><span class="pre">Spec.size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.Spec.task"><code class="docutils literal notranslate"><span class="pre">Spec.task</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.Spec.to_dict"><code class="docutils literal notranslate"><span class="pre">Spec.to_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.Spec.units"><code class="docutils literal notranslate"><span class="pre">Spec.units</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.load_model"><code class="docutils literal notranslate"><span class="pre">load_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.load_rows"><code class="docutils literal notranslate"><span class="pre">load_rows()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.load_spec"><code class="docutils literal notranslate"><span class="pre">load_spec()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.model_path"><code class="docutils literal notranslate"><span class="pre">model_path()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.models_directory"><code class="docutils literal notranslate"><span class="pre">models_directory()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.predict"><code class="docutils literal notranslate"><span class="pre">predict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.records_state"><code class="docutils literal notranslate"><span class="pre">records_state()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.refresh_if_stale"><code class="docutils literal notranslate"><span class="pre">refresh_if_stale()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.report_text"><code class="docutils literal notranslate"><span class="pre">report_text()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.save_model"><code class="docutils literal notranslate"><span class="pre">save_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.spec_path"><code class="docutils literal notranslate"><span class="pre">spec_path()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.write_spec"><code class="docutils literal notranslate"><span class="pre">write_spec()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="seamm_exec.html#module-seamm_exec">Module contents</a><ul>

@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>seamm_exec.timing_model &#8212; SEAMM seamm-exec Plug-in 2026.10.6.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+
+    <script src="../../_static/documentation_options.js?v=6b967701"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/seamm_exec/timing_model';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.10.6.1" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/SEAMM logo.png" class="logo__image only-light" alt=""/>
+    <img src="../../_static/SEAMM Inverted 288x181.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">SEAMM-EXEC</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../developer_guide/index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/seamm-exec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../developer_guide/index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/seamm-exec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../seamm_exec.html" class="nav-link">seamm_exec</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">seamm_exec.timing_model</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for seamm_exec.timing_model</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">"""Fit a cost model to the timing records and predict the time of a calculation.</span>
+
+<span class="sd">The model (campaign ``docs/developer_guide/campaigns/2026-10-05``) is a product</span>
+<span class="sd">of separable factors, fitted as a sum in log space::</span>
+
+<span class="sd">    log((t - t0) / units) = a_class + sum_i b_i log(size_i) - alpha log(cores)</span>
+<span class="sd">                            + s_machine + task_offset + noise</span>
+
+<span class="sd">- ``t0``: a start-up constant per machine class, taken from the smallest runs</span>
+<span class="sd">  and subtracted outside the log, so sub-second runs do not bend the power law.</span>
+<span class="sd">- ``units``: the iterations the run took (SCF runs, ionic steps, MD steps ...),</span>
+<span class="sd">  so the fit learns a unit cost; the distribution of ``units`` per task is kept</span>
+<span class="sd">  and entered at the requested quantile when predicting.</span>
+<span class="sd">- ``size_i``: the program's size variables (basis functions, electrons, atoms;</span>
+<span class="sd">  for plane waves the valence electrons and the grid volume).</span>
+<span class="sd">- ``alpha``: the parallel exponent, fitted when the records span core counts.</span>
+<span class="sd">- ``s_machine``: a per-machine-class offset, shrunk toward zero when a class</span>
+<span class="sd">  has few rows (the calibration a new machine gets from a few standard runs).</span>
+
+<span class="sd">The fit is ridge regression in numpy; the model is a JSON file,</span>
+<span class="sd">``~/.seamm.d/timing/models/&lt;program&gt;.json``, and :func:`predict` evaluates it</span>
+<span class="sd">with numpy alone. The prediction is a *quantile* of the residual distribution</span>
+<span class="sd">(the 95th for a queue walltime), never the mean.</span>
+
+<span class="sd">Command line::</span>
+
+<span class="sd">    python -m seamm_exec.timing_model fit [program ...] [--directory DIR]</span>
+<span class="sd">    python -m seamm_exec.timing_model predict orca task=energy nbf=240 ... [-q 0.95]</span>
+<span class="sd">"""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timezone</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.timing</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_DIRECTORY</span><span class="p">,</span> <span class="n">machine_class</span><span class="p">,</span> <span class="n">read_timings</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"seamm-exec"</span><span class="p">)</span>
+
+<span class="c1">#: Where the fitted models go: ``&lt;timing directory&gt;/models/&lt;program&gt;.json``</span>
+<span class="n">MODELS_SUBDIR</span> <span class="o">=</span> <span class="s2">"models"</span>
+<span class="c1">#: The model file's format</span>
+<span class="n">MODEL_VERSION</span> <span class="o">=</span> <span class="mi">1</span>
+
+
+<div class="viewcode-block" id="Spec">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_model.Spec">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Spec</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""What the cost model of a program is made of: plain data a code step</span>
+<span class="sd">    declares and passes when it records a run (``record_timing(...,</span>
+<span class="sd">    spec=...)``), written beside the records as ``&lt;program&gt;.spec.json`` so the</span>
+<span class="sd">    fit reads it without importing the plug-in.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    size : tuple of str</span>
+<span class="sd">        Descriptor columns entering as ``log(size)``, most informative first</span>
+<span class="sd">        (basis functions, electrons, atoms; valence electrons and the grid</span>
+<span class="sd">        volume for plane waves -- a computed variable is written as a</span>
+<span class="sd">        descriptor by the step).</span>
+<span class="sd">    klass : tuple of str</span>
+<span class="sd">        Columns whose joined values are the method class (an intercept each).</span>
+<span class="sd">    task : str or None</span>
+<span class="sd">        The column naming the kind of task (an offset each, and the unit</span>
+<span class="sd">        distribution).</span>
+<span class="sd">    units : str or None</span>
+<span class="sd">        The column holding the iterations the run took (SCF runs, ionic steps,</span>
+<span class="sd">        MD steps). Missing or zero counts as one.</span>
+<span class="sd">    multiplier : str or None</span>
+<span class="sd">        A column the time is proportional to besides ``units`` (k-points).</span>
+<span class="sd">    default_alpha : float</span>
+<span class="sd">        The parallel exponent used when the records do not span core counts.</span>
+<span class="sd">    """</span>
+
+    <span class="n">size</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"n_atoms"</span><span class="p">,)</span>
+    <span class="n">klass</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="n">task</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">"task"</span>
+    <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">multiplier</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">default_alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.8</span>
+
+<div class="viewcode-block" id="Spec.to_dict">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_model.Spec.to_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">"size"</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">),</span>
+            <span class="s2">"klass"</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">klass</span><span class="p">),</span>
+            <span class="s2">"task"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">,</span>
+            <span class="s2">"units"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
+            <span class="s2">"multiplier"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiplier</span><span class="p">,</span>
+            <span class="s2">"default_alpha"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_alpha</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="Spec.from_dict">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_model.Spec.from_dict">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">data</span> <span class="ow">or</span> <span class="p">{})</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">size</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"size"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="s2">"n_atoms"</span><span class="p">,)),</span>
+            <span class="n">klass</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"klass"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">()),</span>
+            <span class="n">task</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"task"</span><span class="p">,</span> <span class="s2">"task"</span><span class="p">),</span>
+            <span class="n">units</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"units"</span><span class="p">),</span>
+            <span class="n">multiplier</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"multiplier"</span><span class="p">),</span>
+            <span class="n">default_alpha</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"default_alpha"</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">)),</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<span class="n">DEFAULT_SPEC</span> <span class="o">=</span> <span class="n">Spec</span><span class="p">()</span>
+
+<span class="c1">#: Specs for the code steps of 2026.10.6, which wrote records before the steps</span>
+<span class="c1">#: declared their own: used only when a program has no ``&lt;program&gt;.spec.json``.</span>
+<span class="c1">#: Remove once every step writes its spec.</span>
+<span class="n">FALLBACK_SPECS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"orca"</span><span class="p">:</span> <span class="n">Spec</span><span class="p">(</span>
+        <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="s2">"nbf"</span><span class="p">,</span> <span class="s2">"n_electrons"</span><span class="p">,</span> <span class="s2">"n_atoms"</span><span class="p">),</span>
+        <span class="n">klass</span><span class="o">=</span><span class="p">(</span><span class="s2">"method_class"</span><span class="p">,),</span>
+        <span class="n">units</span><span class="o">=</span><span class="s2">"scf_runs"</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="s2">"gaussian"</span><span class="p">:</span> <span class="n">Spec</span><span class="p">(</span>
+        <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="s2">"nbf"</span><span class="p">,</span> <span class="s2">"n_electrons"</span><span class="p">,</span> <span class="s2">"n_atoms"</span><span class="p">),</span> <span class="n">klass</span><span class="o">=</span><span class="p">(</span><span class="s2">"method"</span><span class="p">,),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"scf_runs"</span>
+    <span class="p">),</span>
+    <span class="s2">"psi4"</span><span class="p">:</span> <span class="n">Spec</span><span class="p">(</span>
+        <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="s2">"nbf"</span><span class="p">,</span> <span class="s2">"n_electrons"</span><span class="p">,</span> <span class="s2">"n_atoms"</span><span class="p">),</span> <span class="n">klass</span><span class="o">=</span><span class="p">(</span><span class="s2">"method"</span><span class="p">,),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"scf_runs"</span>
+    <span class="p">),</span>
+    <span class="s2">"mopac"</span><span class="p">:</span> <span class="n">Spec</span><span class="p">(</span>
+        <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="s2">"n_basis"</span><span class="p">,</span> <span class="s2">"n_atoms"</span><span class="p">),</span>
+        <span class="n">klass</span><span class="o">=</span><span class="p">(</span><span class="s2">"hamiltonian"</span><span class="p">,</span> <span class="s2">"regime"</span><span class="p">),</span>
+        <span class="n">units</span><span class="o">=</span><span class="s2">"scf_runs"</span><span class="p">,</span>
+        <span class="n">default_alpha</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="s2">"vasp"</span><span class="p">:</span> <span class="n">Spec</span><span class="p">(</span>
+        <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="s2">"nelect"</span><span class="p">,</span> <span class="s2">"grid"</span><span class="p">,</span> <span class="s2">"volume"</span><span class="p">),</span>
+        <span class="n">klass</span><span class="o">=</span><span class="p">(</span><span class="s2">"model"</span><span class="p">,),</span>
+        <span class="n">units</span><span class="o">=</span><span class="s2">"ionic_steps"</span><span class="p">,</span>
+        <span class="n">multiplier</span><span class="o">=</span><span class="s2">"kpoints"</span><span class="p">,</span>
+        <span class="n">default_alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="s2">"lammps"</span><span class="p">:</span> <span class="n">Spec</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="s2">"n_atoms"</span><span class="p">,),</span> <span class="n">klass</span><span class="o">=</span><span class="p">(),</span> <span class="n">task</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"md_steps"</span><span class="p">),</span>
+    <span class="s2">"dftbplus"</span><span class="p">:</span> <span class="n">Spec</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="s2">"n_atoms"</span><span class="p">,),</span> <span class="n">klass</span><span class="o">=</span><span class="p">(</span><span class="s2">"model"</span><span class="p">,),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"scc_cycles"</span><span class="p">),</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="spec_path">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_model.spec_path">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">spec_path</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span> <span class="ow">or</span> <span class="n">DEFAULT_DIRECTORY</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">program</span><span class="si">}</span><span class="s2">.spec.json"</span></div>
+
+
+
+<div class="viewcode-block" id="write_spec">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_model.write_spec">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">write_spec</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Write a program's spec beside its records, if it is not there or has</span>
+<span class="sd">    changed. Called by ``record_timing`` when the step passes its spec; never</span>
+<span class="sd">    raises."""</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">Spec</span><span class="p">):</span>
+            <span class="n">spec</span> <span class="o">=</span> <span class="n">Spec</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">spec_path</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="n">path</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span> <span class="o">==</span> <span class="n">text</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">path</span>
+        <span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="sa">f</span><span class="s2">".</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span><span class="si">}</span><span class="s2">.tmp"</span><span class="p">)</span>
+        <span class="n">tmp</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">path</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not write the timing spec of </span><span class="si">{</span><span class="n">program</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="load_spec">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_model.load_spec">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_spec</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The program's spec: the one its step wrote beside the records, else the</span>
+<span class="sd">    fallback for the 2026.10.6 steps, else the default (atoms only)."""</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">spec_path</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Spec</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">read_text</span><span class="p">()))</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not read the timing spec </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">FALLBACK_SPECS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">DEFAULT_SPEC</span><span class="p">)</span></div>
+
+
+
+<span class="c1">#: Residual quantiles stored in a model</span>
+<span class="n">QUANTILES</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.68</span><span class="p">,</span> <span class="mf">0.84</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">)</span>
+<span class="c1">#: Shrinkage (in rows) of a machine class's offset toward the pooled fit</span>
+<span class="n">MACHINE_SHRINK</span> <span class="o">=</span> <span class="mf">5.0</span>
+<span class="c1">#: Ridge penalty on the slopes and class/task offsets</span>
+<span class="n">RIDGE</span> <span class="o">=</span> <span class="mf">1e-3</span>
+<span class="c1">#: A model is refitted by :func:`predict` when its records have grown by this</span>
+<span class="c1">#: fraction since the fit ...</span>
+<span class="n">REFIT_GROWTH</span> <span class="o">=</span> <span class="mf">0.2</span>
+<span class="c1">#: ... or when it is older than this many days and the records have changed at all</span>
+<span class="n">REFIT_DAYS</span> <span class="o">=</span> <span class="mf">7.0</span>
+
+
+<div class="viewcode-block" id="models_directory">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_model.models_directory">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">models_directory</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span> <span class="ow">or</span> <span class="n">DEFAULT_DIRECTORY</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span> <span class="o">/</span> <span class="n">MODELS_SUBDIR</span></div>
+
+
+
+<div class="viewcode-block" id="model_path">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_model.model_path">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">model_path</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">models_directory</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">program</span><span class="si">}</span><span class="s2">.json"</span></div>
+
+
+
+<div class="viewcode-block" id="records_state">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_model.records_state">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">records_state</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""``(bytes, mtime)`` over the program's record files, current and set</span>
+<span class="sd">    aside: a cheap measure of how much the records have grown (no read)."""</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span> <span class="ow">or</span> <span class="n">DEFAULT_DIRECTORY</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">latest</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">program</span><span class="si">}</span><span class="s2">*.csv"</span><span class="p">):</span>
+        <span class="n">stem</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">stem</span>
+        <span class="k">if</span> <span class="n">stem</span> <span class="o">!=</span> <span class="n">program</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">stem</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">program</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"-"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+            <span class="k">continue</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">st</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">total</span> <span class="o">+=</span> <span class="n">st</span><span class="o">.</span><span class="n">st_size</span>
+        <span class="n">latest</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">latest</span><span class="p">,</span> <span class="n">st</span><span class="o">.</span><span class="n">st_mtime</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">total</span><span class="p">,</span> <span class="n">latest</span></div>
+
+
+
+<span class="c1"># ----------------------------------------------------------------------</span>
+<span class="c1"># Data</span>
+<span class="c1"># ----------------------------------------------------------------------</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_num</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A float from a record's text, or None."""</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s2">""</span> <span class="ow">or</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"none"</span><span class="p">,</span> <span class="s2">"nan"</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="load_rows">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_model.load_rows">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_rows</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">spec</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The records of ``program`` usable for a fit: schema 1, finished, a wall</span>
+<span class="sd">    time, as dicts with the model's variables as floats added</span>
+<span class="sd">    (``_wall``, ``_cores``, ``_units``, ``_mult``, ``_size``, ``_class``,</span>
+<span class="sd">    ``_task``, ``_machine``)."""</span>
+    <span class="n">spec</span> <span class="o">=</span> <span class="n">spec</span> <span class="ow">or</span> <span class="n">load_spec</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">read_timings</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="n">directory</span><span class="p">,</span> <span class="n">all_files</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"schema"</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">"1"</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"state"</span><span class="p">,</span> <span class="s2">"finished"</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"finished"</span><span class="p">,</span> <span class="s2">""</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">wall</span> <span class="o">=</span> <span class="n">_num</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"wall"</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">wall</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">wall</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">ntasks</span> <span class="o">=</span> <span class="n">_num</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"ntasks"</span><span class="p">))</span> <span class="ow">or</span> <span class="mf">1.0</span>
+        <span class="n">cpus</span> <span class="o">=</span> <span class="n">_num</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"cpus_per_task"</span><span class="p">))</span> <span class="ow">or</span> <span class="mf">1.0</span>
+        <span class="n">sizes</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">spec</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">_num</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">sizes</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="n">units</span> <span class="o">=</span> <span class="n">_num</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">units</span><span class="p">))</span> <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">units</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">mult</span> <span class="o">=</span> <span class="n">_num</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">multiplier</span><span class="p">))</span> <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">multiplier</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">"_wall"</span><span class="p">]</span> <span class="o">=</span> <span class="n">wall</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">"_cores"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">ntasks</span> <span class="o">*</span> <span class="n">cpus</span><span class="p">)</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">"_units"</span><span class="p">]</span> <span class="o">=</span> <span class="n">units</span> <span class="k">if</span> <span class="n">units</span> <span class="ow">and</span> <span class="n">units</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">1.0</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">"_mult"</span><span class="p">]</span> <span class="o">=</span> <span class="n">mult</span> <span class="k">if</span> <span class="n">mult</span> <span class="ow">and</span> <span class="n">mult</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">1.0</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">"_size"</span><span class="p">]</span> <span class="o">=</span> <span class="n">sizes</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">"_class"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">" / "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">spec</span><span class="o">.</span><span class="n">klass</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span>
+            <span class="s2">" /"</span>
+        <span class="p">)</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">"_task"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">task</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span> <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">task</span> <span class="k">else</span> <span class="s2">""</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">"_machine"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"machine"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span>
+        <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">rows</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_quantile</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">q</span><span class="p">))</span> <span class="k">if</span> <span class="n">values</span><span class="o">.</span><span class="n">size</span> <span class="k">else</span> <span class="kc">None</span>
+
+
+<span class="c1"># ----------------------------------------------------------------------</span>
+<span class="c1"># Fit</span>
+<span class="c1"># ----------------------------------------------------------------------</span>
+<div class="viewcode-block" id="fit">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_model.fit">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">spec</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">min_rows</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Fit the cost model of ``program`` to its records.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        The model (what :func:`save_model` writes), with a ``report`` entry; or</span>
+<span class="sd">        ``None`` if there are fewer than ``min_rows`` usable records.</span>
+<span class="sd">    """</span>
+    <span class="n">spec</span> <span class="o">=</span> <span class="n">spec</span> <span class="ow">or</span> <span class="n">load_spec</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="n">load_rows</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">min_rows</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">program</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span><span class="si">}</span><span class="s2"> usable rows, fewer than </span><span class="si">{</span><span class="n">min_rows</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="c1"># Size features: those present in most rows; rows lacking one are dropped.</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">r</span><span class="p">[</span><span class="s2">"_size"</span><span class="p">])</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">spec</span><span class="o">.</span><span class="n">size</span><span class="p">}</span>
+    <span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">spec</span><span class="o">.</span><span class="n">size</span> <span class="k">if</span> <span class="n">counts</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mf">0.8</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">features</span><span class="p">:</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="n">counts</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">counts</span><span class="o">.</span><span class="n">get</span><span class="p">)]</span> <span class="k">if</span> <span class="n">counts</span> <span class="k">else</span> <span class="p">[]</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span> <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">n</span> <span class="ow">in</span> <span class="n">r</span><span class="p">[</span><span class="s2">"_size"</span><span class="p">]</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">features</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">min_rows</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="c1"># Size variables that are (nearly) the same information -- electrons and</span>
+    <span class="c1"># basis functions of one basis set, atoms and basis functions -- cannot be</span>
+    <span class="c1"># told apart by the fit and would split a slope arbitrarily; keep the first</span>
+    <span class="c1"># of any pair whose log values correlate above 0.98.</span>
+    <span class="n">logs</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="s2">"_size"</span><span class="p">][</span><span class="n">n</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">])</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">features</span><span class="p">}</span>
+    <span class="n">kept</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">features</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span>
+            <span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">corrcoef</span><span class="p">(</span><span class="n">logs</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">logs</span><span class="p">[</span><span class="n">k</span><span class="p">])[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mf">0.98</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">logs</span><span class="p">[</span><span class="n">n</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">kept</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">logs</span><span class="p">[</span><span class="n">n</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">kept</span><span class="p">:</span>
+                <span class="n">kept</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">features</span> <span class="o">=</span> <span class="n">kept</span>
+    <span class="n">feature_log_means</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">logs</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">features</span><span class="p">}</span>
+
+    <span class="c1"># Start-up constant per machine. Where the code reports its own time</span>
+    <span class="c1"># (``code_seconds``) the constant is measured: the median of wall minus the</span>
+    <span class="c1"># code's time over the machine's runs (process start, the executor's</span>
+    <span class="c1"># bookkeeping, file copies). Otherwise it is a fraction of the 5th</span>
+    <span class="c1"># percentile of the smallest fifth of the runs, the fraction chosen by the</span>
+    <span class="c1"># fit below as the one that predicts the wall times best.</span>
+    <span class="n">machines</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">({</span><span class="n">r</span><span class="p">[</span><span class="s2">"_machine"</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">})</span>
+    <span class="n">measured</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">machine</span> <span class="ow">in</span> <span class="n">machines</span><span class="p">:</span>
+        <span class="n">mine</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"_machine"</span><span class="p">]</span> <span class="o">==</span> <span class="n">machine</span><span class="p">]</span>
+        <span class="n">gaps</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">r</span><span class="p">[</span><span class="s2">"_wall"</span><span class="p">]</span> <span class="o">-</span> <span class="n">c</span>
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">mine</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="n">_num</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"code_seconds"</span><span class="p">))]</span>
+            <span class="k">if</span> <span class="n">c</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">c</span> <span class="o">&lt;=</span> <span class="n">r</span><span class="p">[</span><span class="s2">"_wall"</span><span class="p">]</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gaps</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mine</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="n">measured</span><span class="p">[</span><span class="n">machine</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">gaps</span><span class="p">)))</span>
+    <span class="n">p05</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">machine</span> <span class="ow">in</span> <span class="n">machines</span><span class="p">:</span>
+        <span class="n">mine</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"_machine"</span><span class="p">]</span> <span class="o">==</span> <span class="n">machine</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">features</span><span class="p">:</span>
+            <span class="n">mine</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s2">"_size"</span><span class="p">][</span><span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+        <span class="n">small</span> <span class="o">=</span> <span class="n">mine</span><span class="p">[:</span> <span class="nb">max</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mine</span><span class="p">)</span> <span class="o">//</span> <span class="mi">5</span><span class="p">)]</span>
+        <span class="n">p05</span><span class="p">[</span><span class="n">machine</span><span class="p">]</span> <span class="o">=</span> <span class="n">_quantile</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="s2">"_wall"</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">small</span><span class="p">],</span> <span class="mf">0.05</span><span class="p">)</span>
+
+    <span class="n">best</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">fractions</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">measured</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">machines</span><span class="p">)</span> <span class="k">else</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">fraction</span> <span class="ow">in</span> <span class="n">fractions</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">fraction</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">t0</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">measured</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">t0</span> <span class="o">=</span> <span class="p">{</span><span class="n">m</span><span class="p">:</span> <span class="n">measured</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">fraction</span> <span class="o">*</span> <span class="n">p05</span><span class="p">[</span><span class="n">m</span><span class="p">])</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">machines</span><span class="p">}</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">_fit_rows</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">min_rows</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">best</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">result</span><span class="p">[</span><span class="s2">"score"</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">best</span><span class="p">[</span><span class="s2">"score"</span><span class="p">]):</span>
+            <span class="n">best</span> <span class="o">=</span> <span class="n">result</span>
+            <span class="n">best</span><span class="p">[</span><span class="s2">"t0"</span><span class="p">]</span> <span class="o">=</span> <span class="n">t0</span>
+            <span class="n">best</span><span class="p">[</span><span class="s2">"t0_fraction"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"measured"</span> <span class="k">if</span> <span class="n">fraction</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">fraction</span>
+    <span class="k">if</span> <span class="n">best</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">best</span><span class="p">[</span><span class="s2">"feature_log_means"</span><span class="p">]</span> <span class="o">=</span> <span class="n">feature_log_means</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">_assemble</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">best</span><span class="p">)</span>
+    <span class="n">size</span><span class="p">,</span> <span class="n">mtime</span> <span class="o">=</span> <span class="n">records_state</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
+    <span class="n">model</span><span class="p">[</span><span class="s2">"records_bytes"</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span>
+    <span class="n">model</span><span class="p">[</span><span class="s2">"records_mtime"</span><span class="p">]</span> <span class="o">=</span> <span class="n">mtime</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_fit_rows</span><span class="p">(</span><span class="n">all_rows</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">min_rows</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""One ridge fit for a given start-up constant; the pieces for the model."""</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">all_rows</span><span class="p">:</span>
+        <span class="n">net</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="s2">"_wall"</span><span class="p">]</span> <span class="o">-</span> <span class="n">t0</span><span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="s2">"_machine"</span><span class="p">]]</span>
+        <span class="c1"># A run whose time is nearly all start-up says nothing about the</span>
+        <span class="c1"># power law (its remainder is noise); it is predicted by t0 alone.</span>
+        <span class="k">if</span> <span class="n">net</span> <span class="o">&gt;</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">t0</span><span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="s2">"_machine"</span><span class="p">]]):</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+            <span class="n">r</span><span class="p">[</span><span class="s2">"_y"</span><span class="p">]</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">net</span> <span class="o">/</span> <span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"_units"</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="s2">"_mult"</span><span class="p">]))</span>
+            <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">min_rows</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">classes</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">({</span><span class="n">r</span><span class="p">[</span><span class="s2">"_class"</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">})</span>
+    <span class="n">tasks</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">({</span><span class="n">r</span><span class="p">[</span><span class="s2">"_task"</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">})</span>
+    <span class="n">machines</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">({</span><span class="n">r</span><span class="p">[</span><span class="s2">"_machine"</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">})</span>
+    <span class="n">ref_class</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">classes</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"_class"</span><span class="p">]</span> <span class="o">==</span> <span class="n">c</span><span class="p">))</span>
+    <span class="n">ref_task</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"_task"</span><span class="p">]</span> <span class="o">==</span> <span class="n">t</span><span class="p">))</span>
+    <span class="n">cores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="s2">"_cores"</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">])</span>
+    <span class="n">fit_alpha</span> <span class="o">=</span> <span class="nb">len</span><span class="p">({</span><span class="nb">round</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cores</span><span class="p">})</span> <span class="o">&gt;</span> <span class="mi">1</span>
+
+    <span class="c1"># Design matrix: intercept, log sizes, [log cores], class dummies, task dummies</span>
+    <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"intercept"</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"log </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">features</span><span class="p">]</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">))]</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">features</span><span class="p">:</span>
+        <span class="n">X</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="s2">"_size"</span><span class="p">][</span><span class="n">n</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]))</span>
+    <span class="k">if</span> <span class="n">fit_alpha</span><span class="p">:</span>
+        <span class="n">columns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"log cores"</span><span class="p">)</span>
+        <span class="n">X</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">cores</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">features</span><span class="p">:</span>
+            <span class="c1"># Parallel efficiency grows with the size of the calculation: a</span>
+            <span class="c1"># small molecule gains nothing from more cores, a large one nearly</span>
+            <span class="c1"># everything. alpha = a0 + a1 (log size - mean log size).</span>
+            <span class="n">log_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="s2">"_size"</span><span class="p">][</span><span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">])</span>
+            <span class="n">columns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"log cores x log size"</span><span class="p">)</span>
+            <span class="n">X</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">cores</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">log_size</span> <span class="o">-</span> <span class="n">log_size</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">classes</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="n">ref_class</span><span class="p">:</span>
+            <span class="n">columns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"class </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">X</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"_class"</span><span class="p">]</span> <span class="o">==</span> <span class="n">c</span> <span class="k">else</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]))</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="o">!=</span> <span class="n">ref_task</span><span class="p">:</span>
+            <span class="n">columns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"task </span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">X</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"_task"</span><span class="p">]</span> <span class="o">==</span> <span class="n">t</span> <span class="k">else</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]))</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="s2">"_y"</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">])</span>
+    <span class="n">machine_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">machines</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"_machine"</span><span class="p">])</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">])</span>
+
+    <span class="c1"># Alternate: ridge on the shared part, shrunk means for the machines.</span>
+    <span class="n">offsets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">machines</span><span class="p">))</span>
+    <span class="n">penalty</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">RIDGE</span><span class="p">)</span>
+    <span class="n">penalty</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="n">y</span> <span class="o">-</span> <span class="n">offsets</span><span class="p">[</span><span class="n">machine_index</span><span class="p">]</span>
+        <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">X</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">penalty</span><span class="p">),</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">target</span><span class="p">)</span>
+        <span class="n">resid</span> <span class="o">=</span> <span class="n">y</span> <span class="o">-</span> <span class="n">X</span> <span class="o">@</span> <span class="n">beta</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">machines</span><span class="p">)):</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">machine_index</span> <span class="o">==</span> <span class="n">m</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">offsets</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">resid</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">*</span> <span class="n">n</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="n">MACHINE_SHRINK</span><span class="p">)</span> <span class="k">if</span> <span class="n">n</span> <span class="k">else</span> <span class="mf">0.0</span>
+        <span class="c1"># Keep the offsets centred: their mean belongs to the intercept</span>
+        <span class="n">shift</span> <span class="o">=</span> <span class="n">offsets</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">offsets</span> <span class="o">-=</span> <span class="n">shift</span>
+        <span class="n">beta</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="n">shift</span>
+    <span class="n">resid</span> <span class="o">=</span> <span class="n">y</span> <span class="o">-</span> <span class="n">X</span> <span class="o">@</span> <span class="n">beta</span> <span class="o">-</span> <span class="n">offsets</span><span class="p">[</span><span class="n">machine_index</span><span class="p">]</span>
+
+    <span class="n">alpha</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="o">-</span><span class="nb">float</span><span class="p">(</span><span class="n">beta</span><span class="p">[</span><span class="n">columns</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">"log cores"</span><span class="p">)])</span> <span class="k">if</span> <span class="n">fit_alpha</span> <span class="k">else</span> <span class="n">spec</span><span class="o">.</span><span class="n">default_alpha</span>
+    <span class="p">)</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">alpha</span><span class="p">))</span>
+    <span class="n">alpha_slope</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">alpha_size_mean</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">fit_alpha</span> <span class="ow">and</span> <span class="s2">"log cores x log size"</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
+        <span class="n">alpha_slope</span> <span class="o">=</span> <span class="o">-</span><span class="nb">float</span><span class="p">(</span><span class="n">beta</span><span class="p">[</span><span class="n">columns</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">"log cores x log size"</span><span class="p">)])</span>
+        <span class="n">alpha_size_mean</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="s2">"_size"</span><span class="p">][</span><span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+
+    <span class="n">predicted</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">X</span> <span class="o">@</span> <span class="n">beta</span> <span class="o">+</span> <span class="n">offsets</span><span class="p">[</span><span class="n">machine_index</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="s2">"_units"</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="s2">"_mult"</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">t0</span><span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="s2">"_machine"</span><span class="p">]]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">])</span>
+    <span class="n">wall</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="s2">"_wall"</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">])</span>
+    <span class="c1"># The score a start-up constant is chosen by: the log error of the wall</span>
+    <span class="c1"># time itself, which both the constant and the power law must explain</span>
+    <span class="n">score</span> <span class="o">=</span> <span class="nb">float</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">predicted</span> <span class="o">/</span> <span class="n">wall</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">"score"</span><span class="p">:</span> <span class="n">score</span><span class="p">,</span>
+        <span class="s2">"rows"</span><span class="p">:</span> <span class="n">rows</span><span class="p">,</span>
+        <span class="s2">"columns"</span><span class="p">:</span> <span class="n">columns</span><span class="p">,</span>
+        <span class="s2">"beta"</span><span class="p">:</span> <span class="n">beta</span><span class="p">,</span>
+        <span class="s2">"resid"</span><span class="p">:</span> <span class="n">resid</span><span class="p">,</span>
+        <span class="s2">"y"</span><span class="p">:</span> <span class="n">y</span><span class="p">,</span>
+        <span class="s2">"offsets"</span><span class="p">:</span> <span class="n">offsets</span><span class="p">,</span>
+        <span class="s2">"machines"</span><span class="p">:</span> <span class="n">machines</span><span class="p">,</span>
+        <span class="s2">"machine_index"</span><span class="p">:</span> <span class="n">machine_index</span><span class="p">,</span>
+        <span class="s2">"classes"</span><span class="p">:</span> <span class="n">classes</span><span class="p">,</span>
+        <span class="s2">"tasks"</span><span class="p">:</span> <span class="n">tasks</span><span class="p">,</span>
+        <span class="s2">"ref_class"</span><span class="p">:</span> <span class="n">ref_class</span><span class="p">,</span>
+        <span class="s2">"ref_task"</span><span class="p">:</span> <span class="n">ref_task</span><span class="p">,</span>
+        <span class="s2">"alpha"</span><span class="p">:</span> <span class="n">alpha</span><span class="p">,</span>
+        <span class="s2">"alpha_slope"</span><span class="p">:</span> <span class="n">alpha_slope</span><span class="p">,</span>
+        <span class="s2">"alpha_size_mean"</span><span class="p">:</span> <span class="n">alpha_size_mean</span><span class="p">,</span>
+        <span class="s2">"fit_alpha"</span><span class="p">:</span> <span class="n">fit_alpha</span><span class="p">,</span>
+        <span class="s2">"predicted"</span><span class="p">:</span> <span class="n">predicted</span><span class="p">,</span>
+        <span class="s2">"ss_res"</span><span class="p">:</span> <span class="nb">float</span><span class="p">((</span><span class="n">resid</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
+    <span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_assemble</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The model dictionary from a fit's pieces."""</span>
+    <span class="n">rows</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">resid</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s2">"rows"</span><span class="p">],</span> <span class="n">f</span><span class="p">[</span><span class="s2">"columns"</span><span class="p">],</span> <span class="n">f</span><span class="p">[</span><span class="s2">"beta"</span><span class="p">],</span> <span class="n">f</span><span class="p">[</span><span class="s2">"resid"</span><span class="p">]</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s2">"t0"</span><span class="p">]</span>
+    <span class="n">coefficients</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"log cores"</span><span class="p">,</span> <span class="s2">"log cores x log size"</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="n">class_offsets</span> <span class="o">=</span> <span class="p">{</span><span class="n">c</span><span class="p">:</span> <span class="n">coefficients</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="sa">f</span><span class="s2">"class </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">f</span><span class="p">[</span><span class="s2">"classes"</span><span class="p">]}</span>
+    <span class="n">task_offsets</span> <span class="o">=</span> <span class="p">{</span><span class="n">t</span><span class="p">:</span> <span class="n">coefficients</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="sa">f</span><span class="s2">"task </span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">f</span><span class="p">[</span><span class="s2">"tasks"</span><span class="p">]}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">quantiles</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">q</span><span class="p">):</span> <span class="n">_quantile</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span> <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">QUANTILES</span><span class="p">}</span>
+
+    <span class="n">per_task_resid</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">per_task_units</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">f</span><span class="p">[</span><span class="s2">"tasks"</span><span class="p">]:</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="s2">"_task"</span><span class="p">]</span> <span class="o">==</span> <span class="n">t</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="n">per_task_resid</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">quantiles</span><span class="p">(</span><span class="n">resid</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
+        <span class="n">per_task_units</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">quantiles</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="s2">"_units"</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"_task"</span><span class="p">]</span> <span class="o">==</span> <span class="n">t</span><span class="p">])</span>
+
+    <span class="n">ratio</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s2">"predicted"</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="s2">"_wall"</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">])</span>
+    <span class="n">within</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">ratio</span> <span class="o">&lt;</span> <span class="n">x</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">ratio</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">x</span><span class="p">)))</span>  <span class="c1"># noqa: E731</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s2">"y"</span><span class="p">]</span>
+    <span class="n">ss_tot</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(((</span><span class="n">y</span> <span class="o">-</span> <span class="n">y</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="ow">or</span> <span class="mf">1.0</span>
+    <span class="n">offsets</span><span class="p">,</span> <span class="n">machines</span><span class="p">,</span> <span class="n">machine_index</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s2">"offsets"</span><span class="p">],</span> <span class="n">f</span><span class="p">[</span><span class="s2">"machines"</span><span class="p">],</span> <span class="n">f</span><span class="p">[</span><span class="s2">"machine_index"</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">"model_version"</span><span class="p">:</span> <span class="n">MODEL_VERSION</span><span class="p">,</span>
+        <span class="s2">"program"</span><span class="p">:</span> <span class="n">program</span><span class="p">,</span>
+        <span class="s2">"fitted"</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(</span><span class="n">timespec</span><span class="o">=</span><span class="s2">"seconds"</span><span class="p">),</span>
+        <span class="s2">"rows"</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">),</span>
+        <span class="s2">"features"</span><span class="p">:</span> <span class="n">features</span><span class="p">,</span>
+        <span class="s2">"feature_log_means"</span><span class="p">:</span> <span class="n">f</span><span class="p">[</span><span class="s2">"feature_log_means"</span><span class="p">],</span>
+        <span class="s2">"coefficients"</span><span class="p">:</span> <span class="n">coefficients</span><span class="p">,</span>  <span class="c1"># intercept and log-size slopes</span>
+        <span class="s2">"alpha"</span><span class="p">:</span> <span class="n">f</span><span class="p">[</span><span class="s2">"alpha"</span><span class="p">],</span>
+        <span class="s2">"alpha_slope"</span><span class="p">:</span> <span class="n">f</span><span class="p">[</span><span class="s2">"alpha_slope"</span><span class="p">],</span>
+        <span class="s2">"alpha_size_mean"</span><span class="p">:</span> <span class="n">f</span><span class="p">[</span><span class="s2">"alpha_size_mean"</span><span class="p">],</span>
+        <span class="s2">"alpha_fitted"</span><span class="p">:</span> <span class="n">f</span><span class="p">[</span><span class="s2">"fit_alpha"</span><span class="p">],</span>
+        <span class="s2">"classes"</span><span class="p">:</span> <span class="n">class_offsets</span><span class="p">,</span>
+        <span class="s2">"reference_class"</span><span class="p">:</span> <span class="n">f</span><span class="p">[</span><span class="s2">"ref_class"</span><span class="p">],</span>
+        <span class="s2">"tasks"</span><span class="p">:</span> <span class="n">task_offsets</span><span class="p">,</span>
+        <span class="s2">"reference_task"</span><span class="p">:</span> <span class="n">f</span><span class="p">[</span><span class="s2">"ref_task"</span><span class="p">],</span>
+        <span class="s2">"spec"</span><span class="p">:</span> <span class="n">spec</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span>
+        <span class="s2">"units_column"</span><span class="p">:</span> <span class="n">spec</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
+        <span class="s2">"multiplier_column"</span><span class="p">:</span> <span class="n">spec</span><span class="o">.</span><span class="n">multiplier</span><span class="p">,</span>
+        <span class="s2">"size_columns"</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">size</span><span class="p">),</span>
+        <span class="s2">"class_columns"</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">klass</span><span class="p">),</span>
+        <span class="s2">"task_column"</span><span class="p">:</span> <span class="n">spec</span><span class="o">.</span><span class="n">task</span><span class="p">,</span>
+        <span class="s2">"machines"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="n">m</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"offset"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">offsets</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
+                <span class="s2">"rows"</span><span class="p">:</span> <span class="nb">int</span><span class="p">((</span><span class="n">machine_index</span> <span class="o">==</span> <span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
+                <span class="s2">"t0"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">t0</span><span class="p">[</span><span class="n">m</span><span class="p">]),</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">machines</span><span class="p">)</span>
+        <span class="p">},</span>
+        <span class="s2">"machine_offset_sd"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">offsets</span><span class="p">))</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">machines</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="mf">0.3</span><span class="p">,</span>
+        <span class="s2">"t0_pooled"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">t0</span><span class="o">.</span><span class="n">values</span><span class="p">()))),</span>
+        <span class="s2">"t0_fraction"</span><span class="p">:</span> <span class="n">f</span><span class="p">[</span><span class="s2">"t0_fraction"</span><span class="p">],</span>
+        <span class="s2">"residual_quantiles"</span><span class="p">:</span> <span class="n">quantiles</span><span class="p">(</span><span class="n">resid</span><span class="p">),</span>
+        <span class="s2">"residual_sd"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">resid</span><span class="o">.</span><span class="n">std</span><span class="p">()),</span>
+        <span class="s2">"task_residual_quantiles"</span><span class="p">:</span> <span class="n">per_task_resid</span><span class="p">,</span>
+        <span class="s2">"task_units_quantiles"</span><span class="p">:</span> <span class="n">per_task_units</span><span class="p">,</span>
+        <span class="s2">"report"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"r2_log"</span><span class="p">:</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">f</span><span class="p">[</span><span class="s2">"ss_res"</span><span class="p">]</span> <span class="o">/</span> <span class="n">ss_tot</span><span class="p">,</span>
+            <span class="s2">"within_1.3x"</span><span class="p">:</span> <span class="n">within</span><span class="p">(</span><span class="mf">1.3</span><span class="p">),</span>
+            <span class="s2">"within_2x"</span><span class="p">:</span> <span class="n">within</span><span class="p">(</span><span class="mf">2.0</span><span class="p">),</span>
+            <span class="s2">"machines"</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">machines</span><span class="p">),</span>
+            <span class="s2">"classes"</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s2">"classes"</span><span class="p">]),</span>
+            <span class="s2">"tasks"</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s2">"tasks"</span><span class="p">]),</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+
+
+<div class="viewcode-block" id="save_model">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_model.save_model">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">save_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Write the model, atomically (a reader never sees a partial file)."""</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">model_path</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s2">"program"</span><span class="p">],</span> <span class="n">directory</span><span class="p">)</span>
+    <span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="sa">f</span><span class="s2">".</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span><span class="si">}</span><span class="s2">.tmp"</span><span class="p">)</span>
+    <span class="n">tmp</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">path</span></div>
+
+
+
+<div class="viewcode-block" id="refresh_if_stale">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_model.refresh_if_stale">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">refresh_if_stale</span><span class="p">(</span>
+    <span class="n">program</span><span class="p">,</span>
+    <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">growth</span><span class="o">=</span><span class="n">REFIT_GROWTH</span><span class="p">,</span>
+    <span class="n">max_age_days</span><span class="o">=</span><span class="n">REFIT_DAYS</span><span class="p">,</span>
+    <span class="n">min_rows</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Refit the program's model if its records have grown or it is old.</span>
+
+<span class="sd">    Stale: no model but enough records for one; the records' bytes have grown</span>
+<span class="sd">    by more than ``growth`` since the fit; or the model is older than</span>
+<span class="sd">    ``max_age_days`` and the records have changed since. The refit runs under a</span>
+<span class="sd">    non-blocking lock (another process refitting means this one uses the model</span>
+<span class="sd">    as it is), and a new model replaces the old one only if it is fitted to at</span>
+<span class="sd">    least as many rows and predicts within 2x at least as often, or nearly so.</span>
+<span class="sd">    Never raises.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        ``"refitted"``, ``"fresh"``, ``"locked"``, ``"no records"`` or</span>
+<span class="sd">        ``"failed"``.</span>
+<span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
+        <span class="n">size</span><span class="p">,</span> <span class="n">mtime</span> <span class="o">=</span> <span class="n">records_state</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">"no records"</span>
+        <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">old_size</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"records_bytes"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">0</span>
+            <span class="n">fitted</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"fitted"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">age_days</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromisoformat</span><span class="p">(</span><span class="n">fitted</span><span class="p">)</span><span class="o">.</span><span class="n">timestamp</span><span class="p">()</span>
+                <span class="p">)</span> <span class="o">/</span> <span class="mf">86400.0</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="n">age_days</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"inf"</span><span class="p">)</span>
+            <span class="n">grown</span> <span class="o">=</span> <span class="n">size</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">growth</span><span class="p">)</span> <span class="o">*</span> <span class="n">old_size</span>
+            <span class="n">aged</span> <span class="o">=</span> <span class="n">age_days</span> <span class="o">&gt;</span> <span class="n">max_age_days</span> <span class="ow">and</span> <span class="n">mtime</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"records_mtime"</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">grown</span> <span class="ow">or</span> <span class="n">aged</span><span class="p">):</span>
+                <span class="k">return</span> <span class="s2">"fresh"</span>
+        <span class="n">lock_path</span> <span class="o">=</span> <span class="n">model_path</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">".lock"</span><span class="p">)</span>
+        <span class="n">lock_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">lock_path</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">_try_lock</span><span class="p">(</span><span class="n">lock</span><span class="p">):</span>
+                <span class="k">return</span> <span class="s2">"locked"</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">new</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">min_rows</span><span class="o">=</span><span class="n">min_rows</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">new</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="s2">"no records"</span>
+                <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">enough</span> <span class="o">=</span> <span class="n">new</span><span class="p">[</span><span class="s2">"rows"</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mf">0.9</span> <span class="o">*</span> <span class="n">model</span><span class="p">[</span><span class="s2">"rows"</span><span class="p">]</span>
+                    <span class="n">as_good</span> <span class="o">=</span> <span class="n">new</span><span class="p">[</span><span class="s2">"report"</span><span class="p">][</span><span class="s2">"within_2x"</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="p">(</span>
+                        <span class="n">model</span><span class="p">[</span><span class="s2">"report"</span><span class="p">][</span><span class="s2">"within_2x"</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.1</span>
+                    <span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">enough</span> <span class="ow">and</span> <span class="n">as_good</span><span class="p">):</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">"The refitted </span><span class="si">{</span><span class="n">program</span><span class="si">}</span><span class="s2"> timing model is worse "</span>
+                            <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="n">new</span><span class="p">[</span><span class="s1">'rows'</span><span class="p">]</span><span class="si">}</span><span class="s2"> rows, </span><span class="si">{</span><span class="n">new</span><span class="p">[</span><span class="s1">'report'</span><span class="p">][</span><span class="s1">'within_2x'</span><span class="p">]</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2"> "</span>
+                            <span class="sa">f</span><span class="s2">"within 2x) than the one kept (</span><span class="si">{</span><span class="n">model</span><span class="p">[</span><span class="s1">'rows'</span><span class="p">]</span><span class="si">}</span><span class="s2"> rows, "</span>
+                            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">model</span><span class="p">[</span><span class="s1">'report'</span><span class="p">][</span><span class="s1">'within_2x'</span><span class="p">]</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2">); not replaced."</span>
+                        <span class="p">)</span>
+                        <span class="c1"># Remember the records' state so this is not retried on</span>
+                        <span class="c1"># every prediction until they grow again</span>
+                        <span class="n">model</span><span class="p">[</span><span class="s2">"records_bytes"</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span>
+                        <span class="n">model</span><span class="p">[</span><span class="s2">"records_mtime"</span><span class="p">]</span> <span class="o">=</span> <span class="n">mtime</span>
+                        <span class="n">save_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="s2">"failed"</span>
+                <span class="n">save_model</span><span class="p">(</span><span class="n">new</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"Refitted the </span><span class="si">{</span><span class="n">program</span><span class="si">}</span><span class="s2"> timing model to </span><span class="si">{</span><span class="n">new</span><span class="p">[</span><span class="s1">'rows'</span><span class="p">]</span><span class="si">}</span><span class="s2"> rows."</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="s2">"refitted"</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">_unlock</span><span class="p">(</span><span class="n">lock</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not refresh the </span><span class="si">{</span><span class="n">program</span><span class="si">}</span><span class="s2"> timing model: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">"failed"</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_try_lock</span><span class="p">(</span><span class="n">fd</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">fcntl</span>
+
+        <span class="n">fcntl</span><span class="o">.</span><span class="n">lockf</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">fcntl</span><span class="o">.</span><span class="n">LOCK_EX</span> <span class="o">|</span> <span class="n">fcntl</span><span class="o">.</span><span class="n">LOCK_NB</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_unlock</span><span class="p">(</span><span class="n">fd</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">fcntl</span>
+
+        <span class="n">fcntl</span><span class="o">.</span><span class="n">lockf</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">fcntl</span><span class="o">.</span><span class="n">LOCK_UN</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+
+<span class="n">_cache</span> <span class="o">=</span> <span class="p">{}</span>
+
+
+<div class="viewcode-block" id="load_model">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_model.load_model">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_model</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The fitted model of ``program``, or None if there is none."""</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">model_path</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">mtime</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_mtime</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">cached</span> <span class="o">=</span> <span class="n">_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cached</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">cached</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">mtime</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cached</span> <span class="o">=</span> <span class="p">(</span><span class="n">mtime</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">read_text</span><span class="p">()))</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not read the timing model </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">cached</span>
+    <span class="k">return</span> <span class="n">cached</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+
+<span class="c1"># ----------------------------------------------------------------------</span>
+<span class="c1"># Predict</span>
+<span class="c1"># ----------------------------------------------------------------------</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_interp_quantile</span><span class="p">(</span><span class="n">quantiles</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A residual quantile by interpolation in the stored table."""</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">((</span><span class="nb">float</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">quantiles</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">points</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.0</span>
+    <span class="k">if</span> <span class="n">q</span> <span class="o">&lt;=</span> <span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">q</span> <span class="o">&gt;=</span> <span class="n">points</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">points</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">q0</span><span class="p">,</span> <span class="n">v0</span><span class="p">),</span> <span class="p">(</span><span class="n">q1</span><span class="p">,</span> <span class="n">v1</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+        <span class="k">if</span> <span class="n">q0</span> <span class="o">&lt;=</span> <span class="n">q</span> <span class="o">&lt;=</span> <span class="n">q1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">v0</span> <span class="o">+</span> <span class="p">(</span><span class="n">v1</span> <span class="o">-</span> <span class="n">v0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">q</span> <span class="o">-</span> <span class="n">q0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">q1</span> <span class="o">-</span> <span class="n">q0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">points</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="predict">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_model.predict">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span>
+    <span class="n">program</span><span class="p">,</span>
+    <span class="n">descriptors</span><span class="p">,</span>
+    <span class="n">ntasks</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">cpus_per_task</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">machine</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">quantile</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span>
+    <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">refresh</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The predicted wall time of a calculation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    program : str</span>
+<span class="sd">    descriptors : dict</span>
+<span class="sd">        The calculation's descriptors, as its timing record would carry them</span>
+<span class="sd">        (the size columns, the class columns, the task; the multiplier).</span>
+<span class="sd">    ntasks, cpus_per_task : int</span>
+<span class="sd">    machine : str, optional</span>
+<span class="sd">        The machine class key; default this machine's. An unknown class gets no</span>
+<span class="sd">        offset and a wider spread.</span>
+<span class="sd">    quantile : float</span>
+<span class="sd">        Of the residual distribution: 0.5 for a median estimate (packing),</span>
+<span class="sd">        0.95 for a queue walltime.</span>
+<span class="sd">    units : float, optional</span>
+<span class="sd">        The iterations the run will take, if known (an optimization's steps);</span>
+<span class="sd">        else the task's distribution at the same quantile.</span>
+<span class="sd">    directory, model : optional</span>
+<span class="sd">        The timing directory, or a model already loaded.</span>
+<span class="sd">    refresh : bool</span>
+<span class="sd">        Refit the model first if its records have grown by a fifth or it is a</span>
+<span class="sd">        week old (:func:`refresh_if_stale`); a model given is used as it is.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict or None</span>
+<span class="sd">        ``seconds`` (at the quantile), ``median``, ``units``, ``machine_known``,</span>
+<span class="sd">        ``quantile``, ``spread`` (the log-space spread used), ``model`` (its date</span>
+<span class="sd">        and rows); None when there is no model or the descriptors lack every</span>
+<span class="sd">        size variable.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">refresh</span><span class="p">:</span>
+            <span class="n">refresh_if_stale</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">sizes</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">model</span><span class="p">[</span><span class="s2">"features"</span><span class="p">]:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">_num</span><span class="p">(</span><span class="n">descriptors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">sizes</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">sizes</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">coef</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s2">"coefficients"</span><span class="p">]</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">coef</span><span class="p">[</span><span class="s2">"intercept"</span><span class="p">]</span>
+    <span class="n">means</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"feature_log_means"</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">model</span><span class="p">[</span><span class="s2">"features"</span><span class="p">]:</span>
+        <span class="c1"># A size variable not given takes the records' mean (log) value</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">sizes</span><span class="p">[</span><span class="n">name</span><span class="p">])</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">sizes</span> <span class="k">else</span> <span class="n">means</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">+=</span> <span class="n">coef</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">"log </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">value</span>
+    <span class="n">cores</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">ntasks</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">cpus_per_task</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s2">"alpha"</span><span class="p">]</span>
+    <span class="n">first</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s2">"features"</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">model</span><span class="p">[</span><span class="s2">"features"</span><span class="p">]</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"alpha_size_mean"</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">first</span> <span class="ow">in</span> <span class="n">sizes</span><span class="p">:</span>
+        <span class="n">alpha</span> <span class="o">+=</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"alpha_slope"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
+            <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">sizes</span><span class="p">[</span><span class="n">first</span><span class="p">])</span> <span class="o">-</span> <span class="n">model</span><span class="p">[</span><span class="s2">"alpha_size_mean"</span><span class="p">]</span>
+        <span class="p">)</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">alpha</span><span class="p">))</span>
+    <span class="n">y</span> <span class="o">-=</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">cores</span><span class="p">)</span>
+    <span class="n">klass</span> <span class="o">=</span> <span class="s2">" / "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">descriptors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">model</span><span class="p">[</span><span class="s2">"class_columns"</span><span class="p">]</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">" /"</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">+=</span> <span class="n">model</span><span class="p">[</span><span class="s2">"classes"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">task</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">descriptors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s2">"task_column"</span><span class="p">],</span> <span class="s2">""</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">model</span><span class="p">[</span><span class="s2">"task_column"</span><span class="p">]</span>
+        <span class="k">else</span> <span class="s2">""</span>
+    <span class="p">)</span>
+    <span class="n">y</span> <span class="o">+=</span> <span class="n">model</span><span class="p">[</span><span class="s2">"tasks"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="n">machine</span> <span class="o">=</span> <span class="n">machine</span> <span class="ow">or</span> <span class="n">machine_class</span><span class="p">()[</span><span class="s2">"machine"</span><span class="p">]</span>
+    <span class="n">info</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s2">"machines"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">machine</span><span class="p">)</span>
+    <span class="n">known</span> <span class="o">=</span> <span class="n">info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">known</span><span class="p">:</span>
+        <span class="n">y</span> <span class="o">+=</span> <span class="n">info</span><span class="p">[</span><span class="s2">"offset"</span><span class="p">]</span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">"t0"</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s2">"t0_pooled"</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s2">"task_units_quantiles"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">task</span><span class="p">)</span> <span class="ow">or</span> <span class="n">model</span><span class="p">[</span>
+            <span class="s2">"task_units_quantiles"</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s2">"reference_task"</span><span class="p">],</span> <span class="p">{})</span>
+        <span class="n">units</span> <span class="o">=</span> <span class="n">_interp_quantile</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">quantile</span><span class="p">)</span> <span class="k">if</span> <span class="n">table</span> <span class="k">else</span> <span class="mf">1.0</span>
+        <span class="n">units</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">units</span> <span class="ow">or</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">mult</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="k">if</span> <span class="n">model</span><span class="p">[</span><span class="s2">"multiplier_column"</span><span class="p">]:</span>
+        <span class="n">mult</span> <span class="o">=</span> <span class="n">_num</span><span class="p">(</span><span class="n">descriptors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s2">"multiplier_column"</span><span class="p">]))</span> <span class="ow">or</span> <span class="mf">1.0</span>
+
+    <span class="n">resid_table</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">model</span><span class="p">[</span><span class="s2">"task_residual_quantiles"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">task</span><span class="p">)</span> <span class="ow">or</span> <span class="n">model</span><span class="p">[</span><span class="s2">"residual_quantiles"</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">spread</span> <span class="o">=</span> <span class="n">_interp_quantile</span><span class="p">(</span><span class="n">resid_table</span><span class="p">,</span> <span class="n">quantile</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">known</span><span class="p">:</span>
+        <span class="c1"># An unknown machine: widen by the spread of the machine offsets</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="p">{</span><span class="mf">0.5</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.68</span><span class="p">:</span> <span class="mf">0.47</span><span class="p">,</span> <span class="mf">0.84</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">:</span> <span class="mf">1.64</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">:</span> <span class="mf">2.33</span><span class="p">}</span>
+        <span class="n">spread</span> <span class="o">+=</span> <span class="n">model</span><span class="p">[</span><span class="s2">"machine_offset_sd"</span><span class="p">]</span> <span class="o">*</span> <span class="n">_interp_quantile</span><span class="p">(</span>
+            <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">):</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">z</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span> <span class="n">quantile</span>
+        <span class="p">)</span>
+    <span class="n">median</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">*</span> <span class="n">units</span> <span class="o">*</span> <span class="n">mult</span> <span class="o">+</span> <span class="n">t0</span>
+    <span class="n">seconds</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="n">spread</span><span class="p">)</span> <span class="o">*</span> <span class="n">units</span> <span class="o">*</span> <span class="n">mult</span> <span class="o">+</span> <span class="n">t0</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">"seconds"</span><span class="p">:</span> <span class="n">seconds</span><span class="p">,</span>
+        <span class="s2">"median"</span><span class="p">:</span> <span class="n">median</span><span class="p">,</span>
+        <span class="s2">"units"</span><span class="p">:</span> <span class="n">units</span><span class="p">,</span>
+        <span class="s2">"machine_known"</span><span class="p">:</span> <span class="n">known</span><span class="p">,</span>
+        <span class="s2">"machine"</span><span class="p">:</span> <span class="n">machine</span><span class="p">,</span>
+        <span class="s2">"quantile"</span><span class="p">:</span> <span class="n">quantile</span><span class="p">,</span>
+        <span class="s2">"spread"</span><span class="p">:</span> <span class="n">spread</span><span class="p">,</span>
+        <span class="s2">"model"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"fitted"</span><span class="p">:</span> <span class="n">model</span><span class="p">[</span><span class="s2">"fitted"</span><span class="p">],</span> <span class="s2">"rows"</span><span class="p">:</span> <span class="n">model</span><span class="p">[</span><span class="s2">"rows"</span><span class="p">]},</span>
+    <span class="p">}</span></div>
+
+
+
+<span class="c1"># ----------------------------------------------------------------------</span>
+<span class="c1"># Command line</span>
+<span class="c1"># ----------------------------------------------------------------------</span>
+<div class="viewcode-block" id="report_text">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_model.report_text">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">report_text</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s2">"report"</span><span class="p">]</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">model</span><span class="p">[</span><span class="s1">'program'</span><span class="p">]</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">model</span><span class="p">[</span><span class="s1">'rows'</span><span class="p">]</span><span class="si">}</span><span class="s2"> rows, </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">'machines'</span><span class="p">]</span><span class="si">}</span><span class="s2"> machine class(es), "</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">'classes'</span><span class="p">]</span><span class="si">}</span><span class="s2"> method class(es), </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">'tasks'</span><span class="p">]</span><span class="si">}</span><span class="s2"> task(s)"</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">"  R^2 (log unit time) </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">'r2_log'</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">; within 1.3x </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">'within_1.3x'</span><span class="p">]</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2">, "</span>
+        <span class="sa">f</span><span class="s2">"within 2x </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">'within_2x'</span><span class="p">]</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="s2">"  log(unit time) = "</span>
+        <span class="o">+</span> <span class="s2">" + "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">model</span><span class="p">[</span><span class="s1">'coefficients'</span><span class="p">][</span><span class="s1">'intercept'</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span>
+            <span class="o">+</span> <span class="p">[</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">model</span><span class="p">[</span><span class="s1">'coefficients'</span><span class="p">][</span><span class="sa">f</span><span class="s1">'log </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s1">'</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> log(</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">)"</span>
+                <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">model</span><span class="p">[</span><span class="s2">"features"</span><span class="p">]</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="o">+</span> <span class="sa">f</span><span class="s2">" - alpha log(cores), alpha = </span><span class="si">{</span><span class="n">model</span><span class="p">[</span><span class="s1">'alpha'</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span>
+        <span class="o">+</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">" </span><span class="si">{</span><span class="n">model</span><span class="p">[</span><span class="s1">'alpha_slope'</span><span class="p">]</span><span class="si">:</span><span class="s2">+.2f</span><span class="si">}</span><span class="s2"> (log </span><span class="si">{</span><span class="n">model</span><span class="p">[</span><span class="s1">'features'</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> - "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">model</span><span class="p">[</span><span class="s1">'alpha_size_mean'</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)"</span>
+            <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"alpha_size_mean"</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"alpha_slope"</span><span class="p">)</span>
+            <span class="k">else</span> <span class="s2">""</span>
+        <span class="p">)</span>
+        <span class="o">+</span> <span class="p">(</span><span class="s2">""</span> <span class="k">if</span> <span class="n">model</span><span class="p">[</span><span class="s2">"alpha_fitted"</span><span class="p">]</span> <span class="k">else</span> <span class="s2">" [assumed]"</span><span class="p">),</span>
+    <span class="p">]</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">offset</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s2">"classes"</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">kv</span><span class="p">:</span> <span class="n">kv</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">!=</span> <span class="n">model</span><span class="p">[</span><span class="s2">"reference_class"</span><span class="p">]:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  class </span><span class="si">{</span><span class="n">name</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">'(none)'</span><span class="si">}</span><span class="s2">: x</span><span class="si">{</span><span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">offset</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s2">"tasks"</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">kv</span><span class="p">:</span> <span class="n">kv</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">!=</span> <span class="n">model</span><span class="p">[</span><span class="s2">"reference_task"</span><span class="p">]:</span>
+            <span class="n">units</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s2">"task_units_quantiles"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"0.5"</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"  task </span><span class="si">{</span><span class="n">name</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">'(none)'</span><span class="si">}</span><span class="s2">: x</span><span class="si">{</span><span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> per unit"</span>
+                <span class="o">+</span> <span class="p">(</span><span class="sa">f</span><span class="s2">", median </span><span class="si">{</span><span class="n">units</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> units"</span> <span class="k">if</span> <span class="n">units</span> <span class="k">else</span> <span class="s2">""</span><span class="p">)</span>
+            <span class="p">)</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s2">"machines"</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">kv</span><span class="p">:</span> <span class="n">kv</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s2">"offset"</span><span class="p">]):</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"  machine </span><span class="si">{</span><span class="n">name</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">'(unknown)'</span><span class="si">}</span><span class="s2">: x</span><span class="si">{</span><span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s1">'offset'</span><span class="p">])</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> "</span>
+            <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">'rows'</span><span class="p">]</span><span class="si">}</span><span class="s2"> rows, t0 </span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">'t0'</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> s)"</span>
+        <span class="p">)</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s2">"residual_quantiles"</span><span class="p">]</span>
+    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"  spread: 68% within x</span><span class="si">{</span><span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="s1">'0.84'</span><span class="p">])</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">, 95% within "</span>
+        <span class="sa">f</span><span class="s2">"x</span><span class="si">{</span><span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="s1">'0.95'</span><span class="p">])</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> of the median"</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="main">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_model.main">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+        <span class="n">prog</span><span class="o">=</span><span class="s2">"python -m seamm_exec.timing_model"</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"Fit the cost models to the timing records, or predict a time."</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--directory"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"the timing directory (default ~/.seamm.d/timing)"</span>
+    <span class="p">)</span>
+    <span class="n">sub</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_subparsers</span><span class="p">(</span><span class="n">dest</span><span class="o">=</span><span class="s2">"command"</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">p_fit</span> <span class="o">=</span> <span class="n">sub</span><span class="o">.</span><span class="n">add_parser</span><span class="p">(</span>
+        <span class="s2">"fit"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"fit the model of each program (default: all with records)"</span>
+    <span class="p">)</span>
+    <span class="n">p_fit</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"programs"</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s2">"*"</span><span class="p">)</span>
+    <span class="n">p_fit</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--min-rows"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+    <span class="n">p_pred</span> <span class="o">=</span> <span class="n">sub</span><span class="o">.</span><span class="n">add_parser</span><span class="p">(</span><span class="s2">"predict"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"predict a calculation's time"</span><span class="p">)</span>
+    <span class="n">p_pred</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"program"</span><span class="p">)</span>
+    <span class="n">p_pred</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"pairs"</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s2">"*"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"descriptors as key=value"</span><span class="p">)</span>
+    <span class="n">p_pred</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"-q"</span><span class="p">,</span> <span class="s2">"--quantile"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.95</span><span class="p">)</span>
+    <span class="n">p_pred</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--ntasks"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">p_pred</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--cpus-per-task"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">p_pred</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--machine"</span><span class="p">)</span>
+    <span class="n">p_pred</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--units"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">command</span> <span class="o">==</span> <span class="s2">"fit"</span><span class="p">:</span>
+        <span class="n">directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">directory</span> <span class="ow">or</span> <span class="n">DEFAULT_DIRECTORY</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
+        <span class="n">programs</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">programs</span> <span class="ow">or</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="p">{</span><span class="n">p</span><span class="o">.</span><span class="n">stem</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"-"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">directory</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"*.csv"</span><span class="p">)}</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">program</span> <span class="ow">in</span> <span class="n">programs</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">min_rows</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">min_rows</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">program</span><span class="si">}</span><span class="s2">: not enough usable records to fit"</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">save_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">report_text</span><span class="p">(</span><span class="n">model</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  written to </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="n">descriptors</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">pair</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"="</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">pairs</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">predict</span><span class="p">(</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">program</span><span class="p">,</span>
+        <span class="n">descriptors</span><span class="p">,</span>
+        <span class="n">ntasks</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">ntasks</span><span class="p">,</span>
+        <span class="n">cpus_per_task</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">cpus_per_task</span><span class="p">,</span>
+        <span class="n">machine</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">machine</span><span class="p">,</span>
+        <span class="n">quantile</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">quantile</span><span class="p">,</span>
+        <span class="n">units</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
+        <span class="n">directory</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No model for </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">program</span><span class="si">}</span><span class="s2">, or no size variable given."</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">1</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'seconds'</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> s at the </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'quantile'</span><span class="p">]</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2"> quantile "</span>
+        <span class="sa">f</span><span class="s2">"(median </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'median'</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> s, </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'units'</span><span class="p">]</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> unit(s); machine "</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'machine'</span><span class="p">]</span><span class="si">}</span><span class="s2"> "</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'known'</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">result</span><span class="p">[</span><span class="s1">'machine_known'</span><span class="p">]</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">'unknown, widened'</span><span class="si">}</span><span class="s2">; "</span>
+        <span class="sa">f</span><span class="s2">"model of </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'model'</span><span class="p">][</span><span class="s1">'fitted'</span><span class="p">][:</span><span class="mi">10</span><span class="p">]</span><span class="si">}</span><span class="s2"> on </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'model'</span><span class="p">][</span><span class="s1">'rows'</span><span class="p">]</span><span class="si">}</span><span class="s2"> rows)"</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="mi">0</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

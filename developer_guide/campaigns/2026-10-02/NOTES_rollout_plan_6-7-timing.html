@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Rollout plan: phases 6 and 7, the orca.ini fix and the timing records &#8212; SEAMM seamm-exec Plug-in 2026.10.6 documentation</title>
+    <title>Rollout plan: phases 6 and 7, the orca.ini fix and the timing records &#8212; SEAMM seamm-exec Plug-in 2026.10.6.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../../_static/documentation_options.js?v=ae463d2f"></script>
+    <script src="../../../_static/documentation_options.js?v=6b967701"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="Rollout of 2026-10-04: ChemAI and TinkerCliffs" href="NOTES_rollout_2026-10-04.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.6" />
+  <meta name="docsearch:version" content="2026.10.6.1" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -940,6 +940,78 @@ every run (about 15 minutes on TinkerCliffs’ NFS). seamm-manager 2026.10.6
 afterwards; <code class="docutils literal notranslate"><span class="pre">flowcharts</span> <span class="pre">status</span></code> always scans and refreshes the record.</p>
 </section>
 </section>
+<section id="second-round-2026-10-06-the-2026-10-6-releases">
+<h1>Second round, 2026-10-06: the 2026.10.6 releases<a class="headerlink" href="#second-round-2026-10-06-the-2026-10-6-releases" title="Link to this heading">#</a></h1>
+<p>Paul’s ask, once seamm-exec, seamm-manager and the six code steps were on
+PyPI (the item-13 timing records and the scan-once fix). Tool
+<code class="docutils literal notranslate"><span class="pre">seamm-manager==2026.10.6</span></code> then <code class="docutils literal notranslate"><span class="pre">update</span> <span class="pre">--latest</span> <span class="pre">--all</span></code> everywhere; the
+installer behaviour on the hand-built environments having been proven the
+day before, no snapshots this time. <code class="docutils literal notranslate"><span class="pre">--all</span></code> also brought in what the first
+round’s explicit list had skipped (strain-step, energy/dimer-builder/
+normal-mode-sampling steps, molsystem 2026.10.6.1).</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Site</p></th>
+<th class="head"><p>new venv</p></th>
+<th class="head"><p>rollback</p></th>
+<th class="head"><p>notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Mac <code class="docutils literal notranslate"><span class="pre">~/SEAMM</span></code></p></td>
+<td><p>2026-10-06T10-39-42</p></td>
+<td><p>2026-10-05T18-33-32</p></td>
+<td><p>MOPAC test: old 62 MB mopac.csv
+set aside, new schema row</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV</span></code></p></td>
+<td><p>2026-10-06T10-42-14</p></td>
+<td><p>2026-10-05T18-39-35</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>MolSSI10</p></td>
+<td><p>2026-10-06T10-44-04</p></td>
+<td><p>2026-10-06T07-22-19</p></td>
+<td><p>flowchart record written</p></td>
+</tr>
+<tr class="row-odd"><td><p>ChemAI</p></td>
+<td><p>2026-10-06T10-45-12</p></td>
+<td><p>2026-10-05T19-00-48</p></td>
+<td><p>job 5175 was running (below)</p></td>
+</tr>
+<tr class="row-even"><td><p>Mac mini</p></td>
+<td><p>2026-10-06T10-49-50</p></td>
+<td><p>2026-10-05T18-41-48</p></td>
+<td><p>reachable from work after all</p></td>
+</tr>
+<tr class="row-odd"><td><p>TinkerCliffs</p></td>
+<td><p>2026-10-06T10-46-31</p></td>
+<td><p>2026-10-06T06-46-45</p></td>
+<td><p>EC pilot was running (below)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span> <span class="pre">check</span></code> clean and services running on every site; every site’s
+<code class="docutils literal notranslate"><span class="pre">installation.ini</span></code> now has <code class="docutils literal notranslate"><span class="pre">[flowcharts]</span> <span class="pre">format</span> <span class="pre">=</span> <span class="pre">3.0</span></code>, so the next update
+skips the scan.</p>
+<p><strong>ChemAI, a lapse:</strong> the update ran while job 5175 (<code class="docutils literal notranslate"><span class="pre">seamm-5175</span></code>, 37 min in)
+was running. The versioned switch left its venv (<code class="docutils literal notranslate"><span class="pre">2026-10-05T19-00-48</span></code>) in
+place and the job continued on it; the restarted JobServer reattached (“previous
+jobs: 2”). No harm, by design – but the rule is to wait for running jobs, and
+the pre-check should gate the update, not just print.</p>
+<p><strong>TinkerCliffs, a second lapse of the same kind:</strong> the switch at 10:46 happened
+while the MBE session’s EC pilot (job 7870006, started 07:21, with 18 bundle
+jobs) was running from the main venv; the login-node check cannot see
+compute-node evaluators, and the pre-check only counted my own SLURM jobs
+without gating. Checked afterwards: the evaluator runs from the real path
+<code class="docutils literal notranslate"><span class="pre">venvs/2026-10-06T06-46-45</span></code> and writes that same real path into every
+bundle’s <code class="docutils literal notranslate"><span class="pre">run.sh</span></code> (<code class="docutils literal notranslate"><span class="pre">exec</span> <span class="pre">.../venvs/2026-10-06T06-46-45/bin/python</span> <span class="pre">-m</span>
+<span class="pre">seamm_exec.task_worker</span></code>), so the whole job stays on one version; no bundle
+failed. The versioned-venv design covered it, but <strong>the rule for a cluster is:
+ask the sessions with running evaluators (mbe) before switching, or wait.</strong>
+installation.ini has the flowchart record; <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span> <span class="pre">check</span></code> clean.</p>
+</section>
 
 
                 </article>
@@ -988,6 +1060,7 @@ afterwards; <code class="docutils literal notranslate"><span class="pre">flowcha
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Rollout plan: phases 6 and 7, the orca.ini fix and the timing records</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-rollout-carries">What this rollout carries</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#versions">Versions</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-explicit-package-list">The explicit package list</a></li>
@@ -996,6 +1069,10 @@ afterwards; <code class="docutils literal notranslate"><span class="pre">flowcha
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#risks">Risks</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#record-of-execution">Record of execution</a></li>
 </ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#second-round-2026-10-06-the-2026-10-6-releases">Second round, 2026-10-06: the 2026.10.6 releases</a></li>
+</ul>
+
   </nav></div>
 
   <div class="sidebar-secondary-item">

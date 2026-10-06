@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Phase 8 notes &#8212; SEAMM seamm-exec Plug-in 2026.10.6 documentation</title>
+    <title>Phase 8 notes &#8212; SEAMM seamm-exec Plug-in 2026.10.6.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../../_static/documentation_options.js?v=ae463d2f"></script>
+    <script src="../../../_static/documentation_options.js?v=6b967701"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="Phase 7 notes" href="NOTES_phase7.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.6" />
+  <meta name="docsearch:version" content="2026.10.6.1" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -800,6 +800,16 @@ belongs in <code class="docutils literal notranslate"><span class="pre">orca_bas
 points: at what size does ORCA accept 2, 4 or 11 processes?</p>
 <p><em>Recommendation.</em> Do it (Paul, 2026-10-05: its own item). Measure the threshold on
 the Mac first, then check it on a cluster node with more cores.</p>
+<p><em>Result (2026-10-06): not needed.</em> ORCA 6.1.1 ran water, methane, ethanol,
+benzene, hexane and decane (3-32 atoms) on 2, 4, 6, 8 and 11 processes without a
+single failure, and so did the failing run’s exact input and the same flowchart
+through SEAMM. The abort reproduces only with Homebrew’s OpenMPI 5.0.8 first on
+the PATH: ORCA 6.1.1 needs OpenMPI 4.1.x on macOS, which orca_step puts on the PATH
+from <code class="docutils literal notranslate"><span class="pre">library-path</span></code> in <code class="docutils literal notranslate"><span class="pre">orca.ini</span></code>. The failing run predates the sub-step root
+fix (seamm-exec 2026.10.5.2), so <code class="docutils literal notranslate"><span class="pre">orca.ini</span></code> was not read and ORCA used Homebrew’s
+<code class="docutils literal notranslate"><span class="pre">mpirun</span></code>. Follow-up done (Paul, 2026-10-06): orca_step 2026.10.6 checks, before a
+parallel run, the <code class="docutils literal notranslate"><span class="pre">mpirun</span></code> ORCA will use and stops with a clear message if it is
+OpenMPI 5 or missing (skipped on one core and for <code class="docutils literal notranslate"><span class="pre">installation</span> <span class="pre">=</span> <span class="pre">modules</span></code>).</p>
 </section>
 </section>
 <section id="not-phase-8-recorded-here-for-completeness">

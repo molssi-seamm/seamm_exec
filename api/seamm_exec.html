@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.6 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.6.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=ae463d2f"></script>
+    <script src="../_static/documentation_options.js?v=6b967701"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="seamm_exec" href="modules.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.6" />
+  <meta name="docsearch:version" content="2026.10.6.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -2502,7 +2502,7 @@ differ, so a row only has the keys of its own file.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="seamm_exec.timing.record_task_timing">
-<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing.</span></span><span class="sig-name descname"><span class="pre">record_task_timing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descriptors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing.html#record_task_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing.record_task_timing" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing.</span></span><span class="sig-name descname"><span class="pre">record_task_timing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descriptors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing.html#record_task_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing.record_task_timing" title="Link to this definition">#</a></dt>
 <dd><p>Append the timing record of a task that has run.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2515,6 +2515,7 @@ recorded, and the function returns None.</p></li>
 values (see the campaign document for each code’s), written after the
 common columns. Keys that clash with a common column are ignored.</p></li>
 <li><p><strong>directory</strong> (<em>str</em><em> or </em><em>Path</em><em>, </em><em>optional</em>) – The timing directory; default <code class="docutils literal notranslate"><span class="pre">~/.seamm.d/timing</span></code>.</p></li>
+<li><p><strong>spec</strong> (<a class="reference internal" href="#seamm_exec.timing_model.Spec" title="seamm_exec.timing_model.Spec"><em>seamm_exec.timing_model.Spec</em></a><em> or </em><em>dict</em><em>, </em><em>optional</em>) – The step’s spec of its cost model, written once beside the records.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2530,11 +2531,14 @@ common columns. Keys that clash with a common column are ignored.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="seamm_exec.timing.record_timing">
-<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing.</span></span><span class="sig-name descname"><span class="pre">record_timing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wall</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descriptors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">ntasks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpus_per_task</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mem_per_cpu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ngpus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gpu_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimated</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'finished'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timed_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attempts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_situ</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing.html#record_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing.record_timing" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing.</span></span><span class="sig-name descname"><span class="pre">record_timing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wall</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descriptors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">ntasks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpus_per_task</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mem_per_cpu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ngpus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gpu_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimated</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'finished'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timed_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attempts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_situ</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing.html#record_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing.record_timing" title="Link to this definition">#</a></dt>
 <dd><p>Append the timing record of a run made outside the task layer.</p>
 <p>For a step that still runs its code through <code class="docutils literal notranslate"><span class="pre">executor.run</span></code> and times it
 itself. The arguments are the common columns (see the module docstring);
-<code class="docutils literal notranslate"><span class="pre">descriptors</span></code> as for <a class="reference internal" href="#seamm_exec.timing.record_task_timing" title="seamm_exec.timing.record_task_timing"><code class="xref py py-func docutils literal notranslate"><span class="pre">record_task_timing()</span></code></a>. Never raises.</p>
+<code class="docutils literal notranslate"><span class="pre">descriptors</span></code> as for <a class="reference internal" href="#seamm_exec.timing.record_task_timing" title="seamm_exec.timing.record_task_timing"><code class="xref py py-func docutils literal notranslate"><span class="pre">record_task_timing()</span></code></a>; <code class="docutils literal notranslate"><span class="pre">spec</span></code>, the step’s
+<a class="reference internal" href="#seamm_exec.timing_model.Spec" title="seamm_exec.timing_model.Spec"><code class="xref py py-class docutils literal notranslate"><span class="pre">seamm_exec.timing_model.Spec</span></code></a> (or its dict) saying which
+descriptors the cost model is made of, written once beside the records.
+Never raises.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -2558,6 +2562,376 @@ as <code class="docutils literal notranslate"><span class="pre">n_ghosts</span><
 <dt class="sig sig-object py" id="seamm_exec.timing.timing_path">
 <span class="sig-prename descclassname"><span class="pre">seamm_exec.timing.</span></span><span class="sig-name descname"><span class="pre">timing_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing.html#timing_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing.timing_path" title="Link to this definition">#</a></dt>
 <dd><p>The timing file of <code class="docutils literal notranslate"><span class="pre">program</span></code>.</p>
+</dd></dl>
+
+</section>
+<section id="module-seamm_exec.timing_benchmark">
+<span id="seamm-exec-timing-benchmark-module"></span><h2>seamm_exec.timing_benchmark module<a class="headerlink" href="#module-seamm_exec.timing_benchmark" title="Link to this heading">#</a></h2>
+<p>The seed benchmark: standard calculations that place a machine class in the
+cost model (campaign <code class="docutils literal notranslate"><span class="pre">docs/developer_guide/campaigns/2026-10-05</span></code>, section 5).</p>
+<p>A machine the model has never seen gets its offset from a few minutes of
+standard runs: per code, a few molecules spanning two orders of magnitude of
+size, two or three method classes, as single points and optimizations, and a
+sweep of core counts where the code is parallel. The runs are ordinary
+flowchart runs; their timing rows carry <code class="docutils literal notranslate"><span class="pre">benchmark=&lt;set&gt;</span></code> so a fit can tell
+them from production runs (they are chosen to span the space) and so a code or
+compiler change can be checked against an earlier set.</p>
+<p>The flowchart is built here from a spec, with the installed plug-ins, and run
+once per core count with <code class="docutils literal notranslate"><span class="pre">SEAMM_CE</span></code> capping the cores the codes see:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">timing_benchmark</span> <span class="o">--</span><span class="n">codes</span> <span class="n">orca</span><span class="p">,</span><span class="n">mopac</span> <span class="o">--</span><span class="n">cores</span> <span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span> <span class="o">--</span><span class="n">fit</span>
+<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">timing_benchmark</span> <span class="o">--</span><span class="n">build</span><span class="o">-</span><span class="n">only</span> <span class="o">-</span><span class="n">o</span> <span class="n">timing_benchmark</span><span class="o">.</span><span class="n">flow</span>
+</pre></div>
+</div>
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing_benchmark.CODES">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_benchmark.</span></span><span class="sig-name descname"><span class="pre">CODES</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'mopac':</span> <span class="pre">{'chemistries':</span> <span class="pre">{'PM6-ORG':</span> <span class="pre">{'full':</span> <span class="pre">902,</span> <span class="pre">'quick':</span> <span class="pre">302},</span> <span class="pre">'PM7':</span> <span class="pre">{'full':</span> <span class="pre">3002,</span> <span class="pre">'quick':</span> <span class="pre">902}},</span> <span class="pre">'parallel':</span> <span class="pre">False,</span> <span class="pre">'parameter':</span> <span class="pre">'hamiltonian',</span> <span class="pre">'step':</span> <span class="pre">'MOPAC',</span> <span class="pre">'tasks':</span> <span class="pre">{'Energy':</span> <span class="pre">{'full':</span> <span class="pre">3002,</span> <span class="pre">'quick':</span> <span class="pre">902},</span> <span class="pre">'Optimization':</span> <span class="pre">{'full':</span> <span class="pre">302,</span> <span class="pre">'quick':</span> <span class="pre">62}},</span> <span class="pre">'variants':</span> <span class="pre">{'Energy':</span> <span class="pre">[{},</span> <span class="pre">{'MOZYME':</span> <span class="pre">'never',</span> <span class="pre">'_max_atoms':</span> <span class="pre">902,</span> <span class="pre">'_min_atoms':</span> <span class="pre">300}]}},</span> <span class="pre">'orca':</span> <span class="pre">{'chemistries':</span> <span class="pre">{'ORCA:DFT&#64;B3LYP/def2-SVP':</span> <span class="pre">{'full':</span> <span class="pre">62,</span> <span class="pre">'quick':</span> <span class="pre">24},</span> <span class="pre">'ORCA:HF&#64;HF/def2-SVP':</span> <span class="pre">{'full':</span> <span class="pre">62,</span> <span class="pre">'quick':</span> <span class="pre">24},</span> <span class="pre">'ORCA:MP2&#64;MP2/def2-SVP':</span> <span class="pre">{'full':</span> <span class="pre">24,</span> <span class="pre">'quick':</span> <span class="pre">15}},</span> <span class="pre">'parallel':</span> <span class="pre">True,</span> <span class="pre">'step':</span> <span class="pre">'ORCA',</span> <span class="pre">'tasks':</span> <span class="pre">{'Energy':</span> <span class="pre">{'full':</span> <span class="pre">302,</span> <span class="pre">'quick':</span> <span class="pre">62},</span> <span class="pre">'Optimization':</span> <span class="pre">{'full':</span> <span class="pre">15,</span> <span class="pre">'quick':</span> <span class="pre">9}}}}</span></span><a class="headerlink" href="#seamm_exec.timing_benchmark.CODES" title="Link to this definition">#</a></dt>
+<dd><p>the model chemistries (with the largest molecule each is run on),
+and the kinds of calculation (with the largest molecule each is run on).
+Sizes are atoms. “quick” keeps a code to a few minutes on one node.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Per code</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing_benchmark.MOLECULES">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_benchmark.</span></span><span class="sig-name descname"><span class="pre">MOLECULES</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(('water',</span> <span class="pre">'O',</span> <span class="pre">3),</span> <span class="pre">('ethanol',</span> <span class="pre">'CCO',</span> <span class="pre">9),</span> <span class="pre">('toluene',</span> <span class="pre">'Cc1ccccc1',</span> <span class="pre">15),</span> <span class="pre">('caffeine',</span> <span class="pre">'Cn1cnc2c1c(=O)n(C)c(=O)n2C',</span> <span class="pre">24),</span> <span class="pre">('icosane',</span> <span class="pre">'CCCCCCCCCCCCCCCCCCCC',</span> <span class="pre">62),</span> <span class="pre">('hectane',</span> <span class="pre">'CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC',</span> <span class="pre">302),</span> <span class="pre">('tricosane-300',</span> <span class="pre">'CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC',</span> <span class="pre">902),</span> <span class="pre">('alkane-1000',</span> <span class="pre">'CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC',</span> <span class="pre">3002))</span></span><a class="headerlink" href="#seamm_exec.timing_benchmark.MOLECULES" title="Link to this definition">#</a></dt>
+<dd><p>Molecules by size (atoms), spanning two orders of magnitude</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing_benchmark.build_flowchart">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_benchmark.</span></span><span class="sig-name descname"><span class="pre">build_flowchart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec_text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_benchmark.html#build_flowchart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_benchmark.build_flowchart" title="Link to this definition">#</a></dt>
+<dd><p>Build the flowchart from the spec with <code class="docutils literal notranslate"><span class="pre">seamm-flowchart</span> <span class="pre">build</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing_benchmark.build_spec">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_benchmark.</span></span><span class="sig-name descname"><span class="pre">build_spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('orca',</span> <span class="pre">'mopac')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'quick'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_benchmark.html#build_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_benchmark.build_spec" title="Link to this definition">#</a></dt>
+<dd><p>The YAML spec of the benchmark flowchart for <code class="docutils literal notranslate"><span class="pre">codes</span></code> at <code class="docutils literal notranslate"><span class="pre">tier</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing_benchmark.main">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_benchmark.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_benchmark.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_benchmark.main" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing_benchmark.performance_cores">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_benchmark.</span></span><span class="sig-name descname"><span class="pre">performance_cores</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_benchmark.html#performance_cores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_benchmark.performance_cores" title="Link to this definition">#</a></dt>
+<dd><p>The cores a core sweep may use: on Apple silicon the performance cores
+only (<code class="docutils literal notranslate"><span class="pre">hw.perflevel0.physicalcpu</span></code>; a run on more adds efficiency cores,
+whose different speed would distort the parallel exponent), elsewhere the
+physical cores.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing_benchmark.run">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_benchmark.</span></span><span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('orca',</span> <span class="pre">'mopac')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cores</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">4,</span> <span class="pre">8,</span> <span class="pre">16)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'quick'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit_after</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dry_run</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_benchmark.html#run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_benchmark.run" title="Link to this definition">#</a></dt>
+<dd><p>Build the benchmark flowchart and run it once per core count.</p>
+<p><code class="docutils literal notranslate"><span class="pre">SEAMM_CE</span></code> caps the cores (and memory) the codes see in each run, and each
+code’s own <code class="docutils literal notranslate"><span class="pre">ncores</span></code> option is set on the command line (<code class="docutils literal notranslate"><span class="pre">&lt;code&gt;-step</span>
+<span class="pre">--ncores</span> <span class="pre">N</span></code>), since a machine’s seamm.ini may pin it; <code class="docutils literal notranslate"><span class="pre">SEAMM_TIMING_BENCHMARK</span></code>
+marks the timing rows. Core counts above this machine’s usable cores (its
+performance cores on Apple silicon, else its physical cores) are skipped; a
+code that is not parallel runs once.</p>
+</dd></dl>
+
+</section>
+<section id="module-seamm_exec.timing_model">
+<span id="seamm-exec-timing-model-module"></span><h2>seamm_exec.timing_model module<a class="headerlink" href="#module-seamm_exec.timing_model" title="Link to this heading">#</a></h2>
+<p>Fit a cost model to the timing records and predict the time of a calculation.</p>
+<p>The model (campaign <code class="docutils literal notranslate"><span class="pre">docs/developer_guide/campaigns/2026-10-05</span></code>) is a product
+of separable factors, fitted as a sum in log space:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">log</span><span class="p">((</span><span class="n">t</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span> <span class="o">/</span> <span class="n">units</span><span class="p">)</span> <span class="o">=</span> <span class="n">a_class</span> <span class="o">+</span> <span class="n">sum_i</span> <span class="n">b_i</span> <span class="n">log</span><span class="p">(</span><span class="n">size_i</span><span class="p">)</span> <span class="o">-</span> <span class="n">alpha</span> <span class="n">log</span><span class="p">(</span><span class="n">cores</span><span class="p">)</span>
+                        <span class="o">+</span> <span class="n">s_machine</span> <span class="o">+</span> <span class="n">task_offset</span> <span class="o">+</span> <span class="n">noise</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">t0</span></code>: a start-up constant per machine class, taken from the smallest runs
+and subtracted outside the log, so sub-second runs do not bend the power law.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">units</span></code>: the iterations the run took (SCF runs, ionic steps, MD steps …),
+so the fit learns a unit cost; the distribution of <code class="docutils literal notranslate"><span class="pre">units</span></code> per task is kept
+and entered at the requested quantile when predicting.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">size_i</span></code>: the program’s size variables (basis functions, electrons, atoms;
+for plane waves the valence electrons and the grid volume).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">alpha</span></code>: the parallel exponent, fitted when the records span core counts.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">s_machine</span></code>: a per-machine-class offset, shrunk toward zero when a class
+has few rows (the calibration a new machine gets from a few standard runs).</p></li>
+</ul>
+<p>The fit is ridge regression in numpy; the model is a JSON file,
+<code class="docutils literal notranslate"><span class="pre">~/.seamm.d/timing/models/&lt;program&gt;.json</span></code>, and <a class="reference internal" href="#seamm_exec.timing_model.predict" title="seamm_exec.timing_model.predict"><code class="xref py py-func docutils literal notranslate"><span class="pre">predict()</span></code></a> evaluates it
+with numpy alone. The prediction is a <em>quantile</em> of the residual distribution
+(the 95th for a queue walltime), never the mean.</p>
+<p>Command line:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">timing_model</span> <span class="n">fit</span> <span class="p">[</span><span class="n">program</span> <span class="o">...</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">directory</span> <span class="n">DIR</span><span class="p">]</span>
+<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">timing_model</span> <span class="n">predict</span> <span class="n">orca</span> <span class="n">task</span><span class="o">=</span><span class="n">energy</span> <span class="n">nbf</span><span class="o">=</span><span class="mi">240</span> <span class="o">...</span> <span class="p">[</span><span class="o">-</span><span class="n">q</span> <span class="mf">0.95</span><span class="p">]</span>
+</pre></div>
+</div>
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.FALLBACK_SPECS">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">FALLBACK_SPECS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'dftbplus':</span> <span class="pre">Spec(size=('n_atoms',),</span> <span class="pre">klass=('model',),</span> <span class="pre">task='task',</span> <span class="pre">units='scc_cycles',</span> <span class="pre">multiplier=None,</span> <span class="pre">default_alpha=0.8),</span> <span class="pre">'gaussian':</span> <span class="pre">Spec(size=('nbf',</span> <span class="pre">'n_electrons',</span> <span class="pre">'n_atoms'),</span> <span class="pre">klass=('method',),</span> <span class="pre">task='task',</span> <span class="pre">units='scf_runs',</span> <span class="pre">multiplier=None,</span> <span class="pre">default_alpha=0.8),</span> <span class="pre">'lammps':</span> <span class="pre">Spec(size=('n_atoms',),</span> <span class="pre">klass=(),</span> <span class="pre">task=None,</span> <span class="pre">units='md_steps',</span> <span class="pre">multiplier=None,</span> <span class="pre">default_alpha=0.8),</span> <span class="pre">'mopac':</span> <span class="pre">Spec(size=('n_basis',</span> <span class="pre">'n_atoms'),</span> <span class="pre">klass=('hamiltonian',</span> <span class="pre">'regime'),</span> <span class="pre">task='task',</span> <span class="pre">units='scf_runs',</span> <span class="pre">multiplier=None,</span> <span class="pre">default_alpha=0.0),</span> <span class="pre">'orca':</span> <span class="pre">Spec(size=('nbf',</span> <span class="pre">'n_electrons',</span> <span class="pre">'n_atoms'),</span> <span class="pre">klass=('method_class',),</span> <span class="pre">task='task',</span> <span class="pre">units='scf_runs',</span> <span class="pre">multiplier=None,</span> <span class="pre">default_alpha=0.8),</span> <span class="pre">'psi4':</span> <span class="pre">Spec(size=('nbf',</span> <span class="pre">'n_electrons',</span> <span class="pre">'n_atoms'),</span> <span class="pre">klass=('method',),</span> <span class="pre">task='task',</span> <span class="pre">units='scf_runs',</span> <span class="pre">multiplier=None,</span> <span class="pre">default_alpha=0.8),</span> <span class="pre">'vasp':</span> <span class="pre">Spec(size=('nelect',</span> <span class="pre">'grid',</span> <span class="pre">'volume'),</span> <span class="pre">klass=('model',),</span> <span class="pre">task='task',</span> <span class="pre">units='ionic_steps',</span> <span class="pre">multiplier='kpoints',</span> <span class="pre">default_alpha=0.5)}</span></span><a class="headerlink" href="#seamm_exec.timing_model.FALLBACK_SPECS" title="Link to this definition">#</a></dt>
+<dd><p>Specs for the code steps of 2026.10.6, which wrote records before the steps
+declared their own: used only when a program has no <code class="docutils literal notranslate"><span class="pre">&lt;program&gt;.spec.json</span></code>.
+Remove once every step writes its spec.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.MACHINE_SHRINK">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">MACHINE_SHRINK</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5.0</span></span><a class="headerlink" href="#seamm_exec.timing_model.MACHINE_SHRINK" title="Link to this definition">#</a></dt>
+<dd><p>Shrinkage (in rows) of a machine class’s offset toward the pooled fit</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.MODELS_SUBDIR">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">MODELS_SUBDIR</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'models'</span></span><a class="headerlink" href="#seamm_exec.timing_model.MODELS_SUBDIR" title="Link to this definition">#</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">&lt;timing</span> <span class="pre">directory&gt;/models/&lt;program&gt;.json</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Where the fitted models go</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.MODEL_VERSION">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">MODEL_VERSION</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#seamm_exec.timing_model.MODEL_VERSION" title="Link to this definition">#</a></dt>
+<dd><p>The model file’s format</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.QUANTILES">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">QUANTILES</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(0.5,</span> <span class="pre">0.68,</span> <span class="pre">0.84,</span> <span class="pre">0.95,</span> <span class="pre">0.99)</span></span><a class="headerlink" href="#seamm_exec.timing_model.QUANTILES" title="Link to this definition">#</a></dt>
+<dd><p>Residual quantiles stored in a model</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.REFIT_DAYS">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">REFIT_DAYS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">7.0</span></span><a class="headerlink" href="#seamm_exec.timing_model.REFIT_DAYS" title="Link to this definition">#</a></dt>
+<dd><p>… or when it is older than this many days and the records have changed at all</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.REFIT_GROWTH">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">REFIT_GROWTH</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.2</span></span><a class="headerlink" href="#seamm_exec.timing_model.REFIT_GROWTH" title="Link to this definition">#</a></dt>
+<dd><p>A model is refitted by <a class="reference internal" href="#seamm_exec.timing_model.predict" title="seamm_exec.timing_model.predict"><code class="xref py py-func docutils literal notranslate"><span class="pre">predict()</span></code></a> when its records have grown by this
+fraction since the fit …</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.RIDGE">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">RIDGE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.001</span></span><a class="headerlink" href="#seamm_exec.timing_model.RIDGE" title="Link to this definition">#</a></dt>
+<dd><p>Ridge penalty on the slopes and class/task offsets</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.Spec">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">Spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">('n_atoms',)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">klass</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'task'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiplier</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.8</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_model.html#Spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_model.Spec" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>What the cost model of a program is made of: plain data a code step
+declares and passes when it records a run (<code class="docutils literal notranslate"><span class="pre">record_timing(...,</span>
+<span class="pre">spec=...)</span></code>), written beside the records as <code class="docutils literal notranslate"><span class="pre">&lt;program&gt;.spec.json</span></code> so the
+fit reads it without importing the plug-in.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>size</strong> (<em>tuple</em><em> of </em><em>str</em>) – Descriptor columns entering as <code class="docutils literal notranslate"><span class="pre">log(size)</span></code>, most informative first
+(basis functions, electrons, atoms; valence electrons and the grid
+volume for plane waves – a computed variable is written as a
+descriptor by the step).</p></li>
+<li><p><strong>klass</strong> (<em>tuple</em><em> of </em><em>str</em>) – Columns whose joined values are the method class (an intercept each).</p></li>
+<li><p><strong>task</strong> (<em>str</em><em> or </em><em>None</em>) – The column naming the kind of task (an offset each, and the unit
+distribution).</p></li>
+<li><p><strong>units</strong> (<em>str</em><em> or </em><em>None</em>) – The column holding the iterations the run took (SCF runs, ionic steps,
+MD steps). Missing or zero counts as one.</p></li>
+<li><p><strong>multiplier</strong> (<em>str</em><em> or </em><em>None</em>) – A column the time is proportional to besides <code class="docutils literal notranslate"><span class="pre">units</span></code> (k-points).</p></li>
+<li><p><strong>default_alpha</strong> (<em>float</em>) – The parallel exponent used when the records do not span core counts.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.Spec.default_alpha">
+<span class="sig-name descname"><span class="pre">default_alpha</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.8</span></span><a class="headerlink" href="#seamm_exec.timing_model.Spec.default_alpha" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.Spec.from_dict">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_model.html#Spec.from_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_model.Spec.from_dict" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.Spec.klass">
+<span class="sig-name descname"><span class="pre">klass</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></span><a class="headerlink" href="#seamm_exec.timing_model.Spec.klass" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.Spec.multiplier">
+<span class="sig-name descname"><span class="pre">multiplier</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#seamm_exec.timing_model.Spec.multiplier" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.Spec.size">
+<span class="sig-name descname"><span class="pre">size</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('n_atoms',)</span></span><a class="headerlink" href="#seamm_exec.timing_model.Spec.size" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.Spec.task">
+<span class="sig-name descname"><span class="pre">task</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'task'</span></span><a class="headerlink" href="#seamm_exec.timing_model.Spec.task" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.Spec.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_model.html#Spec.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_model.Spec.to_dict" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.Spec.units">
+<span class="sig-name descname"><span class="pre">units</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#seamm_exec.timing_model.Spec.units" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.fit">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_model.html#fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_model.fit" title="Link to this definition">#</a></dt>
+<dd><p>Fit the cost model of <code class="docutils literal notranslate"><span class="pre">program</span></code> to its records.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The model (what <a class="reference internal" href="#seamm_exec.timing_model.save_model" title="seamm_exec.timing_model.save_model"><code class="xref py py-func docutils literal notranslate"><span class="pre">save_model()</span></code></a> writes), with a <code class="docutils literal notranslate"><span class="pre">report</span></code> entry; or
+<code class="docutils literal notranslate"><span class="pre">None</span></code> if there are fewer than <code class="docutils literal notranslate"><span class="pre">min_rows</span></code> usable records.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.load_model">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_model.html#load_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_model.load_model" title="Link to this definition">#</a></dt>
+<dd><p>The fitted model of <code class="docutils literal notranslate"><span class="pre">program</span></code>, or None if there is none.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.load_rows">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">load_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_model.html#load_rows"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_model.load_rows" title="Link to this definition">#</a></dt>
+<dd><p>The records of <code class="docutils literal notranslate"><span class="pre">program</span></code> usable for a fit: schema 1, finished, a wall
+time, as dicts with the model’s variables as floats added
+(<code class="docutils literal notranslate"><span class="pre">_wall</span></code>, <code class="docutils literal notranslate"><span class="pre">_cores</span></code>, <code class="docutils literal notranslate"><span class="pre">_units</span></code>, <code class="docutils literal notranslate"><span class="pre">_mult</span></code>, <code class="docutils literal notranslate"><span class="pre">_size</span></code>, <code class="docutils literal notranslate"><span class="pre">_class</span></code>,
+<code class="docutils literal notranslate"><span class="pre">_task</span></code>, <code class="docutils literal notranslate"><span class="pre">_machine</span></code>).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.load_spec">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">load_spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_model.html#load_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_model.load_spec" title="Link to this definition">#</a></dt>
+<dd><p>The program’s spec: the one its step wrote beside the records, else the
+fallback for the 2026.10.6 steps, else the default (atoms only).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.main">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_model.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_model.main" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.model_path">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">model_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_model.html#model_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_model.model_path" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.models_directory">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">models_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_model.html#models_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_model.models_directory" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.predict">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descriptors</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ntasks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpus_per_task</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.95</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_model.html#predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_model.predict" title="Link to this definition">#</a></dt>
+<dd><p>The predicted wall time of a calculation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>program</strong> (<em>str</em>)</p></li>
+<li><p><strong>descriptors</strong> (<em>dict</em>) – The calculation’s descriptors, as its timing record would carry them
+(the size columns, the class columns, the task; the multiplier).</p></li>
+<li><p><strong>ntasks</strong> (<em>int</em>)</p></li>
+<li><p><strong>cpus_per_task</strong> (<em>int</em>)</p></li>
+<li><p><strong>machine</strong> (<em>str</em><em>, </em><em>optional</em>) – The machine class key; default this machine’s. An unknown class gets no
+offset and a wider spread.</p></li>
+<li><p><strong>quantile</strong> (<em>float</em>) – Of the residual distribution: 0.5 for a median estimate (packing),
+0.95 for a queue walltime.</p></li>
+<li><p><strong>units</strong> (<em>float</em><em>, </em><em>optional</em>) – The iterations the run will take, if known (an optimization’s steps);
+else the task’s distribution at the same quantile.</p></li>
+<li><p><strong>directory</strong> (<em>optional</em>) – The timing directory, or a model already loaded.</p></li>
+<li><p><strong>model</strong> (<em>optional</em>) – The timing directory, or a model already loaded.</p></li>
+<li><p><strong>refresh</strong> (<em>bool</em>) – Refit the model first if its records have grown by a fifth or it is a
+week old (<a class="reference internal" href="#seamm_exec.timing_model.refresh_if_stale" title="seamm_exec.timing_model.refresh_if_stale"><code class="xref py py-func docutils literal notranslate"><span class="pre">refresh_if_stale()</span></code></a>); a model given is used as it is.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">seconds</span></code> (at the quantile), <code class="docutils literal notranslate"><span class="pre">median</span></code>, <code class="docutils literal notranslate"><span class="pre">units</span></code>, <code class="docutils literal notranslate"><span class="pre">machine_known</span></code>,
+<code class="docutils literal notranslate"><span class="pre">quantile</span></code>, <code class="docutils literal notranslate"><span class="pre">spread</span></code> (the log-space spread used), <code class="docutils literal notranslate"><span class="pre">model</span></code> (its date
+and rows); None when there is no model or the descriptors lack every
+size variable.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.records_state">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">records_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_model.html#records_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_model.records_state" title="Link to this definition">#</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">(bytes,</span> <span class="pre">mtime)</span></code> over the program’s record files, current and set
+aside: a cheap measure of how much the records have grown (no read).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.refresh_if_stale">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">refresh_if_stale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">growth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_age_days</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">7.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_model.html#refresh_if_stale"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_model.refresh_if_stale" title="Link to this definition">#</a></dt>
+<dd><p>Refit the program’s model if its records have grown or it is old.</p>
+<p>Stale: no model but enough records for one; the records’ bytes have grown
+by more than <code class="docutils literal notranslate"><span class="pre">growth</span></code> since the fit; or the model is older than
+<code class="docutils literal notranslate"><span class="pre">max_age_days</span></code> and the records have changed since. The refit runs under a
+non-blocking lock (another process refitting means this one uses the model
+as it is), and a new model replaces the old one only if it is fitted to at
+least as many rows and predicts within 2x at least as often, or nearly so.
+Never raises.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">&quot;refitted&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;fresh&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;locked&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;no</span> <span class="pre">records&quot;</span></code> or
+<code class="docutils literal notranslate"><span class="pre">&quot;failed&quot;</span></code>.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.report_text">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">report_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_model.html#report_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_model.report_text" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.save_model">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">save_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_model.html#save_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_model.save_model" title="Link to this definition">#</a></dt>
+<dd><p>Write the model, atomically (a reader never sees a partial file).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.spec_path">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">spec_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_model.html#spec_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_model.spec_path" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.write_spec">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">write_spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_model.html#write_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_model.write_spec" title="Link to this definition">#</a></dt>
+<dd><p>Write a program’s spec beside its records, if it is not there or has
+changed. Called by <code class="docutils literal notranslate"><span class="pre">record_timing</span></code> when the step passes its spec; never
+raises.</p>
 </dd></dl>
 
 </section>
@@ -2914,6 +3288,52 @@ as <code class="docutils literal notranslate"><span class="pre">n_ghosts</span><
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing.structure_descriptors"><code class="docutils literal notranslate"><span class="pre">structure_descriptors()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing.task_wall_seconds"><code class="docutils literal notranslate"><span class="pre">task_wall_seconds()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing.timing_path"><code class="docutils literal notranslate"><span class="pre">timing_path()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.timing_benchmark">seamm_exec.timing_benchmark module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_benchmark.CODES"><code class="docutils literal notranslate"><span class="pre">CODES</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_benchmark.MOLECULES"><code class="docutils literal notranslate"><span class="pre">MOLECULES</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_benchmark.build_flowchart"><code class="docutils literal notranslate"><span class="pre">build_flowchart()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_benchmark.build_spec"><code class="docutils literal notranslate"><span class="pre">build_spec()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_benchmark.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_benchmark.performance_cores"><code class="docutils literal notranslate"><span class="pre">performance_cores()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_benchmark.run"><code class="docutils literal notranslate"><span class="pre">run()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.timing_model">seamm_exec.timing_model module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.FALLBACK_SPECS"><code class="docutils literal notranslate"><span class="pre">FALLBACK_SPECS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.MACHINE_SHRINK"><code class="docutils literal notranslate"><span class="pre">MACHINE_SHRINK</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.MODELS_SUBDIR"><code class="docutils literal notranslate"><span class="pre">MODELS_SUBDIR</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.MODEL_VERSION"><code class="docutils literal notranslate"><span class="pre">MODEL_VERSION</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.QUANTILES"><code class="docutils literal notranslate"><span class="pre">QUANTILES</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.REFIT_DAYS"><code class="docutils literal notranslate"><span class="pre">REFIT_DAYS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.REFIT_GROWTH"><code class="docutils literal notranslate"><span class="pre">REFIT_GROWTH</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.RIDGE"><code class="docutils literal notranslate"><span class="pre">RIDGE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.Spec"><code class="docutils literal notranslate"><span class="pre">Spec</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.Spec.default_alpha"><code class="docutils literal notranslate"><span class="pre">Spec.default_alpha</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.Spec.from_dict"><code class="docutils literal notranslate"><span class="pre">Spec.from_dict()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.Spec.klass"><code class="docutils literal notranslate"><span class="pre">Spec.klass</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.Spec.multiplier"><code class="docutils literal notranslate"><span class="pre">Spec.multiplier</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.Spec.size"><code class="docutils literal notranslate"><span class="pre">Spec.size</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.Spec.task"><code class="docutils literal notranslate"><span class="pre">Spec.task</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.Spec.to_dict"><code class="docutils literal notranslate"><span class="pre">Spec.to_dict()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.Spec.units"><code class="docutils literal notranslate"><span class="pre">Spec.units</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.load_model"><code class="docutils literal notranslate"><span class="pre">load_model()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.load_rows"><code class="docutils literal notranslate"><span class="pre">load_rows()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.load_spec"><code class="docutils literal notranslate"><span class="pre">load_spec()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.model_path"><code class="docutils literal notranslate"><span class="pre">model_path()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.models_directory"><code class="docutils literal notranslate"><span class="pre">models_directory()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.predict"><code class="docutils literal notranslate"><span class="pre">predict()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.records_state"><code class="docutils literal notranslate"><span class="pre">records_state()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.refresh_if_stale"><code class="docutils literal notranslate"><span class="pre">refresh_if_stale()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.report_text"><code class="docutils literal notranslate"><span class="pre">report_text()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.save_model"><code class="docutils literal notranslate"><span class="pre">save_model()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.spec_path"><code class="docutils literal notranslate"><span class="pre">spec_path()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.write_spec"><code class="docutils literal notranslate"><span class="pre">write_spec()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec">Module contents</a><ul class="pst-show_toc_level nav section-nav flex-column">

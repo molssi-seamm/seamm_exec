@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.6 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.6.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="_static/documentation_options.js?v=ae463d2f"></script>
+    <script src="_static/documentation_options.js?v=6b967701"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="Welcome to SEAMM exec’s documentation!" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.6" />
+  <meta name="docsearch:version" content="2026.10.6.1" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -678,6 +678,58 @@ iteration’s own calculations run in its share (its <code class="docutils liter
 “separate tasks” (experimental) they go to the job’s target. The Loop’s user guide
 describes the options and the contract.</p>
 </section>
+<section id="timing-records-and-the-cost-model">
+<h2>Timing records and the cost model<a class="headerlink" href="#timing-records-and-the-cost-model" title="Link to this heading">#</a></h2>
+<p>Every code step appends one row per run to <code class="docutils literal notranslate"><span class="pre">~/.seamm.d/timing/&lt;program&gt;.csv</span></code>
+through <code class="xref py py-func docutils literal notranslate"><span class="pre">record_task_timing()</span></code> (a run made through the task
+layer) or <code class="xref py py-func docutils literal notranslate"><span class="pre">record_timing()</span></code> (one made with <code class="docutils literal notranslate"><span class="pre">executor.run</span></code>):
+the machine class (cluster, partition and CPU model, not the hostname), the
+cores, the wall time and outcome, and the descriptors of the calculation –
+the kind of task, the method’s class, basis functions, electrons, atoms, the
+iterations taken, the code’s own time. A file is set aside when it grows past
+50 MB or when the columns change, and many runs may append at once. The design
+is in <code class="docutils literal notranslate"><span class="pre">docs/developer_guide/campaigns/2026-10-05</span></code>.</p>
+<p>A cost model is fitted to those rows with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">timing_model</span> <span class="n">fit</span>            <span class="c1"># every program with records</span>
+<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">timing_model</span> <span class="n">fit</span> <span class="n">orca</span> <span class="n">vasp</span>
+</pre></div>
+</div>
+<p>which writes <code class="docutils literal notranslate"><span class="pre">~/.seamm.d/timing/models/&lt;program&gt;.json</span></code> and prints a report:
+the rows used, R^2 in log space, the fraction of runs predicted within 1.3x and
+2x, the fitted power law, and a factor per method class, task and machine
+class. The model is a product of separable factors – a start-up constant, a
+unit cost as a power law in the program’s size variables with an intercept per
+method class, an offset per kind of task, a parallel exponent, and an offset per
+machine class – so rows from every machine improve it and a new machine needs
+only a few runs to be placed.</p>
+<p>A prediction is a <em>quantile</em> of the fitted spread, never a mean:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">timing_model</span> <span class="n">predict</span> <span class="n">orca</span> <span class="n">task</span><span class="o">=</span><span class="n">energy</span> \
+    <span class="n">method_class</span><span class="o">=</span><span class="s2">"global hybrid"</span> <span class="n">nbf</span><span class="o">=</span><span class="mi">240</span> <span class="o">--</span><span class="n">ntasks</span> <span class="mi">8</span> <span class="o">-</span><span class="n">q</span> <span class="mf">0.95</span>
+</pre></div>
+</div>
+<p>or, from a step, <a class="reference internal" href="api/seamm_exec.html#seamm_exec.timing_model.predict" title="seamm_exec.timing_model.predict"><code class="xref py py-func docutils literal notranslate"><span class="pre">seamm_exec.timing_model.predict()</span></code></a>, which returns the
+seconds at the quantile, the median, the iteration count it assumed, and
+whether this machine class was in the fit (an unseen class gets no offset and a
+wider spread). The 95th percentile is the right choice for a queue walltime,
+the median for packing tasks into a bundle.</p>
+<p>The models keep themselves current: a prediction refits the model when the
+records have grown by a fifth since the fit, or when it is a week old and the
+records have changed, under a lock so that concurrent runs do not all refit,
+and only replaces the old model when the new one is fitted to at least as many
+rows and predicts at least as well. The <code class="docutils literal notranslate"><span class="pre">fit</span></code> command remains for a report, or
+to refit on demand.</p>
+<p>A machine the model has not seen is placed by the seed benchmark, a few minutes
+of standard runs whose rows the fit can tell apart (<code class="docutils literal notranslate"><span class="pre">benchmark=&lt;set&gt;</span></code>):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">timing_benchmark</span> <span class="o">--</span><span class="n">codes</span> <span class="n">orca</span><span class="p">,</span><span class="n">mopac</span> <span class="o">--</span><span class="n">cores</span> <span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span> <span class="o">--</span><span class="n">fit</span>
+</pre></div>
+</div>
+<p>Per code it runs a few molecules spanning two orders of magnitude of size (water
+to a 300-atom alkane), two or three method classes, as single points and
+optimizations, once per core count where the code is parallel. <code class="docutils literal notranslate"><span class="pre">--bin</span></code> names
+the installation whose <code class="docutils literal notranslate"><span class="pre">run_flowchart</span></code> to use when the benchmark is driven from
+another environment; <code class="docutils literal notranslate"><span class="pre">--build-only</span></code> writes the flowchart to run by hand or
+through a JobServer.</p>
+</section>
 </section>
 
 
@@ -733,6 +785,7 @@ describes the options and the contract.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#where-things-run">Where things run</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resuming-a-job">Resuming a job</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#parallel-loops">Parallel loops</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#timing-records-and-the-cost-model">Timing records and the cost model</a></li>
 </ul>
   </nav></div>
 

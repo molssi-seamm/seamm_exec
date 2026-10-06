@@ -255,3 +255,60 @@ merges each iteration back in order when it is done. With "inline" placement an
 iteration's own calculations run in its share (its ``SEAMM_TARGET`` is empty); with
 "separate tasks" (experimental) they go to the job's target. The Loop's user guide
 describes the options and the contract.
+
+Timing records and the cost model
+---------------------------------
+
+Every code step appends one row per run to ``~/.seamm.d/timing/<program>.csv``
+through :func:`~seamm_exec.record_task_timing` (a run made through the task
+layer) or :func:`~seamm_exec.record_timing` (one made with ``executor.run``):
+the machine class (cluster, partition and CPU model, not the hostname), the
+cores, the wall time and outcome, and the descriptors of the calculation --
+the kind of task, the method's class, basis functions, electrons, atoms, the
+iterations taken, the code's own time. A file is set aside when it grows past
+50 MB or when the columns change, and many runs may append at once. The design
+is in ``docs/developer_guide/campaigns/2026-10-05``.
+
+A cost model is fitted to those rows with::
+
+    python -m seamm_exec.timing_model fit            # every program with records
+    python -m seamm_exec.timing_model fit orca vasp
+
+which writes ``~/.seamm.d/timing/models/<program>.json`` and prints a report:
+the rows used, R^2 in log space, the fraction of runs predicted within 1.3x and
+2x, the fitted power law, and a factor per method class, task and machine
+class. The model is a product of separable factors -- a start-up constant, a
+unit cost as a power law in the program's size variables with an intercept per
+method class, an offset per kind of task, a parallel exponent, and an offset per
+machine class -- so rows from every machine improve it and a new machine needs
+only a few runs to be placed.
+
+A prediction is a *quantile* of the fitted spread, never a mean::
+
+    python -m seamm_exec.timing_model predict orca task=energy \
+        method_class="global hybrid" nbf=240 --ntasks 8 -q 0.95
+
+or, from a step, :func:`seamm_exec.timing_model.predict`, which returns the
+seconds at the quantile, the median, the iteration count it assumed, and
+whether this machine class was in the fit (an unseen class gets no offset and a
+wider spread). The 95th percentile is the right choice for a queue walltime,
+the median for packing tasks into a bundle.
+
+The models keep themselves current: a prediction refits the model when the
+records have grown by a fifth since the fit, or when it is a week old and the
+records have changed, under a lock so that concurrent runs do not all refit,
+and only replaces the old model when the new one is fitted to at least as many
+rows and predicts at least as well. The ``fit`` command remains for a report, or
+to refit on demand.
+
+A machine the model has not seen is placed by the seed benchmark, a few minutes
+of standard runs whose rows the fit can tell apart (``benchmark=<set>``)::
+
+    python -m seamm_exec.timing_benchmark --codes orca,mopac --cores 1,4,8 --fit
+
+Per code it runs a few molecules spanning two orders of magnitude of size (water
+to a 300-atom alkane), two or three method classes, as single points and
+optimizations, once per core count where the code is parallel. ``--bin`` names
+the installation whose ``run_flowchart`` to use when the benchmark is driven from
+another environment; ``--build-only`` writes the flowchart to run by hand or
+through a JobServer.

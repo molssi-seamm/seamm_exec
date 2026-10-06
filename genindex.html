@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; SEAMM seamm-exec Plug-in 2026.10.6 documentation</title>
+    <title>Index &#8212; SEAMM seamm-exec Plug-in 2026.10.6.1 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="_static/documentation_options.js?v=ae463d2f"></script>
+    <script src="_static/documentation_options.js?v=6b967701"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.6" />
+  <meta name="docsearch:version" content="2026.10.6.1" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -458,9 +458,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.TaskSet.backend">backend (seamm_exec.tasks.TaskSet property)</a>
 </li>
+      <li><a href="api/seamm_exec.html#seamm_exec.base.Base">Base (class in seamm_exec.base)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/seamm_exec.html#seamm_exec.base.Base">Base (class in seamm_exec.base)</a>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_benchmark.build_flowchart">build_flowchart() (in module seamm_exec.timing_benchmark)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_benchmark.build_spec">build_spec() (in module seamm_exec.timing_benchmark)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.bundles">bundles (seamm_exec.scheduler_backend.SchedulerBackend attribute)</a>
 </li>
@@ -502,6 +506,8 @@
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.Task.cmd">cmd (seamm_exec.tasks.Task attribute)</a>
 </li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_benchmark.CODES">CODES (in module seamm_exec.timing_benchmark)</a>
+</li>
       <li><a href="api/seamm_exec.html#seamm_exec.timing.COMMON_COLUMNS">COMMON_COLUMNS (in module seamm_exec.timing)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.exec_flowchart.comparable_command_line">comparable_command_line() (in module seamm_exec.exec_flowchart)</a>
@@ -525,6 +531,8 @@
       <li><a href="api/seamm_exec.html#seamm_exec.evaluator.EvaluatorResult.data">data (seamm_exec.evaluator.EvaluatorResult attribute)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.iteration.decode_merge_state">decode_merge_state() (in module seamm_exec.iteration)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.Spec.default_alpha">default_alpha (seamm_exec.timing_model.Spec attribute)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.timing.DEFAULT_DIRECTORY">DEFAULT_DIRECTORY (in module seamm_exec.timing)</a>
 </li>
@@ -586,6 +594,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/seamm_exec.html#seamm_exec.testing.fake_program">fake_program() (in module seamm_exec.testing)</a>
 </li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.FALLBACK_SPECS">FALLBACK_SPECS (in module seamm_exec.timing_model)</a>
+</li>
       <li><a href="api/seamm_exec.html#seamm_exec.local_pool.LocalPool.fetch">fetch() (seamm_exec.local_pool.LocalPool method)</a>
 
       <ul>
@@ -600,17 +610,21 @@
         <li><a href="api/seamm_exec.html#seamm_exec.tasks.TaskResult.files">(seamm_exec.tasks.TaskResult attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/seamm_exec.html#seamm_exec.testing.find_program">find_program() (in module seamm_exec.testing)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/seamm_exec.html#seamm_exec.targets.find_target">find_target() (in module seamm_exec.targets)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.Task.fingerprint">fingerprint (seamm_exec.tasks.Task attribute)</a>
 </li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.fit">fit() (in module seamm_exec.timing_model)</a>
+</li>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.Manifest.flush">flush() (seamm_exec.tasks.Manifest method)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.forget">forget() (seamm_exec.scheduler_backend.SchedulerBackend method)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.Spec.from_dict">from_dict() (seamm_exec.timing_model.Spec class method)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.TaskResult.from_raw">from_raw() (seamm_exec.tasks.TaskResult class method)</a>
 </li>
@@ -689,17 +703,27 @@
 </li>
       </ul></li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.Spec.klass">klass (seamm_exec.timing_model.Spec attribute)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.load_model">load_model() (in module seamm_exec.timing_model)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.load_rows">load_rows() (in module seamm_exec.timing_model)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.load_spec">load_spec() (in module seamm_exec.timing_model)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/seamm_exec.html#seamm_exec.local.Local">Local (class in seamm_exec.local)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.TaskSet.local">local (seamm_exec.tasks.TaskSet property)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/seamm_exec.html#seamm_exec.local_pool.LocalPool">LocalPool (class in seamm_exec.local_pool)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.base.Base.ls_format">ls_format() (seamm_exec.base.Base method)</a>
@@ -712,8 +736,16 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/seamm_exec.html#seamm_exec.timing.machine_class">machine_class() (in module seamm_exec.timing)</a>
 </li>
-      <li><a href="api/seamm_exec.html#seamm_exec.task_worker.main">main() (in module seamm_exec.task_worker)</a>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.MACHINE_SHRINK">MACHINE_SHRINK (in module seamm_exec.timing_model)</a>
 </li>
+      <li><a href="api/seamm_exec.html#seamm_exec.task_worker.main">main() (in module seamm_exec.task_worker)</a>
+
+      <ul>
+        <li><a href="api/seamm_exec.html#seamm_exec.timing_benchmark.main">(in module seamm_exec.timing_benchmark)</a>
+</li>
+        <li><a href="api/seamm_exec.html#seamm_exec.timing_model.main">(in module seamm_exec.timing_model)</a>
+</li>
+      </ul></li>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.Manifest">Manifest (class in seamm_exec.tasks)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.TaskSet.marker_directory">marker_directory() (seamm_exec.tasks.TaskSet method)</a>
@@ -731,6 +763,14 @@
       <li><a href="api/seamm_exec.html#seamm_exec.iteration.merge_database">merge_database() (in module seamm_exec.iteration)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.iteration.merge_files">merge_files() (in module seamm_exec.iteration)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.model_path">model_path() (in module seamm_exec.timing_model)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.MODEL_VERSION">MODEL_VERSION (in module seamm_exec.timing_model)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.models_directory">models_directory() (in module seamm_exec.timing_model)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.MODELS_SUBDIR">MODELS_SUBDIR (in module seamm_exec.timing_model)</a>
 </li>
       <li>
     module
@@ -772,7 +812,17 @@
 </li>
         <li><a href="api/seamm_exec.html#module-seamm_exec.timing">seamm_exec.timing</a>
 </li>
+        <li><a href="api/seamm_exec.html#module-seamm_exec.timing_benchmark">seamm_exec.timing_benchmark</a>
+</li>
+        <li><a href="api/seamm_exec.html#module-seamm_exec.timing_model">seamm_exec.timing_model</a>
+</li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_benchmark.MOLECULES">MOLECULES (in module seamm_exec.timing_benchmark)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.Spec.multiplier">multiplier (seamm_exec.timing_model.Spec attribute)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -831,6 +881,8 @@
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.evaluator.EvaluatorResult.path">path (seamm_exec.evaluator.EvaluatorResult attribute)</a>
 </li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_benchmark.performance_cores">performance_cores() (in module seamm_exec.timing_benchmark)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/seamm_exec.html#seamm_exec.iteration.plan_citations">plan_citations() (in module seamm_exec.iteration)</a>
@@ -838,6 +890,8 @@
       <li><a href="api/seamm_exec.html#seamm_exec.iteration.plan_files">plan_files() (in module seamm_exec.iteration)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.exec_flowchart.plan_start">plan_start() (in module seamm_exec.exec_flowchart)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.predict">predict() (in module seamm_exec.timing_model)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.iteration.PROGRAM">PROGRAM (in module seamm_exec.iteration)</a>
 </li>
@@ -853,6 +907,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.QUANTILES">QUANTILES (in module seamm_exec.timing_model)</a>
+</li>
       <li><a href="api/seamm_exec.html#seamm_exec.scheduler_backend.QueueFull">QueueFull</a>
 </li>
   </ul></td>
@@ -883,11 +939,21 @@
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.timing.record_timing">record_timing() (in module seamm_exec.timing)</a>
 </li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.records_state">records_state() (in module seamm_exec.timing_model)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.REFIT_DAYS">REFIT_DAYS (in module seamm_exec.timing_model)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.REFIT_GROWTH">REFIT_GROWTH (in module seamm_exec.timing_model)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.refresh_if_stale">refresh_if_stale() (in module seamm_exec.timing_model)</a>
+</li>
       <li><a href="api/seamm_exec.html#seamm_exec.resolve.register">register() (in module seamm_exec.resolve)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.relative">relative() (seamm_exec.scheduler_backend.SchedulerBackend method)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.scheduler_backend.remote_name">remote_name() (in module seamm_exec.scheduler_backend)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.report_text">report_text() (in module seamm_exec.timing_model)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.evaluator.REQUIRED">REQUIRED (in module seamm_exec.evaluator)</a>
 </li>
@@ -901,10 +967,10 @@
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.Resources">Resources (class in seamm_exec.tasks)</a>
 </li>
-      <li><a href="api/seamm_exec.html#seamm_exec.tasks.Task.resources">resources (seamm_exec.tasks.Task attribute)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/seamm_exec.html#seamm_exec.tasks.Task.resources">resources (seamm_exec.tasks.Task attribute)</a>
+</li>
       <li><a href="api/seamm_exec.html#seamm_exec.evaluator.EvaluatorResult.restored">restored (seamm_exec.evaluator.EvaluatorResult attribute)</a>
 
       <ul>
@@ -919,6 +985,8 @@
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.TaskResult.returncode">returncode (seamm_exec.tasks.TaskResult attribute)</a>
 </li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.RIDGE">RIDGE (in module seamm_exec.timing_model)</a>
+</li>
       <li><a href="api/seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.room">room() (seamm_exec.scheduler_backend.SchedulerBackend method)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.TaskSet.route">route() (seamm_exec.tasks.TaskSet method)</a>
@@ -926,6 +994,8 @@
       <li><a href="api/seamm_exec.html#seamm_exec.exec_flowchart.run">run() (in module seamm_exec.exec_flowchart)</a>
 
       <ul>
+        <li><a href="api/seamm_exec.html#seamm_exec.timing_benchmark.run">(in module seamm_exec.timing_benchmark)</a>
+</li>
         <li><a href="api/seamm_exec.html#seamm_exec.base.Base.run">(seamm_exec.base.Base method)</a>
 </li>
         <li><a href="api/seamm_exec.html#seamm_exec.exec_flowchart.ExecFlowchart.run">(seamm_exec.exec_flowchart.ExecFlowchart method)</a>
@@ -956,6 +1026,8 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.Manifest.save">save() (seamm_exec.tasks.Manifest method)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.save_model">save_model() (in module seamm_exec.timing_model)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.computational_environment.scheduler_job_variables">scheduler_job_variables() (in module seamm_exec.computational_environment)</a>
 </li>
@@ -1047,8 +1119,6 @@
         <li><a href="api/seamm_exec.html#module-seamm_exec.scheduler_backend">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     seamm_exec.seamm_exec
 
@@ -1063,6 +1133,8 @@
         <li><a href="api/seamm_exec.html#module-seamm_exec.targets">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     seamm_exec.task_worker
 
@@ -1091,9 +1163,29 @@
         <li><a href="api/seamm_exec.html#module-seamm_exec.timing">module</a>
 </li>
       </ul></li>
+      <li>
+    seamm_exec.timing_benchmark
+
+      <ul>
+        <li><a href="api/seamm_exec.html#module-seamm_exec.timing_benchmark">module</a>
+</li>
+      </ul></li>
+      <li>
+    seamm_exec.timing_model
+
+      <ul>
+        <li><a href="api/seamm_exec.html#module-seamm_exec.timing_model">module</a>
+</li>
+      </ul></li>
       <li><a href="api/seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.shared">shared (seamm_exec.scheduler_backend.SchedulerBackend property)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.Task.shell">shell (seamm_exec.tasks.Task attribute)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.Spec.size">size (seamm_exec.timing_model.Spec attribute)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.Spec">Spec (class in seamm_exec.timing_model)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.spec_path">spec_path() (in module seamm_exec.timing_model)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.TaskResult.state">state (seamm_exec.tasks.TaskResult attribute)</a>
 </li>
@@ -1141,6 +1233,8 @@
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.Task">Task (class in seamm_exec.tasks)</a>
 </li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.Spec.task">task (seamm_exec.timing_model.Spec attribute)</a>
+</li>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.TaskSet.task_directory">task_directory() (seamm_exec.tasks.TaskSet method)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.timing.task_wall_seconds">task_wall_seconds() (in module seamm_exec.timing)</a>
@@ -1161,6 +1255,8 @@
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.timing.timing_path">timing_path() (in module seamm_exec.timing)</a>
 </li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.Spec.to_dict">to_dict() (seamm_exec.timing_model.Spec method)</a>
+</li>
       <li><a href="api/seamm_exec.html#seamm_exec.evaluator.Evaluator.topology_key">topology_key() (seamm_exec.evaluator.Evaluator static method)</a>
 </li>
   </ul></td>
@@ -1168,6 +1264,10 @@
 
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.Spec.units">units (seamm_exec.timing_model.Spec attribute)</a>
+</li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.Manifest.update">update() (seamm_exec.tasks.Manifest method)</a>
 </li>
@@ -1185,13 +1285,15 @@
       </ul></li>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.Resources.walltime">walltime (seamm_exec.tasks.Resources attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/seamm_exec.html#seamm_exec.testing.WATER_STEP">WATER_STEP (in module seamm_exec.testing)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.where">where() (seamm_exec.scheduler_backend.SchedulerBackend method)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.WORKER_SCRIPT">WORKER_SCRIPT (in module seamm_exec.tasks)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.timing_model.write_spec">write_spec() (in module seamm_exec.timing_model)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.targets.write_target">write_target() (in module seamm_exec.targets)</a>
 </li>
