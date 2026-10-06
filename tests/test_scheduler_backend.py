@@ -937,7 +937,11 @@ def test_cancel_failure_leaves_tasks_adoptable(job):
     it = ts.run()
     thread = threading.Thread(target=lambda: next(it, None), daemon=True)
     thread.start()
-    time.sleep(1.0)
+    # Until the task is submitted (a fixed sleep raced a slow runner)
+    deadline = time.monotonic() + 30
+    while not queue.jobs and time.monotonic() < deadline:
+        time.sleep(0.05)
+    assert queue.jobs, "the task was never submitted"
     with pytest.raises(Exception):
         it.throw(KeyboardInterrupt)
     manifest = json.loads((job / "step" / "tasks" / "manifest.json").read_text())

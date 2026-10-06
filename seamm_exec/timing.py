@@ -278,6 +278,94 @@ def task_wall_seconds(result):
     return None
 
 
+def structure_descriptors(configuration, atom_indices=None, ghost_atoms=None):
+    """The descriptors of a structure every code's record shares.
+
+    ``n_atoms`` and ``n_heavy`` (atomic number > 1) of the atoms the code was
+    given (``atom_indices``, default all; ``ghost_atoms`` excluded and counted
+    as ``n_ghosts``), ``n_electrons`` (the atoms' electrons less the charge),
+    ``charge``, ``multiplicity``, ``periodicity`` and, for a periodic system,
+    ``volume`` (Å^3). Never raises: a missing attribute leaves its key out.
+    """
+    d = {}
+    try:
+        numbers = list(configuration.atoms.atomic_numbers)
+        indices = range(len(numbers)) if atom_indices is None else atom_indices
+        ghosts = set(ghost_atoms or ())
+        real = [numbers[i] for i in indices if i not in ghosts]
+        d["n_atoms"] = len(real)
+        d["n_heavy"] = sum(1 for z in real if z > 1)
+        d["n_ghosts"] = len(ghosts)
+        charge = getattr(configuration, "charge", None)
+        d["charge"] = charge
+        d["multiplicity"] = getattr(configuration, "spin_multiplicity", None)
+        if atom_indices is None and charge is not None:
+            d["n_electrons"] = int(sum(real) - charge)
+        periodicity = getattr(configuration, "periodicity", 0)
+        d["periodicity"] = periodicity
+        if periodicity:
+            d["volume"] = float(configuration.volume)
+    except Exception as e:
+        logger.debug(f"Structure descriptors incomplete: {e}")
+    return d
+
+
+def record_timing(
+    program,
+    wall,
+    descriptors=None,
+    *,
+    ntasks=None,
+    cpus_per_task=None,
+    mem_per_cpu=None,
+    ngpus=0,
+    gpu_model=None,
+    estimated=None,
+    state="finished",
+    timed_out=False,
+    attempts=1,
+    in_situ=None,
+    directory=None,
+):
+    """Append the timing record of a run made outside the task layer.
+
+    For a step that still runs its code through ``executor.run`` and times it
+    itself. The arguments are the common columns (see the module docstring);
+    ``descriptors`` as for :func:`record_task_timing`. Never raises.
+    """
+    try:
+        machine = machine_class(gpu_model=gpu_model or ("gpu" if ngpus else None))
+        row = {
+            "schema": SCHEMA,
+            "date": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "machine": machine["machine"],
+            "cluster": machine["cluster"],
+            "partition": machine["partition"],
+            "cpu_model": machine["cpu_model"],
+            "cpu_cores": machine["cpu_cores"],
+            "gpu_model": machine["gpu_model"],
+            "host": machine["host"],
+            "program": program,
+            "ntasks": ntasks,
+            "cpus_per_task": cpus_per_task,
+            "mem_per_cpu": mem_per_cpu,
+            "ngpus": ngpus,
+            "wall": None if wall is None else f"{float(wall):.3f}",
+            "estimated": _number(estimated),
+            "state": state,
+            "timed_out": int(bool(timed_out)),
+            "attempts": attempts,
+            "in_situ": _flag(in_situ),
+        }
+        for key, value in (descriptors or {}).items():
+            if key not in row:
+                row[key] = _number(value)
+        return append_timing(program, row, directory=directory)
+    except Exception as e:
+        logger.warning(f"Could not record the timing of a {program} run: {e}")
+        return None
+
+
 def record_task_timing(task, result, descriptors=None, directory=None):
     """Append the timing record of a task that has run.
 
@@ -310,37 +398,23 @@ def record_task_timing(task, result, descriptors=None, directory=None):
         resources = getattr(task, "resources", None)
         ngpus = getattr(resources, "ngpus", 0) or 0
         gpu = os.environ.get("SLURM_JOB_GPUS") or os.environ.get("CUDA_VISIBLE_DEVICES")
-        machine = machine_class(
+        return record_timing(
+            getattr(task, "program", ""),
+            task_wall_seconds(result),
+            descriptors,
+            ntasks=getattr(resources, "ntasks", None),
+            cpus_per_task=getattr(resources, "cpus_per_task", None),
+            mem_per_cpu=getattr(resources, "mem_per_cpu", None),
+            ngpus=ngpus,
             gpu_model=(descriptors or {}).get("gpu_model")
-            or ("gpu" if ngpus and gpu else None)
+            or ("gpu" if ngpus and gpu else None),
+            estimated=getattr(task, "estimated_seconds", None),
+            state=getattr(result, "state", ""),
+            timed_out=getattr(result, "timed_out", False),
+            attempts=getattr(result, "attempts", None),
+            in_situ=getattr(result, "in_situ", None),
+            directory=directory,
         )
-        wall = task_wall_seconds(result)
-        row = {
-            "schema": SCHEMA,
-            "date": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-            "machine": machine["machine"],
-            "cluster": machine["cluster"],
-            "partition": machine["partition"],
-            "cpu_model": machine["cpu_model"],
-            "cpu_cores": machine["cpu_cores"],
-            "gpu_model": machine["gpu_model"],
-            "host": machine["host"],
-            "program": getattr(task, "program", ""),
-            "ntasks": getattr(resources, "ntasks", None),
-            "cpus_per_task": getattr(resources, "cpus_per_task", None),
-            "mem_per_cpu": getattr(resources, "mem_per_cpu", None),
-            "ngpus": ngpus,
-            "wall": None if wall is None else f"{wall:.3f}",
-            "estimated": _number(getattr(task, "estimated_seconds", None)),
-            "state": getattr(result, "state", ""),
-            "timed_out": int(bool(getattr(result, "timed_out", False))),
-            "attempts": getattr(result, "attempts", None),
-            "in_situ": _flag(getattr(result, "in_situ", None)),
-        }
-        for key, value in (descriptors or {}).items():
-            if key not in row:
-                row[key] = _number(value)
-        return append_timing(row["program"], row, directory=directory)
     except Exception as e:
         logger.warning(
             f"Could not record the timing of task {getattr(task, 'key', '?')}: {e}"
