@@ -199,3 +199,12 @@ def test_structure_descriptors():
     assert d["n_atoms"] == 3 and d["n_heavy"] == 1 and d["n_ghosts"] == 1
     assert "n_electrons" not in d  # a subset: the charge is not the subset's
     assert structure_descriptors(object()) == {}
+
+
+def test_benchmark_rows_are_marked(tmp_path, monkeypatch):
+    monkeypatch.setenv("SEAMM_TIMING_BENCHMARK", "set-1")
+    record_timing("code", 1.0, {"n_atoms": 3}, directory=tmp_path)
+    monkeypatch.delenv("SEAMM_TIMING_BENCHMARK")
+    record_timing("code", 2.0, {"n_atoms": 3}, directory=tmp_path)
+    rows = read_timings("code", directory=tmp_path)
+    assert rows[0]["benchmark"] == "set-1" and rows[1]["benchmark"] == ""

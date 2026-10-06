@@ -234,6 +234,23 @@ overall; a size variable missing at prediction time takes the records' mean.
 The model is pure numpy and the file is JSON, as designed. The ``seamm-exec
 timing fit`` subcommand below is ``python -m seamm_exec.timing_model fit``.
 
+*Two refinements from the first benchmark on the Mac (2026-10-06):* where the
+code reports its own time, the start-up constant is measured directly as the
+median of wall minus code time (about 1 s for MOPAC, 0.2 s for ORCA here), and
+runs whose time is nearly all start-up are left out of the power-law fit (they
+are predicted by the constant alone); and the parallel exponent depends on
+size, ``alpha = a0 + a1 (log size - mean)``, because small molecules gain
+nothing from more cores while caffeine ran 3x faster on 5 cores than on 1 -- a
+single exponent fitted to both came out as zero.
+
+*And from the core sweep:* a sweep must stay within one kind of core. This
+Mac has 5 performance and 6 efficiency cores; its 8-process ORCA runs were
+slower than its 4- and 5-process ones, and one aborted in OpenMPI's shared-memory
+set-up. The driver therefore sweeps only to the performance cores on Apple
+silicon (``hw.perflevel0.physicalcpu``), to the physical cores elsewhere; the
+Mac's 8-core rows were removed from its records. On a cluster node the cores
+are alike and the sweep can go to the node's width.
+
 ``seamm-exec timing fit [program]`` (a subcommand, or ``python -m
 seamm_exec.timing``) reads every timing file of a program, drops rows whose
 schema it does not know, fits the model above and writes
@@ -272,6 +289,14 @@ Where predictions are used, in order of adoption:
 
 5. Seeding a new machine class
 ------------------------------
+
+*Implemented 2026-10-06 as* ``seamm_exec.timing_benchmark`` *(the rest of
+Phase 2). The flowchart is built from a spec at run time with the installed
+plug-ins rather than shipped, since a shipped flowchart would pin plug-in
+versions; molecules are water, ethanol, toluene, caffeine, icosane (62 atoms)
+and hectane (302 atoms, MOPAC only, in both regimes); the core sweep is run
+by capping* ``SEAMM_CE`` *per run. The installer and JobServer hooks below are
+not yet written.*
 
 A standard flowchart, ``seamm_exec/data/timing_benchmark.flow`` (Phase 2), runs
 per code a few molecules spanning two orders of magnitude of size, two or three

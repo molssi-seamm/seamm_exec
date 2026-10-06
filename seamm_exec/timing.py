@@ -360,6 +360,10 @@ def record_timing(
         for key, value in (descriptors or {}).items():
             if key not in row:
                 row[key] = _number(value)
+        # A run of the seed benchmark (seamm_exec.timing_benchmark) is marked
+        benchmark = os.environ.get("SEAMM_TIMING_BENCHMARK", "")
+        if benchmark:
+            row["benchmark"] = benchmark
         return append_timing(program, row, directory=directory)
     except Exception as e:
         logger.warning(f"Could not record the timing of a {program} run: {e}")

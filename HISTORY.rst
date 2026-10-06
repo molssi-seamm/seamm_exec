@@ -15,6 +15,13 @@ History
       task's iteration count from its fitted distribution unless given, and
       widening the spread for a machine class it has not seen. Command line:
       ``python -m seamm_exec.timing_model fit|predict``.
+    * ``seamm_exec.timing_benchmark``: the seed benchmark that places a machine
+      class in the model -- per code a few molecules spanning two orders of
+      magnitude of size, two or three method classes, single points and
+      optimizations, run once per core count for a parallel code -- built from a
+      spec with the installed plug-ins and run with ``run_flowchart``; its rows
+      carry ``benchmark=<set>``. ``python -m seamm_exec.timing_benchmark --codes
+      orca,mopac --cores 1,4,8 --fit``.
 2026.10.6 -- Timing records from every code step
     * ``seamm_exec.timing.record_timing`` writes the timing record of a run made
       outside the task layer (a step that still runs its code with

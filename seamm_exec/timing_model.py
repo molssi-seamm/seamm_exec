@@ -246,12 +246,26 @@ def fit(program, directory=None, spec=None, min_rows=8):
     features = kept
     feature_log_means = {n: float(logs[n].mean()) for n in features}
 
-    # Start-up constant per machine, as a fraction of the 5th percentile of the
-    # smallest fifth of its runs; the fraction is chosen by the fit below (the
-    # one that leaves the smallest residuals), so a constant that dominates the
-    # small runs is removed and one that does not is left alone.
+    # Start-up constant per machine. Where the code reports its own time
+    # (``code_seconds``) the constant is measured: the median of wall minus the
+    # code's time over the machine's runs (process start, the executor's
+    # bookkeeping, file copies). Otherwise it is a fraction of the 5th
+    # percentile of the smallest fifth of the runs, the fraction chosen by the
+    # fit below as the one that predicts the wall times best.
+    machines = sorted({r["_machine"] for r in rows})
+    measured = {}
+    for machine in machines:
+        mine = [r for r in rows if r["_machine"] == machine]
+        gaps = [
+            r["_wall"] - c
+            for r in mine
+            for c in [_num(r.get("code_seconds"))]
+            if c is not None and 0 <= c <= r["_wall"]
+        ]
+        if len(gaps) >= max(3, len(mine) // 2):
+            measured[machine] = max(0.0, float(np.median(gaps)))
     p05 = {}
-    for machine in sorted({r["_machine"] for r in rows}):
+    for machine in machines:
         mine = [r for r in rows if r["_machine"] == machine]
         if features:
             mine.sort(key=lambda r: r["_size"][features[0]])
@@ -259,13 +273,17 @@ def fit(program, directory=None, spec=None, min_rows=8):
         p05[machine] = _quantile([r["_wall"] for r in small], 0.05)
 
     best = None
-    for fraction in (0.0, 0.3, 0.6, 0.9):
-        t0 = {m: fraction * v for m, v in p05.items()}
+    fractions = (None,) if len(measured) == len(machines) else (0.0, 0.3, 0.6, 0.9)
+    for fraction in fractions:
+        if fraction is None:
+            t0 = dict(measured)
+        else:
+            t0 = {m: measured.get(m, fraction * p05[m]) for m in machines}
         result = _fit_rows(rows, features, t0, spec, min_rows)
-        if result is not None and (best is None or result["ss_res"] < best["ss_res"]):
+        if result is not None and (best is None or result["score"] < best["score"]):
             best = result
             best["t0"] = t0
-            best["t0_fraction"] = fraction
+            best["t0_fraction"] = "measured" if fraction is None else fraction
     if best is None:
         return None
     best["feature_log_means"] = feature_log_means
@@ -277,7 +295,9 @@ def _fit_rows(all_rows, features, t0, spec, min_rows):
     rows = []
     for r in all_rows:
         net = r["_wall"] - t0[r["_machine"]]
-        if net > 0.02:
+        # A run whose time is nearly all start-up says nothing about the
+        # power law (its remainder is noise); it is predicted by t0 alone.
+        if net > max(0.02, 0.1 * t0[r["_machine"]]):
             r = dict(r)
             r["_y"] = math.log(net / (r["_units"] * r["_mult"]))
             rows.append(r)
@@ -300,6 +320,13 @@ def _fit_rows(all_rows, features, t0, spec, min_rows):
     if fit_alpha:
         columns.append("log cores")
         X.append(np.log(cores))
+        if features:
+            # Parallel efficiency grows with the size of the calculation: a
+            # small molecule gains nothing from more cores, a large one nearly
+            # everything. alpha = a0 + a1 (log size - mean log size).
+            log_size = np.log([r["_size"][features[0]] for r in rows])
+            columns.append("log cores x log size")
+            X.append(np.log(cores) * (log_size - log_size.mean()))
     for c in classes:
         if c != ref_class:
             columns.append(f"class {c}")
@@ -334,11 +361,21 @@ def _fit_rows(all_rows, features, t0, spec, min_rows):
         -float(beta[columns.index("log cores")]) if fit_alpha else spec.default_alpha
     )
     alpha = min(1.0, max(0.0, alpha))
+    alpha_slope = 0.0
+    alpha_size_mean = None
+    if fit_alpha and "log cores x log size" in columns:
+        alpha_slope = -float(beta[columns.index("log cores x log size")])
+        alpha_size_mean = float(np.log([r["_size"][features[0]] for r in rows]).mean())
 
     predicted = np.exp(X @ beta + offsets[machine_index]) * np.array(
         [r["_units"] * r["_mult"] for r in rows]
     ) + np.array([t0[r["_machine"]] for r in rows])
+    wall = np.array([r["_wall"] for r in rows])
+    # The score a start-up constant is chosen by: the log error of the wall
+    # time itself, which both the constant and the power law must explain
+    score = float((np.log(predicted / wall) ** 2).sum())
     return {
+        "score": score,
         "rows": rows,
         "columns": columns,
         "beta": beta,
@@ -352,6 +389,8 @@ def _fit_rows(all_rows, features, t0, spec, min_rows):
         "ref_class": ref_class,
         "ref_task": ref_task,
         "alpha": alpha,
+        "alpha_slope": alpha_slope,
+        "alpha_size_mean": alpha_size_mean,
         "fit_alpha": fit_alpha,
         "predicted": predicted,
         "ss_res": float((resid**2).sum()),
@@ -363,7 +402,9 @@ def _assemble(program, spec, features, f):
     rows, columns, beta, resid = f["rows"], f["columns"], f["beta"], f["resid"]
     t0 = f["t0"]
     coefficients = {
-        name: float(b) for name, b in zip(columns, beta) if name != "log cores"
+        name: float(b)
+        for name, b in zip(columns, beta)
+        if name not in ("log cores", "log cores x log size")
     }
     class_offsets = {c: coefficients.pop(f"class {c}", 0.0) for c in f["classes"]}
     task_offsets = {t: coefficients.pop(f"task {t}", 0.0) for t in f["tasks"]}
@@ -394,6 +435,8 @@ def _assemble(program, spec, features, f):
         "feature_log_means": f["feature_log_means"],
         "coefficients": coefficients,  # intercept and log-size slopes
         "alpha": f["alpha"],
+        "alpha_slope": f["alpha_slope"],
+        "alpha_size_mean": f["alpha_size_mean"],
         "alpha_fitted": f["fit_alpha"],
         "classes": class_offsets,
         "reference_class": f["ref_class"],
@@ -540,7 +583,14 @@ def predict(
         value = math.log(sizes[name]) if name in sizes else means.get(name, 0.0)
         y += coef.get(f"log {name}", 0.0) * value
     cores = max(1.0, float(ntasks or 1) * float(cpus_per_task or 1))
-    y -= model["alpha"] * math.log(cores)
+    alpha = model["alpha"]
+    first = model["features"][0] if model["features"] else None
+    if model.get("alpha_size_mean") is not None and first in sizes:
+        alpha += model.get("alpha_slope", 0.0) * (
+            math.log(sizes[first]) - model["alpha_size_mean"]
+        )
+    alpha = min(1.0, max(0.0, alpha))
+    y -= alpha * math.log(cores)
     klass = " / ".join(
         str(descriptors.get(k, "") or "") for k in model["class_columns"]
     ).strip(" /")
@@ -613,8 +663,14 @@ def report_text(model):
                 for n in model["features"]
             ]
         )
-        + f" - {model['alpha']:.2f} log(cores)"
-        + ("" if model["alpha_fitted"] else " [alpha assumed]"),
+        + f" - alpha log(cores), alpha = {model['alpha']:.2f}"
+        + (
+            f" {model['alpha_slope']:+.2f} (log {model['features'][0]} - "
+            f"{model['alpha_size_mean']:.2f})"
+            if model.get("alpha_size_mean") is not None and model.get("alpha_slope")
+            else ""
+        )
+        + ("" if model["alpha_fitted"] else " [assumed]"),
     ]
     for name, offset in sorted(model["classes"].items(), key=lambda kv: kv[1]):
         if name != model["reference_class"]:

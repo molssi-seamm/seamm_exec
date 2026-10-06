@@ -199,3 +199,42 @@ def test_command_line(tmp_path):
     )
     assert out.returncode == 0, out.stderr
     assert "95% quantile" in out.stdout and "known" in out.stdout
+
+
+def test_size_dependent_parallel_exponent(tmp_path):
+    """Small molecules do not speed up with cores, large ones do: the fitted
+    exponent grows with size and predict() uses the size's exponent."""
+    rng = random.Random(3)
+    for i in range(400):
+        nbf = rng.choice([24, 60, 120, 240, 480, 960])
+        cores = rng.choice([1, 2, 4, 8])
+        alpha = 0.1 + 0.25 * (math.log(nbf) - math.log(150))  # ~0 small .. ~0.6 big
+        log_unit = -9.0 + 2.5 * math.log(nbf) - alpha * math.log(cores)
+        wall = 0.5 + math.exp(log_unit + rng.gauss(0, 0.1))
+        append_timing(
+            "orca",
+            {
+                "schema": 1,
+                "machine": "m",
+                "program": "orca",
+                "ntasks": cores,
+                "cpus_per_task": 1,
+                "wall": f"{wall:.4f}",
+                "state": "finished",
+                "task": "energy",
+                "method_class": "global hybrid",
+                "nbf": nbf,
+                "scf_runs": 1,
+            },
+            directory=tmp_path,
+        )
+    model = tm.fit("orca", directory=tmp_path)
+    assert model["alpha_slope"] > 0.15
+    small = {"task": "energy", "method_class": "global hybrid", "nbf": 24}
+    big = {"task": "energy", "method_class": "global hybrid", "nbf": 960}
+    s1 = tm.predict("orca", small, ntasks=1, machine="m", quantile=0.5, model=model)
+    s8 = tm.predict("orca", small, ntasks=8, machine="m", quantile=0.5, model=model)
+    b1 = tm.predict("orca", big, ntasks=1, machine="m", quantile=0.5, model=model)
+    b8 = tm.predict("orca", big, ntasks=8, machine="m", quantile=0.5, model=model)
+    assert s1["median"] / s8["median"] < 1.5  # little gain for the small one
+    assert b1["median"] / b8["median"] > 2.5  # a real gain for the big one

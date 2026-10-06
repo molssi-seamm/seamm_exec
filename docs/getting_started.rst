@@ -293,3 +293,15 @@ seconds at the quantile, the median, the iteration count it assumed, and
 whether this machine class was in the fit (an unseen class gets no offset and a
 wider spread). The 95th percentile is the right choice for a queue walltime,
 the median for packing tasks into a bundle.
+
+A machine the model has not seen is placed by the seed benchmark, a few minutes
+of standard runs whose rows the fit can tell apart (``benchmark=<set>``)::
+
+    python -m seamm_exec.timing_benchmark --codes orca,mopac --cores 1,4,8 --fit
+
+Per code it runs a few molecules spanning two orders of magnitude of size (water
+to a 300-atom alkane), two or three method classes, as single points and
+optimizations, once per core count where the code is parallel. ``--bin`` names
+the installation whose ``run_flowchart`` to use when the benchmark is driven from
+another environment; ``--build-only`` writes the flowchart to run by hand or
+through a JobServer.
