@@ -322,6 +322,21 @@ class Evaluator:
         self._submitted[key] = (configuration, dict(options or {}))
         return key
 
+    def cancel(self):
+        """Stop this evaluator's work, from any thread: the running
+        :class:`~seamm_exec.TaskSet` is cancelled (its tasks in flight killed,
+        the held ones dropped, all marked ``cancelled`` for a fresh start
+        later), and the MDI path stops before its next structure. Results
+        already produced stand."""
+        self._cancelled = True
+        task_set = getattr(self, "_task_set", None)
+        if task_set is not None:
+            task_set.cancel()
+
+    @property
+    def cancelled(self):
+        return bool(getattr(self, "_cancelled", False))
+
     def results(self):
         """Compute what has been submitted; yield an :class:`EvaluatorResult`
         for each, as it is ready."""
@@ -430,6 +445,12 @@ class Evaluator:
         want_gradients = "gradients" in self.properties
         want_stress = "stress" in self.properties
         for topology, members in groups.items():
+            if self.cancelled:
+                for key, _ in members:
+                    yield EvaluatorResult(
+                        key=key, ok=False, reason="cancelled", path="mdi"
+                    )
+                continue
             elements, charge, multiplicity, periodicity = topology
             periodic = periodicity != 0
             try:
@@ -530,6 +551,9 @@ class Evaluator:
             directory=self.directory,
             **self.task_set_options,
         )
+        self._task_set = task_set
+        if self.cancelled:
+            task_set.cancel()
         refused = []
         for key, (configuration, options) in pending.items():
             try:

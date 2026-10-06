@@ -1100,3 +1100,97 @@ def test_inline_only_if_the_task_fits(tmp_path):
     assert remote.submitted == ["four"]
     assert results["one"].files == {"x.txt": "x\n"}
     assert results["any"].files == {"x.txt": "x\n"}
+
+
+# ----------------------------------------------------------------------
+# Cancelling a running task set from another thread
+# ----------------------------------------------------------------------
+class SlowRemote(FakeRemote):
+    """A stand-in whose tasks run until cancelled."""
+
+    def __init__(self):
+        super().__init__()
+        self.cancelled = []
+        self.poll_interval = 0.05
+
+    def status(self, ids):
+        return {i: ("cancelled" if i in self.cancelled else "running") for i in ids}
+
+    def cancel(self, ids):
+        self.cancelled.extend(ids)
+
+    def fetch(self, task, backend_id):
+        return TaskResult(
+            key=task.key, state="cancelled", directory=self.dirs[backend_id]
+        )
+
+
+def test_cancel_from_another_thread(tmp_path):
+    import threading
+
+    remote = SlowRemote()
+    ts = TaskSet(
+        directory=tmp_path / "step",
+        backend=remote,
+        local=pool(root=tmp_path),
+        executor=Local(),
+        inline_below=0,
+        poll_interval=0.05,
+    )
+    for i in range(3):
+        ts.add(shell_task(f"t{i}", "echo x", estimated_seconds=3600))
+    results = []
+    worker = threading.Thread(target=lambda: results.extend(ts.run()))
+    worker.start()
+    # Let it submit and poll a little, then cancel
+    deadline = time.time() + 5
+    while len(remote.submitted) < 3 and time.time() < deadline:
+        time.sleep(0.02)
+    assert len(remote.submitted) == 3
+    t0 = time.time()
+    ts.cancel()
+    worker.join(timeout=10)
+    assert not worker.is_alive(), "run() did not return after cancel()"
+    assert time.time() - t0 < 5
+    assert ts.cancelled
+    assert sorted(r.key for r in results) == ["t0", "t1", "t2"]
+    assert all(r.state == "cancelled" and r.reason == "cancelled" for r in results)
+    assert sorted(remote.cancelled) == ["r-t0", "r-t1", "r-t2"]
+    for i in range(3):
+        assert ts.manifest.get(f"t{i}")["state"] == "cancelled"
+    # A new run of the same step submits them afresh (nothing is DONE)
+    ts2 = TaskSet(
+        directory=tmp_path / "step",
+        backend=FakeRemote(),
+        local=pool(root=tmp_path),
+        executor=Local(),
+        inline_below=0,
+    )
+    for i in range(3):
+        ts2.add(shell_task(f"t{i}", "echo x", estimated_seconds=3600))
+    again = list(ts2.run())
+    assert all(r.state == "finished" and not r.restored for r in again)
+
+
+def test_cancel_kills_local_tasks(tmp_path):
+    """A task running in the local pool is killed and the wait wakes at once."""
+    import threading
+
+    ts = TaskSet(
+        directory=tmp_path / "step",
+        local=pool(root=tmp_path),
+        executor=Local(),
+        poll_interval=5.0,  # long: the cancel must wake the wait, not time out
+    )
+    ts.add(shell_task("sleeper", "sleep 60"))
+    results = []
+    worker = threading.Thread(target=lambda: results.extend(ts.run()))
+    worker.start()
+    time.sleep(0.5)
+    t0 = time.time()
+    ts.cancel()
+    worker.join(timeout=10)
+    assert not worker.is_alive()
+    assert time.time() - t0 < 5
+    (result,) = results
+    assert result.state == "cancelled"

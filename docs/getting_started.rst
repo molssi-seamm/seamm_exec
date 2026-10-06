@@ -4,7 +4,7 @@ Getting Started
 ``seamm_exec`` runs flowcharts (``run_flowchart``, ``run_from_jobserver``) and runs
 the external codes that steps need. A step gets the executor from its flowchart and
 asks it to run a program; the executor handles the program's configuration from
-``<root>/<program>.ini`` (a conda environment, environment modules, a Docker image,
+``<root>/<program>.ini`` (a conda environment, environment modules,
 or a plain executable), where the program runs, and which files come back.
 
 Running a code: ``executor.run()``
@@ -238,6 +238,23 @@ resubmits a job a cluster lost (it sets ``SEAMM_RESUME=1`` in the batch script).
   ``--database`` outside the job directory.
 - **Visibility.** While a step runs, other programs reading the job's database
   (the Dashboard, the web UI) see it as of the last finished step.
+
+Stopping a task set
+-------------------
+
+``TaskSet.cancel()`` -- or ``Evaluator.cancel()`` for a step that works through
+an evaluator -- may be called from another thread while the set is running: the
+tasks in flight are cancelled on their back end (``scancel`` of their bundle,
+or the local process killed), those still held for room are dropped, all are
+marked ``cancelled`` in the manifest so that a later run of the step submits
+them afresh rather than adopting a killed job, and ``run()`` yields a
+``cancelled`` result for each before returning. Results already produced
+stand. A step that runs several task sets at once can therefore stop the
+others when one fails.
+
+Several task sets submitting at once to the same cluster share one count of
+the user's queued jobs, so the queue's ``max_queued_tasks`` holds for them
+together rather than for each.
 
 Parallel loops
 --------------

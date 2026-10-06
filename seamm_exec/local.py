@@ -67,8 +67,16 @@ class Local(Base):
         )
         command = " ".join(cmd)
 
+        # Docker was removed in 2026.10.6.2: say so, rather than run the code
+        # as a local installation and fail later with "command not found"
+        if config.get("installation") == "docker":
+            raise RuntimeError(
+                "Docker support was removed in seamm-exec 2026.10.6.2: set "
+                "'installation' to local, conda or modules in this code's "
+                "<program>.ini."
+            )
+
         # Sift through the way we can find the executables.
-        use_docker = False
         shell_exe = None
         if "installation" in config and config["installation"] == "conda":
             # 1. Conda
@@ -92,11 +100,8 @@ class Local(Base):
         elif "installation" in config and config["installation"] == "local":
             # 2. local installation
             pass
-        elif "installation" in config and config["installation"] == "docker":
-            # 3. Docker
-            use_docker = True
         elif "installation" in config and config["installation"] == "modules":
-            # 4. modules
+            # 3. modules
             modules = ""
             if "NGPUS" in ce:
                 if "gpu_modules" in config and config["gpu_modules"] != "":
@@ -125,157 +130,55 @@ class Local(Base):
 
         self.logger.debug(f"command=\n{command}")
 
-        if use_docker:
-            import docker
+        tmp_env = {**os.environ}
+        tmp_env.update(env)
+        self.logger.debug(
+            f"Environment:\nCustom:\n{pprint.pformat(env)}\n"
+            f"Full:\n {pprint.pformat(tmp_env)}"
+        )
 
-            client = docker.from_env()
-
-            # See if this is running in Docker and adjust the path accordingly
-            if (
-                "SEAMM_ENVIRONMENT" in os.environ
-                and os.environ["SEAMM_ENVIRONMENT"] == "docker"
-            ):
-                hostname = os.environ["HOSTNAME"]
-                try:
-                    this_container = client.containers.get(hostname)
-                    mounts = this_container.attrs["Mounts"]
-                    for mount in mounts:
-                        if mount["Destination"] == "/home":
-                            path = Path(mount["Source"]).joinpath(*directory.parts[2:])
-                            break
-                except Exception:
-                    path = Path(directory)
-            else:
-                path = Path(directory)
-
-            self.logger.debug(pprint.pformat(config, compact=True))
-
-            # Replace any variables in the container name
-            container = config["container"].format(**config, **ce)
-
-            # See if there is a required platform
-            platform = config.get("platform", None)
-
-            if len(cmd) > 0:
-                # Replace any variables in the command with values from the config file
-                # and computational environment. Maybe nested.
-                command = " ".join(cmd)
-                tmp = command
-                while True:
-                    command = tmp.format(**config, **ce)
-                    if tmp == command:
-                        break
-                    tmp = command
-
-                # If running using Docker, we have to munge any paths in the command
-                prefix = str(directory)
-                command = command.replace(prefix, "/home")
-
-                self.logger.debug(f"""
-                    result = client.containers.run(
-                        command={command},
-                        environment={env},
-                        image={container},
-                        platform={platform},
-                        remove=True,
-                        stderr=True,
-                        stdout=True,
-                        volumes=[f"{path}:/home"],
-                        working_dir="/home",
-                    )
-                    """)
-
-                result = client.containers.run(
-                    command=command,
-                    environment=env,
-                    image=container,
-                    platform=platform,
-                    remove=True,
-                    stderr=True,
-                    stdout=True,
-                    volumes=[f"{path}:/home"],
-                    working_dir="/home",
-                )
-            else:
-                self.logger.debug(f"""
-                    result = client.containers.run(
-                        environment={env},
-                        image={container},
-                        platform={platform},
-                        remove=True,
-                        stderr=True,
-                        stdout=True,
-                        volumes=[f"{path}:/home"],
-                        working_dir="/home",
-                    )
-                    """)
-
-                result = client.containers.run(
-                    environment=env,
-                    image=container,
-                    platform=platform,
-                    remove=True,
-                    stderr=True,
-                    stdout=True,
-                    volumes=[f"{path}:/home"],
-                    working_dir="/home",
-                )
-
-            self.logger.debug("\n" + pprint.pformat(result))
-
-            result = {}
-        else:
-            tmp_env = {**os.environ}
-            tmp_env.update(env)
-            self.logger.debug(
-                f"Environment:\nCustom:\n{pprint.pformat(env)}\n"
-                f"Full:\n {pprint.pformat(tmp_env)}"
+        hooks = getattr(getattr(self, "_task_context", None), "hooks", None)
+        if hooks is None:
+            p = subprocess.run(
+                command,
+                cwd=directory,
+                env=tmp_env,
+                input=input_data,
+                shell=shell,
+                executable=shell_exe,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True,
             )
+        else:
+            # Under a concurrent LocalPool: run in a new session so the pool
+            # can kill the whole process tree, and report the pid.
+            proc = subprocess.Popen(
+                command,
+                cwd=directory,
+                env=tmp_env,
+                stdin=subprocess.PIPE if input_data is not None else None,
+                shell=shell,
+                executable=shell_exe,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True,
+                start_new_session=True,
+            )
+            hooks.started(proc)
+            try:
+                stdout, stderr = proc.communicate(input_data)
+            finally:
+                hooks.finished(proc)
+            p = subprocess.CompletedProcess(proc.args, proc.returncode, stdout, stderr)
 
-            hooks = getattr(getattr(self, "_task_context", None), "hooks", None)
-            if hooks is None:
-                p = subprocess.run(
-                    command,
-                    cwd=directory,
-                    env=tmp_env,
-                    input=input_data,
-                    shell=shell,
-                    executable=shell_exe,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    universal_newlines=True,
-                )
-            else:
-                # Under a concurrent LocalPool: run in a new session so the pool
-                # can kill the whole process tree, and report the pid.
-                proc = subprocess.Popen(
-                    command,
-                    cwd=directory,
-                    env=tmp_env,
-                    stdin=subprocess.PIPE if input_data is not None else None,
-                    shell=shell,
-                    executable=shell_exe,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    universal_newlines=True,
-                    start_new_session=True,
-                )
-                hooks.started(proc)
-                try:
-                    stdout, stderr = proc.communicate(input_data)
-                finally:
-                    hooks.finished(proc)
-                p = subprocess.CompletedProcess(
-                    proc.args, proc.returncode, stdout, stderr
-                )
+        self.logger.debug("Result from subprocess\n" + pprint.pformat(p))
 
-            self.logger.debug("Result from subprocess\n" + pprint.pformat(p))
-
-            # capture the return code and output
-            result = {
-                "returncode": p.returncode,
-                "stdout": p.stdout,
-                "stderr": p.stderr,
-            }
+        # capture the return code and output
+        result = {
+            "returncode": p.returncode,
+            "stdout": p.stdout,
+            "stderr": p.stderr,
+        }
 
         return result

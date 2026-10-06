@@ -319,3 +319,20 @@ def test_resources_reach_get_task(tmp_path):
         evaluator.submit(geometry, key="a")
         list(evaluator.results())
     assert seen == [None]
+
+
+def test_evaluator_cancel_forwards_to_its_task_set():
+    from types import SimpleNamespace
+
+    from seamm_exec.evaluator import Evaluator
+
+    ev = Evaluator.__new__(Evaluator)
+    assert ev.cancelled is False
+    calls = []
+    ev._task_set = SimpleNamespace(cancel=lambda: calls.append("cancelled"))
+    ev.cancel()
+    assert ev.cancelled is True and calls == ["cancelled"]
+    # Without a task set yet (nothing submitted), cancel just sets the flag
+    ev2 = Evaluator.__new__(Evaluator)
+    ev2.cancel()
+    assert ev2.cancelled

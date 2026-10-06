@@ -9,7 +9,7 @@ submitted, as soon as enough cores and memory are free; a task larger than the
 pool is clamped to it and runs alone.
 
 Each task runs through the executor's ``_run_task()`` (the body of the original
-``Base.run()``), so the conda, modules and docker handling, ``in_situ`` and the
+``Base.run()``), so the conda and modules handling, ``in_situ`` and the
 return-file contract are exactly those of ``Base.run()``.
 """
 
@@ -257,10 +257,14 @@ class LocalPool:
             return {i: self._jobs[i].state if i in self._jobs else LOST for i in ids}
 
     def wait(self, ids, timeout=None):
-        """Block until one of ``ids`` is finished, or ``timeout`` seconds."""
+        """Block until one of ``ids`` is finished, ``timeout`` seconds pass, or
+        :meth:`wake` is called."""
         deadline = None if timeout is None else time.monotonic() + timeout
         with self._condition:
             while True:
+                if getattr(self, "_woken", False):
+                    self._woken = False
+                    return
                 if any(
                     self._jobs[i].state in TERMINAL_STATES
                     for i in ids
@@ -271,6 +275,12 @@ class LocalPool:
                 if remaining is not None and remaining <= 0:
                     return
                 self._condition.wait(remaining)
+
+    def wake(self):
+        """Make a :meth:`wait` return early (a TaskSet being cancelled)."""
+        with self._condition:
+            self._woken = True
+            self._condition.notify_all()
 
     def cancel(self, ids):
         to_kill = []
