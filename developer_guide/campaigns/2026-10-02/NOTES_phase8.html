@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Phase 8 notes &#8212; SEAMM seamm-exec Plug-in 2026.10.5.2 documentation</title>
+    <title>Phase 8 notes &#8212; SEAMM seamm-exec Plug-in 2026.10.6 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../../_static/documentation_options.js?v=ce112380"></script>
+    <script src="../../../_static/documentation_options.js?v=ae463d2f"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="Phase 7 notes" href="NOTES_phase7.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.5.2" />
+  <meta name="docsearch:version" content="2026.10.6" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -669,6 +669,18 @@ enumeration in <code class="docutils literal notranslate"><span class="pre">stra
 current choices, plus a release.</p>
 <p><em>Recommendation.</em> Do it, and grep the other steps for local copies of the old
 wording.</p>
+<p><em>Done (Paul, 2026-10-05/06).</em> strain_step 2026.10.5 has SEAMM’s standard choices
+(overwrite, new configuration – still the default – or new system; not discard),
+names a new configuration after the strains, and fixes the cell table when
+overwriting and a non-periodic system ending the flowchart. It also carries its item 3
+fix (the cookiecutter’s <code class="docutils literal notranslate"><span class="pre">versioneer.py</span></code>; <code class="docutils literal notranslate"><span class="pre">test_env.yaml</span></code> removed). strain_step
+2026.10.6 keeps the current names for a new system or configuration. The same choices
+went into supercell_step 2026.10.6 (overwrite stays the default), which also fixes
+supercells of bonded structures (bonds looked up by row position; each copy’s bonds
+mapped from the previous copy’s) and its item 3 <code class="docutils literal notranslate"><span class="pre">MANIFEST.in</span></code>. Doing so found three
+bugs in molsystem’s <code class="docutils literal notranslate"><span class="pre">lower_symmetry</span></code> (bonds by position, <code class="docutils literal notranslate"><span class="pre">other=</span></code> putting the
+coordinates on the source, Cartesian cells), fixed in molsystem 2026.10.6, which
+supercell_step requires.</p>
 </section>
 <section id="seamm-exec-test-flakiness">
 <h3>8. seamm_exec test flakiness<a class="headerlink" href="#seamm-exec-test-flakiness" title="Link to this heading">#</a></h3>
@@ -685,6 +697,15 @@ the TaskServer job completed. It now polls for up to 30 s (02b59d2, test-only).<
 <p><em>Effort.</em> S.</p>
 <p><em>Recommendation.</em> Do a sweep: grep the tests for <code class="docutils literal notranslate"><span class="pre">time.sleep</span></code> and elapsed-time
 assertions, and give each one a poll with a deadline.</p>
+<p><em>Done (2026-10-06).</em> A sweep of seamm_exec’s and seamm_scheduler’s tests for elapsed-time
+assertions and fixed sleeps. Most are safe: they wait for a condition with a deadline,
+clear a fault after a delay without asserting on time, or bound time in the direction
+a slow runner only makes safer. Two raced a slow runner and now wait for the state they
+need: seamm_exec’s <code class="docutils literal notranslate"><span class="pre">test_cancel_failure_leaves_tasks_adoptable</span></code> (slept 1 s and assumed
+the task was submitted; 56b5a31) and seamm_scheduler’s floor test (slept 1.5 s so that
+the second job would be the newest; 1127e5c). seamm_exec’s last 40 CI runs showed no
+other flaky test: the outage, the PyPI cache lag and the TaskServer bundle race fixed
+in 02b59d2. Both go out with each package’s next release.</p>
 </section>
 <section id="pbs-site-job-history-and-max-resubmits">
 <h3>9. PBS site: job history and <code class="docutils literal notranslate"><span class="pre">max_resubmits</span></code><a class="headerlink" href="#pbs-site-job-history-and-max-resubmits" title="Link to this heading">#</a></h3>
@@ -746,6 +767,12 @@ gaussian_step and vasp-step write their own files.</p>
 <p><em>Effort.</em> S per plug-in.</p>
 <p><em>Recommendation.</em> Do it as each code step is next released, starting with vasp-step,
 whose cluster runs share a file over NFS.</p>
+<p><em>Handed over (Paul, 2026-10-06).</em> The timing campaign (<code class="docutils literal notranslate"><span class="pre">campaigns/2026-10-05</span></code>,
+the design session) owns it: MOPAC, Gaussian and VASP move to <code class="docutils literal notranslate"><span class="pre">record_task_timing</span></code>
+in its Phase 4, LAMMPS and the rest in Phase 5. A survey for it: mopac_step and
+vasp_step run through the task layer; gaussian, lammps, psi4 and dftbplus still use
+<code class="docutils literal notranslate"><span class="pre">executor.run</span></code>. On Paul’s Mac <code class="docutils literal notranslate"><span class="pre">lammps.csv</span></code> is 707 MB, and mopac’s, dftbplus’s and
+gaussian’s 47-63 MB.</p>
 </section>
 <section id="molsystem-121">
 <h3>14. molsystem#121<a class="headerlink" href="#molsystem-121" title="Link to this heading">#</a></h3>
@@ -753,6 +780,10 @@ whose cluster runs share a file over NFS.</p>
 <p><em>Why deferred.</em> Filed during the phase 4/5 work; not on the campaign’s path.</p>
 <p><em>Effort.</em> S.</p>
 <p><em>Recommendation.</em> Do it with the next molsystem release.</p>
+<p><em>Done (2026-10-06).</em> molsystem 2026.10.6.1: the cell’s <code class="docutils literal notranslate"><span class="pre">to_fractionals</span></code> and
+<code class="docutils literal notranslate"><span class="pre">to_cartesians</span></code> convert an empty list of coordinates to an empty one, so the
+periodicity setter (and any other caller) works with no atoms. read_structure_step’s
+2026.10.4 workaround is harmless and stays.</p>
 </section>
 <section id="orca-step-cap-the-cores-for-small-molecules">
 <h3>15. orca_step: cap the cores for small molecules<a class="headerlink" href="#orca-step-cap-the-cores-for-small-molecules" title="Link to this heading">#</a></h3>

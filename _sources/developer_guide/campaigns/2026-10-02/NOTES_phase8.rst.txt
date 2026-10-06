@@ -25,8 +25,8 @@ Summary
 4   Dashboard: child iterations as datastore rows               M-L     defer
 5   devops: a summary line when the docs deploy fails           S       decided
 6   Run-path tests of the code steps (mopac, ORCA first)        S-M     decided
-7   Legacy structure-handling wording (strain_step)             S       do
-8   seamm_exec test flakiness: the timing-sensitive tests       S       do
+7   Legacy structure-handling wording (strain_step)             S       done
+8   seamm_exec test flakiness: the timing-sensitive tests       S       done
 9   PBS site: job history and ``max_resubmits``                 S       done;
                                                                         verify
 10  Task view at 500 iterations                                 S       measure
@@ -35,9 +35,9 @@ Summary
                                                                         soaked
 12  Separate placement of a parallel loop's codes, live         M       do with
                                                                         EC pilot
-13  Timing helper adoption by the plug-ins (vasp-step#18)       S each  do, per
-                                                                        code
-14  molsystem#121: periodicity 0 on an empty configuration      S       do
+13  Timing helper adoption by the plug-ins (vasp-step#18)       S each  timing
+                                                                        campaign
+14  molsystem#121: periodicity 0 on an empty configuration      S       done
 15  orca_step: cap the cores for small molecules               S       do
 ==  ==========================================================  ======  =========
 
@@ -247,6 +247,19 @@ current choices, plus a release.
 *Recommendation.* Do it, and grep the other steps for local copies of the old
 wording.
 
+*Done (Paul, 2026-10-05/06).* strain_step 2026.10.5 has SEAMM's standard choices
+(overwrite, new configuration -- still the default -- or new system; not discard),
+names a new configuration after the strains, and fixes the cell table when
+overwriting and a non-periodic system ending the flowchart. It also carries its item 3
+fix (the cookiecutter's ``versioneer.py``; ``test_env.yaml`` removed). strain_step
+2026.10.6 keeps the current names for a new system or configuration. The same choices
+went into supercell_step 2026.10.6 (overwrite stays the default), which also fixes
+supercells of bonded structures (bonds looked up by row position; each copy's bonds
+mapped from the previous copy's) and its item 3 ``MANIFEST.in``. Doing so found three
+bugs in molsystem's ``lower_symmetry`` (bonds by position, ``other=`` putting the
+coordinates on the source, Cartesian cells), fixed in molsystem 2026.10.6, which
+supercell_step requires.
+
 8. seamm_exec test flakiness
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -266,6 +279,16 @@ wording.
 
 *Recommendation.* Do a sweep: grep the tests for ``time.sleep`` and elapsed-time
 assertions, and give each one a poll with a deadline.
+
+*Done (2026-10-06).* A sweep of seamm_exec's and seamm_scheduler's tests for elapsed-time
+assertions and fixed sleeps. Most are safe: they wait for a condition with a deadline,
+clear a fault after a delay without asserting on time, or bound time in the direction
+a slow runner only makes safer. Two raced a slow runner and now wait for the state they
+need: seamm_exec's ``test_cancel_failure_leaves_tasks_adoptable`` (slept 1 s and assumed
+the task was submitted; 56b5a31) and seamm_scheduler's floor test (slept 1.5 s so that
+the second job would be the newest; 1127e5c). seamm_exec's last 40 CI runs showed no
+other flaky test: the outage, the PyPI cache lag and the TaskServer bundle race fixed
+in 02b59d2. Both go out with each package's next release.
 
 9. PBS site: job history and ``max_resubmits``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -350,6 +373,13 @@ gaussian_step and vasp-step write their own files.
 *Recommendation.* Do it as each code step is next released, starting with vasp-step,
 whose cluster runs share a file over NFS.
 
+*Handed over (Paul, 2026-10-06).* The timing campaign (``campaigns/2026-10-05``,
+the design session) owns it: MOPAC, Gaussian and VASP move to ``record_task_timing``
+in its Phase 4, LAMMPS and the rest in Phase 5. A survey for it: mopac_step and
+vasp_step run through the task layer; gaussian, lammps, psi4 and dftbplus still use
+``executor.run``. On Paul's Mac ``lammps.csv`` is 707 MB, and mopac's, dftbplus's and
+gaussian's 47-63 MB.
+
 14. molsystem#121
 ~~~~~~~~~~~~~~~~~
 
@@ -360,6 +390,11 @@ whose cluster runs share a file over NFS.
 *Effort.* S.
 
 *Recommendation.* Do it with the next molsystem release.
+
+*Done (2026-10-06).* molsystem 2026.10.6.1: the cell's ``to_fractionals`` and
+``to_cartesians`` convert an empty list of coordinates to an empty one, so the
+periodicity setter (and any other caller) works with no atoms. read_structure_step's
+2026.10.4 workaround is harmless and stays.
 
 15. orca_step: cap the cores for small molecules
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
