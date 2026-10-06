@@ -9,7 +9,7 @@ submitted, as soon as enough cores and memory are free; a task larger than the
 pool is clamped to it and runs alone.
 
 Each task runs through the executor's ``_run_task()`` (the body of the original
-``Base.run()``), so the conda, modules and docker handling, ``in_situ`` and the
+``Base.run()``), so the conda and modules handling, ``in_situ`` and the
 return-file contract are exactly those of ``Base.run()``.
 """
 

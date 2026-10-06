@@ -1145,7 +1145,7 @@ def test_abandon_waits_for_the_jobs_to_end(job):
 def test_only_the_local_executor_goes_to_a_queue(job):
     job, root = job
     with pytest.raises(RuntimeError, match="local executor"):
-        make_backend(FakeQueue(), job, root, executor="docker")
+        make_backend(FakeQueue(), job, root, executor="other")
 
 
 def test_tasks_with_config_never_meet_a_resolver(tmp_path):

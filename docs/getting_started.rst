@@ -4,7 +4,7 @@ Getting Started
 ``seamm_exec`` runs flowcharts (``run_flowchart``, ``run_from_jobserver``) and runs
 the external codes that steps need. A step gets the executor from its flowchart and
 asks it to run a program; the executor handles the program's configuration from
-``<root>/<program>.ini`` (a conda environment, environment modules, a Docker image,
+``<root>/<program>.ini`` (a conda environment, environment modules,
 or a plain executable), where the program runs, and which files come back.
 
 Running a code: ``executor.run()``
