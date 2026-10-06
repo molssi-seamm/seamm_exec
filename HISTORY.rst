@@ -22,6 +22,13 @@ History
       spec with the installed plug-ins and run with ``run_flowchart``; its rows
       carry ``benchmark=<set>``. ``python -m seamm_exec.timing_benchmark --codes
       orca,mopac --cores 1,4,8 --fit``.
+    * What a program's cost model is made of -- its size variables, method class,
+      task and unit columns -- is declared by the code step and passed when it
+      records a run (``record_timing(..., spec=)``, ``seamm_exec.TimingSpec``);
+      seamm-exec writes it once beside the records as ``<program>.spec.json`` and
+      the fit reads it from there, so no plug-in is imported and any code can
+      join. The specs of the 2026.10.6 steps remain as a fallback until each step
+      writes its own.
     * A model keeps itself current: ``predict`` refits it when its records have
       grown by a fifth since the fit, or when it is a week old and the records
       have changed, under a lock so concurrent runs do not all refit; a refit

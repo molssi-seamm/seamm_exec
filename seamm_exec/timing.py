@@ -326,14 +326,22 @@ def record_timing(
     attempts=1,
     in_situ=None,
     directory=None,
+    spec=None,
 ):
     """Append the timing record of a run made outside the task layer.
 
     For a step that still runs its code through ``executor.run`` and times it
     itself. The arguments are the common columns (see the module docstring);
-    ``descriptors`` as for :func:`record_task_timing`. Never raises.
+    ``descriptors`` as for :func:`record_task_timing`; ``spec``, the step's
+    :class:`seamm_exec.timing_model.Spec` (or its dict) saying which
+    descriptors the cost model is made of, written once beside the records.
+    Never raises.
     """
     try:
+        if spec is not None:
+            from .timing_model import write_spec
+
+            write_spec(program, spec, directory)
         machine = machine_class(gpu_model=gpu_model or ("gpu" if ngpus else None))
         row = {
             "schema": SCHEMA,
@@ -370,7 +378,7 @@ def record_timing(
         return None
 
 
-def record_task_timing(task, result, descriptors=None, directory=None):
+def record_task_timing(task, result, descriptors=None, directory=None, spec=None):
     """Append the timing record of a task that has run.
 
     Parameters
@@ -387,6 +395,8 @@ def record_task_timing(task, result, descriptors=None, directory=None):
         common columns. Keys that clash with a common column are ignored.
     directory : str or Path, optional
         The timing directory; default ``~/.seamm.d/timing``.
+    spec : seamm_exec.timing_model.Spec or dict, optional
+        The step's spec of its cost model, written once beside the records.
 
     Returns
     -------
@@ -418,6 +428,7 @@ def record_task_timing(task, result, descriptors=None, directory=None):
             attempts=getattr(result, "attempts", None),
             in_situ=getattr(result, "in_situ", None),
             directory=directory,
+            spec=spec,
         )
     except Exception as e:
         logger.warning(

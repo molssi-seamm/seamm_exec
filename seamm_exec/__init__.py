@@ -8,6 +8,7 @@ from .local import Local  # noqa: F401
 from .docker import Docker  # noqa: F401
 from .tasks import Resources, Task, TaskResult, TaskSet, TaskBackend  # noqa: F401
 from .tasks import run_task  # noqa: F401
+from .timing_model import Spec as TimingSpec  # noqa: F401
 from .timing import (  # noqa: F401
     machine_class,
     record_task_timing,

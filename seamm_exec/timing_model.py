@@ -31,7 +31,7 @@ Command line::
 """
 
 import argparse
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 import json
 import logging
@@ -54,13 +54,18 @@ MODEL_VERSION = 1
 
 @dataclass
 class Spec:
-    """What the cost model of a program is made of.
+    """What the cost model of a program is made of: plain data a code step
+    declares and passes when it records a run (``record_timing(...,
+    spec=...)``), written beside the records as ``<program>.spec.json`` so the
+    fit reads it without importing the plug-in.
 
     Attributes
     ----------
     size : tuple of str
-        Descriptor columns entering as ``log(size)``; a derived one may be
-        computed by :attr:`derived`.
+        Descriptor columns entering as ``log(size)``, most informative first
+        (basis functions, electrons, atoms; valence electrons and the grid
+        volume for plane waves -- a computed variable is written as a
+        descriptor by the step).
     klass : tuple of str
         Columns whose joined values are the method class (an intercept each).
     task : str or None
@@ -71,8 +76,6 @@ class Spec:
         MD steps). Missing or zero counts as one.
     multiplier : str or None
         A column the time is proportional to besides ``units`` (k-points).
-    derived : dict
-        ``{name: function(row) -> float or None}`` for computed size variables.
     default_alpha : float
         The parallel exponent used when the records do not span core counts.
     """
@@ -82,19 +85,37 @@ class Spec:
     task: str | None = "task"
     units: str | None = None
     multiplier: str | None = None
-    derived: dict = field(default_factory=dict)
     default_alpha: float = 0.8
 
+    def to_dict(self):
+        return {
+            "size": list(self.size),
+            "klass": list(self.klass),
+            "task": self.task,
+            "units": self.units,
+            "multiplier": self.multiplier,
+            "default_alpha": self.default_alpha,
+        }
 
-def _vasp_grid(row):
-    volume = _num(row.get("volume"))
-    encut = _num(row.get("encut"))
-    if volume is None or encut is None or volume <= 0 or encut <= 0:
-        return None
-    return volume * (encut / 500.0) ** 1.5
+    @classmethod
+    def from_dict(cls, data):
+        data = dict(data or {})
+        return cls(
+            size=tuple(data.get("size") or ("n_atoms",)),
+            klass=tuple(data.get("klass") or ()),
+            task=data.get("task", "task"),
+            units=data.get("units"),
+            multiplier=data.get("multiplier"),
+            default_alpha=float(data.get("default_alpha", 0.8)),
+        )
 
 
-SPECS = {
+DEFAULT_SPEC = Spec()
+
+#: Specs for the code steps of 2026.10.6, which wrote records before the steps
+#: declared their own: used only when a program has no ``<program>.spec.json``.
+#: Remove once every step writes its spec.
+FALLBACK_SPECS = {
     "orca": Spec(
         size=("nbf", "n_electrons", "n_atoms"),
         klass=("method_class",),
@@ -113,17 +134,53 @@ SPECS = {
         default_alpha=0.0,
     ),
     "vasp": Spec(
-        size=("nelect", "grid"),
+        size=("nelect", "grid", "volume"),
         klass=("model",),
         units="ionic_steps",
         multiplier="kpoints",
-        derived={"grid": _vasp_grid},
         default_alpha=0.5,
     ),
     "lammps": Spec(size=("n_atoms",), klass=(), task=None, units="md_steps"),
     "dftbplus": Spec(size=("n_atoms",), klass=("model",), units="scc_cycles"),
 }
-DEFAULT_SPEC = Spec()
+
+
+def spec_path(program, directory=None):
+    return Path(directory or DEFAULT_DIRECTORY).expanduser() / f"{program}.spec.json"
+
+
+def write_spec(program, spec, directory=None):
+    """Write a program's spec beside its records, if it is not there or has
+    changed. Called by ``record_timing`` when the step passes its spec; never
+    raises."""
+    try:
+        if not isinstance(spec, Spec):
+            spec = Spec.from_dict(spec)
+        path = spec_path(program, directory)
+        text = json.dumps(spec.to_dict(), indent=2) + "\n"
+        if path.exists() and path.read_text() == text:
+            return path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(f".{os.getpid()}.tmp")
+        tmp.write_text(text)
+        os.replace(tmp, path)
+        return path
+    except Exception as e:
+        logger.debug(f"Could not write the timing spec of {program}: {e}")
+        return None
+
+
+def load_spec(program, directory=None):
+    """The program's spec: the one its step wrote beside the records, else the
+    fallback for the 2026.10.6 steps, else the default (atoms only)."""
+    path = spec_path(program, directory)
+    if path.exists():
+        try:
+            return Spec.from_dict(json.loads(path.read_text()))
+        except (OSError, json.JSONDecodeError, ValueError) as e:
+            logger.warning(f"Could not read the timing spec {path}: {e}")
+    return FALLBACK_SPECS.get(program, DEFAULT_SPEC)
+
 
 #: Residual quantiles stored in a model
 QUANTILES = (0.5, 0.68, 0.84, 0.95, 0.99)
@@ -188,7 +245,7 @@ def load_rows(program, directory=None, spec=None):
     time, as dicts with the model's variables as floats added
     (``_wall``, ``_cores``, ``_units``, ``_mult``, ``_size``, ``_class``,
     ``_task``, ``_machine``)."""
-    spec = spec or SPECS.get(program, DEFAULT_SPEC)
+    spec = spec or load_spec(program, directory)
     rows = []
     for row in read_timings(program, directory=directory, all_files=True):
         if str(row.get("schema", "")).strip() != "1":
@@ -202,9 +259,7 @@ def load_rows(program, directory=None, spec=None):
         cpus = _num(row.get("cpus_per_task")) or 1.0
         sizes = {}
         for name in spec.size:
-            value = (
-                spec.derived[name](row) if name in spec.derived else _num(row.get(name))
-            )
+            value = _num(row.get(name))
             if value is not None and value > 0:
                 sizes[name] = value
         units = _num(row.get(spec.units)) if spec.units else None
@@ -241,7 +296,7 @@ def fit(program, directory=None, spec=None, min_rows=8):
         The model (what :func:`save_model` writes), with a ``report`` entry; or
         ``None`` if there are fewer than ``min_rows`` usable records.
     """
-    spec = spec or SPECS.get(program, DEFAULT_SPEC)
+    spec = spec or load_spec(program, directory)
     rows = load_rows(program, directory, spec)
     if len(rows) < min_rows:
         logger.info(f"{program}: {len(rows)} usable rows, fewer than {min_rows}")
@@ -472,6 +527,7 @@ def _assemble(program, spec, features, f):
         "reference_class": f["ref_class"],
         "tasks": task_offsets,
         "reference_task": f["ref_task"],
+        "spec": spec.to_dict(),
         "units_column": spec.units,
         "multiplier_column": spec.multiplier,
         "size_columns": list(spec.size),
@@ -702,14 +758,9 @@ def predict(
         model = load_model(program, directory)
     if model is None:
         return None
-    spec = SPECS.get(program, DEFAULT_SPEC)
     sizes = {}
     for name in model["features"]:
-        value = (
-            spec.derived[name](descriptors)
-            if name in spec.derived
-            else _num(descriptors.get(name))
-        )
+        value = _num(descriptors.get(name))
         if value is not None and value > 0:
             sizes[name] = value
     if not sizes:

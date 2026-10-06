@@ -249,6 +249,17 @@ size, ``alpha = a0 + a1 (log size - mean)``, because small molecules gain
 nothing from more cores while caffeine ran 3x faster on 5 cores than on 1 -- a
 single exponent fitted to both came out as zero.
 
+*Where the specification lives (2026-10-06, Paul's ask):* each code step
+declares what its cost model is made of (``TIMING_SPEC`` in the step: size
+variables, method-class columns, task column, unit column, multiplier, default
+parallel exponent) and passes it when it records a run; seamm-exec writes it
+once as ``~/.seamm.d/timing/<program>.spec.json`` and the fit reads it from
+there. So the spec travels with the data, the fit imports no plug-in, a
+third-party code joins by writing records and a spec, and ``predict`` needs no
+spec at all (the model file carries its columns). VASP's computed grid variable
+became a descriptor the step writes. A fallback table for the 2026.10.6 steps
+stays in seamm-exec until each has released its spec.
+
 *Keeping the model current (2026-10-06):* ``predict`` calls
 ``refresh_if_stale`` first: the model records the bytes and date of the record
 files it was fitted from (a stat, not a read, tells whether they have grown);

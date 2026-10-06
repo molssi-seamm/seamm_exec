@@ -332,3 +332,47 @@ def test_refit_skipped_while_another_process_holds_the_lock(tmp_path):
         holder.wait()
     _time.sleep(0.1)
     assert tm.refresh_if_stale("orca", tmp_path) == "refitted"
+
+
+def test_spec_sidecar_round_trip_and_use(tmp_path):
+    """A step's spec, passed when it records, is written beside the records and
+    read by the fit; a program without one uses the fallback or default."""
+    from seamm_exec.timing import record_timing
+
+    spec = {
+        "size": ["n_basis", "n_atoms"],
+        "klass": ["hamiltonian"],
+        "task": "task",
+        "units": "scf_runs",
+        "multiplier": None,
+        "default_alpha": 0.0,
+    }
+    for i in range(12):
+        record_timing(
+            "mycode",
+            1.0 + 0.001 * (10 * (i + 1)) ** 2.5,
+            {
+                "n_basis": 10 * (i + 1),
+                "n_atoms": 3 * (i + 1),
+                "hamiltonian": "X",
+                "task": "energy",
+                "scf_runs": 1,
+            },
+            directory=tmp_path,
+            spec=spec,
+        )
+    path = tm.spec_path("mycode", tmp_path)
+    assert path.exists()
+    loaded = tm.load_spec("mycode", tmp_path)
+    assert loaded.size == ("n_basis", "n_atoms") and loaded.klass == ("hamiltonian",)
+    assert loaded.default_alpha == 0.0
+    model = tm.fit("mycode", tmp_path)
+    assert model["features"][0] == "n_basis" and model["spec"]["units"] == "scf_runs"
+    assert model["alpha"] == 0.0  # the spec's default, no core spread
+    # Unchanged spec: the file is not rewritten
+    mtime = path.stat().st_mtime
+    tm.write_spec("mycode", spec, tmp_path)
+    assert path.stat().st_mtime == mtime
+    # No sidecar: the fallback table, else the default
+    assert tm.load_spec("orca", tmp_path).size[0] == "nbf"
+    assert tm.load_spec("unknown", tmp_path) == tm.DEFAULT_SPEC
