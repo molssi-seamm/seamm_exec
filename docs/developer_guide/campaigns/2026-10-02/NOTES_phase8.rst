@@ -26,7 +26,7 @@ Summary
 5   devops: a summary line when the docs deploy fails           S       decided
 6   Run-path tests of the code steps (mopac, ORCA first)        S-M     decided
 7   Legacy structure-handling wording (strain_step)             S       done
-8   seamm_exec test flakiness: the timing-sensitive tests       S       do
+8   seamm_exec test flakiness: the timing-sensitive tests       S       done
 9   PBS site: job history and ``max_resubmits``                 S       done;
                                                                         verify
 10  Task view at 500 iterations                                 S       measure
@@ -279,6 +279,16 @@ supercell_step requires.
 
 *Recommendation.* Do a sweep: grep the tests for ``time.sleep`` and elapsed-time
 assertions, and give each one a poll with a deadline.
+
+*Done (2026-10-06).* A sweep of seamm_exec's and seamm_scheduler's tests for elapsed-time
+assertions and fixed sleeps. Most are safe: they wait for a condition with a deadline,
+clear a fault after a delay without asserting on time, or bound time in the direction
+a slow runner only makes safer. Two raced a slow runner and now wait for the state they
+need: seamm_exec's ``test_cancel_failure_leaves_tasks_adoptable`` (slept 1 s and assumed
+the task was submitted; 56b5a31) and seamm_scheduler's floor test (slept 1.5 s so that
+the second job would be the newest; 1127e5c). seamm_exec's last 40 CI runs showed no
+other flaky test: the outage, the PyPI cache lag and the TaskServer bundle race fixed
+in 02b59d2. Both go out with each package's next release.
 
 9. PBS site: job history and ``max_resubmits``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
