@@ -1,0 +1,201 @@
+# -*- coding: utf-8 -*-
+"""The cost model fitted to the timing records (seamm_exec.timing_model)."""
+
+import math
+import random
+import subprocess
+import sys
+
+from seamm_exec import timing_model as tm
+from seamm_exec.timing import append_timing
+
+MACHINES = {"fast:q:CPU-A": -0.4, "slow:q:CPU-B": 0.4}
+CLASSES = {"global hybrid": 0.0, "MP2": 1.2}
+TASKS = {"energy": (1, 1), "opt": (8, 25)}  # units range
+
+
+def _synthetic(tmp_path, n=400, seed=1, alpha=0.7, b_nbf=2.6):
+    """Rows from a known law: t = t0 + units * exp(a + b log nbf - alpha log cores
+    + class + machine) * noise."""
+    rng = random.Random(seed)
+    for i in range(n):
+        machine = rng.choice(list(MACHINES))
+        klass = rng.choice(list(CLASSES))
+        task = rng.choice(list(TASKS))
+        units = rng.randint(*TASKS[task])
+        nbf = rng.choice([24, 60, 120, 240, 480, 960])
+        cores = rng.choice([1, 2, 4, 8, 16])
+        log_unit = -9.0 + b_nbf * math.log(nbf) - alpha * math.log(cores)
+        log_unit += CLASSES[klass] + MACHINES[machine] + rng.gauss(0, 0.15)
+        wall = 0.8 + units * math.exp(log_unit)
+        append_timing(
+            "orca",
+            {
+                "schema": 1,
+                "machine": machine,
+                "program": "orca",
+                "ntasks": cores,
+                "cpus_per_task": 1,
+                "wall": f"{wall:.3f}",
+                "state": "finished",
+                "task": task,
+                "method_class": klass,
+                "nbf": nbf,
+                "n_electrons": nbf // 2,
+                "n_atoms": nbf // 10,
+                "scf_runs": units,
+            },
+            directory=tmp_path,
+        )
+
+
+def test_fit_recovers_the_law(tmp_path):
+    _synthetic(tmp_path)
+    model = tm.fit("orca", directory=tmp_path)
+    assert model is not None and model["rows"] >= 380
+    assert model["features"] == ["nbf"]  # electrons and atoms are collinear with it
+    assert abs(model["coefficients"]["log nbf"] - 2.6) < 0.15
+    assert model["alpha_fitted"] and abs(model["alpha"] - 0.7) < 0.1
+    # Class and machine effects (differences, since each set is centred)
+    assert abs(model["classes"]["MP2"] - model["classes"]["global hybrid"] - 1.2) < 0.15
+    fast = model["machines"]["fast:q:CPU-A"]["offset"]
+    slow = model["machines"]["slow:q:CPU-B"]["offset"]
+    assert abs((slow - fast) - 0.8) < 0.15
+    assert model["report"]["within_2x"] > 0.9
+    assert model["report"]["r2_log"] > 0.95
+    # The unit distribution per task
+    assert model["task_units_quantiles"]["energy"]["0.95"] == 1.0
+    assert model["task_units_quantiles"]["opt"]["0.5"] > 10
+
+
+def test_predict(tmp_path):
+    _synthetic(tmp_path)
+    model = tm.fit("orca", directory=tmp_path)
+    path = tm.save_model(model, directory=tmp_path)
+    assert path.exists()
+    d = {"task": "energy", "method_class": "global hybrid", "nbf": 240}
+    p50 = tm.predict(
+        "orca", d, ntasks=4, machine="fast:q:CPU-A", quantile=0.5, directory=tmp_path
+    )
+    p95 = tm.predict(
+        "orca", d, ntasks=4, machine="fast:q:CPU-A", quantile=0.95, directory=tmp_path
+    )
+    truth = 0.8 + math.exp(-9.0 + 2.6 * math.log(240) - 0.7 * math.log(4) - 0.4)
+    assert abs(p50["median"] / truth - 1) < 0.25
+    assert p95["seconds"] > p50["seconds"] > 0
+    assert p50["machine_known"] is True and p50["units"] == 1.0
+    # More cores: faster; MP2: slower; an optimization: many units
+    p_more = tm.predict(
+        "orca", d, ntasks=16, machine="fast:q:CPU-A", quantile=0.5, directory=tmp_path
+    )
+    assert p_more["median"] < p50["median"]
+    p_mp2 = tm.predict(
+        "orca",
+        {**d, "method_class": "MP2"},
+        ntasks=4,
+        machine="fast:q:CPU-A",
+        quantile=0.5,
+        directory=tmp_path,
+    )
+    assert p_mp2["median"] > 2 * p50["median"]
+    p_opt = tm.predict(
+        "orca",
+        {**d, "task": "opt"},
+        ntasks=4,
+        machine="fast:q:CPU-A",
+        quantile=0.95,
+        directory=tmp_path,
+    )
+    assert p_opt["units"] >= 20 and p_opt["seconds"] > 10 * p95["seconds"]
+    given = tm.predict(
+        "orca",
+        {**d, "task": "opt"},
+        ntasks=4,
+        machine="fast:q:CPU-A",
+        quantile=0.5,
+        units=10,
+        directory=tmp_path,
+    )
+    assert given["units"] == 10
+    # An unknown machine: no offset, wider spread
+    unknown = tm.predict(
+        "orca", d, ntasks=4, machine="new:cluster", quantile=0.95, directory=tmp_path
+    )
+    assert unknown["machine_known"] is False
+    assert unknown["spread"] > p95["spread"]
+    # No size variable, or no model: None
+    assert tm.predict("orca", {"task": "energy"}, directory=tmp_path) is None
+    assert tm.predict("nothing", d, directory=tmp_path) is None
+
+
+def test_too_few_rows(tmp_path):
+    _synthetic(tmp_path, n=5)
+    assert tm.fit("orca", directory=tmp_path) is None
+
+
+def test_serial_program_keeps_the_default_alpha(tmp_path):
+    for i in range(30):
+        append_timing(
+            "mopac",
+            {
+                "schema": 1,
+                "machine": "m",
+                "program": "mopac",
+                "ntasks": 1,
+                "cpus_per_task": 1,
+                "wall": f"{0.5 + 1e-4 * (10 * (i + 1)) ** 2.5:.3f}",
+                "state": "finished",
+                "task": "energy",
+                "hamiltonian": "PM7",
+                "regime": "scf",
+                "n_basis": 10 * (i + 1),
+                "n_atoms": 3 * (i + 1),
+                "scf_runs": 1,
+            },
+            directory=tmp_path,
+        )
+    model = tm.fit("mopac", directory=tmp_path)
+    assert model["alpha_fitted"] is False and model["alpha"] == 0.0
+    assert model["classes"] == {"PM7 / scf": 0.0}
+    assert abs(model["coefficients"]["log n_basis"] - 2.5) < 0.3
+
+
+def test_command_line(tmp_path):
+    _synthetic(tmp_path, n=120)
+    out = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "seamm_exec.timing_model",
+            "--directory",
+            str(tmp_path),
+            "fit",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert out.returncode == 0, out.stderr
+    assert "orca:" in out.stdout and "within 2x" in out.stdout
+    assert (tmp_path / "models" / "orca.json").exists()
+    out = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "seamm_exec.timing_model",
+            "--directory",
+            str(tmp_path),
+            "predict",
+            "orca",
+            "task=energy",
+            "method_class=MP2",
+            "nbf=480",
+            "--ntasks",
+            "8",
+            "--machine",
+            "fast:q:CPU-A",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert out.returncode == 0, out.stderr
+    assert "95% quantile" in out.stdout and "known" in out.stdout

@@ -1,6 +1,20 @@
 =======
 History
 =======
+2026.10.7 -- A cost model fitted to the timing records, and predictions from it
+    * ``seamm_exec.timing_model``: ``fit`` reads a program's timing records (all
+      files, schema 1) and fits the separable model of the 2026-10-05 campaign --
+      a start-up constant per machine class, a unit cost as a power law in the
+      program's size variables with an intercept per method class and an offset
+      per task, a parallel exponent when the records span core counts, and a
+      shrunk offset per machine class -- by ridge regression in numpy, and writes
+      it to ``~/.seamm.d/timing/models/<program>.json`` with a report (R^2, the
+      fraction within 1.3x and 2x). ``predict`` evaluates a model for a
+      calculation's descriptors, cores and machine at a chosen quantile of the
+      residuals (the 95th for a queue walltime, the median for packing), taking the
+      task's iteration count from its fitted distribution unless given, and
+      widening the spread for a machine class it has not seen. Command line:
+      ``python -m seamm_exec.timing_model fit|predict``.
 2026.10.6 -- Timing records from every code step
     * ``seamm_exec.timing.record_timing`` writes the timing record of a run made
       outside the task layer (a step that still runs its code with

@@ -1,10 +1,14 @@
 2026-10-05 -- Predicting the time of calculations from timing records
 =====================================================================
 
-Status: design written 2026-10-05 and discussed with Paul; Phase 0 (the record and
-the machine class, in ``seamm_exec.timing``) and Phase 1 (ORCA writes the new
-records) are implemented in this package and in ``orca_step``, not yet released.
-Phases 2-5 are planned. The campaign continues the parallel-execution campaign
+Status: design written 2026-10-05 and discussed with Paul. Phases 0 and 1 (the
+record, the machine class, ORCA's records) released 2026-10-05 (seamm-exec and
+orca-step 2026.10.5.2); Phases 4 and 5 (MOPAC, VASP, Gaussian, LAMMPS, Psi4 and
+DFTB+ writing the record through ``record_timing``) released 2026-10-06
+(seamm-exec and the six steps 2026.10.6) and rolled out to every installation
+the same day. Phase 2 (the fit, the model file and ``predict``, in
+``seamm_exec.timing_model``) implemented 2026-10-06 on dev; the seed benchmark
+flowchart and Phase 3 (ORCA's ``estimated_seconds`` from ``predict``) are next. The campaign continues the parallel-execution campaign
 (``campaigns/2026-10-02``), whose task layer already carries an
 ``estimated_seconds`` for each task and turns it into a queue walltime
 (``scheduler_backend``) and into the inline rule (``TaskSet``), and whose MBE
@@ -217,6 +221,18 @@ may later refine residuals *within* the range of the data.
 
 4. Fitting, storing and using the model
 ---------------------------------------
+
+*Implemented 2026-10-06 as* ``seamm_exec.timing_model`` *(Phase 2). Notes from
+the implementation:* size variables whose log values correlate above 0.98
+(electrons and basis functions of one basis set) are reduced to the first, since
+the fit cannot tell them apart and would split a slope arbitrarily; the
+start-up constant is a fraction of the 5th percentile of each machine's smallest
+runs, the fraction (0, 0.3, 0.6 or 0.9) chosen by the fit that leaves the
+smallest residuals; machine offsets are shrunk by 5 rows toward the pooled fit
+and centred into the intercept; residual quantiles are kept per task and
+overall; a size variable missing at prediction time takes the records' mean.
+The model is pure numpy and the file is JSON, as designed. The ``seamm-exec
+timing fit`` subcommand below is ``python -m seamm_exec.timing_model fit``.
 
 ``seamm-exec timing fit [program]`` (a subcommand, or ``python -m
 seamm_exec.timing``) reads every timing file of a program, drops rows whose
