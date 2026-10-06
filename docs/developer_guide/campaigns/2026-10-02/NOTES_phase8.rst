@@ -35,8 +35,8 @@ Summary
                                                                         soaked
 12  Separate placement of a parallel loop's codes, live         M       do with
                                                                         EC pilot
-13  Timing helper adoption by the plug-ins (vasp-step#18)       S each  do, per
-                                                                        code
+13  Timing helper adoption by the plug-ins (vasp-step#18)       S each  timing
+                                                                        campaign
 14  molsystem#121: periodicity 0 on an empty configuration      S       do
 15  orca_step: cap the cores for small molecules               S       do
 ==  ==========================================================  ======  =========
@@ -372,6 +372,13 @@ gaussian_step and vasp-step write their own files.
 
 *Recommendation.* Do it as each code step is next released, starting with vasp-step,
 whose cluster runs share a file over NFS.
+
+*Handed over (Paul, 2026-10-06).* The timing campaign (``campaigns/2026-10-05``,
+the design session) owns it: MOPAC, Gaussian and VASP move to ``record_task_timing``
+in its Phase 4, LAMMPS and the rest in Phase 5. A survey for it: mopac_step and
+vasp_step run through the task layer; gaussian, lammps, psi4 and dftbplus still use
+``executor.run``. On Paul's Mac ``lammps.csv`` is 707 MB, and mopac's, dftbplus's and
+gaussian's 47-63 MB.
 
 14. molsystem#121
 ~~~~~~~~~~~~~~~~~
