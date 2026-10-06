@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.6.1 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.6.2 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="_static/documentation_options.js?v=6b967701"></script>
+    <script src="_static/documentation_options.js?v=5c6efd6b"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="Welcome to SEAMM exec’s documentation!" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.6.1" />
+  <meta name="docsearch:version" content="2026.10.6.2" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -447,7 +447,7 @@
 <p><code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code> runs flowcharts (<code class="docutils literal notranslate"><span class="pre">run_flowchart</span></code>, <code class="docutils literal notranslate"><span class="pre">run_from_jobserver</span></code>) and runs
 the external codes that steps need. A step gets the executor from its flowchart and
 asks it to run a program; the executor handles the program’s configuration from
-<code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/&lt;program&gt;.ini</span></code> (a conda environment, environment modules, a Docker image,
+<code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/&lt;program&gt;.ini</span></code> (a conda environment, environment modules,
 or a plain executable), where the program runs, and which files come back.</p>
 <section id="running-a-code-executor-run">
 <h2>Running a code: <code class="docutils literal notranslate"><span class="pre">executor.run()</span></code><a class="headerlink" href="#running-a-code-executor-run" title="Link to this heading">#</a></h2>
@@ -662,6 +662,21 @@ stops with a message saying so.</p></li>
 (the Dashboard, the web UI) see it as of the last finished step.</p></li>
 </ul>
 </section>
+<section id="stopping-a-task-set">
+<h2>Stopping a task set<a class="headerlink" href="#stopping-a-task-set" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">TaskSet.cancel()</span></code> – or <code class="docutils literal notranslate"><span class="pre">Evaluator.cancel()</span></code> for a step that works through
+an evaluator – may be called from another thread while the set is running: the
+tasks in flight are cancelled on their back end (<code class="docutils literal notranslate"><span class="pre">scancel</span></code> of their bundle,
+or the local process killed), those still held for room are dropped, all are
+marked <code class="docutils literal notranslate"><span class="pre">cancelled</span></code> in the manifest so that a later run of the step submits
+them afresh rather than adopting a killed job, and <code class="docutils literal notranslate"><span class="pre">run()</span></code> yields a
+<code class="docutils literal notranslate"><span class="pre">cancelled</span></code> result for each before returning. Results already produced
+stand. A step that runs several task sets at once can therefore stop the
+others when one fails.</p>
+<p>Several task sets submitting at once to the same cluster share one count of
+the user’s queued jobs, so the queue’s <code class="docutils literal notranslate"><span class="pre">max_queued_tasks</span></code> holds for them
+together rather than for each.</p>
+</section>
 <section id="parallel-loops">
 <h2>Parallel loops<a class="headerlink" href="#parallel-loops" title="Link to this heading">#</a></h2>
 <p>Since 2026.10.5 a Loop can run its iterations in parallel (loop_step’s “Run
@@ -784,6 +799,7 @@ through a JobServer.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#many-structures-one-model-chemistry">Many structures, one model chemistry</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#where-things-run">Where things run</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resuming-a-job">Resuming a job</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stopping-a-task-set">Stopping a task set</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#parallel-loops">Parallel loops</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#timing-records-and-the-cost-model">Timing records and the cost model</a></li>
 </ul>

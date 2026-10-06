@@ -28,14 +28,6 @@ seamm\_exec.computational\_environment module
    :show-inheritance:
    :undoc-members:
 
-seamm\_exec.docker module
--------------------------
-
-.. automodule:: seamm_exec.docker
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 seamm\_exec.evaluator module
 ----------------------------
 

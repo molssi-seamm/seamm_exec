@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.scheduler_backend &#8212; SEAMM seamm-exec Plug-in 2026.10.6.1 documentation</title>
+    <title>seamm_exec.scheduler_backend &#8212; SEAMM seamm-exec Plug-in 2026.10.6.2 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=6b967701"></script>
+    <script src="../../_static/documentation_options.js?v=5c6efd6b"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.6.1" />
+  <meta name="docsearch:version" content="2026.10.6.2" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -464,9 +464,65 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">secrets</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">shlex</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.tasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">FAILED</span><span class="p">,</span> <span class="n">FINISHED</span><span class="p">,</span> <span class="n">LOST</span><span class="p">,</span> <span class="n">QUEUED</span><span class="p">,</span> <span class="n">RUNNING</span><span class="p">,</span> <span class="n">TaskResult</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_SharedCount</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The user's job count on one queue system, shared by every back end in</span>
+<span class="sd">    this process that submits there.</span>
+
+<span class="sd">    ``count_jobs`` counts all of the user's jobs on the scheduler, whatever</span>
+<span class="sd">    section submitted them, so back ends for different sections of one cluster</span>
+<span class="sd">    -- or several TaskSets running at once in one evaluator (an MBE step's</span>
+<span class="sd">    levels) -- must share one count: each refreshing its own cache let N of</span>
+<span class="sd">    them see the same room and overshoot ``max_queued_tasks`` N-fold.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">counted_at</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">refresh</span><span class="p">,</span> <span class="n">poll_interval</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The count, refreshed by ``refresh()`` when older than</span>
+<span class="sd">        ``poll_interval``; None when it cannot be known."""</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+            <span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">now</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">counted_at</span> <span class="o">&gt;</span> <span class="n">poll_interval</span><span class="p">:</span>
+                <span class="n">count</span> <span class="o">=</span> <span class="n">refresh</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">count</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">None</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="n">count</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">counted_at</span> <span class="o">=</span> <span class="n">now</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">bump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">+=</span> <span class="n">n</span>
+
+
+<span class="n">_shared_counts</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">_shared_counts_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">shared_count_for</span><span class="p">(</span><span class="n">queue</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The :class:`_SharedCount` of the queue system ``queue`` submits to: the</span>
+<span class="sd">    scheduler's kind on the transport's host (``local`` for this machine)."""</span>
+    <span class="n">scheduler</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span> <span class="s2">"scheduler"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">transport</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span> <span class="s2">"transport"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="nb">type</span><span class="p">(</span><span class="n">scheduler</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="k">if</span> <span class="n">scheduler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">type</span><span class="p">(</span><span class="n">queue</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">transport</span><span class="p">,</span> <span class="s2">"host"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"local"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">with</span> <span class="n">_shared_counts_lock</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_shared_counts</span><span class="p">:</span>
+            <span class="n">_shared_counts</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">_SharedCount</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">_shared_counts</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"seamm-exec"</span><span class="p">)</span>
 
@@ -628,8 +684,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_prepared</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># (bundle, keys) -&gt; _Prepared, until it is queued</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_resolved_at</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_polled_at</span> <span class="o">=</span> <span class="mf">0.0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_counted_at</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="c1"># The user's job count, shared with every back end on this queue system</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shared_count</span> <span class="o">=</span> <span class="n">shared_count_for</span><span class="p">(</span><span class="n">queue</span><span class="p">)</span>
 
     <span class="c1"># ------------------------------------------------------------------</span>
     <span class="c1"># Construction from a target section</span>
@@ -733,14 +789,10 @@
 <span class="w">        </span><span class="sd">"""How many more bundles may be submitted now, or None for no limit."""</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_queued</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
-        <span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">now</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_counted_at</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_interval</span><span class="p">:</span>
-            <span class="n">count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">count_jobs</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">count</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">None</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="o">=</span> <span class="n">count</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_counted_at</span> <span class="o">=</span> <span class="n">now</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_queued</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count</span></div>
+        <span class="n">count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shared_count</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">count_jobs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_interval</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">count</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_queued</span> <span class="o">-</span> <span class="n">count</span></div>
 
 
 <div class="viewcode-block" id="SchedulerBackend.submit">
@@ -843,8 +895,7 @@
             <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepared</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
             <span class="k">raise</span>
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepared</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shared_count</span><span class="o">.</span><span class="n">bump</span><span class="p">()</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">"Submitted </span><span class="si">{</span><span class="n">prepared</span><span class="o">.</span><span class="n">bundle_dir</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">tasks</span><span class="p">)</span><span class="si">}</span><span class="s2"> tasks) as job "</span>
             <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">"</span>

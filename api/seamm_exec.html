@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.6.1 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.6.2 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=6b967701"></script>
+    <script src="../_static/documentation_options.js?v=5c6efd6b"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="seamm_exec" href="modules.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.6.1" />
+  <meta name="docsearch:version" content="2026.10.6.2" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -598,53 +598,6 @@ bracket groups (<code class="docutils literal notranslate"><span class="pre">r[1
 </dd></dl>
 
 </section>
-<section id="module-seamm_exec.docker">
-<span id="seamm-exec-docker-module"></span><h2>seamm_exec.docker module<a class="headerlink" href="#module-seamm_exec.docker" title="Link to this heading">#</a></h2>
-<p>The Docker object executes a task using a Docker container</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="seamm_exec.docker.Docker">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.docker.</span></span><span class="sig-name descname"><span class="pre">Docker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;Logger</span> <span class="pre">seamm-exec</span> <span class="pre">(WARNING)&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/docker.html#Docker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.docker.Docker" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#seamm_exec.base.Base" title="seamm_exec.base.Base"><code class="xref py py-class docutils literal notranslate"><span class="pre">Base</span></code></a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="seamm_exec.docker.Docker.exec">
-<span class="sig-name descname"><span class="pre">exec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/docker.html#Docker.exec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.docker.Docker.exec" title="Link to this definition">#</a></dt>
-<dd><p>Execute a command using a docker container..</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>config</strong> (<em>dict</em><em>(</em><em>str: any</em><em>)</em>) – The configuration for the code to run</p></li>
-<li><p><strong>cmd</strong> (<em>[</em><em>str</em><em>]</em>) – The command as a list of words.</p></li>
-<li><p><strong>directory</strong> (<em>str</em><em> or </em><em>Path</em>) – The directory for the tasks files.</p></li>
-<li><p><strong>input_data</strong> (<em>str</em>) – Data to be redirected to the stdin of the process.</p></li>
-<li><p><strong>env</strong> (<em>{str: str}</em>) – Dictionary of environment variables to pass to the execution environment</p></li>
-<li><p><strong>shell</strong> (<em>bool = False</em>) – Whether to use the shell when launching task</p></li>
-<li><p><strong>ce</strong> (<em>dict</em><em>(</em><em>str</em><em>, </em><em>str</em><em> or </em><em>int</em><em>)</em>) – Description of the computational enviroment</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>{str</strong> – Dictionary with stdout, stderr, returncode, etc.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str}</p>
-</dd>
-</dl>
-<p>The equivalent commandline commmand is:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>docker run --rm -v $PWD:/home -w /home psaxe/mopac [mopac input_file]
-</pre></div>
-</div>
-<p>For this container the input filename defaults to “mopac.dat” so we do not need
-to add it.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="seamm_exec.docker.Docker.name">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#seamm_exec.docker.Docker.name" title="Link to this definition">#</a></dt>
-<dd><p>The name of this type of executor.</p>
-</dd></dl>
-
-</dd></dl>
-
-</section>
 <section id="module-seamm_exec.evaluator">
 <span id="seamm-exec-evaluator-module"></span><h2>seamm_exec.evaluator module<a class="headerlink" href="#module-seamm_exec.evaluator" title="Link to this heading">#</a></h2>
 <p>Evaluate a model chemistry at many structures, over MDI or as tasks.</p>
@@ -711,6 +664,21 @@ rank), passed to the provider’s <code class="docutils literal notranslate"><sp
 </ul>
 </dd>
 </dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.evaluator.Evaluator.cancel">
+<span class="sig-name descname"><span class="pre">cancel</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/evaluator.html#Evaluator.cancel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.evaluator.Evaluator.cancel" title="Link to this definition">#</a></dt>
+<dd><p>Stop this evaluator’s work, from any thread: the running
+<code class="xref py py-class docutils literal notranslate"><span class="pre">TaskSet</span></code> is cancelled (its tasks in flight killed,
+the held ones dropped, all marked <code class="docutils literal notranslate"><span class="pre">cancelled</span></code> for a fresh start
+later), and the MDI path stops before its next structure. Results
+already produced stand.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="seamm_exec.evaluator.Evaluator.cancelled">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">cancelled</span></span><a class="headerlink" href="#seamm_exec.evaluator.Evaluator.cancelled" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="seamm_exec.evaluator.Evaluator.close">
 <span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/evaluator.html#Evaluator.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.evaluator.Evaluator.close" title="Link to this definition">#</a></dt>
@@ -1243,7 +1211,7 @@ from its <a class="reference internal" href="#seamm_exec.tasks.Resources" title=
 submitted, as soon as enough cores and memory are free; a task larger than the
 pool is clamped to it and runs alone.</p>
 <p>Each task runs through the executor’s <code class="docutils literal notranslate"><span class="pre">_run_task()</span></code> (the body of the original
-<code class="docutils literal notranslate"><span class="pre">Base.run()</span></code>), so the conda, modules and docker handling, <code class="docutils literal notranslate"><span class="pre">in_situ</span></code> and the
+<code class="docutils literal notranslate"><span class="pre">Base.run()</span></code>), so the conda and modules handling, <code class="docutils literal notranslate"><span class="pre">in_situ</span></code> and the
 return-file contract are exactly those of <code class="docutils literal notranslate"><span class="pre">Base.run()</span></code>.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="seamm_exec.local_pool.LocalPool">
@@ -1329,7 +1297,14 @@ networks leaves the leftovers alone, the safe direction.)</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="seamm_exec.local_pool.LocalPool.wait">
 <span class="sig-name descname"><span class="pre">wait</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/local_pool.html#LocalPool.wait"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.local_pool.LocalPool.wait" title="Link to this definition">#</a></dt>
-<dd><p>Block until one of <code class="docutils literal notranslate"><span class="pre">ids</span></code> is finished, or <code class="docutils literal notranslate"><span class="pre">timeout</span></code> seconds.</p>
+<dd><p>Block until one of <code class="docutils literal notranslate"><span class="pre">ids</span></code> is finished, <code class="docutils literal notranslate"><span class="pre">timeout</span></code> seconds pass, or
+<a class="reference internal" href="#seamm_exec.local_pool.LocalPool.wake" title="seamm_exec.local_pool.LocalPool.wake"><code class="xref py py-meth docutils literal notranslate"><span class="pre">wake()</span></code></a> is called.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.local_pool.LocalPool.wake">
+<span class="sig-name descname"><span class="pre">wake</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/local_pool.html#LocalPool.wake"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.local_pool.LocalPool.wake" title="Link to this definition">#</a></dt>
+<dd><p>Make a <a class="reference internal" href="#seamm_exec.local_pool.LocalPool.wait" title="seamm_exec.local_pool.LocalPool.wait"><code class="xref py py-meth docutils literal notranslate"><span class="pre">wait()</span></code></a> return early (a TaskSet being cancelled).</p>
 </dd></dl>
 
 </dd></dl>
@@ -2182,6 +2157,27 @@ here. Default: the target’s <code class="docutils literal notranslate"><span c
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskSet.cancel">
+<span class="sig-name descname"><span class="pre">cancel</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#TaskSet.cancel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.TaskSet.cancel" title="Link to this definition">#</a></dt>
+<dd><p>Stop this task set: may be called from another thread while
+<a class="reference internal" href="#seamm_exec.tasks.TaskSet.run" title="seamm_exec.tasks.TaskSet.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run()</span></code></a> is iterating (a sibling level failed, the step is being
+stopped).</p>
+<p><code class="docutils literal notranslate"><span class="pre">run</span></code> notices at its next poll, cancels every task in flight on its
+back end, drops those still held, marks them <code class="docutils literal notranslate"><span class="pre">cancelled</span></code> in the
+manifest – so a later run of the step submits them afresh rather than
+adopting a killed job – and yields a <code class="docutils literal notranslate"><span class="pre">cancelled</span></code> result for each
+before returning. Tasks that had already finished keep their results.
+Nothing is cancelled from the calling thread itself: the back ends’
+bookkeeping belongs to the running loop.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskSet.cancelled">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">cancelled</span></span><a class="headerlink" href="#seamm_exec.tasks.TaskSet.cancelled" title="Link to this definition">#</a></dt>
+<dd><p>Whether <a class="reference internal" href="#seamm_exec.tasks.TaskSet.cancel" title="seamm_exec.tasks.TaskSet.cancel"><code class="xref py py-meth docutils literal notranslate"><span class="pre">cancel()</span></code></a> was called.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="seamm_exec.tasks.TaskSet.capacity">
 <span class="sig-name descname"><span class="pre">capacity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#TaskSet.capacity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.TaskSet.capacity" title="Link to this definition">#</a></dt>
 <dd><p>The back end’s capacity, so a step can size its tasks beforehand.</p>
@@ -3025,17 +3021,11 @@ raises.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.computational_environment.scheduler_job_variables"><code class="docutils literal notranslate"><span class="pre">scheduler_job_variables()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.docker">seamm_exec.docker module</a><ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.docker.Docker"><code class="docutils literal notranslate"><span class="pre">Docker</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.docker.Docker.exec"><code class="docutils literal notranslate"><span class="pre">Docker.exec()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.docker.Docker.name"><code class="docutils literal notranslate"><span class="pre">Docker.name</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.evaluator">seamm_exec.evaluator module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.evaluator.AnalysisError"><code class="docutils literal notranslate"><span class="pre">AnalysisError</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.evaluator.Evaluator"><code class="docutils literal notranslate"><span class="pre">Evaluator</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.evaluator.Evaluator.cancel"><code class="docutils literal notranslate"><span class="pre">Evaluator.cancel()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.evaluator.Evaluator.cancelled"><code class="docutils literal notranslate"><span class="pre">Evaluator.cancelled</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.evaluator.Evaluator.close"><code class="docutils literal notranslate"><span class="pre">Evaluator.close()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.evaluator.Evaluator.mdi_capable"><code class="docutils literal notranslate"><span class="pre">Evaluator.mdi_capable</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.evaluator.Evaluator.results"><code class="docutils literal notranslate"><span class="pre">Evaluator.results()</span></code></a></li>
@@ -3125,6 +3115,7 @@ raises.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.local_pool.LocalPool.status"><code class="docutils literal notranslate"><span class="pre">LocalPool.status()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.local_pool.LocalPool.submit"><code class="docutils literal notranslate"><span class="pre">LocalPool.submit()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.local_pool.LocalPool.wait"><code class="docutils literal notranslate"><span class="pre">LocalPool.wait()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.local_pool.LocalPool.wake"><code class="docutils literal notranslate"><span class="pre">LocalPool.wake()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -3252,6 +3243,8 @@ raises.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskSet"><code class="docutils literal notranslate"><span class="pre">TaskSet</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskSet.add"><code class="docutils literal notranslate"><span class="pre">TaskSet.add()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskSet.backend"><code class="docutils literal notranslate"><span class="pre">TaskSet.backend</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskSet.cancel"><code class="docutils literal notranslate"><span class="pre">TaskSet.cancel()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskSet.cancelled"><code class="docutils literal notranslate"><span class="pre">TaskSet.cancelled</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskSet.capacity"><code class="docutils literal notranslate"><span class="pre">TaskSet.capacity()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskSet.local"><code class="docutils literal notranslate"><span class="pre">TaskSet.local</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskSet.marker_directory"><code class="docutils literal notranslate"><span class="pre">TaskSet.marker_directory()</span></code></a></li>

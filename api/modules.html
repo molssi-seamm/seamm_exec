@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec &#8212; SEAMM seamm-exec Plug-in 2026.10.6.1 documentation</title>
+    <title>seamm_exec &#8212; SEAMM seamm-exec Plug-in 2026.10.6.2 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=6b967701"></script>
+    <script src="../_static/documentation_options.js?v=5c6efd6b"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="API Documentation" href="../api.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.6.1" />
+  <meta name="docsearch:version" content="2026.10.6.2" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -479,17 +479,11 @@
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.computational_environment.scheduler_job_variables"><code class="docutils literal notranslate"><span class="pre">scheduler_job_variables()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="seamm_exec.html#module-seamm_exec.docker">seamm_exec.docker module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.docker.Docker"><code class="docutils literal notranslate"><span class="pre">Docker</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.docker.Docker.exec"><code class="docutils literal notranslate"><span class="pre">Docker.exec()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.docker.Docker.name"><code class="docutils literal notranslate"><span class="pre">Docker.name</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
 <li class="toctree-l2"><a class="reference internal" href="seamm_exec.html#module-seamm_exec.evaluator">seamm_exec.evaluator module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.evaluator.AnalysisError"><code class="docutils literal notranslate"><span class="pre">AnalysisError</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.evaluator.Evaluator"><code class="docutils literal notranslate"><span class="pre">Evaluator</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.evaluator.Evaluator.cancel"><code class="docutils literal notranslate"><span class="pre">Evaluator.cancel()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.evaluator.Evaluator.cancelled"><code class="docutils literal notranslate"><span class="pre">Evaluator.cancelled</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.evaluator.Evaluator.close"><code class="docutils literal notranslate"><span class="pre">Evaluator.close()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.evaluator.Evaluator.mdi_capable"><code class="docutils literal notranslate"><span class="pre">Evaluator.mdi_capable</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.evaluator.Evaluator.results"><code class="docutils literal notranslate"><span class="pre">Evaluator.results()</span></code></a></li>
@@ -579,6 +573,7 @@
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.local_pool.LocalPool.status"><code class="docutils literal notranslate"><span class="pre">LocalPool.status()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.local_pool.LocalPool.submit"><code class="docutils literal notranslate"><span class="pre">LocalPool.submit()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.local_pool.LocalPool.wait"><code class="docutils literal notranslate"><span class="pre">LocalPool.wait()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.local_pool.LocalPool.wake"><code class="docutils literal notranslate"><span class="pre">LocalPool.wake()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -706,6 +701,8 @@
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.tasks.TaskSet"><code class="docutils literal notranslate"><span class="pre">TaskSet</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.tasks.TaskSet.add"><code class="docutils literal notranslate"><span class="pre">TaskSet.add()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.tasks.TaskSet.backend"><code class="docutils literal notranslate"><span class="pre">TaskSet.backend</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.tasks.TaskSet.cancel"><code class="docutils literal notranslate"><span class="pre">TaskSet.cancel()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.tasks.TaskSet.cancelled"><code class="docutils literal notranslate"><span class="pre">TaskSet.cancelled</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.tasks.TaskSet.capacity"><code class="docutils literal notranslate"><span class="pre">TaskSet.capacity()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.tasks.TaskSet.local"><code class="docutils literal notranslate"><span class="pre">TaskSet.local</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.tasks.TaskSet.marker_directory"><code class="docutils literal notranslate"><span class="pre">TaskSet.marker_directory()</span></code></a></li>

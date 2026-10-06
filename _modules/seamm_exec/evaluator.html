@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.evaluator &#8212; SEAMM seamm-exec Plug-in 2026.10.6.1 documentation</title>
+    <title>seamm_exec.evaluator &#8212; SEAMM seamm-exec Plug-in 2026.10.6.2 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=6b967701"></script>
+    <script src="../../_static/documentation_options.js?v=5c6efd6b"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.6.1" />
+  <meta name="docsearch:version" content="2026.10.6.2" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -777,6 +777,24 @@
         <span class="k">return</span> <span class="n">key</span></div>
 
 
+<div class="viewcode-block" id="Evaluator.cancel">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.evaluator.Evaluator.cancel">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Stop this evaluator's work, from any thread: the running</span>
+<span class="sd">        :class:`~seamm_exec.TaskSet` is cancelled (its tasks in flight killed,</span>
+<span class="sd">        the held ones dropped, all marked ``cancelled`` for a fresh start</span>
+<span class="sd">        later), and the MDI path stops before its next structure. Results</span>
+<span class="sd">        already produced stand."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cancelled</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">task_set</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"_task_set"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">task_set</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">task_set</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cancelled</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"_cancelled"</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+
 <div class="viewcode-block" id="Evaluator.results">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.evaluator.Evaluator.results">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -891,6 +909,12 @@
         <span class="n">want_gradients</span> <span class="o">=</span> <span class="s2">"gradients"</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span>
         <span class="n">want_stress</span> <span class="o">=</span> <span class="s2">"stress"</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span>
         <span class="k">for</span> <span class="n">topology</span><span class="p">,</span> <span class="n">members</span> <span class="ow">in</span> <span class="n">groups</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cancelled</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">EvaluatorResult</span><span class="p">(</span>
+                        <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">ok</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s2">"cancelled"</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">"mdi"</span>
+                    <span class="p">)</span>
+                <span class="k">continue</span>
             <span class="n">elements</span><span class="p">,</span> <span class="n">charge</span><span class="p">,</span> <span class="n">multiplicity</span><span class="p">,</span> <span class="n">periodicity</span> <span class="o">=</span> <span class="n">topology</span>
             <span class="n">periodic</span> <span class="o">=</span> <span class="n">periodicity</span> <span class="o">!=</span> <span class="mi">0</span>
             <span class="k">try</span><span class="p">:</span>
@@ -991,6 +1015,9 @@
             <span class="n">directory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span>
             <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">task_set_options</span><span class="p">,</span>
         <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_task_set</span> <span class="o">=</span> <span class="n">task_set</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cancelled</span><span class="p">:</span>
+            <span class="n">task_set</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
         <span class="n">refused</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="p">(</span><span class="n">configuration</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span> <span class="ow">in</span> <span class="n">pending</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">try</span><span class="p">:</span>
