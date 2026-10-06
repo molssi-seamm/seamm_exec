@@ -257,10 +257,14 @@ class LocalPool:
             return {i: self._jobs[i].state if i in self._jobs else LOST for i in ids}
 
     def wait(self, ids, timeout=None):
-        """Block until one of ``ids`` is finished, or ``timeout`` seconds."""
+        """Block until one of ``ids`` is finished, ``timeout`` seconds pass, or
+        :meth:`wake` is called."""
         deadline = None if timeout is None else time.monotonic() + timeout
         with self._condition:
             while True:
+                if getattr(self, "_woken", False):
+                    self._woken = False
+                    return
                 if any(
                     self._jobs[i].state in TERMINAL_STATES
                     for i in ids
@@ -271,6 +275,12 @@ class LocalPool:
                 if remaining is not None and remaining <= 0:
                     return
                 self._condition.wait(remaining)
+
+    def wake(self):
+        """Make a :meth:`wait` return early (a TaskSet being cancelled)."""
+        with self._condition:
+            self._woken = True
+            self._condition.notify_all()
 
     def cancel(self, ids):
         to_kill = []

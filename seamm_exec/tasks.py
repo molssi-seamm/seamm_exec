@@ -490,6 +490,7 @@ class TaskSet:
         self._bundle_count = 0
         self._bundle_seconds = 0.0
         self._held = []  # [(backend, bundle, [tasks])] waiting for room
+        self._stop = threading.Event()  # set by cancel(), read by run()
         self._held_since = {}  # bundle -> when it was first held
         self._config_warned = False
 
@@ -667,6 +668,72 @@ class TaskSet:
     # ------------------------------------------------------------------
     # Running
     # ------------------------------------------------------------------
+    def cancel(self):
+        """Stop this task set: may be called from another thread while
+        :meth:`run` is iterating (a sibling level failed, the step is being
+        stopped).
+
+        ``run`` notices at its next poll, cancels every task in flight on its
+        back end, drops those still held, marks them ``cancelled`` in the
+        manifest -- so a later run of the step submits them afresh rather than
+        adopting a killed job -- and yields a ``cancelled`` result for each
+        before returning. Tasks that had already finished keep their results.
+        Nothing is cancelled from the calling thread itself: the back ends'
+        bookkeeping belongs to the running loop.
+        """
+        self._stop.set()
+        # The private attribute: the ``backend`` property would build a remote
+        # back end (ssh, a target lookup) just to wake it, and from this thread.
+        for backend in (self.local, self._backend):
+            if backend is not None and hasattr(backend, "wake"):
+                try:
+                    backend.wake()
+                except Exception:
+                    pass
+
+    @property
+    def cancelled(self):
+        """Whether :meth:`cancel` was called."""
+        return self._stop.is_set()
+
+    def _cancel_inflight(self, inflight, reason="cancelled"):
+        """Cancel the tasks in flight and drop those held; yield their results."""
+        by_backend = {}
+        for (backend, backend_id), task in inflight.items():
+            by_backend.setdefault(backend, []).append((backend_id, task))
+        for backend, entries in by_backend.items():
+            try:
+                backend.cancel([i for i, _ in entries])
+            except Exception:
+                # Left as they were, so a restart adopts them rather than
+                # submitting duplicates.
+                logger.exception("Error cancelling tasks")
+                continue
+            for _, task in entries:
+                self.manifest.update(task.key, state=CANCELLED, reason=reason)
+                result = TaskResult(
+                    key=task.key,
+                    state=CANCELLED,
+                    directory=self.task_directory(task),
+                    reason=reason,
+                )
+                self._results[task.key] = result
+                yield result
+        inflight.clear()
+        for _, _, members in self._held:
+            for task in members:
+                self.manifest.update(task.key, state=CANCELLED, reason=reason)
+                result = TaskResult(
+                    key=task.key,
+                    state=CANCELLED,
+                    directory=self.task_directory(task),
+                    reason=reason,
+                )
+                self._results[task.key] = result
+                yield result
+        self._held = []
+        self.manifest.flush(force=True)
+
     def run(self) -> Iterator[TaskResult]:
         """Submit what is not done, wait, and yield results as they finish."""
         if not self.use_manifest:
@@ -742,11 +809,14 @@ class TaskSet:
             self._submit(runnable, inflight)
             self.manifest.flush(force=True)
             while inflight or self._held:
+                if self._stop.is_set():
+                    yield from self._cancel_inflight(inflight)
+                    return
                 self.manifest.flush()
                 if self._held:
                     self._submit_held(inflight)
                     if not inflight:
-                        time.sleep(
+                        self._stop.wait(
                             getattr(self._held[0][0], "poll_interval", None)
                             or self.poll_interval
                         )
@@ -989,7 +1059,7 @@ class TaskSet:
             if hasattr(backend, "wait"):
                 backend.wait(ids, timeout=self.poll_interval * 10)
                 return
-        time.sleep(self.poll_interval)
+        self._stop.wait(self.poll_interval)
 
     def _finish_attempt(
         self, key, state, returncode, reason=None, counted=True, timed_out=False

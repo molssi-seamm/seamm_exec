@@ -11,6 +11,7 @@ inside the "allocation", and the DONE/FAILED markers, without SLURM.
 import json
 import os
 from pathlib import Path
+import secrets
 import subprocess
 import sys
 import threading
@@ -1424,3 +1425,45 @@ def test_timed_out_retry_stays_within_the_queue_maximum(job):
     from seamm_exec.scheduler_backend import _max_walltime
 
     assert _max_walltime(section) == 7200
+
+
+def test_queue_count_is_shared_between_back_ends():
+    """Two back ends on one queue system (two sections of a cluster, or two
+    TaskSets running at once) share the user's job count, so neither sees room
+    the other has just used (phase 8 follow-up for the MBE step's concurrent
+    levels)."""
+    from types import SimpleNamespace
+
+    from seamm_exec.scheduler_backend import SchedulerBackend, shared_count_for
+
+    calls = []
+
+    def count_jobs():
+        calls.append(1)
+        return 7
+
+    host = f"cluster-{secrets.token_hex(3)}"
+    queue = SimpleNamespace(
+        scheduler=SimpleNamespace(),
+        transport=SimpleNamespace(host=host),
+        count_jobs=count_jobs,
+    )
+    a = SchedulerBackend.__new__(SchedulerBackend)
+    b = SchedulerBackend.__new__(SchedulerBackend)
+    for backend in (a, b):
+        backend.queue = queue
+        backend.max_queued = 10
+        backend.poll_interval = 60.0
+        backend._shared_count = shared_count_for(queue)
+    assert a._shared_count is b._shared_count
+    assert a.room() == 3 and b.room() == 3
+    assert len(calls) == 1  # one refresh served both
+    a._shared_count.bump()  # a submits a bundle
+    assert b.room() == 2  # b sees it at once
+    # A different host is a different count
+    other = SimpleNamespace(
+        scheduler=SimpleNamespace(),
+        transport=SimpleNamespace(host=host + "x"),
+        count_jobs=count_jobs,
+    )
+    assert shared_count_for(other) is not a._shared_count

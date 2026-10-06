@@ -35,9 +35,65 @@ import re
 import secrets
 import shlex
 import sys
+import threading
 import time
 
 from .tasks import FAILED, FINISHED, LOST, QUEUED, RUNNING, TaskResult
+
+
+class _SharedCount:
+    """The user's job count on one queue system, shared by every back end in
+    this process that submits there.
+
+    ``count_jobs`` counts all of the user's jobs on the scheduler, whatever
+    section submitted them, so back ends for different sections of one cluster
+    -- or several TaskSets running at once in one evaluator (an MBE step's
+    levels) -- must share one count: each refreshing its own cache let N of
+    them see the same room and overshoot ``max_queued_tasks`` N-fold.
+    """
+
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.count = None
+        self.counted_at = 0.0
+
+    def current(self, refresh, poll_interval):
+        """The count, refreshed by ``refresh()`` when older than
+        ``poll_interval``; None when it cannot be known."""
+        with self.lock:
+            now = time.time()
+            if self.count is None or now - self.counted_at > poll_interval:
+                count = refresh()
+                if count is None:
+                    return None
+                self.count = count
+                self.counted_at = now
+            return self.count
+
+    def bump(self, n=1):
+        with self.lock:
+            if self.count is not None:
+                self.count += n
+
+
+_shared_counts = {}
+_shared_counts_lock = threading.Lock()
+
+
+def shared_count_for(queue):
+    """The :class:`_SharedCount` of the queue system ``queue`` submits to: the
+    scheduler's kind on the transport's host (``local`` for this machine)."""
+    scheduler = getattr(queue, "scheduler", None)
+    transport = getattr(queue, "transport", None)
+    key = (
+        type(scheduler).__name__ if scheduler is not None else type(queue).__name__,
+        getattr(transport, "host", None) or "local",
+    )
+    with _shared_counts_lock:
+        if key not in _shared_counts:
+            _shared_counts[key] = _SharedCount()
+        return _shared_counts[key]
+
 
 logger = logging.getLogger("seamm-exec")
 
@@ -194,8 +250,8 @@ class SchedulerBackend:
         self._prepared = {}  # (bundle, keys) -> _Prepared, until it is queued
         self._resolved_at = 0.0
         self._polled_at = 0.0
-        self._count = None
-        self._counted_at = 0.0
+        # The user's job count, shared with every back end on this queue system
+        self._shared_count = shared_count_for(queue)
 
     # ------------------------------------------------------------------
     # Construction from a target section
@@ -288,14 +344,10 @@ class SchedulerBackend:
         """How many more bundles may be submitted now, or None for no limit."""
         if self.max_queued is None:
             return None
-        now = time.time()
-        if self._count is None or now - self._counted_at > self.poll_interval:
-            count = self.queue.count_jobs()
-            if count is None:
-                return None
-            self._count = count
-            self._counted_at = now
-        return self.max_queued - self._count
+        count = self._shared_count.current(self.queue.count_jobs, self.poll_interval)
+        if count is None:
+            return None
+        return self.max_queued - count
 
     def submit(
         self,
@@ -395,8 +447,7 @@ class SchedulerBackend:
             del self._prepared[key]
             raise
         del self._prepared[key]
-        if self._count is not None:
-            self._count += 1
+        self._shared_count.bump()
         logger.info(
             f"Submitted {prepared.bundle_dir.name} ({len(tasks)} tasks) as job "
             f"{job_id}"

@@ -1,6 +1,18 @@
 =======
 History
 =======
+2026.10.6.2 -- Cancelling a task set; one queue count per cluster
+    * ``TaskSet.cancel()`` (and ``Evaluator.cancel()``), callable from another
+      thread while the set runs: the tasks in flight are cancelled on their back
+      end, the held ones dropped, all marked ``cancelled`` in the manifest so a
+      later run submits them afresh, and a ``cancelled`` result is yielded for each.
+      A step running several task sets at once (the MBE step's levels) can stop the
+      others when one fails instead of letting hours of work finish for nothing.
+    * The user's job count that ``max_queued_tasks`` is checked against is shared by
+      every back end in a process that submits to the same queue system, so
+      several task sets running at once no longer each see the same room and
+      overshoot the limit together.
+
 2026.10.6.1 -- A cost model fitted to the timing records, and predictions from it
     * ``seamm_exec.timing_model``: ``fit`` reads a program's timing records (all
       files, schema 1) and fits the separable model of the 2026-10-05 campaign --
