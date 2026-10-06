@@ -37,7 +37,7 @@ Summary
                                                                         EC pilot
 13  Timing helper adoption by the plug-ins (vasp-step#18)       S each  timing
                                                                         campaign
-14  molsystem#121: periodicity 0 on an empty configuration      S       do
+14  molsystem#121: periodicity 0 on an empty configuration      S       done
 15  orca_step: cap the cores for small molecules               S       do
 ==  ==========================================================  ======  =========
 
@@ -390,6 +390,11 @@ gaussian's 47-63 MB.
 *Effort.* S.
 
 *Recommendation.* Do it with the next molsystem release.
+
+*Done (2026-10-06).* molsystem 2026.10.6.1: the cell's ``to_fractionals`` and
+``to_cartesians`` convert an empty list of coordinates to an empty one, so the
+periodicity setter (and any other caller) works with no atoms. read_structure_step's
+2026.10.4 workaround is harmless and stays.
 
 15. orca_step: cap the cores for small molecules
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
