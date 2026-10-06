@@ -424,7 +424,23 @@ ChemAI (user ``seamm``), pre-checks 2026-10-05
     machine ``tinkercliffs:normal_q:AMD EPYC 7702 64-Core Processor`` -- the
     full key, since the run was inside a SLURM allocation.
 
-MolSSI10 remains (test-only; no ORCA there): ``update --latest --all``.
+2026-10-06, MolSSI10 (test-only, OpenPBS), ``update --latest --all``
+    Tool -> 2026.10.5.1. New ``venvs/2026-10-06T07-22-19``, rollback
+    ``2026-10-03T17-50-02``; no PBS jobs, JobServer and web UI restarted by the
+    update. seamm 2026.10.5, molsystem 2026.10.6.1, seamm-exec 2026.10.5.2,
+    seamm-scheduler/jobserver 2026.10.5, orca-step 2026.10.5.2, mopac/lammps/
+    xnn/loop/table/read-structure/geometry-analysis/strain-step 2026.10.5,
+    forcefield-step 2026.10.4, seamm-webui 2026.10.5; ``uv pip check`` clean.
+    Its code environments are SEAMM-made (``conda-env create --file
+    .../seamm-*.yml``): ``seamm-xnn`` got xnns 0.4.0 -> 0.7.0 and the openssl
+    patch, torch 2.14.0 left alone (no GPU there); ``seamm-lammps`` unchanged.
+    Test: a MOPAC water Energy flowchart with ``run_flowchart`` finished (no
+    ORCA on MolSSI10).
+
+**Rollout complete 2026-10-06:** all six installations on the 2026.10.5.x
+releases, the xnn-step hold lifted everywhere, every hand-built MLFF
+environment untouched, ORCA read from ``orca.ini`` on ChemAI and TinkerCliffs,
+and ``orca.csv`` rows from the Mac, ChemAI and TinkerCliffs.
 
 The format-2.0 flowchart scan: ``update`` scanned every job's flowchart on
 every run (about 15 minutes on TinkerCliffs' NFS). seamm-manager 2026.10.6
