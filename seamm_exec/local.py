@@ -67,6 +67,15 @@ class Local(Base):
         )
         command = " ".join(cmd)
 
+        # Docker was removed in 2026.10.6.2: say so, rather than run the code
+        # as a local installation and fail later with "command not found"
+        if config.get("installation") == "docker":
+            raise RuntimeError(
+                "Docker support was removed in seamm-exec 2026.10.6.2: set "
+                "'installation' to local, conda or modules in this code's "
+                "<program>.ini."
+            )
+
         # Sift through the way we can find the executables.
         shell_exe = None
         if "installation" in config and config["installation"] == "conda":

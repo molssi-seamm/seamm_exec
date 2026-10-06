@@ -14,7 +14,8 @@ History
       overshoot the limit together.
     * Docker is no longer supported: the Docker executor, the ``installation = docker``
       choice for a code and the ``docker`` Python dependency are removed. Conda,
-      modules and local installations run exactly as before.
+      modules and local installations run exactly as before. A ``<program>.ini``
+      that still says ``installation = docker`` gets a clear message saying so.
 
 2026.10.6.1 -- A cost model fitted to the timing records, and predictions from it
     * ``seamm_exec.timing_model``: ``fit`` reads a program's timing records (all
