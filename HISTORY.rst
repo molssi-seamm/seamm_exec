@@ -1,7 +1,7 @@
 =======
 History
 =======
-2026.10.7 -- A cost model fitted to the timing records, and predictions from it
+2026.10.6.1 -- A cost model fitted to the timing records, and predictions from it
     * ``seamm_exec.timing_model``: ``fit`` reads a program's timing records (all
       files, schema 1) and fits the separable model of the 2026-10-05 campaign --
       a start-up constant per machine class, a unit cost as a power law in the
