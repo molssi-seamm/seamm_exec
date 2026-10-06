@@ -423,9 +423,9 @@ through SEAMM. The abort reproduces only with Homebrew's OpenMPI 5.0.8 first on
 the PATH: ORCA 6.1.1 needs OpenMPI 4.1.x on macOS, which orca_step puts on the PATH
 from ``library-path`` in ``orca.ini``. The failing run predates the sub-step root
 fix (seamm-exec 2026.10.5.2), so ``orca.ini`` was not read and ORCA used Homebrew's
-``mpirun``. Left open, for Paul: orca_step could detect an OpenMPI 5 ``mpirun`` on
-the PATH when ``orca.ini`` gives no ``library-path`` and say so, instead of ORCA's
-confusing start-up abort.
+``mpirun``. Follow-up done (Paul, 2026-10-06): orca_step 2026.10.6 checks, before a
+parallel run, the ``mpirun`` ORCA will use and stops with a clear message if it is
+OpenMPI 5 or missing (skipped on one core and for ``installation = modules``).
 
 Not phase 8, recorded here for completeness
 -------------------------------------------
