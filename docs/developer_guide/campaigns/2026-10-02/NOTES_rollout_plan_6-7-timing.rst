@@ -467,7 +467,7 @@ Mac ``~/SEAMM``  2026-10-06T10-39-42     2026-10-05T18-33-32    MOPAC test: old 
 MolSSI10         2026-10-06T10-44-04     2026-10-06T07-22-19    flowchart record written
 ChemAI           2026-10-06T10-45-12     2026-10-05T19-00-48    job 5175 was running (below)
 Mac mini         2026-10-06T10-49-50     2026-10-05T18-41-48    reachable from work after all
-TinkerCliffs     2026-10-06T10-46-31     2026-10-06T06-46-45    (completion recorded below)
+TinkerCliffs     2026-10-06T10-46-31     2026-10-06T06-46-45    EC pilot was running (below)
 ================ ======================= ====================== ==============================
 
 ``uv pip check`` clean and services running on every site; every site's
@@ -479,3 +479,15 @@ was running. The versioned switch left its venv (``2026-10-05T19-00-48``) in
 place and the job continued on it; the restarted JobServer reattached ("previous
 jobs: 2"). No harm, by design -- but the rule is to wait for running jobs, and
 the pre-check should gate the update, not just print.
+
+**TinkerCliffs, a second lapse of the same kind:** the switch at 10:46 happened
+while the MBE session's EC pilot (job 7870006, started 07:21, with 18 bundle
+jobs) was running from the main venv; the login-node check cannot see
+compute-node evaluators, and the pre-check only counted my own SLURM jobs
+without gating. Checked afterwards: the evaluator runs from the real path
+``venvs/2026-10-06T06-46-45`` and writes that same real path into every
+bundle's ``run.sh`` (``exec .../venvs/2026-10-06T06-46-45/bin/python -m
+seamm_exec.task_worker``), so the whole job stays on one version; no bundle
+failed. The versioned-venv design covered it, but **the rule for a cluster is:
+ask the sessions with running evaluators (mbe) before switching, or wait.**
+installation.ini has the flowchart record; ``uv pip check`` clean.
