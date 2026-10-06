@@ -418,7 +418,11 @@ ChemAI (user ``seamm``), pre-checks 2026-10-05
     records from 2026-10-04) are **byte-for-byte unchanged**: the history rule
     held on both. ORCA test: on the login node the real ORCA started (so
     ``orca.ini`` is read) but was too slow to finish water in 10 minutes;
-    repeated on a compute node through ``srun`` (result recorded below).
+    repeated on a compute node through ``srun -p normal_q -n 1 -c 2``: "Ran
+    ORCA in node-local scratch (/localscratch/7869980/...)", E = -76.31877069 Eh
+    (identical to the Macs and ChemAI), wall 4.8 s; ``orca.csv`` row with
+    machine ``tinkercliffs:normal_q:AMD EPYC 7702 64-Core Processor`` -- the
+    full key, since the run was inside a SLURM allocation.
 
 MolSSI10 remains (test-only; no ORCA there): ``update --latest --all``.
 
