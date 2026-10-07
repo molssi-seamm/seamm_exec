@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.6.2 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.7 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=5c6efd6b"></script>
+    <script src="../_static/documentation_options.js?v=0a3eb936"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="seamm_exec" href="modules.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.6.2" />
+  <meta name="docsearch:version" content="2026.10.7" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -2667,6 +2667,19 @@ with numpy alone. The prediction is a <em>quantile</em> of the residual distribu
 </pre></div>
 </div>
 <dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.CORES_SIZE_CORRELATION">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">CORES_SIZE_CORRELATION</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.7</span></span><a class="headerlink" href="#seamm_exec.timing_model.CORES_SIZE_CORRELATION" title="Link to this definition">#</a></dt>
+<dd><p>Ridge penalty on the slopes and class/task offsets
+<a href="#id1"><span class="problematic" id="id2">|corr(log cores, log size)|</span></a> above which the parallel exponent is not fitted</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.EXTRAPOLATION">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">EXTRAPOLATION</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.5</span></span><a class="headerlink" href="#seamm_exec.timing_model.EXTRAPOLATION" title="Link to this definition">#</a></dt>
+<dd><p>How far outside the fitted size range (as a factor) a prediction is still made</p>
+</dd></dl>
+
+<dl class="py data">
 <dt class="sig sig-object py" id="seamm_exec.timing_model.FALLBACK_SPECS">
 <span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">FALLBACK_SPECS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'dftbplus':</span> <span class="pre">Spec(size=('n_atoms',),</span> <span class="pre">klass=('model',),</span> <span class="pre">task='task',</span> <span class="pre">units='scc_cycles',</span> <span class="pre">multiplier=None,</span> <span class="pre">default_alpha=0.8),</span> <span class="pre">'gaussian':</span> <span class="pre">Spec(size=('nbf',</span> <span class="pre">'n_electrons',</span> <span class="pre">'n_atoms'),</span> <span class="pre">klass=('method',),</span> <span class="pre">task='task',</span> <span class="pre">units='scf_runs',</span> <span class="pre">multiplier=None,</span> <span class="pre">default_alpha=0.8),</span> <span class="pre">'lammps':</span> <span class="pre">Spec(size=('n_atoms',),</span> <span class="pre">klass=(),</span> <span class="pre">task=None,</span> <span class="pre">units='md_steps',</span> <span class="pre">multiplier=None,</span> <span class="pre">default_alpha=0.8),</span> <span class="pre">'mopac':</span> <span class="pre">Spec(size=('n_basis',</span> <span class="pre">'n_atoms'),</span> <span class="pre">klass=('hamiltonian',</span> <span class="pre">'regime'),</span> <span class="pre">task='task',</span> <span class="pre">units='scf_runs',</span> <span class="pre">multiplier=None,</span> <span class="pre">default_alpha=0.0),</span> <span class="pre">'orca':</span> <span class="pre">Spec(size=('nbf',</span> <span class="pre">'n_electrons',</span> <span class="pre">'n_atoms'),</span> <span class="pre">klass=('method_class',),</span> <span class="pre">task='task',</span> <span class="pre">units='scf_runs',</span> <span class="pre">multiplier=None,</span> <span class="pre">default_alpha=0.8),</span> <span class="pre">'psi4':</span> <span class="pre">Spec(size=('nbf',</span> <span class="pre">'n_electrons',</span> <span class="pre">'n_atoms'),</span> <span class="pre">klass=('method',),</span> <span class="pre">task='task',</span> <span class="pre">units='scf_runs',</span> <span class="pre">multiplier=None,</span> <span class="pre">default_alpha=0.8),</span> <span class="pre">'vasp':</span> <span class="pre">Spec(size=('nelect',</span> <span class="pre">'grid',</span> <span class="pre">'volume'),</span> <span class="pre">klass=('model',),</span> <span class="pre">task='task',</span> <span class="pre">units='ionic_steps',</span> <span class="pre">multiplier='kpoints',</span> <span class="pre">default_alpha=0.5)}</span></span><a class="headerlink" href="#seamm_exec.timing_model.FALLBACK_SPECS" title="Link to this definition">#</a></dt>
 <dd><p>Specs for the code steps of 2026.10.6, which wrote records before the steps
@@ -2714,12 +2727,6 @@ Remove once every step writes its spec.</p>
 <span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">REFIT_GROWTH</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.2</span></span><a class="headerlink" href="#seamm_exec.timing_model.REFIT_GROWTH" title="Link to this definition">#</a></dt>
 <dd><p>A model is refitted by <a class="reference internal" href="#seamm_exec.timing_model.predict" title="seamm_exec.timing_model.predict"><code class="xref py py-func docutils literal notranslate"><span class="pre">predict()</span></code></a> when its records have grown by this
 fraction since the fit …</p>
-</dd></dl>
-
-<dl class="py data">
-<dt class="sig sig-object py" id="seamm_exec.timing_model.RIDGE">
-<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">RIDGE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.001</span></span><a class="headerlink" href="#seamm_exec.timing_model.RIDGE" title="Link to this definition">#</a></dt>
-<dd><p>Ridge penalty on the slopes and class/task offsets</p>
 </dd></dl>
 
 <dl class="py class">
@@ -3294,6 +3301,8 @@ raises.</p>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.timing_model">seamm_exec.timing_model module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.CORES_SIZE_CORRELATION"><code class="docutils literal notranslate"><span class="pre">CORES_SIZE_CORRELATION</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.EXTRAPOLATION"><code class="docutils literal notranslate"><span class="pre">EXTRAPOLATION</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.FALLBACK_SPECS"><code class="docutils literal notranslate"><span class="pre">FALLBACK_SPECS</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.MACHINE_SHRINK"><code class="docutils literal notranslate"><span class="pre">MACHINE_SHRINK</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.MODELS_SUBDIR"><code class="docutils literal notranslate"><span class="pre">MODELS_SUBDIR</span></code></a></li>
@@ -3301,7 +3310,6 @@ raises.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.QUANTILES"><code class="docutils literal notranslate"><span class="pre">QUANTILES</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.REFIT_DAYS"><code class="docutils literal notranslate"><span class="pre">REFIT_DAYS</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.REFIT_GROWTH"><code class="docutils literal notranslate"><span class="pre">REFIT_GROWTH</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.RIDGE"><code class="docutils literal notranslate"><span class="pre">RIDGE</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.Spec"><code class="docutils literal notranslate"><span class="pre">Spec</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.Spec.default_alpha"><code class="docutils literal notranslate"><span class="pre">Spec.default_alpha</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.Spec.from_dict"><code class="docutils literal notranslate"><span class="pre">Spec.from_dict()</span></code></a></li>

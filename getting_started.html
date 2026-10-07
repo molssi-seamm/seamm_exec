@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.6.2 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.7 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="_static/documentation_options.js?v=5c6efd6b"></script>
+    <script src="_static/documentation_options.js?v=0a3eb936"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="Welcome to SEAMM exec’s documentation!" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.6.2" />
+  <meta name="docsearch:version" content="2026.10.7" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -563,7 +563,10 @@ per rank) sets the size of each calculation on the batch path; the provider’s
 <code class="docutils literal notranslate"><span class="pre">get_task</span></code> receives it. Without it the provider chooses.</p>
 <p>A program offers the batch path through three classmethods beside
 <code class="docutils literal notranslate"><span class="pre">get_model_chemistry_options</span></code>: <code class="docutils literal notranslate"><span class="pre">get_task</span></code>, <code class="docutils literal notranslate"><span class="pre">analyze_task</span></code> and, optionally,
-<code class="docutils literal notranslate"><span class="pre">can_run_task</span></code>; see <a class="reference internal" href="api/seamm_exec.html#module-seamm_exec.evaluator" title="seamm_exec.evaluator"><code class="xref py py-mod docutils literal notranslate"><span class="pre">seamm_exec.evaluator</span></code></a>.</p>
+<code class="docutils literal notranslate"><span class="pre">can_run_task</span></code>; see <a class="reference internal" href="api/seamm_exec.html#module-seamm_exec.evaluator" title="seamm_exec.evaluator"><code class="xref py py-mod docutils literal notranslate"><span class="pre">seamm_exec.evaluator</span></code></a>. An <code class="docutils literal notranslate"><span class="pre">analyze_task</span></code> that
+takes <code class="docutils literal notranslate"><span class="pre">task=</span></code> is given the task that produced the result, so that it can
+append the run’s timing record (see below); one that does not is called
+without it.</p>
 <p><strong>The sign of the stress.</strong> The stress comes back as the program gives it, in
 GPa, and programs differ in its sign. A provider that returns a stress must
 therefore declare its convention in its <code class="docutils literal notranslate"><span class="pre">get_model_chemistry_options</span></code> entry:
@@ -704,6 +707,12 @@ the kind of task, the method’s class, basis functions, electrons, atoms, the
 iterations taken, the code’s own time. A file is set aside when it grows past
 50 MB or when the columns change, and many runs may append at once. The design
 is in <code class="docutils literal notranslate"><span class="pre">docs/developer_guide/campaigns/2026-10-05</span></code>.</p>
+<p>A model only predicts what its records cover: a calculation whose size lies
+outside the fitted range (by more than a factor of 1.5), whose method class or
+task the records lack, or whose descriptors lack a size variable gets no
+prediction, and the step’s own estimate stands. When the records’ core counts
+follow the size (small runs on 4 cores, large on 8) the parallel exponent is
+assumed, not fitted, and the fit’s summary says so.</p>
 <p>A cost model is fitted to those rows with:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">timing_model</span> <span class="n">fit</span>            <span class="c1"># every program with records</span>
 <span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">timing_model</span> <span class="n">fit</span> <span class="n">orca</span> <span class="n">vasp</span>

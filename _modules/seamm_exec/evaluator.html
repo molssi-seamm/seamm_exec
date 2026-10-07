@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.evaluator &#8212; SEAMM seamm-exec Plug-in 2026.10.6.2 documentation</title>
+    <title>seamm_exec.evaluator &#8212; SEAMM seamm-exec Plug-in 2026.10.7 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=5c6efd6b"></script>
+    <script src="../../_static/documentation_options.js?v=0a3eb936"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.6.2" />
+  <meta name="docsearch:version" content="2026.10.7" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -487,6 +487,20 @@
 <span class="c1">#: periodic structure (``check_properties(..., periodic=True)``, and the</span>
 <span class="c1">#: Evaluator checks it for every task); a molecule has none.</span>
 <span class="n">REQUIRED</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"energy"</span><span class="p">,</span> <span class="s2">"gradients"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_takes_task</span><span class="p">(</span><span class="n">function</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Whether a program's ``analyze_task`` accepts ``task=`` (the ones that</span>
+<span class="sd">    record the run's timing do; see ``record_task_timing``)."""</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">function</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="s2">"task"</span> <span class="ow">in</span> <span class="n">parameters</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="ow">is</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+    <span class="p">)</span>
 
 
 <div class="viewcode-block" id="AnalysisError">
@@ -1019,6 +1033,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cancelled</span><span class="p">:</span>
             <span class="n">task_set</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
         <span class="n">refused</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">tasks</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="p">(</span><span class="n">configuration</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span> <span class="ow">in</span> <span class="n">pending</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">extra</span> <span class="o">=</span> <span class="p">{}</span>
@@ -1041,9 +1056,13 @@
                 <span class="p">)</span>
                 <span class="k">continue</span>
             <span class="n">task_set</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+            <span class="n">tasks</span><span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">task</span>
         <span class="k">yield from</span> <span class="n">refused</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">task_set</span><span class="o">.</span><span class="n">tasks</span><span class="p">:</span>
             <span class="k">return</span>
+        <span class="c1"># A program's analyze_task that takes the task records its timing</span>
+        <span class="c1"># (seamm_exec.record_task_timing); older ones do not take it.</span>
+        <span class="n">takes_task</span> <span class="o">=</span> <span class="n">_takes_task</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">analyze_task</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">task_set</span><span class="o">.</span><span class="n">run</span><span class="p">():</span>
             <span class="n">configuration</span><span class="p">,</span> <span class="n">options</span> <span class="o">=</span> <span class="n">pending</span><span class="p">[</span><span class="n">result</span><span class="o">.</span><span class="n">key</span><span class="p">]</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
@@ -1056,12 +1075,14 @@
                 <span class="p">)</span>
                 <span class="k">continue</span>
             <span class="k">try</span><span class="p">:</span>
+                <span class="n">extra</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"task"</span><span class="p">:</span> <span class="n">tasks</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">key</span><span class="p">)}</span> <span class="k">if</span> <span class="n">takes_task</span> <span class="k">else</span> <span class="p">{}</span>
                 <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">analyze_task</span><span class="p">(</span>
                     <span class="n">result</span><span class="p">,</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">model_chemistry</span><span class="p">,</span>
                     <span class="n">configuration</span><span class="p">,</span>
                     <span class="n">properties</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="p">,</span>
                     <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">extra</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="k">except</span> <span class="n">AnalysisError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">yield</span> <span class="n">EvaluatorResult</span><span class="p">(</span>

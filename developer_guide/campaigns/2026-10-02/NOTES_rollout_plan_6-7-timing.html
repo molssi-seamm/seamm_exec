@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Rollout plan: phases 6 and 7, the orca.ini fix and the timing records &#8212; SEAMM seamm-exec Plug-in 2026.10.6.2 documentation</title>
+    <title>Rollout plan: phases 6 and 7, the orca.ini fix and the timing records &#8212; SEAMM seamm-exec Plug-in 2026.10.7 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../../_static/documentation_options.js?v=5c6efd6b"></script>
+    <script src="../../../_static/documentation_options.js?v=0a3eb936"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="Rollout of 2026-10-04: ChemAI and TinkerCliffs" href="NOTES_rollout_2026-10-04.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.6.2" />
+  <meta name="docsearch:version" content="2026.10.7" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -1011,6 +1011,74 @@ bundle’s <code class="docutils literal notranslate"><span class="pre">run.sh</
 failed. The versioned-venv design covered it, but <strong>the rule for a cluster is:
 ask the sessions with running evaluators (mbe) before switching, or wait.</strong>
 installation.ini has the flowchart record; <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span> <span class="pre">check</span></code> clean.</p>
+<section id="rounds-34-2026-10-06-the-2026-10-6-1-and-2026-10-6-2-releases">
+<h2>Rounds 3–4, 2026-10-06: the 2026.10.6.1 and 2026.10.6.2 releases<a class="headerlink" href="#rounds-34-2026-10-06-the-2026-10-6-1-and-2026-10-6-2-releases" title="Link to this heading">#</a></h2>
+<p>Two further rounds the same afternoon, driven by the installer downgrade
+(seamm-manager 2026.10.6.1: version floors, a refused switch exits 1), the
+ORCA NoCOSX batched-gradient guard (orca-step 2026.10.6.2), the fail-fast
+MBE step (mbe-step 2026.10.6.2), the JobServer reattach KeyError fix
+(seamm-jobserver 2026.10.6) and seamm-exec 2026.10.6.2. Tool
+<code class="docutils literal notranslate"><span class="pre">seamm-manager==2026.10.6.1</span></code> then <code class="docutils literal notranslate"><span class="pre">update</span> <span class="pre">--latest</span> <span class="pre">--all</span></code>.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Site</p></th>
+<th class="head"><p>round 3 venv</p></th>
+<th class="head"><p>round 4 venv</p></th>
+<th class="head"><p>notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Mac <code class="docutils literal notranslate"><span class="pre">~/SEAMM</span></code></p></td>
+<td><p>2026-10-06T14-02-59</p></td>
+<td><p>2026-10-06T17-27-42</p></td>
+<td><p>stray 14-34-47 (the downgrade)
+to prune</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">~/SEAMM_DEV</span></code></p></td>
+<td><p>2026-10-06T14-05-28</p></td>
+<td><p>2026-10-06T17-31-58</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>MolSSI10</p></td>
+<td><p>2026-10-06T14-07-30</p></td>
+<td><p>2026-10-06T17-37-54</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>Mac mini</p></td>
+<td><p>2026-10-06T14-08-37</p></td>
+<td><p>2026-10-06T17-43-34</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>ChemAI</p></td>
+<td><p>2026-10-06T14-10-28</p></td>
+<td><p>2026-10-06T17-37-31</p></td>
+<td><p>JobServer crash-loop (below)</p></td>
+</tr>
+<tr class="row-odd"><td><p>TinkerCliffs</p></td>
+<td><p>(skipped)</p></td>
+<td><p>2026-10-06T20-05-52</p></td>
+<td><p>gated on science’s jobs (below)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>ChemAI, 14:11–14:25:</strong> the restarted JobServer (2026.10.5) crash-looped on
+reattach: jobs that had finished while it was down have no <code class="docutils literal notranslate"><span class="pre">slurm_job_id</span></code>
+in the reattach record and the lookup raised <code class="docutils literal notranslate"><span class="pre">KeyError</span></code>. One-line fix with
+the worker session, released as seamm-jobserver 2026.10.6 and rolled out in
+round 4.</p>
+<p><strong>TinkerCliffs, the rule applied this time:</strong> round 3 was skipped and round 4
+held until the gate was met.  The science session’s six label jobs
+(ChemAI 5213/5217/5220–5223 = SLURM 7874435/39/44/48/49/50) finished at
+20:03 EDT; the MBE session had agreed the switch could happen under its EC
+pilot (7870006, with bundle 7876699), because the evaluator and every
+bundle’s <code class="docutils literal notranslate"><span class="pre">run.sh</span></code> pin the real path <code class="docutils literal notranslate"><span class="pre">venvs/2026-10-06T06-46-45</span></code> (do not
+prune it until 7870006 has finished).  Update 20:05–20:25 EDT, rc=0,
+<code class="docutils literal notranslate"><span class="pre">/projects/seamm/SEAMM/venv</span> <span class="pre">-&gt;</span> <span class="pre">venvs/2026-10-06T20-05-52</span></code>; also picked up
+strain-step 2026.10.6 and supercell-step 2026.10.6.  <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span> <span class="pre">check</span></code> clean;
+no services on TinkerCliffs; the flowchart record meant no scan.  Science
+told to release its held ion-shell relabels; MBE told the switch had happened.</p>
+</section>
 </section>
 
 
@@ -1070,7 +1138,10 @@ installation.ini has the flowchart record; <code class="docutils literal notrans
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#record-of-execution">Record of execution</a></li>
 </ul>
 </li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#second-round-2026-10-06-the-2026-10-6-releases">Second round, 2026-10-06: the 2026.10.6 releases</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#second-round-2026-10-06-the-2026-10-6-releases">Second round, 2026-10-06: the 2026.10.6 releases</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rounds-34-2026-10-06-the-2026-10-6-1-and-2026-10-6-2-releases">Rounds 3–4, 2026-10-06: the 2026.10.6.1 and 2026.10.6.2 releases</a></li>
+</ul>
+</li>
 </ul>
 
   </nav></div>

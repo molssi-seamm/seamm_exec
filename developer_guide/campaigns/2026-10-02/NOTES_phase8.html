@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Phase 8 notes &#8212; SEAMM seamm-exec Plug-in 2026.10.6.2 documentation</title>
+    <title>Phase 8 notes &#8212; SEAMM seamm-exec Plug-in 2026.10.7 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../../_static/documentation_options.js?v=5c6efd6b"></script>
+    <script src="../../../_static/documentation_options.js?v=0a3eb936"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="Phase 7 notes" href="NOTES_phase7.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.6.2" />
+  <meta name="docsearch:version" content="2026.10.7" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -492,6 +492,99 @@ design note follows for whatever is chosen.</p>
 or more, or needs live runs on the clusters.</p>
 <section id="summary">
 <h2>Summary<a class="headerlink" href="#summary" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>#</p></th>
+<th class="head"><p>item</p></th>
+<th class="head"><p>effort</p></th>
+<th class="head"><p>recommend</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>Warm evaluator per bundle (parallel-loop start-up)</p></td>
+<td><p>L</p></td>
+<td><p>measure
+first</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>Dimer builder wall-walk as per-point TaskSets on a queue</p></td>
+<td><p>M</p></td>
+<td><p>defer</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>Packaging: sdists that cannot be built (8 packages)</p></td>
+<td><p>S</p></td>
+<td><p>decided</p></td>
+</tr>
+<tr class="row-odd"><td><p>4</p></td>
+<td><p>Dashboard: child iterations as datastore rows</p></td>
+<td><p>M-L</p></td>
+<td><p>defer</p></td>
+</tr>
+<tr class="row-even"><td><p>5</p></td>
+<td><p>devops: a summary line when the docs deploy fails</p></td>
+<td><p>S</p></td>
+<td><p>decided</p></td>
+</tr>
+<tr class="row-odd"><td><p>6</p></td>
+<td><p>Run-path tests of the code steps (mopac, ORCA first)</p></td>
+<td><p>S-M</p></td>
+<td><p>decided</p></td>
+</tr>
+<tr class="row-even"><td><p>7</p></td>
+<td><p>Legacy structure-handling wording (strain_step)</p></td>
+<td><p>S</p></td>
+<td><p>done</p></td>
+</tr>
+<tr class="row-odd"><td><p>8</p></td>
+<td><p>seamm_exec test flakiness: the timing-sensitive tests</p></td>
+<td><p>S</p></td>
+<td><p>done</p></td>
+</tr>
+<tr class="row-even"><td><p>9</p></td>
+<td><p>PBS site: job history and <code class="docutils literal notranslate"><span class="pre">max_resubmits</span></code></p></td>
+<td><p>S</p></td>
+<td><p>done;
+verify</p></td>
+</tr>
+<tr class="row-odd"><td><p>10</p></td>
+<td><p>Task view at 500 iterations</p></td>
+<td><p>S</p></td>
+<td><p>measure</p></td>
+</tr>
+<tr class="row-even"><td><p>11</p></td>
+<td><p>TaskServer as the default local queue</p></td>
+<td><p>S</p></td>
+<td><p>defer
+until
+soaked</p></td>
+</tr>
+<tr class="row-odd"><td><p>12</p></td>
+<td><p>Separate placement of a parallel loop’s codes, live</p></td>
+<td><p>M</p></td>
+<td><p>do with
+EC pilot</p></td>
+</tr>
+<tr class="row-even"><td><p>13</p></td>
+<td><p>Timing helper adoption by the plug-ins (vasp-step#18)</p></td>
+<td><p>S each</p></td>
+<td><p>timing
+campaign</p></td>
+</tr>
+<tr class="row-odd"><td><p>14</p></td>
+<td><p>molsystem#121: periodicity 0 on an empty configuration</p></td>
+<td><p>S</p></td>
+<td><p>done</p></td>
+</tr>
+<tr class="row-even"><td><p>15</p></td>
+<td><p>orca_step: cap the cores for small molecules</p></td>
+<td><p>S</p></td>
+<td><p>not needed</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 </section>
 <section id="the-items">
 <h2>The items<a class="headerlink" href="#the-items" title="Link to this heading">#</a></h2>
