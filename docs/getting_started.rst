@@ -335,7 +335,11 @@ of standard runs whose rows the fit can tell apart (``benchmark=<set>``)::
 
 Per code it runs a few molecules spanning two orders of magnitude of size (water
 to a 300-atom alkane), two or three method classes, as single points and
-optimizations, once per core count where the code is parallel. ``--bin`` names
+optimizations, once per core count where the code is parallel. ORCA also runs
+the MLFF labelling level, revDSD-PBEP86-D4/def2-TZVPPD, and every energy as a
+gradient too, so the records cover the labelling runs' class, task and sizes;
+the core sweep gives the parallel exponent that production records, whose
+core count usually follows the size, cannot. ``--bin`` names
 the installation whose ``run_flowchart`` to use when the benchmark is driven from
 another environment; ``--build-only`` writes the flowchart to run by hand or
 through a JobServer.

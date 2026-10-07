@@ -26,6 +26,10 @@ def test_spec_quick():
         s["Model Chemistry"]["model chemistry"] for s in steps if "Model Chemistry" in s
     ]
     assert "ORCA:MP2@MP2/def2-SVP" in orca_mcs
+    # The labelling level, toluene and smaller, and each energy as a gradient too
+    assert "ORCA:DFT@revDSD-PBEP86-D4/def2-TZVPPD" in orca_mcs
+    assert text.count("revDSD-PBEP86-D4") == 8  # 4 molecules x (energy, gradient)
+    assert text.count('{results: {"gradients": {}}}') == 14
     # MOPAC sets its Hamiltonian on the sub-step, both PM7 and PM6-ORG
     mopac = [s["MOPAC"]["steps"][0] for s in steps if "MOPAC" in s]
     hams = {list(sub.values())[0]["hamiltonian"] for sub in mopac}

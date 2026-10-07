@@ -1,6 +1,14 @@
 =======
 History
 =======
+2026.10.7.1 -- The timing benchmark covers the labelling level
+    * The seed benchmark (``seamm_exec.timing_benchmark``) runs ORCA at the MLFF
+      labelling level too, revDSD-PBEP86-D4/def2-TZVPPD (toluene and smaller in the
+      quick tier, caffeine in the full), and every ORCA energy also as a gradient, so
+      a model fitted from it covers the method class, the task and the sizes of the
+      MBE pilots' fragments and, run over a core sweep, the parallel exponent the
+      pilots' own records cannot give (their core count follows the size).
+
 2026.10.7 -- Bugfix: runs under the task layer record their timing
     * The task layer's evaluator now passes the task that produced a result to a
       program's ``analyze_task`` when it takes ``task=`` (ORCA's and VASP's do, and

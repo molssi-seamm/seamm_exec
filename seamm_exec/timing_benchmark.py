@@ -51,11 +51,17 @@ CODES = {
             "ORCA:DFT@B3LYP/def2-SVP": {"quick": 24, "full": 62},
             "ORCA:HF@HF/def2-SVP": {"quick": 24, "full": 62},
             "ORCA:MP2@MP2/def2-SVP": {"quick": 15, "full": 24},
+            # The MLFF labelling level (the MBE pilots, the dimer and cluster
+            # labels): a double hybrid in a triple-zeta basis, so the records
+            # cover that class and those sizes. Costly: toluene in "quick".
+            "ORCA:DFT@revDSD-PBEP86-D4/def2-TZVPPD": {"quick": 15, "full": 24},
         },
         "tasks": {
             "Energy": {"quick": 62, "full": 302},
             "Optimization": {"quick": 9, "full": 15},
         },
+        # Each energy also as a gradient (EnGrad), the labelling runs' task
+        "variants": {"Energy": [{}, {"results": {"gradients": {}}}]},
         "parallel": True,
     },
     "mopac": {
