@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.timing_benchmark &#8212; SEAMM seamm-exec Plug-in 2026.10.7 documentation</title>
+    <title>seamm_exec.timing_benchmark &#8212; SEAMM seamm-exec Plug-in 2026.10.7.1 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=0a3eb936"></script>
+    <script src="../../_static/documentation_options.js?v=1a433d58"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.7" />
+  <meta name="docsearch:version" content="2026.10.7.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -433,14 +433,48 @@
 <span class="sd">cost model (campaign ``docs/developer_guide/campaigns/2026-10-05``, section 5).</span>
 
 <span class="sd">A machine the model has never seen gets its offset from a few minutes of</span>
-<span class="sd">standard runs: per code, a few molecules spanning two orders of magnitude of</span>
-<span class="sd">size, two or three method classes, as single points and optimizations, and a</span>
-<span class="sd">sweep of core counts where the code is parallel. The runs are ordinary</span>
-<span class="sd">flowchart runs; their timing rows carry ``benchmark=&lt;set&gt;`` so a fit can tell</span>
-<span class="sd">them from production runs (they are chosen to span the space) and so a code or</span>
-<span class="sd">compiler change can be checked against an earlier set.</span>
+<span class="sd">standard runs; a sweep of core counts gives the parallel exponent that</span>
+<span class="sd">production records, whose core count usually follows the size, cannot. The</span>
+<span class="sd">runs are ordinary flowchart runs; their timing rows carry ``benchmark=&lt;set&gt;``</span>
+<span class="sd">so a fit can tell them from production runs (they are chosen to span the</span>
+<span class="sd">space) and so a code or compiler change can be checked against an earlier set.</span>
 
-<span class="sd">The flowchart is built here from a spec, with the installed plug-ins, and run</span>
+<span class="sd">**Each code step declares its own benchmark**, as it declares its cost-model</span>
+<span class="sd">spec: a ``TIMING_BENCHMARK`` dict at the top of its package, found here through</span>
+<span class="sd">the ``org.molssi.seamm`` entry points. Nothing chemical lives in seamm_exec;</span>
+<span class="sd">a code knows what drives its own cost (molecules for ORCA, periodic boxes for</span>
+<span class="sd">LAMMPS, cells and k-points for VASP). The declaration::</span>
+
+<span class="sd">    TIMING_BENCHMARK = {</span>
+<span class="sd">        "program": "orca",        # the timing records' program (orca.csv)</span>
+<span class="sd">        "step": "ORCA",           # the step's name in a flowchart spec</span>
+<span class="sd">        "section": "orca-step",   # its options section (default &lt;program&gt;-step)</span>
+<span class="sd">        "parallel": True,         # sweep the core counts, or run once</span>
+<span class="sd">        "systems": [              # in order of size; "size" is the number the</span>
+<span class="sd">            {                     # limits below are compared with</span>
+<span class="sd">                "name": "water",</span>
+<span class="sd">                "size": 3,</span>
+<span class="sd">                "steps": [{"FromSMILESStep": {"smiles string": "O"}}],</span>
+<span class="sd">            },</span>
+<span class="sd">            ...</span>
+<span class="sd">        ],</span>
+<span class="sd">        "chemistries": {          # each with the largest size it runs at, per tier</span>
+<span class="sd">            "ORCA:DFT@B3LYP/def2-SVP": {"quick": 24, "full": 62},</span>
+<span class="sd">        },</span>
+<span class="sd">        "parameter": None,        # or the sub-step parameter the chemistry sets</span>
+<span class="sd">                                  # (MOPAC's "hamiltonian") when the step does</span>
+<span class="sd">                                  # not take the Model Chemistry</span>
+<span class="sd">        "tasks": {                # sub-steps, each with its largest size per tier</span>
+<span class="sd">            "Energy": {"quick": 62, "full": 302},</span>
+<span class="sd">        },</span>
+<span class="sd">        "variants": {             # optional: a task run again with these</span>
+<span class="sd">            "Energy": [{}, {"results": {"gradients": {}}}],   # parameters;</span>
+<span class="sd">        },                        # "_min_size"/"_max_size" bound a variant</span>
+<span class="sd">    }</span>
+
+<span class="sd">A system's ``steps`` are the flowchart steps that build it, as a spec writes</span>
+<span class="sd">them; the ``quick`` tier keeps a code to a few minutes on one node. The</span>
+<span class="sd">flowchart is built from the declarations with the installed plug-ins and run</span>
 <span class="sd">once per core count with ``SEAMM_CE`` capping the cores the codes see::</span>
 
 <span class="sd">    python -m seamm_exec.timing_benchmark --codes orca,mopac --cores 1,4,8 --fit</span>
@@ -448,6 +482,8 @@
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">importlib.metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">entry_points</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -458,85 +494,74 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">psutil</span>
 
-<span class="c1">#: Molecules by size (atoms), spanning two orders of magnitude</span>
-<span class="n">MOLECULES</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="p">(</span><span class="s2">"water"</span><span class="p">,</span> <span class="s2">"O"</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">"ethanol"</span><span class="p">,</span> <span class="s2">"CCO"</span><span class="p">,</span> <span class="mi">9</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">"toluene"</span><span class="p">,</span> <span class="s2">"Cc1ccccc1"</span><span class="p">,</span> <span class="mi">15</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">"caffeine"</span><span class="p">,</span> <span class="s2">"Cn1cnc2c1c(=O)n(C)c(=O)n2C"</span><span class="p">,</span> <span class="mi">24</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">"icosane"</span><span class="p">,</span> <span class="s2">"C"</span> <span class="o">*</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">62</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">"hectane"</span><span class="p">,</span> <span class="s2">"C"</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">302</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">"tricosane-300"</span><span class="p">,</span> <span class="s2">"C"</span> <span class="o">*</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">902</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">"alkane-1000"</span><span class="p">,</span> <span class="s2">"C"</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">3002</span><span class="p">),</span>
-<span class="p">)</span>
+<span class="n">_declarations</span> <span class="o">=</span> <span class="kc">None</span>
 
-<span class="c1">#: Per code: the model chemistries (with the largest molecule each is run on),</span>
-<span class="c1">#: and the kinds of calculation (with the largest molecule each is run on).</span>
-<span class="c1">#: Sizes are atoms. "quick" keeps a code to a few minutes on one node.</span>
-<span class="n">CODES</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"orca"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"step"</span><span class="p">:</span> <span class="s2">"ORCA"</span><span class="p">,</span>
-        <span class="s2">"chemistries"</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">"ORCA:DFT@B3LYP/def2-SVP"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"quick"</span><span class="p">:</span> <span class="mi">24</span><span class="p">,</span> <span class="s2">"full"</span><span class="p">:</span> <span class="mi">62</span><span class="p">},</span>
-            <span class="s2">"ORCA:HF@HF/def2-SVP"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"quick"</span><span class="p">:</span> <span class="mi">24</span><span class="p">,</span> <span class="s2">"full"</span><span class="p">:</span> <span class="mi">62</span><span class="p">},</span>
-            <span class="s2">"ORCA:MP2@MP2/def2-SVP"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"quick"</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span> <span class="s2">"full"</span><span class="p">:</span> <span class="mi">24</span><span class="p">},</span>
-        <span class="p">},</span>
-        <span class="s2">"tasks"</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">"Energy"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"quick"</span><span class="p">:</span> <span class="mi">62</span><span class="p">,</span> <span class="s2">"full"</span><span class="p">:</span> <span class="mi">302</span><span class="p">},</span>
-            <span class="s2">"Optimization"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"quick"</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span> <span class="s2">"full"</span><span class="p">:</span> <span class="mi">15</span><span class="p">},</span>
-        <span class="p">},</span>
-        <span class="s2">"parallel"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="p">},</span>
-    <span class="s2">"mopac"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"step"</span><span class="p">:</span> <span class="s2">"MOPAC"</span><span class="p">,</span>
-        <span class="c1"># MOPAC does not take the Model Chemistry: the Hamiltonian is a parameter</span>
-        <span class="c1"># of its sub-steps, set from the key here</span>
-        <span class="s2">"chemistries"</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">"PM7"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"quick"</span><span class="p">:</span> <span class="mi">902</span><span class="p">,</span> <span class="s2">"full"</span><span class="p">:</span> <span class="mi">3002</span><span class="p">},</span>
-            <span class="s2">"PM6-ORG"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"quick"</span><span class="p">:</span> <span class="mi">302</span><span class="p">,</span> <span class="s2">"full"</span><span class="p">:</span> <span class="mi">902</span><span class="p">},</span>
-        <span class="p">},</span>
-        <span class="s2">"parameter"</span><span class="p">:</span> <span class="s2">"hamiltonian"</span><span class="p">,</span>
-        <span class="s2">"tasks"</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">"Energy"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"quick"</span><span class="p">:</span> <span class="mi">902</span><span class="p">,</span> <span class="s2">"full"</span><span class="p">:</span> <span class="mi">3002</span><span class="p">},</span>
-            <span class="s2">"Optimization"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"quick"</span><span class="p">:</span> <span class="mi">62</span><span class="p">,</span> <span class="s2">"full"</span><span class="p">:</span> <span class="mi">302</span><span class="p">},</span>
-        <span class="p">},</span>
-        <span class="c1"># MOPAC runs on one core; its records give no parallel information</span>
-        <span class="s2">"parallel"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="c1"># Both regimes from 300 atoms up: MOZYME by default, and the traditional</span>
-        <span class="c1"># SCF forced (to 902 atoms; its N^3 makes 3002 too long)</span>
-        <span class="s2">"variants"</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">"Energy"</span><span class="p">:</span> <span class="p">[{},</span> <span class="p">{</span><span class="s2">"MOZYME"</span><span class="p">:</span> <span class="s2">"never"</span><span class="p">,</span> <span class="s2">"_min_atoms"</span><span class="p">:</span> <span class="mi">300</span><span class="p">,</span> <span class="s2">"_max_atoms"</span><span class="p">:</span> <span class="mi">902</span><span class="p">}]</span>
-        <span class="p">},</span>
-    <span class="p">},</span>
-<span class="p">}</span>
+
+<div class="viewcode-block" id="declarations">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_benchmark.declarations">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">declarations</span><span class="p">(</span><span class="n">refresh</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""{program: TIMING_BENCHMARK} of the installed code steps that declare one,</span>
+<span class="sd">    found through the ``org.molssi.seamm`` entry points (a step's package</span>
+<span class="sd">    exports ``TIMING_BENCHMARK``). Cached; ``refresh`` looks again."""</span>
+    <span class="k">global</span> <span class="n">_declarations</span>
+    <span class="k">if</span> <span class="n">_declarations</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">refresh</span><span class="p">:</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">ep</span> <span class="ow">in</span> <span class="n">entry_points</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s2">"org.molssi.seamm"</span><span class="p">):</span>
+            <span class="n">package</span> <span class="o">=</span> <span class="n">ep</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"."</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">package</span> <span class="ow">in</span> <span class="n">found</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">package</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># a broken plug-in must not stop the others</span>
+                <span class="k">continue</span>
+            <span class="n">declaration</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s2">"TIMING_BENCHMARK"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">declaration</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">declaration</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"program"</span><span class="p">):</span>
+                <span class="n">found</span><span class="p">[</span><span class="n">declaration</span><span class="p">[</span><span class="s2">"program"</span><span class="p">]]</span> <span class="o">=</span> <span class="n">declaration</span>
+        <span class="n">_declarations</span> <span class="o">=</span> <span class="n">found</span>
+    <span class="k">return</span> <span class="n">_declarations</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_declaration</span><span class="p">(</span><span class="n">code</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">declarations</span><span class="p">()[</span><span class="n">code</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="n">known</span> <span class="o">=</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">declarations</span><span class="p">()))</span> <span class="ow">or</span> <span class="s2">"none installed"</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"No installed step declares a timing benchmark for '</span><span class="si">{</span><span class="n">code</span><span class="si">}</span><span class="s2">' "</span>
+            <span class="sa">f</span><span class="s2">"(TIMING_BENCHMARK); known: </span><span class="si">{</span><span class="n">known</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
 
 
 <div class="viewcode-block" id="build_spec">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_benchmark.build_spec">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">build_spec</span><span class="p">(</span><span class="n">codes</span><span class="o">=</span><span class="p">(</span><span class="s2">"orca"</span><span class="p">,</span> <span class="s2">"mopac"</span><span class="p">),</span> <span class="n">tier</span><span class="o">=</span><span class="s2">"quick"</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""The YAML spec of the benchmark flowchart for ``codes`` at ``tier``."""</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_spec</span><span class="p">(</span><span class="n">codes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tier</span><span class="o">=</span><span class="s2">"quick"</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The YAML spec of the benchmark flowchart for ``codes`` (default every</span>
+<span class="sd">    code with a declaration) at ``tier``: each code's systems in order of size,</span>
+<span class="sd">    each built once, then its chemistries, tasks and variants up to the tier's</span>
+<span class="sd">    size limits."""</span>
+    <span class="n">codes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">codes</span> <span class="ow">or</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">declarations</span><span class="p">()))</span>
     <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">'title: "Timing benchmark (</span><span class="si">{</span><span class="n">tier</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">codes</span><span class="p">)</span><span class="si">}</span><span class="s1">)"'</span><span class="p">,</span> <span class="s2">"steps:"</span><span class="p">]</span>
-    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">smiles</span><span class="p">,</span> <span class="n">n_atoms</span> <span class="ow">in</span> <span class="n">MOLECULES</span><span class="p">:</span>
-        <span class="n">emitted</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">codes</span><span class="p">:</span>
-            <span class="n">spec</span> <span class="o">=</span> <span class="n">CODES</span><span class="p">[</span><span class="n">code</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">codes</span><span class="p">:</span>
+        <span class="n">spec</span> <span class="o">=</span> <span class="n">_declaration</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">system</span> <span class="ow">in</span> <span class="n">spec</span><span class="p">[</span><span class="s2">"systems"</span><span class="p">]:</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="n">system</span><span class="p">[</span><span class="s2">"size"</span><span class="p">]</span>
+            <span class="n">emitted</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">for</span> <span class="n">chemistry</span><span class="p">,</span> <span class="n">limits</span> <span class="ow">in</span> <span class="n">spec</span><span class="p">[</span><span class="s2">"chemistries"</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">if</span> <span class="n">n_atoms</span> <span class="o">&gt;</span> <span class="n">limits</span><span class="p">[</span><span class="n">tier</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">size</span> <span class="o">&gt;</span> <span class="n">limits</span><span class="p">[</span><span class="n">tier</span><span class="p">]:</span>
                     <span class="k">continue</span>
                 <span class="k">for</span> <span class="n">task</span><span class="p">,</span> <span class="n">task_limits</span> <span class="ow">in</span> <span class="n">spec</span><span class="p">[</span><span class="s2">"tasks"</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                    <span class="k">if</span> <span class="n">n_atoms</span> <span class="o">&gt;</span> <span class="n">task_limits</span><span class="p">[</span><span class="n">tier</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">size</span> <span class="o">&gt;</span> <span class="n">task_limits</span><span class="p">[</span><span class="n">tier</span><span class="p">]:</span>
                         <span class="k">continue</span>
                     <span class="k">for</span> <span class="n">variant</span> <span class="ow">in</span> <span class="n">spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"variants"</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="p">[{}]):</span>
                         <span class="n">variant</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">variant</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="n">n_atoms</span> <span class="o">&lt;</span> <span class="n">variant</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"_min_atoms"</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">size</span> <span class="o">&lt;</span> <span class="n">variant</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"_min_size"</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
                             <span class="k">continue</span>
-                        <span class="k">if</span> <span class="n">n_atoms</span> <span class="o">&gt;</span> <span class="n">variant</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"_max_atoms"</span><span class="p">,</span> <span class="mi">10</span><span class="o">**</span><span class="mi">9</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">size</span> <span class="o">&gt;</span> <span class="n">variant</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"_max_size"</span><span class="p">,</span> <span class="mi">10</span><span class="o">**</span><span class="mi">12</span><span class="p">):</span>
                             <span class="k">continue</span>
                         <span class="k">if</span> <span class="ow">not</span> <span class="n">emitted</span><span class="p">:</span>
-                            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                                <span class="s2">"- FromSMILESStep: {smiles string: "</span>
-                                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">smiles</span><span class="p">)</span><span class="si">}</span><span class="se">}}</span><span class="s2">"</span>
-                            <span class="p">)</span>
+                            <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">system</span><span class="p">[</span><span class="s2">"steps"</span><span class="p">]:</span>
+                                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"- </span><span class="si">{</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">step</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                             <span class="n">emitted</span> <span class="o">=</span> <span class="kc">True</span>
                         <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"parameter"</span><span class="p">):</span>
                             <span class="c1"># The method is a parameter of the sub-step</span>
@@ -616,7 +641,7 @@
 <div class="viewcode-block" id="run">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_benchmark.run">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span>
-    <span class="n">codes</span><span class="o">=</span><span class="p">(</span><span class="s2">"orca"</span><span class="p">,</span> <span class="s2">"mopac"</span><span class="p">),</span>
+    <span class="n">codes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">cores</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span>
     <span class="n">tier</span><span class="o">=</span><span class="s2">"quick"</span><span class="p">,</span>
     <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -633,14 +658,15 @@
 <span class="sd">    performance cores on Apple silicon, else its physical cores) are skipped; a</span>
 <span class="sd">    code that is not parallel runs once.</span>
 <span class="sd">    """</span>
+    <span class="n">codes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">codes</span> <span class="ow">or</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">declarations</span><span class="p">()))</span>
     <span class="n">directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span> <span class="ow">or</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span> <span class="o">/</span> <span class="s2">"timing_benchmark"</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
     <span class="n">directory</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">set_id</span> <span class="o">=</span> <span class="n">set_id</span> <span class="ow">or</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">"%Y%m</span><span class="si">%d</span><span class="s2">-%H%M%S"</span><span class="p">)</span>
     <span class="n">physical</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">(</span><span class="n">logical</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">1</span>
     <span class="n">usable</span> <span class="o">=</span> <span class="n">performance_cores</span><span class="p">()</span>
     <span class="n">memory</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">virtual_memory</span><span class="p">()</span><span class="o">.</span><span class="n">available</span>
-    <span class="n">parallel</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">codes</span> <span class="k">if</span> <span class="n">CODES</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="s2">"parallel"</span><span class="p">]]</span>
-    <span class="n">serial</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">codes</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">CODES</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="s2">"parallel"</span><span class="p">]]</span>
+    <span class="n">parallel</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">codes</span> <span class="k">if</span> <span class="n">_declaration</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"parallel"</span><span class="p">)]</span>
+    <span class="n">serial</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">codes</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">_declaration</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"parallel"</span><span class="p">)]</span>
     <span class="n">runs</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">if</span> <span class="n">parallel</span><span class="p">:</span>
         <span class="n">skipped</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">({</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cores</span> <span class="k">if</span> <span class="n">c</span> <span class="o">&gt;</span> <span class="n">usable</span><span class="p">})</span>
@@ -675,7 +701,8 @@
         <span class="c1"># section's options follow its name, SEAMM's come first.</span>
         <span class="n">command</span> <span class="o">=</span> <span class="p">[</span><span class="n">_tool</span><span class="p">(</span><span class="s2">"run_flowchart"</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">flow</span><span class="p">),</span> <span class="s2">"--ncores"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">)]</span>
         <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">these</span><span class="p">:</span>
-            <span class="n">command</span> <span class="o">+=</span> <span class="p">[</span><span class="n">CODES</span><span class="p">[</span><span class="n">code</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"section"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">code</span><span class="si">}</span><span class="s2">-step"</span><span class="p">),</span> <span class="s2">"--ncores"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">)]</span>
+            <span class="n">section</span> <span class="o">=</span> <span class="n">_declaration</span><span class="p">(</span><span class="n">code</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"section"</span><span class="p">)</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">code</span><span class="si">}</span><span class="s2">-step"</span>
+            <span class="n">command</span> <span class="o">+=</span> <span class="p">[</span><span class="n">section</span><span class="p">,</span> <span class="s2">"--ncores"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">)]</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> core(s), </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">these</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="s1">' '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">command</span><span class="p">)</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">run_dir</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">dry_run</span><span class="p">:</span>
             <span class="k">continue</span>
@@ -711,7 +738,9 @@
         <span class="p">),</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">"--codes"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"orca,mopac"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"comma-separated: orca, mopac"</span>
+        <span class="s2">"--codes"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"comma-separated codes; default every installed step that declares "</span>
+        <span class="s2">"a benchmark"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"--cores"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"1,4,8,16"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"core counts for the parallel codes"</span>
@@ -737,10 +766,16 @@
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
     <span class="k">global</span> <span class="n">_bin</span>
     <span class="n">_bin</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">bin</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">bin</span> <span class="k">else</span> <span class="kc">None</span>
-    <span class="n">codes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">codes</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
-    <span class="n">unknown</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">codes</span> <span class="k">if</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">CODES</span><span class="p">]</span>
+    <span class="n">codes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">codes</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+    <span class="n">codes</span> <span class="o">=</span> <span class="n">codes</span> <span class="ow">or</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">declarations</span><span class="p">()))</span>
+    <span class="n">unknown</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">codes</span> <span class="k">if</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">declarations</span><span class="p">()]</span>
     <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"unknown code(s) </span><span class="si">{</span><span class="n">unknown</span><span class="si">}</span><span class="s2">; known: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">CODES</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"no installed step declares a benchmark for </span><span class="si">{</span><span class="n">unknown</span><span class="si">}</span><span class="s2">; known: "</span>
+            <span class="o">+</span> <span class="p">(</span><span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">declarations</span><span class="p">()))</span> <span class="ow">or</span> <span class="s2">"none"</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">codes</span><span class="p">:</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"no installed step declares a timing benchmark"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">build_only</span><span class="p">:</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">build_flowchart</span><span class="p">(</span><span class="n">build_spec</span><span class="p">(</span><span class="n">codes</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">tier</span><span class="p">),</span> <span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"wrote </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>

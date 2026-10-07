@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.evaluator &#8212; SEAMM seamm-exec Plug-in 2026.10.7 documentation</title>
+    <title>seamm_exec.evaluator &#8212; SEAMM seamm-exec Plug-in 2026.10.7.1 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=0a3eb936"></script>
+    <script src="../../_static/documentation_options.js?v=1a433d58"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.7" />
+  <meta name="docsearch:version" content="2026.10.7.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1076,14 +1076,29 @@
                 <span class="k">continue</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">extra</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"task"</span><span class="p">:</span> <span class="n">tasks</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">key</span><span class="p">)}</span> <span class="k">if</span> <span class="n">takes_task</span> <span class="k">else</span> <span class="p">{}</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">analyze_task</span><span class="p">(</span>
-                    <span class="n">result</span><span class="p">,</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">model_chemistry</span><span class="p">,</span>
-                    <span class="n">configuration</span><span class="p">,</span>
-                    <span class="n">properties</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="p">,</span>
-                    <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
-                    <span class="o">**</span><span class="n">extra</span><span class="p">,</span>
-                <span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">analyze_task</span><span class="p">(</span>
+                        <span class="n">result</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">model_chemistry</span><span class="p">,</span>
+                        <span class="n">configuration</span><span class="p">,</span>
+                        <span class="n">properties</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="p">,</span>
+                        <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
+                        <span class="o">**</span><span class="n">extra</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="c1"># A provider whose analyze_task forwards **kwargs to a</span>
+                    <span class="c1"># function that does not take the task (mopac-step to</span>
+                    <span class="c1"># 2026.10.6): call it as before, without the task.</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">extra</span> <span class="ow">or</span> <span class="s2">"'task'"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+                        <span class="k">raise</span>
+                    <span class="n">takes_task</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">analyze_task</span><span class="p">(</span>
+                        <span class="n">result</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">model_chemistry</span><span class="p">,</span>
+                        <span class="n">configuration</span><span class="p">,</span>
+                        <span class="n">properties</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="p">,</span>
+                        <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
+                    <span class="p">)</span>
             <span class="k">except</span> <span class="n">AnalysisError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">yield</span> <span class="n">EvaluatorResult</span><span class="p">(</span>
                     <span class="n">key</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>

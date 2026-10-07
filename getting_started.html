@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.7 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.7.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="_static/documentation_options.js?v=0a3eb936"></script>
+    <script src="_static/documentation_options.js?v=1a433d58"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="Welcome to SEAMM exec’s documentation!" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.7" />
+  <meta name="docsearch:version" content="2026.10.7.1" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -747,12 +747,17 @@ of standard runs whose rows the fit can tell apart (<code class="docutils litera
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">timing_benchmark</span> <span class="o">--</span><span class="n">codes</span> <span class="n">orca</span><span class="p">,</span><span class="n">mopac</span> <span class="o">--</span><span class="n">cores</span> <span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span> <span class="o">--</span><span class="n">fit</span>
 </pre></div>
 </div>
-<p>Per code it runs a few molecules spanning two orders of magnitude of size (water
-to a 300-atom alkane), two or three method classes, as single points and
-optimizations, once per core count where the code is parallel. <code class="docutils literal notranslate"><span class="pre">--bin</span></code> names
-the installation whose <code class="docutils literal notranslate"><span class="pre">run_flowchart</span></code> to use when the benchmark is driven from
-another environment; <code class="docutils literal notranslate"><span class="pre">--build-only</span></code> writes the flowchart to run by hand or
-through a JobServer.</p>
+<p>Each code step declares what to run (<code class="docutils literal notranslate"><span class="pre">TIMING_BENCHMARK</span></code>, beside its
+<code class="docutils literal notranslate"><span class="pre">TIMING_SPEC</span></code>): the systems that drive its cost, as the flowchart steps that
+build them, and its model chemistries, tasks and variants with a size limit per
+tier – ORCA a few molecules from water to a 300-atom alkane at two or three
+method classes, including the MLFF labelling level (REVDSD-PBEP86-D4_2021/def2-TZVPPD) with every energy also as a
+gradient; MOPAC the same molecules to 3000 atoms in both its regimes. seamm_exec
+finds the declarations through the step entry points, assembles one flowchart
+per run and sweeps the core counts where a code is parallel; it knows nothing
+of any code. <code class="docutils literal notranslate"><span class="pre">--bin</span></code> names the installation whose <code class="docutils literal notranslate"><span class="pre">run_flowchart</span></code> to use
+when the benchmark is driven from another environment; <code class="docutils literal notranslate"><span class="pre">--build-only</span></code> writes
+the flowchart to run by hand or through a JobServer.</p>
 </section>
 </section>
 
