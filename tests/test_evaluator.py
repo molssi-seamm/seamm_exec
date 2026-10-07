@@ -371,3 +371,31 @@ def test_batch_path_passes_the_task_to_analyze_task(tmp_path):
     assert results["a"].ok
     assert isinstance(seen["a"], Task)
     assert seen["a"].key == "a"
+
+
+def test_batch_path_without_the_task_when_a_provider_forwards_kwargs(tmp_path):
+    """A provider whose analyze_task takes **kwargs but hands them to a function
+    that does not take task= (mopac-step before 2026.10.7) is called without
+    it, once the first call has refused it."""
+    calls = []
+
+    class Forwarding(FakeProvider):
+        @classmethod
+        def analyze_task(cls, result, model_chemistry, configuration, **kwargs):
+            calls.append(sorted(kwargs))
+            if "task" in kwargs:
+                raise TypeError(
+                    "analyze_task() got an unexpected keyword argument 'task'"
+                )
+            return FakeProvider.analyze_task(
+                result, model_chemistry, configuration, **kwargs
+            )
+
+    with Evaluator(_node(tmp_path, provider=Forwarding), MC) as evaluator:
+        evaluator.submit(Geometry([1], [[0, 0, 0]]), key="a")
+        evaluator.submit(Geometry([1], [[0, 0, 1]]), key="b")
+        results = {r.key: r for r in evaluator.results()}
+    assert results["a"].ok and results["b"].ok
+    # Refused once, then called without the task for the rest
+    assert calls[0] == ["options", "properties", "task"]
+    assert calls[1:] == [["options", "properties"]] * (len(calls) - 1)

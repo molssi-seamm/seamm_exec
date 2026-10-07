@@ -612,14 +612,29 @@ class Evaluator:
                 continue
             try:
                 extra = {"task": tasks.get(result.key)} if takes_task else {}
-                data = self.provider.analyze_task(
-                    result,
-                    self.model_chemistry,
-                    configuration,
-                    properties=self.properties,
-                    options=options,
-                    **extra,
-                )
+                try:
+                    data = self.provider.analyze_task(
+                        result,
+                        self.model_chemistry,
+                        configuration,
+                        properties=self.properties,
+                        options=options,
+                        **extra,
+                    )
+                except TypeError as e:
+                    # A provider whose analyze_task forwards **kwargs to a
+                    # function that does not take the task (mopac-step to
+                    # 2026.10.6): call it as before, without the task.
+                    if not extra or "'task'" not in str(e):
+                        raise
+                    takes_task = False
+                    data = self.provider.analyze_task(
+                        result,
+                        self.model_chemistry,
+                        configuration,
+                        properties=self.properties,
+                        options=options,
+                    )
             except AnalysisError as e:
                 yield EvaluatorResult(
                     key=result.key,

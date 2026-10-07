@@ -1,7 +1,12 @@
 =======
 History
 =======
-2026.10.7.1 -- Each code step declares its own timing benchmark
+2026.10.7.1 -- Bugfix: a provider that does not take the task; each code step declares its own timing benchmark
+    * Bugfix: 2026.10.7 passed the task to a program's ``analyze_task`` whenever
+      its signature took ``**kwargs``; mopac-step's forwards them to a function
+      that does not take ``task=``, so every MOPAC batch task failed in analysis
+      (``TypeError``). The evaluator now falls back to calling such a provider
+      without the task.
     * The seed benchmark no longer carries the codes' molecules, model
       chemistries and tasks: each code step declares its own benchmark as
       ``TIMING_BENCHMARK`` beside its ``TIMING_SPEC`` -- the systems that drive its
