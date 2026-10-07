@@ -31,6 +31,9 @@ LAMMPS, cells and k-points for VASP). The declaration::
         ],
         "chemistries": {          # each with the largest size it runs at, per tier
             "ORCA:DFT@B3LYP/def2-SVP": {"quick": 24, "full": 62},
+            # optionally only some of the tasks below, e.g. a basis-set ladder
+            "ORCA:DFT@B3LYP/def2-QZVPPD": {"quick": 15, "full": 24,
+                                          "tasks": ["Energy"]},
         },
         "parameter": None,        # or the sub-step parameter the chemistry sets
                                   # (MOPAC's "hamiltonian") when the step does
@@ -118,6 +121,8 @@ def build_spec(codes=None, tier="quick"):
                     continue
                 for task, task_limits in spec["tasks"].items():
                     if size > task_limits[tier]:
+                        continue
+                    if "tasks" in limits and task not in limits["tasks"]:
                         continue
                     for variant in spec.get("variants", {}).get(task, [{}]):
                         variant = dict(variant)

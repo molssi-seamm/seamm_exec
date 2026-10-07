@@ -1,6 +1,11 @@
 =======
 History
 =======
+2026.10.7.2 -- A benchmark chemistry may run only some of the tasks
+    * In a step's ``TIMING_BENCHMARK`` a chemistry may name the tasks it runs
+      (``"tasks": ["Energy"]``), so a basis-set ladder runs energies and gradients
+      without optimizations.
+
 2026.10.7.1 -- Bugfix: a provider that does not take the task; each code step declares its own timing benchmark
     * Bugfix: 2026.10.7 passed the task to a program's ``analyze_task`` whenever
       its signature took ``**kwargs``; mopac-step's forwards them to a function
