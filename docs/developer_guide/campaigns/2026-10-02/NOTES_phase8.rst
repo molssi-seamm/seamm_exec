@@ -15,31 +15,31 @@ or more, or needs live runs on the clusters.
 Summary
 -------
 
-==  ==========================================================  ======  =========
-#   item                                                        effort  recommend
-==  ==========================================================  ======  =========
-1   Warm evaluator per bundle (parallel-loop start-up)          L       measure
-                                                                        first
-2   Dimer builder wall-walk as per-point TaskSets on a queue    M       defer
-3   Packaging: sdists that cannot be built (8 packages)         S       decided
-4   Dashboard: child iterations as datastore rows               M-L     defer
-5   devops: a summary line when the docs deploy fails           S       decided
-6   Run-path tests of the code steps (mopac, ORCA first)        S-M     decided
-7   Legacy structure-handling wording (strain_step)             S       done
-8   seamm_exec test flakiness: the timing-sensitive tests       S       done
-9   PBS site: job history and ``max_resubmits``                 S       done;
-                                                                        verify
-10  Task view at 500 iterations                                 S       measure
-11  TaskServer as the default local queue                       S       defer
-                                                                        until
-                                                                        soaked
-12  Separate placement of a parallel loop's codes, live         M       do with
-                                                                        EC pilot
-13  Timing helper adoption by the plug-ins (vasp-step#18)       S each  timing
-                                                                        campaign
-14  molsystem#121: periodicity 0 on an empty configuration      S       done
-15  orca_step: cap the cores for small molecules               S       not needed
-==  ==========================================================  ======  =========
+==  ==========================================================  ========  =========
+#   item                                                        effort    recommend
+==  ==========================================================  ========  =========
+1   Warm evaluator per bundle (parallel-loop start-up)          L         measure
+                                                                          first
+2   Dimer builder wall-walk as per-point TaskSets on a queue    M         defer
+3   Packaging: sdists that cannot be built (8 packages)         S         decided
+4   Dashboard: child iterations as datastore rows               M-L       defer
+5   devops: a summary line when the docs deploy fails           S         decided
+6   Run-path tests of the code steps (mopac, ORCA first)        S-M       decided
+7   Legacy structure-handling wording (strain_step)             S         done
+8   seamm_exec test flakiness: the timing-sensitive tests       S         done
+9   PBS site: job history and ``max_resubmits``                 S         done;
+                                                                          verify
+10  Task view at 500 iterations                                 S         measure
+11  TaskServer as the default local queue                       S         defer
+                                                                          until
+                                                                          soaked
+12  Separate placement of a parallel loop's codes, live         M         do with
+                                                                          EC pilot
+13  Timing helper adoption by the plug-ins (vasp-step#18)       S each    timing
+                                                                          campaign
+14  molsystem#121: periodicity 0 on an empty configuration      S         done
+15  orca_step: cap the cores for small molecules                S         not needed
+==  ==========================================================  ========  =========
 
 The items
 ---------
