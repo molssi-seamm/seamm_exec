@@ -336,3 +336,38 @@ def test_evaluator_cancel_forwards_to_its_task_set():
     ev2 = Evaluator.__new__(Evaluator)
     ev2.cancel()
     assert ev2.cancelled
+
+
+def test_batch_path_passes_the_task_to_analyze_task(tmp_path):
+    """A program's analyze_task that takes task= gets the Task that produced
+    the result (it records the run's timing from it); one that does not take
+    it is called as before."""
+    from seamm_exec.evaluator import _takes_task
+    from seamm_exec.tasks import Task
+
+    seen = {}
+
+    class Recording(FakeProvider):
+        @classmethod
+        def analyze_task(
+            cls, result, model_chemistry, configuration, *, properties, options, task
+        ):
+            seen[result.key] = task
+            return FakeProvider.analyze_task(
+                result,
+                model_chemistry,
+                configuration,
+                properties=properties,
+                options=options,
+            )
+
+    assert _takes_task(Recording.analyze_task)
+    assert not _takes_task(FakeProvider.analyze_task)
+    assert _takes_task(lambda result, **kwargs: None)
+
+    with Evaluator(_node(tmp_path, provider=Recording), MC) as evaluator:
+        evaluator.submit(Geometry([1], [[0, 0, 0]]), key="a")
+        results = {r.key: r for r in evaluator.results()}
+    assert results["a"].ok
+    assert isinstance(seen["a"], Task)
+    assert seen["a"].key == "a"

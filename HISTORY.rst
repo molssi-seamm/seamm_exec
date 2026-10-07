@@ -1,6 +1,14 @@
 =======
 History
 =======
+2026.10.6.3 -- Batch runs record their timing
+    * The task layer's evaluator now passes the task that produced a result to a
+      program's ``analyze_task`` when it takes ``task=`` (ORCA's and VASP's do, and
+      record the run's timing from it). Before, only a step's own runs were recorded:
+      every run under the task layer -- the MBE step's fragments and cells -- was
+      missing from the timing records, so the EC and FEC pilots on TinkerCliffs left
+      no ORCA or VASP rows for the cost model.
+
 2026.10.6.2 -- Cancelling a task set; one queue count per cluster; Docker removed
     * ``TaskSet.cancel()`` (and ``Evaluator.cancel()``), callable from another
       thread while the set runs: the tasks in flight are cancelled on their back
