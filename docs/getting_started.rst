@@ -333,13 +333,14 @@ of standard runs whose rows the fit can tell apart (``benchmark=<set>``)::
 
     python -m seamm_exec.timing_benchmark --codes orca,mopac --cores 1,4,8 --fit
 
-Per code it runs a few molecules spanning two orders of magnitude of size (water
-to a 300-atom alkane), two or three method classes, as single points and
-optimizations, once per core count where the code is parallel. ORCA also runs
-the MLFF labelling level, revDSD-PBEP86-D4/def2-TZVPPD, and every energy as a
-gradient too, so the records cover the labelling runs' class, task and sizes;
-the core sweep gives the parallel exponent that production records, whose
-core count usually follows the size, cannot. ``--bin`` names
-the installation whose ``run_flowchart`` to use when the benchmark is driven from
-another environment; ``--build-only`` writes the flowchart to run by hand or
-through a JobServer.
+Each code step declares what to run (``TIMING_BENCHMARK``, beside its
+``TIMING_SPEC``): the systems that drive its cost, as the flowchart steps that
+build them, and its model chemistries, tasks and variants with a size limit per
+tier -- ORCA a few molecules from water to a 300-atom alkane at two or three
+method classes, including the MLFF labelling level (REVDSD-PBEP86-D4_2021/def2-TZVPPD) with every energy also as a
+gradient; MOPAC the same molecules to 3000 atoms in both its regimes. seamm_exec
+finds the declarations through the step entry points, assembles one flowchart
+per run and sweeps the core counts where a code is parallel; it knows nothing
+of any code. ``--bin`` names the installation whose ``run_flowchart`` to use
+when the benchmark is driven from another environment; ``--build-only`` writes
+the flowchart to run by hand or through a JobServer.

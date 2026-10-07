@@ -4,14 +4,48 @@
 cost model (campaign ``docs/developer_guide/campaigns/2026-10-05``, section 5).
 
 A machine the model has never seen gets its offset from a few minutes of
-standard runs: per code, a few molecules spanning two orders of magnitude of
-size, two or three method classes, as single points and optimizations, and a
-sweep of core counts where the code is parallel. The runs are ordinary
-flowchart runs; their timing rows carry ``benchmark=<set>`` so a fit can tell
-them from production runs (they are chosen to span the space) and so a code or
-compiler change can be checked against an earlier set.
+standard runs; a sweep of core counts gives the parallel exponent that
+production records, whose core count usually follows the size, cannot. The
+runs are ordinary flowchart runs; their timing rows carry ``benchmark=<set>``
+so a fit can tell them from production runs (they are chosen to span the
+space) and so a code or compiler change can be checked against an earlier set.
 
-The flowchart is built here from a spec, with the installed plug-ins, and run
+**Each code step declares its own benchmark**, as it declares its cost-model
+spec: a ``TIMING_BENCHMARK`` dict at the top of its package, found here through
+the ``org.molssi.seamm`` entry points. Nothing chemical lives in seamm_exec;
+a code knows what drives its own cost (molecules for ORCA, periodic boxes for
+LAMMPS, cells and k-points for VASP). The declaration::
+
+    TIMING_BENCHMARK = {
+        "program": "orca",        # the timing records' program (orca.csv)
+        "step": "ORCA",           # the step's name in a flowchart spec
+        "section": "orca-step",   # its options section (default <program>-step)
+        "parallel": True,         # sweep the core counts, or run once
+        "systems": [              # in order of size; "size" is the number the
+            {                     # limits below are compared with
+                "name": "water",
+                "size": 3,
+                "steps": [{"FromSMILESStep": {"smiles string": "O"}}],
+            },
+            ...
+        ],
+        "chemistries": {          # each with the largest size it runs at, per tier
+            "ORCA:DFT@B3LYP/def2-SVP": {"quick": 24, "full": 62},
+        },
+        "parameter": None,        # or the sub-step parameter the chemistry sets
+                                  # (MOPAC's "hamiltonian") when the step does
+                                  # not take the Model Chemistry
+        "tasks": {                # sub-steps, each with its largest size per tier
+            "Energy": {"quick": 62, "full": 302},
+        },
+        "variants": {             # optional: a task run again with these
+            "Energy": [{}, {"results": {"gradients": {}}}],   # parameters;
+        },                        # "_min_size"/"_max_size" bound a variant
+    }
+
+A system's ``steps`` are the flowchart steps that build it, as a spec writes
+them; the ``quick`` tier keeps a code to a few minutes on one node. The
+flowchart is built from the declarations with the installed plug-ins and run
 once per core count with ``SEAMM_CE`` capping the cores the codes see::
 
     python -m seamm_exec.timing_benchmark --codes orca,mopac --cores 1,4,8 --fit
@@ -19,6 +53,8 @@ once per core count with ``SEAMM_CE`` capping the cores the codes see::
 """
 
 import argparse
+import importlib
+from importlib.metadata import entry_points
 import json
 import os
 from pathlib import Path
@@ -29,89 +65,69 @@ import time
 
 import psutil
 
-#: Molecules by size (atoms), spanning two orders of magnitude
-MOLECULES = (
-    ("water", "O", 3),
-    ("ethanol", "CCO", 9),
-    ("toluene", "Cc1ccccc1", 15),
-    ("caffeine", "Cn1cnc2c1c(=O)n(C)c(=O)n2C", 24),
-    ("icosane", "C" * 20, 62),
-    ("hectane", "C" * 100, 302),
-    ("tricosane-300", "C" * 300, 902),
-    ("alkane-1000", "C" * 1000, 3002),
-)
-
-#: Per code: the model chemistries (with the largest molecule each is run on),
-#: and the kinds of calculation (with the largest molecule each is run on).
-#: Sizes are atoms. "quick" keeps a code to a few minutes on one node.
-CODES = {
-    "orca": {
-        "step": "ORCA",
-        "chemistries": {
-            "ORCA:DFT@B3LYP/def2-SVP": {"quick": 24, "full": 62},
-            "ORCA:HF@HF/def2-SVP": {"quick": 24, "full": 62},
-            "ORCA:MP2@MP2/def2-SVP": {"quick": 15, "full": 24},
-            # The MLFF labelling level (the MBE pilots, the dimer and cluster
-            # labels): a double hybrid in a triple-zeta basis, so the records
-            # cover that class and those sizes. Costly: toluene in "quick".
-            "ORCA:DFT@revDSD-PBEP86-D4/def2-TZVPPD": {"quick": 15, "full": 24},
-        },
-        "tasks": {
-            "Energy": {"quick": 62, "full": 302},
-            "Optimization": {"quick": 9, "full": 15},
-        },
-        # Each energy also as a gradient (EnGrad), the labelling runs' task
-        "variants": {"Energy": [{}, {"results": {"gradients": {}}}]},
-        "parallel": True,
-    },
-    "mopac": {
-        "step": "MOPAC",
-        # MOPAC does not take the Model Chemistry: the Hamiltonian is a parameter
-        # of its sub-steps, set from the key here
-        "chemistries": {
-            "PM7": {"quick": 902, "full": 3002},
-            "PM6-ORG": {"quick": 302, "full": 902},
-        },
-        "parameter": "hamiltonian",
-        "tasks": {
-            "Energy": {"quick": 902, "full": 3002},
-            "Optimization": {"quick": 62, "full": 302},
-        },
-        # MOPAC runs on one core; its records give no parallel information
-        "parallel": False,
-        # Both regimes from 300 atoms up: MOZYME by default, and the traditional
-        # SCF forced (to 902 atoms; its N^3 makes 3002 too long)
-        "variants": {
-            "Energy": [{}, {"MOZYME": "never", "_min_atoms": 300, "_max_atoms": 902}]
-        },
-    },
-}
+_declarations = None
 
 
-def build_spec(codes=("orca", "mopac"), tier="quick"):
-    """The YAML spec of the benchmark flowchart for ``codes`` at ``tier``."""
+def declarations(refresh=False):
+    """{program: TIMING_BENCHMARK} of the installed code steps that declare one,
+    found through the ``org.molssi.seamm`` entry points (a step's package
+    exports ``TIMING_BENCHMARK``). Cached; ``refresh`` looks again."""
+    global _declarations
+    if _declarations is None or refresh:
+        found = {}
+        for ep in entry_points(group="org.molssi.seamm"):
+            package = ep.module.split(".", 1)[0]
+            if package in found.values():
+                continue
+            try:
+                module = importlib.import_module(package)
+            except Exception:  # a broken plug-in must not stop the others
+                continue
+            declaration = getattr(module, "TIMING_BENCHMARK", None)
+            if isinstance(declaration, dict) and declaration.get("program"):
+                found[declaration["program"]] = declaration
+        _declarations = found
+    return _declarations
+
+
+def _declaration(code):
+    try:
+        return declarations()[code]
+    except KeyError:
+        known = ", ".join(sorted(declarations())) or "none installed"
+        raise ValueError(
+            f"No installed step declares a timing benchmark for '{code}' "
+            f"(TIMING_BENCHMARK); known: {known}"
+        ) from None
+
+
+def build_spec(codes=None, tier="quick"):
+    """The YAML spec of the benchmark flowchart for ``codes`` (default every
+    code with a declaration) at ``tier``: each code's systems in order of size,
+    each built once, then its chemistries, tasks and variants up to the tier's
+    size limits."""
+    codes = tuple(codes or sorted(declarations()))
     lines = [f'title: "Timing benchmark ({tier}: {", ".join(codes)})"', "steps:"]
-    for name, smiles, n_atoms in MOLECULES:
-        emitted = False
-        for code in codes:
-            spec = CODES[code]
+    for code in codes:
+        spec = _declaration(code)
+        for system in spec["systems"]:
+            size = system["size"]
+            emitted = False
             for chemistry, limits in spec["chemistries"].items():
-                if n_atoms > limits[tier]:
+                if size > limits[tier]:
                     continue
                 for task, task_limits in spec["tasks"].items():
-                    if n_atoms > task_limits[tier]:
+                    if size > task_limits[tier]:
                         continue
                     for variant in spec.get("variants", {}).get(task, [{}]):
                         variant = dict(variant)
-                        if n_atoms < variant.pop("_min_atoms", 0):
+                        if size < variant.pop("_min_size", 0):
                             continue
-                        if n_atoms > variant.pop("_max_atoms", 10**9):
+                        if size > variant.pop("_max_size", 10**12):
                             continue
                         if not emitted:
-                            lines.append(
-                                "- FromSMILESStep: {smiles string: "
-                                f"{json.dumps(smiles)}}}"
-                            )
+                            for step in system["steps"]:
+                                lines.append(f"- {json.dumps(step)}")
                             emitted = True
                         if spec.get("parameter"):
                             # The method is a parameter of the sub-step
@@ -182,7 +198,7 @@ def build_flowchart(spec_text, output):
 
 
 def run(
-    codes=("orca", "mopac"),
+    codes=None,
     cores=(1, 4, 8, 16),
     tier="quick",
     directory=None,
@@ -199,14 +215,15 @@ def run(
     performance cores on Apple silicon, else its physical cores) are skipped; a
     code that is not parallel runs once.
     """
+    codes = tuple(codes or sorted(declarations()))
     directory = Path(directory or Path.cwd() / "timing_benchmark").expanduser()
     directory.mkdir(parents=True, exist_ok=True)
     set_id = set_id or time.strftime("%Y%m%d-%H%M%S")
     physical = psutil.cpu_count(logical=False) or 1
     usable = performance_cores()
     memory = psutil.virtual_memory().available
-    parallel = [c for c in codes if CODES[c]["parallel"]]
-    serial = [c for c in codes if not CODES[c]["parallel"]]
+    parallel = [c for c in codes if _declaration(c).get("parallel")]
+    serial = [c for c in codes if not _declaration(c).get("parallel")]
     runs = []
     if parallel:
         skipped = sorted({c for c in cores if c > usable})
@@ -241,7 +258,8 @@ def run(
         # section's options follow its name, SEAMM's come first.
         command = [_tool("run_flowchart"), str(flow), "--ncores", str(n)]
         for code in these:
-            command += [CODES[code].get("section", f"{code}-step"), "--ncores", str(n)]
+            section = _declaration(code).get("section") or f"{code}-step"
+            command += [section, "--ncores", str(n)]
         print(f"{n} core(s), {', '.join(these)}: {' '.join(command)} in {run_dir}")
         if dry_run:
             continue
@@ -274,7 +292,9 @@ def main(argv=None):
         ),
     )
     parser.add_argument(
-        "--codes", default="orca,mopac", help="comma-separated: orca, mopac"
+        "--codes",
+        help="comma-separated codes; default every installed step that declares "
+        "a benchmark",
     )
     parser.add_argument(
         "--cores", default="1,4,8,16", help="core counts for the parallel codes"
@@ -300,10 +320,16 @@ def main(argv=None):
     args = parser.parse_args(argv)
     global _bin
     _bin = Path(args.bin).expanduser() if args.bin else None
-    codes = tuple(c.strip() for c in args.codes.split(",") if c.strip())
-    unknown = [c for c in codes if c not in CODES]
+    codes = tuple(c.strip() for c in (args.codes or "").split(",") if c.strip())
+    codes = codes or tuple(sorted(declarations()))
+    unknown = [c for c in codes if c not in declarations()]
     if unknown:
-        parser.error(f"unknown code(s) {unknown}; known: {', '.join(CODES)}")
+        parser.error(
+            f"no installed step declares a benchmark for {unknown}; known: "
+            + (", ".join(sorted(declarations())) or "none")
+        )
+    if not codes:
+        parser.error("no installed step declares a timing benchmark")
     if args.build_only:
         path = build_flowchart(build_spec(codes, args.tier), args.output)
         print(f"wrote {path}")

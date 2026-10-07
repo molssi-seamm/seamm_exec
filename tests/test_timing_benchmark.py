@@ -11,43 +11,104 @@ import yaml
 
 from seamm_exec import timing_benchmark as tb
 
+# Stand-ins for what code steps declare (seamm_exec itself knows no code)
+MOLECULES = (
+    ("water", "O", 3),
+    ("ethanol", "CCO", 9),
+    ("toluene", "Cc1ccccc1", 15),
+    ("caffeine", "Cn1cnc2c1c(=O)n(C)c(=O)n2C", 24),
+    ("icosane", "C" * 20, 62),
+    ("hectane", "C" * 100, 302),
+    ("alkane-300", "C" * 300, 902),
+    ("alkane-1000", "C" * 1000, 3002),
+)
+SYSTEMS = [
+    {"name": n, "size": z, "steps": [{"FromSMILESStep": {"smiles string": s}}]}
+    for n, s, z in MOLECULES
+]
+ORCA = {
+    "program": "orca",
+    "step": "ORCA",
+    "parallel": True,
+    "systems": SYSTEMS[:6],
+    "chemistries": {
+        "ORCA:DFT@B3LYP/def2-SVP": {"quick": 24, "full": 62},
+        "ORCA:MP2@MP2/def2-SVP": {"quick": 15, "full": 24},
+        "ORCA:DFT@REVDSD-PBEP86-D4_2021/def2-TZVPPD": {"quick": 15, "full": 24},
+    },
+    "tasks": {
+        "Energy": {"quick": 62, "full": 302},
+        "Optimization": {"quick": 9, "full": 15},
+    },
+    "variants": {"Energy": [{}, {"results": {"gradients": {}}}]},
+}
+MOPAC = {
+    "program": "mopac",
+    "step": "MOPAC",
+    "parallel": False,
+    "systems": SYSTEMS,
+    "chemistries": {"PM7": {"quick": 902, "full": 3002}},
+    "parameter": "hamiltonian",
+    "tasks": {"Energy": {"quick": 902, "full": 3002}},
+    "variants": {
+        "Energy": [{}, {"MOZYME": "never", "_min_size": 300, "_max_size": 902}]
+    },
+}
+
+
+@pytest.fixture(autouse=True)
+def declared(monkeypatch):
+    monkeypatch.setattr(
+        tb, "declarations", lambda refresh=False: {"orca": ORCA, "mopac": MOPAC}
+    )
+
 
 def test_spec_quick():
     text = tb.build_spec(("orca", "mopac"), "quick")
     spec = yaml.safe_load(text)
     steps = spec["steps"]
     names = [list(s)[0] if isinstance(s, dict) else s for s in steps]
-    # Every molecule up to the largest any code runs at this tier is built once:
-    # water to the 902-atom alkane (the 3002-atom one is 'full' only)
-    assert names.count("FromSMILESStep") == 7
+    # Each code builds its own systems up to its tier limit: ORCA water to
+    # caffeine (4), MOPAC water to the 902-atom alkane (7)
+    assert names.count("FromSMILESStep") == 11
     assert names.count("ORCA") > 0 and names.count("MOPAC") > 0
-    # ORCA takes its method from a Model Chemistry step; MP2 is among them
     orca_mcs = [
         s["Model Chemistry"]["model chemistry"] for s in steps if "Model Chemistry" in s
     ]
     assert "ORCA:MP2@MP2/def2-SVP" in orca_mcs
-    # The labelling level, toluene and smaller, and each energy as a gradient too
-    assert "ORCA:DFT@revDSD-PBEP86-D4/def2-TZVPPD" in orca_mcs
-    assert text.count("revDSD-PBEP86-D4") == 8  # 4 molecules x (energy, gradient)
-    assert text.count('{results: {"gradients": {}}}') == 14
-    # MOPAC sets its Hamiltonian on the sub-step, both PM7 and PM6-ORG
+    assert "ORCA:DFT@REVDSD-PBEP86-D4_2021/def2-TZVPPD" in orca_mcs
+    assert (
+        text.count("REVDSD-PBEP86-D4_2021") == 8
+    )  # 3 x (energy, gradient) + 2 optimizations
+    assert text.count('{results: {"gradients": {}}}') == 10
     mopac = [s["MOPAC"]["steps"][0] for s in steps if "MOPAC" in s]
-    hams = {list(sub.values())[0]["hamiltonian"] for sub in mopac}
-    assert hams == {"PM7", "PM6-ORG"}
-    text_lines = text.splitlines()
-    i = next(i for i, ln in enumerate(text_lines) if json.dumps("C" * 100) in ln)
-    after = "\n".join(text_lines[i:])
-    assert "ORCA" not in after  # ORCA stops at caffeine in the quick tier
-    assert 'MOZYME: "never"' in after  # both MOPAC regimes from 302 atoms
+    assert {list(sub.values())[0]["hamiltonian"] for sub in mopac} == {"PM7"}
+    assert 'MOZYME: "never"' in text  # the second regime from 302 atoms
     assert "Optimization" in text
+    assert "ORCA" not in text[text.index(json.dumps("C" * 100)) :]
 
 
 def test_spec_orca_only_full():
     spec = yaml.safe_load(tb.build_spec(("orca",), "full"))
     names = [list(s)[0] for s in spec["steps"]]
     assert "MOPAC" not in names
-    # hectane and beyond are past every ORCA chemistry's limit: five molecules
-    assert names.count("FromSMILESStep") == 5
+    assert names.count("FromSMILESStep") == 5  # icosane is the largest at full
+
+
+def test_unknown_code():
+    with pytest.raises(ValueError, match="declares a timing benchmark"):
+        tb.build_spec(("vasp",))
+
+
+def test_discovery_finds_installed_declarations(monkeypatch):
+    """The real discovery: every step found through the entry points that
+    exports TIMING_BENCHMARK, keyed by its program."""
+    monkeypatch.undo()
+    found = tb.declarations(refresh=True)
+    for program, declaration in found.items():
+        assert declaration["program"] == program
+        assert declaration["systems"] and declaration["chemistries"]
+        assert declaration["tasks"] and declaration["step"]
 
 
 def test_dry_run(tmp_path, capsys, monkeypatch):
@@ -68,13 +129,14 @@ def test_dry_run(tmp_path, capsys, monkeypatch):
 @pytest.mark.skipif(
     shutil.which("seamm-flowchart") is None, reason="no seamm-flowchart"
 )
-def test_build_with_installed_plugins(tmp_path):
+def test_build_with_installed_plugins(tmp_path, monkeypatch):
+    monkeypatch.undo()  # the installed steps' own declarations
+    if not {"orca", "mopac"} <= set(tb.declarations(refresh=True)):
+        pytest.skip("orca-step and mopac-step with benchmarks not both installed")
     try:
         import from_smiles_step  # noqa: F401
-        import mopac_step  # noqa: F401
-        import orca_step  # noqa: F401
     except ImportError:
-        pytest.skip("from-smiles-step, orca-step and mopac-step not all installed")
+        pytest.skip("from-smiles-step not installed")
     path = tb.build_flowchart(
         tb.build_spec(("orca", "mopac"), "quick"), tmp_path / "b.flow"
     )
