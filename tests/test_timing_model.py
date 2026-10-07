@@ -376,3 +376,76 @@ def test_spec_sidecar_round_trip_and_use(tmp_path):
     # No sidecar: the fallback table, else the default
     assert tm.load_spec("orca", tmp_path).size[0] == "nbf"
     assert tm.load_spec("unknown", tmp_path) == tm.DEFAULT_SPEC
+
+
+def _cores_by_size(tmp_path, n=300, seed=3):
+    """Rows where the cores were chosen by the size: 4 for the small runs, 8
+    for the large (science's label jobs on TinkerCliffs)."""
+    rng = random.Random(seed)
+    for i in range(n):
+        nbf = rng.choice([100, 150, 200, 250, 400, 500, 600, 700])
+        cores = 4 if nbf < 300 else 8
+        log_unit = -9.0 + 2.6 * math.log(nbf) - 0.5 * math.log(cores)
+        wall = 1.0 + math.exp(log_unit + rng.gauss(0, 0.15))
+        append_timing(
+            "orca",
+            {
+                "schema": 1,
+                "machine": "tc:normal_q:EPYC",
+                "program": "orca",
+                "ntasks": cores,
+                "cpus_per_task": 1,
+                "wall": f"{wall:.3f}",
+                "state": "finished",
+                "task": "gradient",
+                "method_class": "global double-hybrid",
+                "nbf": nbf,
+                "n_electrons": nbf // 6,
+                "scf_runs": 1,
+            },
+            directory=tmp_path,
+        )
+
+
+def test_cores_chosen_by_size_do_not_fit_alpha(tmp_path):
+    """When the core count follows the size, the parallel exponent cannot be
+    told from the size's effect: it is assumed, and no size slope is fitted
+    (the first TinkerCliffs fit gave alpha = 0 + 3.5 per log unit, i.e. perfect
+    scaling for anything large, and a 35-minute fragment 10 minutes)."""
+    _cores_by_size(tmp_path)
+    model = tm.fit("orca", directory=tmp_path)
+    assert model is not None
+    assert not model["alpha_fitted"]
+    assert "cores follow the size" in model["alpha_note"]
+    assert model["alpha_slope"] == 0.0
+    assert model["alpha"] == model["spec"]["default_alpha"]
+    assert "assumed" in tm.report_text(model)
+    low, high = model["feature_log_range"]["nbf"]
+    assert round(math.exp(low)) == 100 and round(math.exp(high)) == 700
+
+
+def test_predict_refuses_what_the_records_do_not_cover(tmp_path):
+    _cores_by_size(tmp_path)
+    model = tm.fit("orca", directory=tmp_path)
+    inside = {
+        "task": "gradient",
+        "method_class": "global double-hybrid",
+        "nbf": 644,
+        "n_electrons": 108,
+    }
+    assert tm.predict("orca", inside, ntasks=4, model=model) is not None
+    # Just beyond the range is still interpolation; far beyond is not
+    near = dict(inside, nbf=1000, n_electrons=160)
+    assert tm.predict("orca", near, ntasks=4, model=model) is not None
+    far = dict(inside, nbf=1100, n_electrons=180)
+    assert tm.predict("orca", far, ntasks=4, model=model) is None
+    small = dict(inside, nbf=24, n_electrons=10)
+    assert tm.predict("orca", small, ntasks=4, model=model) is None
+    # A size variable missing, a method class or task the records lack
+    assert (
+        tm.predict("orca", {k: v for k, v in inside.items() if k != "nbf"}, model=model)
+        is None
+    )
+    assert tm.predict("orca", dict(inside, method_class="MP2"), model=model) is None
+    assert tm.predict("orca", dict(inside, method_class=""), model=model) is None
+    assert tm.predict("orca", dict(inside, task="freq"), model=model) is None

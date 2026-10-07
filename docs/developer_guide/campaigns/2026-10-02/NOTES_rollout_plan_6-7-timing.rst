@@ -491,3 +491,43 @@ seamm_exec.task_worker``), so the whole job stays on one version; no bundle
 failed. The versioned-venv design covered it, but **the rule for a cluster is:
 ask the sessions with running evaluators (mbe) before switching, or wait.**
 installation.ini has the flowchart record; ``uv pip check`` clean.
+
+Rounds 3–4, 2026-10-06: the 2026.10.6.1 and 2026.10.6.2 releases
+----------------------------------------------------------------
+
+Two further rounds the same afternoon, driven by the installer downgrade
+(seamm-manager 2026.10.6.1: version floors, a refused switch exits 1), the
+ORCA NoCOSX batched-gradient guard (orca-step 2026.10.6.2), the fail-fast
+MBE step (mbe-step 2026.10.6.2), the JobServer reattach KeyError fix
+(seamm-jobserver 2026.10.6) and seamm-exec 2026.10.6.2. Tool
+``seamm-manager==2026.10.6.1`` then ``update --latest --all``.
+
+================ ====================== ====================== ==============================
+Site             round 3 venv           round 4 venv           notes
+================ ====================== ====================== ==============================
+Mac ``~/SEAMM``  2026-10-06T14-02-59    2026-10-06T17-27-42    stray 14-34-47 (the downgrade)
+                                                               to prune
+``~/SEAMM_DEV``  2026-10-06T14-05-28    2026-10-06T17-31-58
+MolSSI10         2026-10-06T14-07-30    2026-10-06T17-37-54
+Mac mini         2026-10-06T14-08-37    2026-10-06T17-43-34
+ChemAI           2026-10-06T14-10-28    2026-10-06T17-37-31    JobServer crash-loop (below)
+TinkerCliffs     (skipped)              2026-10-06T20-05-52    gated on science's jobs (below)
+================ ====================== ====================== ==============================
+
+**ChemAI, 14:11–14:25:** the restarted JobServer (2026.10.5) crash-looped on
+reattach: jobs that had finished while it was down have no ``slurm_job_id``
+in the reattach record and the lookup raised ``KeyError``. One-line fix with
+the worker session, released as seamm-jobserver 2026.10.6 and rolled out in
+round 4.
+
+**TinkerCliffs, the rule applied this time:** round 3 was skipped and round 4
+held until the gate was met.  The science session's six label jobs
+(ChemAI 5213/5217/5220–5223 = SLURM 7874435/39/44/48/49/50) finished at
+20:03 EDT; the MBE session had agreed the switch could happen under its EC
+pilot (7870006, with bundle 7876699), because the evaluator and every
+bundle's ``run.sh`` pin the real path ``venvs/2026-10-06T06-46-45`` (do not
+prune it until 7870006 has finished).  Update 20:05–20:25 EDT, rc=0,
+``/projects/seamm/SEAMM/venv -> venvs/2026-10-06T20-05-52``; also picked up
+strain-step 2026.10.6 and supercell-step 2026.10.6.  ``uv pip check`` clean;
+no services on TinkerCliffs; the flowchart record meant no scan.  Science
+told to release its held ion-shell relabels; MBE told the switch had happened.

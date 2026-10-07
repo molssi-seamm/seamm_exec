@@ -111,23 +111,23 @@ has parsed the output. The row has three parts:
 **Common columns**, filled by ``seamm_exec`` from the ``Task``, the
 ``TaskResult`` and the machine:
 
-=============== =====================================================================
-column          meaning
-=============== =====================================================================
-schema          the record schema version (``1``)
-date            UTC ISO timestamp of the run's end
-machine         the machine class key (below)
-cluster, partition, cpu_model, cpu_cores  the parts of the key, and the node's cores
-host            the hostname, for forensics only
-program         ``orca``, ``mopac``, ...
-ntasks, cpus_per_task, mem_per_cpu  the task's resources as run
-wall            seconds from the task's start to its end, from the task manifest
-estimated       the ``estimated_seconds`` the step gave the task (to score it)
-state           ``finished`` or ``failed``
-timed_out       whether the queue stopped it
-attempts        how many attempts the task took
-in_situ         whether it ran in place or in node-local scratch
-=============== =====================================================================
+========================================== ======================================================================
+column                                     meaning
+========================================== ======================================================================
+schema                                     the record schema version (``1``)
+date                                       UTC ISO timestamp of the run's end
+machine                                    the machine class key (below)
+cluster, partition, cpu_model, cpu_cores   the parts of the key, and the node's cores
+host                                       the hostname, for forensics only
+program                                    ``orca``, ``mopac``, ...
+ntasks, cpus_per_task, mem_per_cpu         the task's resources as run
+wall                                       seconds from the task's start to its end, from the task manifest
+estimated                                  the ``estimated_seconds`` the step gave the task (to score it)
+state                                      ``finished`` or ``failed``
+timed_out                                  whether the queue stopped it
+attempts                                   how many attempts the task took
+in_situ                                    whether it ran in place or in node-local scratch
+========================================== ======================================================================
 
 **Descriptors**, numbers and short categorical values from the step, chosen so
 that the cost model below can be fitted. They are per code (section 6), but the

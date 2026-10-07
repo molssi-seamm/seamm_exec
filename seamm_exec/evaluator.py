@@ -60,6 +60,20 @@ S_UNITS = "GPa"
 REQUIRED = ("energy", "gradients")
 
 
+def _takes_task(function):
+    """Whether a program's ``analyze_task`` accepts ``task=`` (the ones that
+    record the run's timing do; see ``record_task_timing``)."""
+    import inspect
+
+    try:
+        parameters = inspect.signature(function).parameters
+    except (TypeError, ValueError):
+        return False
+    return "task" in parameters or any(
+        p.kind is inspect.Parameter.VAR_KEYWORD for p in parameters.values()
+    )
+
+
 class AnalysisError(RuntimeError):
     """A task's results lack a requested property."""
 
@@ -555,6 +569,7 @@ class Evaluator:
         if self.cancelled:
             task_set.cancel()
         refused = []
+        tasks = {}
         for key, (configuration, options) in pending.items():
             try:
                 extra = {}
@@ -577,9 +592,13 @@ class Evaluator:
                 )
                 continue
             task_set.add(task)
+            tasks[task.key] = task
         yield from refused
         if not task_set.tasks:
             return
+        # A program's analyze_task that takes the task records its timing
+        # (seamm_exec.record_task_timing); older ones do not take it.
+        takes_task = _takes_task(self.provider.analyze_task)
         for result in task_set.run():
             configuration, options = pending[result.key]
             if not result.ok:
@@ -592,12 +611,14 @@ class Evaluator:
                 )
                 continue
             try:
+                extra = {"task": tasks.get(result.key)} if takes_task else {}
                 data = self.provider.analyze_task(
                     result,
                     self.model_chemistry,
                     configuration,
                     properties=self.properties,
                     options=options,
+                    **extra,
                 )
             except AnalysisError as e:
                 yield EvaluatorResult(

@@ -187,6 +187,10 @@ QUANTILES = (0.5, 0.68, 0.84, 0.95, 0.99)
 #: Shrinkage (in rows) of a machine class's offset toward the pooled fit
 MACHINE_SHRINK = 5.0
 #: Ridge penalty on the slopes and class/task offsets
+#: |corr(log cores, log size)| above which the parallel exponent is not fitted
+CORES_SIZE_CORRELATION = 0.7
+#: How far outside the fitted size range (as a factor) a prediction is still made
+EXTRAPOLATION = 1.5
 RIDGE = 1e-3
 #: A model is refitted by :func:`predict` when its records have grown by this
 #: fraction since the fit ...
@@ -396,6 +400,17 @@ def _fit_rows(all_rows, features, t0, spec, min_rows):
     ref_task = max(tasks, key=lambda t: sum(1 for r in rows if r["_task"] == t))
     cores = np.array([r["_cores"] for r in rows])
     fit_alpha = len({round(c) for c in cores}) > 1
+    alpha_note = ""
+    if fit_alpha and features:
+        # Cores chosen by size (4 for the small runs, 8 for the large) say
+        # nothing about scaling: the fit would put the size's effect on the
+        # cores. Then alpha is assumed, not fitted.
+        log_size = np.log([r["_size"][features[0]] for r in rows])
+        if np.std(log_size) > 0 and np.std(np.log(cores)) > 0:
+            corr = float(np.corrcoef(np.log(cores), log_size)[0, 1])
+            if abs(corr) > CORES_SIZE_CORRELATION:
+                fit_alpha = False
+                alpha_note = f"cores follow the size (r={corr:+.2f}); alpha assumed"
 
     # Design matrix: intercept, log sizes, [log cores], class dummies, task dummies
     columns = ["intercept"] + [f"log {n}" for n in features]
@@ -477,6 +492,14 @@ def _fit_rows(all_rows, features, t0, spec, min_rows):
         "alpha_slope": alpha_slope,
         "alpha_size_mean": alpha_size_mean,
         "fit_alpha": fit_alpha,
+        "alpha_note": alpha_note,
+        "feature_log_range": {
+            n: [
+                float(np.log(min(r["_size"][n] for r in rows))),
+                float(np.log(max(r["_size"][n] for r in rows))),
+            ]
+            for n in features
+        },
         "predicted": predicted,
         "ss_res": float((resid**2).sum()),
     }
@@ -523,6 +546,8 @@ def _assemble(program, spec, features, f):
         "alpha_slope": f["alpha_slope"],
         "alpha_size_mean": f["alpha_size_mean"],
         "alpha_fitted": f["fit_alpha"],
+        "alpha_note": f["alpha_note"],
+        "feature_log_range": f["feature_log_range"],
         "classes": class_offsets,
         "reference_class": f["ref_class"],
         "tasks": task_offsets,
@@ -763,15 +788,22 @@ def predict(
         value = _num(descriptors.get(name))
         if value is not None and value > 0:
             sizes[name] = value
-    if not sizes:
+    if len(sizes) < len(model["features"]) or not sizes:
+        # Every size variable is needed: a mean in its place is a guess
         return None
+    margin = math.log(EXTRAPOLATION)
+    for name, (low, high) in model.get("feature_log_range", {}).items():
+        if name in sizes and not (
+            low - margin <= math.log(sizes[name]) <= high + margin
+        ):
+            # Outside what the records cover: a power law extrapolated by
+            # orders of magnitude is not an estimate (a model fitted to small
+            # molecules gave 20-atom QZ fragments 11 hours and 20 s)
+            return None
     coef = model["coefficients"]
     y = coef["intercept"]
-    means = model.get("feature_log_means", {})
     for name in model["features"]:
-        # A size variable not given takes the records' mean (log) value
-        value = math.log(sizes[name]) if name in sizes else means.get(name, 0.0)
-        y += coef.get(f"log {name}", 0.0) * value
+        y += coef.get(f"log {name}", 0.0) * math.log(sizes[name])
     cores = max(1.0, float(ntasks or 1) * float(cpus_per_task or 1))
     alpha = model["alpha"]
     first = model["features"][0] if model["features"] else None
@@ -784,12 +816,17 @@ def predict(
     klass = " / ".join(
         str(descriptors.get(k, "") or "") for k in model["class_columns"]
     ).strip(" /")
+    if model["class_columns"] and klass not in model["classes"]:
+        # A method class the records have not seen (or none given)
+        return None
     y += model["classes"].get(klass, 0.0)
     task = (
         str(descriptors.get(model["task_column"], "") or "")
         if model["task_column"]
         else ""
     )
+    if model["task_column"] and task not in model["tasks"]:
+        return None
     y += model["tasks"].get(task, 0.0)
 
     machine = machine or machine_class()["machine"]
@@ -860,7 +897,13 @@ def report_text(model):
             if model.get("alpha_size_mean") is not None and model.get("alpha_slope")
             else ""
         )
-        + ("" if model["alpha_fitted"] else " [assumed]"),
+        + (
+            ""
+            if model["alpha_fitted"]
+            else " [assumed"
+            + (": " + model["alpha_note"] if model.get("alpha_note") else "")
+            + "]"
+        ),
     ]
     for name, offset in sorted(model["classes"].items(), key=lambda kv: kv[1]):
         if name != model["reference_class"]:
