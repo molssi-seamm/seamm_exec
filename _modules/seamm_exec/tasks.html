@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.tasks &#8212; SEAMM seamm-exec Plug-in 2026.10.8.1 documentation</title>
+    <title>seamm_exec.tasks &#8212; SEAMM seamm-exec Plug-in 2026.10.8.2 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=ac5092dc"></script>
+    <script src="../../_static/documentation_options.js?v=9ba818b6"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.8.1" />
+  <meta name="docsearch:version" content="2026.10.8.2" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -852,7 +852,11 @@
 <span class="sd">    retried; a lost one is, up to ``max_lost_retries``. Across runs a failed or</span>
 <span class="sd">    lost task is tried again until it has had ``max_attempts`` attempts in all.</span>
 <span class="sd">    A local task that stopped because the evaluator stopped (killed, out of</span>
-<span class="sd">    walltime) does not use up an attempt.</span>
+<span class="sd">    walltime) does not use up an attempt, nor does a task the step cancelled.</span>
+<span class="sd">    Nor does running out of time, the first ``max_timeouts`` times: that is the</span>
+<span class="sd">    estimate's fault, not the task's, and each retry asks for twice the time</span>
+<span class="sd">    (within the queue's limits). Later timeouts count, so a task that cannot</span>
+<span class="sd">    finish even in the longest time allowed still stops.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -891,6 +895,9 @@
 <span class="sd">        Attempts per task over all runs.</span>
 <span class="sd">    max_lost_retries : int = 2</span>
 <span class="sd">        Resubmissions of a lost task within one run.</span>
+<span class="sd">    max_timeouts : int = 4</span>
+<span class="sd">        Times a task may run out of time without using up an attempt; with the</span>
+<span class="sd">        doubling, up to 16 times the first walltime.</span>
 <span class="sd">    inline_below : float, optional</span>
 <span class="sd">        Tasks estimated to take less than this many seconds run in the local</span>
 <span class="sd">        pool rather than on a remote back end, if their program is installed</span>
@@ -915,6 +922,7 @@
         <span class="n">bundle_walltime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">max_attempts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
         <span class="n">max_lost_retries</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">max_timeouts</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
         <span class="n">inline_below</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">poll_interval</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
     <span class="p">):</span>
@@ -932,6 +940,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">archive</span> <span class="o">=</span> <span class="n">archive</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_attempts</span> <span class="o">=</span> <span class="n">max_attempts</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_lost_retries</span> <span class="o">=</span> <span class="n">max_lost_retries</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_timeouts</span> <span class="o">=</span> <span class="n">max_timeouts</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">poll_interval</span> <span class="o">=</span> <span class="n">poll_interval</span>
 
         <span class="c1"># The job's target, unless the caller chose the back end itself</span>
@@ -1199,27 +1208,57 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_cancel_inflight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inflight</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s2">"cancelled"</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Cancel the tasks in flight and drop those held; yield their results."""</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_inflight</span><span class="p">(</span><span class="n">inflight</span><span class="p">,</span> <span class="n">reason</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">flush</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_stop_inflight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inflight</span><span class="p">,</span> <span class="n">reason</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Cancel the tasks in flight and drop those held, returning their</span>
+<span class="sd">        results. A task that has already ended -- its bundle still running, or</span>
+<span class="sd">        not yet polled -- is collected as it ended, not marked cancelled. A</span>
+<span class="sd">        cancelled task gets its attempt back: it was stopped, it did not fail.</span>
+<span class="sd">        """</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">by_backend</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">backend_id</span><span class="p">),</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">inflight</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">by_backend</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">backend_id</span><span class="p">,</span> <span class="n">task</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">backend</span><span class="p">,</span> <span class="n">entries</span> <span class="ow">in</span> <span class="n">by_backend</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">backend</span><span class="o">.</span><span class="n">cancel</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">])</span>
-            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-                <span class="c1"># Left as they were, so a restart adopts them rather than</span>
-                <span class="c1"># submitting duplicates.</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">"Error cancelling tasks"</span><span class="p">)</span>
-                <span class="k">continue</span>
-            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">CANCELLED</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="n">reason</span><span class="p">)</span>
-                <span class="n">result</span> <span class="o">=</span> <span class="n">TaskResult</span><span class="p">(</span>
-                    <span class="n">key</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
-                    <span class="n">state</span><span class="o">=</span><span class="n">CANCELLED</span><span class="p">,</span>
-                    <span class="n">directory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task_directory</span><span class="p">(</span><span class="n">task</span><span class="p">),</span>
-                    <span class="n">reason</span><span class="o">=</span><span class="n">reason</span><span class="p">,</span>
-                <span class="p">)</span>
+            <span class="n">ended</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ended</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">entries</span><span class="p">)</span>
+            <span class="n">running</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">entries</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ended</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">backend</span><span class="o">.</span><span class="n">cancel</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">running</span><span class="p">])</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="c1"># Left as they were, so a restart adopts them rather than</span>
+                    <span class="c1"># submitting duplicates.</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">"Error cancelling tasks"</span><span class="p">)</span>
+                    <span class="n">running</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="c1"># One that ended while being cancelled keeps its result.</span>
+                <span class="n">ended</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ended</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">running</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">backend_id</span><span class="p">,</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">backend_id</span> <span class="ow">in</span> <span class="n">ended</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collect</span><span class="p">(</span>
+                            <span class="n">task</span><span class="p">,</span> <span class="n">backend</span><span class="p">,</span> <span class="n">backend_id</span><span class="p">,</span> <span class="n">ended</span><span class="p">[</span><span class="n">backend_id</span><span class="p">]</span>
+                        <span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error collecting task </span><span class="si">{</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                        <span class="k">continue</span>
+                <span class="k">elif</span> <span class="p">(</span><span class="n">backend_id</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span> <span class="ow">in</span> <span class="n">running</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_finish_attempt</span><span class="p">(</span>
+                        <span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">CANCELLED</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="n">reason</span><span class="p">,</span> <span class="n">counted</span><span class="o">=</span><span class="kc">False</span>
+                    <span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="s2">"forget"</span><span class="p">):</span>
+                        <span class="n">backend</span><span class="o">.</span><span class="n">forget</span><span class="p">(</span><span class="n">backend_id</span><span class="p">)</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="n">TaskResult</span><span class="p">(</span>
+                        <span class="n">key</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
+                        <span class="n">state</span><span class="o">=</span><span class="n">CANCELLED</span><span class="p">,</span>
+                        <span class="n">directory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task_directory</span><span class="p">(</span><span class="n">task</span><span class="p">),</span>
+                        <span class="n">reason</span><span class="o">=</span><span class="n">reason</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">continue</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_results</span><span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
-                <span class="k">yield</span> <span class="n">result</span>
+                <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
         <span class="n">inflight</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">members</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_held</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
@@ -1231,9 +1270,21 @@
                     <span class="n">reason</span><span class="o">=</span><span class="n">reason</span><span class="p">,</span>
                 <span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_results</span><span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
-                <span class="k">yield</span> <span class="n">result</span>
+                <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_held</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">flush</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">results</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ended</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">entries</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""``{backend_id: state}`` of the entries that have finished or failed."""</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">entries</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">states</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">status</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">"Error asking for the tasks' states"</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">states</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">entries</span> <span class="k">if</span> <span class="n">states</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="n">FINISHED</span><span class="p">,</span> <span class="n">FAILED</span><span class="p">)}</span>
 
 <div class="viewcode-block" id="TaskSet.run">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.tasks.TaskSet.run">[docs]</a>
@@ -1376,19 +1427,11 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">_wait</span><span class="p">(</span><span class="n">inflight</span><span class="p">)</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">inflight</span><span class="p">:</span>
-                <span class="n">by_backend</span> <span class="o">=</span> <span class="p">{}</span>
-                <span class="k">for</span> <span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">backend_id</span><span class="p">),</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">inflight</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                    <span class="n">by_backend</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">backend_id</span><span class="p">,</span> <span class="n">task</span><span class="p">))</span>
-                <span class="k">for</span> <span class="n">backend</span><span class="p">,</span> <span class="n">entries</span> <span class="ow">in</span> <span class="n">by_backend</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="n">backend</span><span class="o">.</span><span class="n">cancel</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">])</span>
-                    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-                        <span class="c1"># Left as they were, so a restart adopts them rather</span>
-                        <span class="c1"># than submitting duplicates.</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">"Error cancelling tasks"</span><span class="p">)</span>
-                        <span class="k">continue</span>
-                    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">CANCELLED</span><span class="p">)</span>
+                <span class="c1"># Stopped early (an error, or the caller stopped iterating).</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_stop_inflight</span><span class="p">(</span><span class="n">inflight</span><span class="p">,</span> <span class="s2">"stopped"</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">"Error stopping the tasks in flight"</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">flush</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_close_tars</span><span class="p">()</span></div>
 
@@ -1585,6 +1628,13 @@
 <span class="sd">        lost."""</span>
         <span class="n">record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
         <span class="n">history</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"history"</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="k">if</span> <span class="n">timed_out</span> <span class="ow">and</span> <span class="n">counted</span><span class="p">:</span>
+            <span class="c1"># Running out of time is the estimate's fault, and the retry gets</span>
+            <span class="c1"># twice the time: not counted, up to max_timeouts times.</span>
+            <span class="n">earlier</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">history</span> <span class="k">if</span> <span class="n">h</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"timed_out"</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">earlier</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_timeouts</span><span class="p">:</span>
+                <span class="n">counted</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">reason</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">reason</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">'out of time'</span><span class="si">}</span><span class="s2"> (not counted: out of time)"</span>
         <span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
             <span class="p">{</span>
                 <span class="s2">"attempt"</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"attempts"</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
