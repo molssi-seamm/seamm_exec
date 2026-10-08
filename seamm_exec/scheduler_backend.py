@@ -686,6 +686,8 @@ class SchedulerBackend:
                 files=files,
                 in_situ=done.get("in_situ"),
                 run_directory=done.get("run_directory"),
+                started=done.get("started"),
+                finished=done.get("finished"),
             )
         if state == FAILED:
             failed = _read_json(entry.marker / "FAILED") or {}
@@ -697,6 +699,8 @@ class SchedulerBackend:
                 stderr=stderr,
                 directory=entry.directory,
                 reason=failed.get("reason") or entry.reason,
+                started=failed.get("started"),
+                finished=failed.get("finished"),
             )
         return TaskResult(
             key=task.key,

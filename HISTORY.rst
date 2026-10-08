@@ -1,6 +1,25 @@
 =======
 History
 =======
+2026.10.8.1 -- Bugfix: tasks in queue bundles record their wall time; a fixed cost per run; the neighbour count
+    * A step's spec may name a column (``setup_by``) whose values each get a fixed
+      cost per run, in iterations, found by the fit: the work is ``iterations +
+      setup``. For codes whose first step is much dearer than the rest -- MOPAC's
+      MOZYME localizes the orbitals once, then runs fast cycles -- so a single point
+      and a long optimization share one per-cycle cost, and an optimization much
+      shorter or longer than the records' is predicted right.
+    * Bugfix: a task run in a queue bundle never had a wall time in its timing record:
+      the worker on the node knew when it started but that never reached the
+      manifest, so every such record -- all 1,725 of the FEC pilot's on TinkerCliffs
+      -- was left out of the fit. The bundle worker now writes each task's start in
+      its ``DONE``, and the result carries it back. For older records the fit uses
+      the code's own time in place of the missing wall time.
+    * ``structure_descriptors`` adds ``neighbours``, the mean number of other atoms
+      within 8 Å of an atom (``neighbour_count``, sampled over up to 256 atoms,
+      periodic cells by minimum image or explicit images): how crowded a structure
+      is. MOZYME's cost per atom is about 8 times higher in a 1,000-atom water cluster
+      than along a 900-atom alkane chain.
+
 2026.10.8 -- The cost model's fit: no negative exponents, an exponent per regime, weighted by time
     * No size exponent is negative any more. Related size variables (basis functions
       and electrons over a mix of basis sets) could split one effect into a large

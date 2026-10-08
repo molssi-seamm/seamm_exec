@@ -284,8 +284,10 @@ through :func:`~seamm_exec.record_task_timing` (a run made through the task
 layer) or :func:`~seamm_exec.record_timing` (one made with ``executor.run``):
 the machine class (cluster, partition and CPU model, not the hostname), the
 cores, the wall time and outcome, and the descriptors of the calculation --
-the kind of task, the method's class, basis functions, electrons, atoms, the
-iterations taken, the code's own time. A file is set aside when it grows past
+the kind of task, the method's class, basis functions, electrons, atoms, how
+crowded the structure is (``neighbours``, the mean number of atoms within 8 Å),
+the iterations taken, the code's own time. A task run in a queue bundle gets its
+wall time from the worker on the node that ran it. A file is set aside when it grows past
 50 MB or when the columns change, and many runs may append at once. The design
 is in ``docs/developer_guide/campaigns/2026-10-05``.
 
@@ -297,7 +299,9 @@ would split one effect that way, the fit leaves one out and its report says so;
 records that vary the basis at a fixed number of electrons, as the seed benchmark's
 basis-set ladder does, let it keep both. A step whose code has regimes that scale
 differently names the column that tells them apart (``slope_by``, MOPAC's
-``regime``) and each gets its own exponents.
+``regime``) and each gets its own exponents; one whose first step is much dearer
+than the rest names a column (``setup_by``) whose groups each get a fixed cost per
+run, in iterations, found by the fit.
 
 A model only predicts what its records cover: a calculation whose size lies
 outside the fitted range (by more than a factor of 1.5), whose method class or
