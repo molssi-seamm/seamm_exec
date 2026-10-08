@@ -165,3 +165,18 @@ def test_performance_cores_cap(tmp_path, capsys, monkeypatch):
     out = capsys.readouterr().out
     assert "skipped: this machine has 5 performance core(s)" in out
     assert "8 core" not in out and "4 core" in out
+
+
+def test_a_chemistry_can_run_only_some_tasks(monkeypatch):
+    """A chemistry may name the tasks it runs (a basis-set ladder runs
+    energies and gradients, not optimizations)."""
+    ladder = dict(ORCA)
+    ladder["chemistries"] = {
+        "ORCA:DFT@B3LYP/def2-QZVPPD": {"quick": 15, "full": 24, "tasks": ["Energy"]}
+    }
+    monkeypatch.setattr(tb, "declarations", lambda refresh=False: {"orca": ladder})
+    text = tb.build_spec(("orca",), "quick")
+    assert "Optimization" not in text
+    assert (
+        text.count("def2-QZVPPD") == 6
+    )  # water, ethanol, toluene x (energy, gradient)

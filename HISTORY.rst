@@ -1,6 +1,24 @@
 =======
 History
 =======
+2026.10.8 -- The cost model's fit: no negative exponents, an exponent per regime, weighted by time
+    * No size exponent is negative any more. Related size variables (basis functions
+      and electrons over a mix of basis sets) could split one effect into a large
+      positive and a negative exponent, which fitted the records and predicted a
+      larger basis to run faster. While any exponent is negative the fit leaves out
+      the size variable whose absence fits best, and the report says so.
+    * A step's spec may name a column (``slope_by``) whose values each get their
+      own size exponents, for codes with regimes that scale differently: MOPAC's
+      MOZYME (roughly linear) and traditional SCF (roughly cubic).
+    * Each run weighs in the fit in proportion to its time. The cost exponent grows
+      with size, so a fit counting every run equally bent low at the large end:
+      the largest ORCA runs of the TinkerCliffs and ChemAI benchmarks were predicted
+      at 0.5-0.65 of their time, and are now at 0.8-1.1.
+    * In a step's ``TIMING_BENCHMARK`` a chemistry may name the tasks it runs
+      (``"tasks": ["Energy"]``), so a basis-set ladder runs energies and gradients
+      without optimizations.
+    * Requires Python 3.12.
+
 2026.10.7.1 -- Bugfix: a provider that does not take the task; each code step declares its own timing benchmark
     * Bugfix: 2026.10.7 passed the task to a program's ``analyze_task`` whenever
       its signature took ``**kwargs``; mopac-step's forwards them to a function

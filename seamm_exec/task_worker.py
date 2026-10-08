@@ -99,9 +99,10 @@ def run_bundle(bundle):
             command = shlex.split(command)
 
         started = time.time()
-        with open(directory / "stdout.txt", "w") as out, open(
-            directory / "stderr.txt", "w"
-        ) as err:
+        with (
+            open(directory / "stdout.txt", "w") as out,
+            open(directory / "stderr.txt", "w") as err,
+        ):
             try:
                 p = subprocess.run(
                     command,

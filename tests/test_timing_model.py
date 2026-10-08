@@ -449,3 +449,88 @@ def test_predict_refuses_what_the_records_do_not_cover(tmp_path):
     assert tm.predict("orca", dict(inside, method_class="MP2"), model=model) is None
     assert tm.predict("orca", dict(inside, method_class=""), model=model) is None
     assert tm.predict("orca", dict(inside, task="freq"), model=model) is None
+
+
+def _rows(tmp_path, program, entries):
+    """Write synthetic records: each entry a dict of descriptors plus wall."""
+    for e in entries:
+        row = {
+            "schema": 1,
+            "machine": "m:q:CPU",
+            "program": program,
+            "ntasks": e.pop("ntasks", 1),
+            "cpus_per_task": 1,
+            "state": "finished",
+            "task": e.pop("task", "energy"),
+        }
+        row.update(e)
+        row["wall"] = f"{row['wall']:.4f}"
+        append_timing(program, row, directory=tmp_path)
+
+
+def test_no_size_exponent_is_negative(tmp_path):
+    """Two size variables that are related but not collinear can split one
+    effect into a large positive and a negative exponent; the fit leaves out a
+    variable rather than keep a negative exponent, and says so."""
+    rng = random.Random(5)
+    entries = []
+    for i in range(120):
+        a = rng.choice([20, 40, 80, 160, 320, 640])
+        b = a * rng.choice([0.5, 0.7, 1.0, 1.4, 2.0])
+        wall = 1.0 + math.exp(-8 + 3.0 * math.log(a) - 1.0 * math.log(b))
+        entries.append(
+            {"size_a": a, "size_b": b, "wall": wall * rng.uniform(0.95, 1.05)}
+        )
+    _rows(tmp_path, "testcode", entries)
+    spec = tm.Spec(size=("size_a", "size_b"), klass=(), units=None)
+    model = tm.fit("testcode", directory=tmp_path, spec=spec)
+    slopes = [model["coefficients"][f"log {n}"] for n in model["features"]]
+    assert all(s >= 0 for s in slopes)
+    assert any("left out" in note for note in model["notes"])
+    assert "note:" in tm.report_text(model)
+
+
+def test_each_regime_has_its_own_exponent(tmp_path):
+    """slope_by gives each value of a column its own size exponent (MOPAC's
+    MOZYME, roughly linear, and traditional SCF, roughly cubic)."""
+    rng = random.Random(7)
+    entries = []
+    for regime, a, b in (("linear", -3.0, 1.0), ("cubic", -14.0, 3.0)):
+        for n in (100, 200, 400, 800, 1600) * 4:
+            code = math.exp(a + b * math.log(n) + rng.gauss(0, 0.05))
+            entries.append(
+                {"regime": regime, "n": n, "wall": 0.5 + code, "code_seconds": code}
+            )
+    _rows(tmp_path, "testcode", entries)
+    spec = tm.Spec(size=("n",), klass=("regime",), units=None, slope_by="regime")
+    model = tm.fit("testcode", directory=tmp_path, spec=spec)
+    base = model["coefficients"]["log n"]
+    other = {g: base + d["n"] for g, d in model["slope_deltas"].items()}
+    reference = [g for g in model["slope_groups"] if g not in other][0]
+    other[reference] = base
+    assert abs(other["linear"] - 1.0) < 0.15
+    assert abs(other["cubic"] - 3.0) < 0.15
+    d = {"task": "energy", "regime": "cubic", "n": 800}
+    assert tm.predict("testcode", d, model=model) is not None
+    assert tm.predict("testcode", dict(d, regime="other"), model=model) is None
+
+
+def test_large_runs_weigh_more(tmp_path):
+    """The cost exponent grows with size; weighting runs by their time keeps
+    the large end, which sets walltimes, from being predicted low."""
+    rng = random.Random(9)
+    entries = []
+    for n in (20, 40, 80, 160, 320, 640) * 6:
+        x = math.log(n)
+        wall = 1.0 + math.exp(-6 + 1.0 * x + 0.15 * x * x + rng.gauss(0, 0.03))
+        entries.append({"n": n, "wall": wall})
+    _rows(tmp_path, "testcode", entries)
+    spec = tm.Spec(size=("n",), klass=(), units=None)
+    largest = 1.0 + math.exp(-6 + math.log(640) + 0.15 * math.log(640) ** 2)
+    ratios = {}
+    for power in (0.0, tm.WEIGHT_POWER):
+        model = tm.fit("testcode", directory=tmp_path, spec=spec, weight_power=power)
+        p = tm.predict("testcode", {"task": "energy", "n": 640}, model=model)
+        ratios[power] = p["median"] / largest
+    assert abs(ratios[tm.WEIGHT_POWER] - 1) < abs(ratios[0.0] - 1)
+    assert ratios[tm.WEIGHT_POWER] > 0.85

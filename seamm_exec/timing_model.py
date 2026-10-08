@@ -78,6 +78,11 @@ class Spec:
         A column the time is proportional to besides ``units`` (k-points).
     default_alpha : float
         The parallel exponent used when the records do not span core counts.
+    slope_by : str or None
+        A column whose values each get their own size exponents -- for a code
+        with regimes that scale differently, such as MOPAC's MOZYME (roughly
+        linear) and traditional SCF (roughly cubic). The class columns give
+        each value its own intercept; this gives it its own slope as well.
     """
 
     size: tuple = ("n_atoms",)
@@ -86,6 +91,7 @@ class Spec:
     units: str | None = None
     multiplier: str | None = None
     default_alpha: float = 0.8
+    slope_by: str | None = None
 
     def to_dict(self):
         return {
@@ -95,6 +101,7 @@ class Spec:
             "units": self.units,
             "multiplier": self.multiplier,
             "default_alpha": self.default_alpha,
+            "slope_by": self.slope_by,
         }
 
     @classmethod
@@ -107,6 +114,7 @@ class Spec:
             units=data.get("units"),
             multiplier=data.get("multiplier"),
             default_alpha=float(data.get("default_alpha", 0.8)),
+            slope_by=data.get("slope_by"),
         )
 
 
@@ -130,8 +138,9 @@ FALLBACK_SPECS = {
     "mopac": Spec(
         size=("n_basis", "n_atoms"),
         klass=("hamiltonian", "regime"),
-        units="scf_runs",
+        units="geometry_cycles",
         default_alpha=0.0,
+        slope_by="regime",
     ),
     "vasp": Spec(
         size=("nelect", "grid", "volume"),
@@ -192,6 +201,12 @@ CORES_SIZE_CORRELATION = 0.7
 #: How far outside the fitted size range (as a factor) a prediction is still made
 EXTRAPOLATION = 1.5
 RIDGE = 1e-3
+#: Each run's weight in the power-law fit is its net time (wall less start-up)
+#: to this power, normalized. The cost exponent grows with size, so a single
+#: power law fitted equally to many small runs bends low at the large end --
+#: the runs that cost queue time and whose estimates set walltimes. Weighting by
+#: time puts the fit where the time is; small runs still set the start-up time.
+WEIGHT_POWER = 1.0
 #: A model is refitted by :func:`predict` when its records have grown by this
 #: fraction since the fit ...
 REFIT_GROWTH = 0.2
@@ -291,7 +306,7 @@ def _quantile(values, q):
 # ----------------------------------------------------------------------
 # Fit
 # ----------------------------------------------------------------------
-def fit(program, directory=None, spec=None, min_rows=8):
+def fit(program, directory=None, spec=None, min_rows=8, weight_power=None):
     """Fit the cost model of ``program`` to its records.
 
     Returns
@@ -357,21 +372,72 @@ def fit(program, directory=None, spec=None, min_rows=8):
         small = mine[: max(3, len(mine) // 5)]
         p05[machine] = _quantile([r["_wall"] for r in small], 0.05)
 
-    best = None
     fractions = (None,) if len(measured) == len(machines) else (0.0, 0.3, 0.6, 0.9)
-    for fraction in fractions:
-        if fraction is None:
-            t0 = dict(measured)
-        else:
-            t0 = {m: measured.get(m, fraction * p05[m]) for m in machines}
-        result = _fit_rows(rows, features, t0, spec, min_rows)
-        if result is not None and (best is None or result["score"] < best["score"]):
-            best = result
-            best["t0"] = t0
-            best["t0_fraction"] = "measured" if fraction is None else fraction
-    if best is None:
-        return None
-    best["feature_log_means"] = feature_log_means
+
+    def search(features, zero, no_delta):
+        best = None
+        for fraction in fractions:
+            if fraction is None:
+                t0 = dict(measured)
+            else:
+                t0 = {m: measured.get(m, fraction * p05[m]) for m in machines}
+            result = _fit_rows(
+                rows, features, t0, spec, min_rows, zero, no_delta, weight_power
+            )
+            if result is not None and (best is None or result["score"] < best["score"]):
+                best = result
+                best["t0"] = t0
+                best["t0_fraction"] = "measured" if fraction is None else fraction
+        return best
+
+    # No size exponent may be negative: a calculation does not get faster as
+    # it grows. Size variables that are related but not collinear (basis
+    # functions and electrons over a mix of basis sets) can split one effect
+    # into a large positive and a negative exponent that fit the records well
+    # and extrapolate the wrong way (more basis functions at the same electrons
+    # predicted faster). So while any exponent is negative: drop the least
+    # informative variable (the last in the spec's order) and fit again; a
+    # group's own exponent that goes negative is pooled with the rest; a lone
+    # variable whose exponent is still negative is held at zero.
+    zero, no_delta, notes = set(), set(), []
+    for _ in range(4 * (len(features) + 4)):
+        best = search(features, zero, no_delta)
+        if best is None:
+            return None
+        negative = _negative_slopes(best, features, zero)
+        if not negative:
+            break
+        active = [n for n in features if n not in zero]
+        if len(active) > 1:
+            # Leave out the variable whose absence fits the records best
+            # (ties to the later, less informative one in the spec's order).
+            trials = []
+            for order, candidate in enumerate(active):
+                kept = [n for n in features if n != candidate]
+                trial = search(kept, zero, no_delta)
+                if trial is not None:
+                    trials.append((trial["score"], -order, candidate))
+            if not trials:
+                return None
+            dropped = min(trials)[2]
+            features = [n for n in features if n != dropped]
+            notes.append(f"left out {dropped}: with it a size exponent was negative")
+            continue
+        groups = sorted({g for _, g in negative if g is not None})
+        if groups:
+            no_delta.update(groups)
+            notes.append(
+                f"pooled the size exponent of {', '.join(groups)} "
+                "(its own was negative)"
+            )
+            continue
+        zero.update(n for n, _ in negative)
+        notes.append(
+            f"held the exponent of {', '.join(sorted(zero))} at zero "
+            "(the fit gave a negative one)"
+        )
+    best["feature_log_means"] = {n: feature_log_means[n] for n in features}
+    best["notes"] = notes
     model = _assemble(program, spec, features, best)
     size, mtime = records_state(program, directory)
     model["records_bytes"] = size
@@ -379,8 +445,32 @@ def fit(program, directory=None, spec=None, min_rows=8):
     return model
 
 
-def _fit_rows(all_rows, features, t0, spec, min_rows):
-    """One ridge fit for a given start-up constant; the pieces for the model."""
+def _negative_slopes(f, features, zero):
+    """[(feature, group or None)] whose effective size exponent is negative:
+    the shared one (group None, which is the reference group's), or a
+    group's own (shared plus its delta)."""
+    coefficients = dict(zip(f["columns"], f["beta"]))
+    negative = []
+    for n in features:
+        if n in zero:
+            continue
+        base = coefficients.get(f"log {n}", 0.0)
+        if base < -1e-9:
+            negative.append((n, None))
+        for g in f["delta_groups"]:
+            if base + coefficients.get(f"log {n} @ {g}", 0.0) < -1e-9:
+                negative.append((n, g))
+    return negative
+
+
+def _fit_rows(
+    all_rows, features, t0, spec, min_rows, zero=(), no_delta=(), weight_power=None
+):
+    """One ridge fit for a given start-up constant; the pieces for the model.
+
+    ``zero``: size variables whose exponent is held at zero (kept as features,
+    so a prediction still needs them and checks their range). ``no_delta``:
+    groups of ``spec.slope_by`` that use the shared exponents."""
     rows = []
     for r in all_rows:
         net = r["_wall"] - t0[r["_machine"]]
@@ -389,6 +479,7 @@ def _fit_rows(all_rows, features, t0, spec, min_rows):
         if net > max(0.02, 0.1 * t0[r["_machine"]]):
             r = dict(r)
             r["_y"] = math.log(net / (r["_units"] * r["_mult"]))
+            r["_net"] = net
             rows.append(r)
     if len(rows) < min_rows:
         return None
@@ -412,11 +503,36 @@ def _fit_rows(all_rows, features, t0, spec, min_rows):
                 fit_alpha = False
                 alpha_note = f"cores follow the size (r={corr:+.2f}); alpha assumed"
 
-    # Design matrix: intercept, log sizes, [log cores], class dummies, task dummies
-    columns = ["intercept"] + [f"log {n}" for n in features]
+    # Groups with their own size exponents (spec.slope_by): the most common
+    # value is the reference and uses the shared exponents; another gets its
+    # own when it has enough runs spanning sizes.
+    group_of = [
+        str(r.get(spec.slope_by, "") or "") if spec.slope_by else "" for r in rows
+    ]
+    groups = sorted(set(group_of))
+    ref_group = max(groups, key=group_of.count)
+    fitted = [n for n in features if n not in zero]
+    delta_groups = []
+    for g in groups:
+        if g == ref_group or g in no_delta:
+            continue
+        mine = [r for r, h in zip(rows, group_of) if h == g]
+        if len(mine) >= 3 and all(
+            np.std(np.log([r["_size"][n] for r in mine])) > 0 for n in fitted
+        ):
+            delta_groups.append(g)
+
+    # Design matrix: intercept, log sizes (shared, then each group's own),
+    # [log cores], class dummies, task dummies
+    columns = ["intercept"] + [f"log {n}" for n in fitted]
     X = [np.ones(len(rows))]
-    for n in features:
+    for n in fitted:
         X.append(np.log([r["_size"][n] for r in rows]))
+    for g in delta_groups:
+        mask = np.array([1.0 if h == g else 0.0 for h in group_of])
+        for n in fitted:
+            columns.append(f"log {n} @ {g}")
+            X.append(mask * np.log([r["_size"][n] for r in rows]))
     if fit_alpha:
         columns.append("log cores")
         X.append(np.log(cores))
@@ -439,18 +555,25 @@ def _fit_rows(all_rows, features, t0, spec, min_rows):
     y = np.array([r["_y"] for r in rows])
     machine_index = np.array([machines.index(r["_machine"]) for r in rows])
 
-    # Alternate: ridge on the shared part, shrunk means for the machines.
+    # Weights: net time to a power, normalized to the number of rows
+    power = WEIGHT_POWER if weight_power is None else weight_power
+    weights = np.array([r["_net"] for r in rows]) ** power
+    weights *= len(rows) / weights.sum()
+
+    # Alternate: weighted ridge on the shared part, shrunk means for the machines.
     offsets = np.zeros(len(machines))
     penalty = np.full(X.shape[1], RIDGE)
     penalty[0] = 0.0
+    XW = X * weights[:, None]
     for _ in range(4):
         target = y - offsets[machine_index]
-        beta = np.linalg.solve(X.T @ X + np.diag(penalty), X.T @ target)
+        beta = np.linalg.solve(XW.T @ X + np.diag(penalty), XW.T @ target)
         resid = y - X @ beta
         for m in range(len(machines)):
             mask = machine_index == m
             n = mask.sum()
-            offsets[m] = resid[mask].mean() * n / (n + MACHINE_SHRINK) if n else 0.0
+            mean = np.average(resid[mask], weights=weights[mask]) if n else 0.0
+            offsets[m] = mean * n / (n + MACHINE_SHRINK) if n else 0.0
         # Keep the offsets centred: their mean belongs to the intercept
         shift = offsets.mean()
         offsets -= shift
@@ -473,7 +596,7 @@ def _fit_rows(all_rows, features, t0, spec, min_rows):
     wall = np.array([r["_wall"] for r in rows])
     # The score a start-up constant is chosen by: the log error of the wall
     # time itself, which both the constant and the power law must explain
-    score = float((np.log(predicted / wall) ** 2).sum())
+    score = float((weights * np.log(predicted / wall) ** 2).sum())
     return {
         "score": score,
         "rows": rows,
@@ -493,6 +616,8 @@ def _fit_rows(all_rows, features, t0, spec, min_rows):
         "alpha_size_mean": alpha_size_mean,
         "fit_alpha": fit_alpha,
         "alpha_note": alpha_note,
+        "slope_groups": groups,
+        "delta_groups": delta_groups,
         "feature_log_range": {
             n: [
                 float(np.log(min(r["_size"][n] for r in rows))),
@@ -513,6 +638,16 @@ def _assemble(program, spec, features, f):
         name: float(b)
         for name, b in zip(columns, beta)
         if name not in ("log cores", "log cores x log size")
+    }
+    for n in features:
+        coefficients.setdefault(f"log {n}", 0.0)  # held at zero
+    slope_deltas = {
+        g: {
+            n: coefficients.pop(f"log {n} @ {g}")
+            for n in features
+            if f"log {n} @ {g}" in coefficients
+        }
+        for g in f["delta_groups"]
     }
     class_offsets = {c: coefficients.pop(f"class {c}", 0.0) for c in f["classes"]}
     task_offsets = {t: coefficients.pop(f"task {t}", 0.0) for t in f["tasks"]}
@@ -542,6 +677,10 @@ def _assemble(program, spec, features, f):
         "features": features,
         "feature_log_means": f["feature_log_means"],
         "coefficients": coefficients,  # intercept and log-size slopes
+        "slope_by": spec.slope_by,
+        "slope_groups": f["slope_groups"],
+        "slope_deltas": slope_deltas,  # {group: {feature: added slope}}
+        "notes": f.get("notes", []),
         "alpha": f["alpha"],
         "alpha_slope": f["alpha_slope"],
         "alpha_size_mean": f["alpha_size_mean"],
@@ -800,10 +939,18 @@ def predict(
             # orders of magnitude is not an estimate (a model fitted to small
             # molecules gave 20-atom QZ fragments 11 hours and 20 s)
             return None
+    group = None
+    if model.get("slope_by"):
+        group = str(descriptors.get(model["slope_by"], "") or "")
+        if group not in model.get("slope_groups", [group]):
+            # A regime the records have not seen
+            return None
+    deltas = model.get("slope_deltas", {}).get(group, {})
     coef = model["coefficients"]
     y = coef["intercept"]
     for name in model["features"]:
-        y += coef.get(f"log {name}", 0.0) * math.log(sizes[name])
+        slope = coef.get(f"log {name}", 0.0) + deltas.get(name, 0.0)
+        y += slope * math.log(sizes[name])
     cores = max(1.0, float(ntasks or 1) * float(cpus_per_task or 1))
     alpha = model["alpha"]
     first = model["features"][0] if model["features"] else None
@@ -905,6 +1052,16 @@ def report_text(model):
             + "]"
         ),
     ]
+    for group, deltas in sorted(model.get("slope_deltas", {}).items()):
+        lines.append(
+            f"  {model['slope_by']} {group}: "
+            + ", ".join(
+                f"{model['coefficients'][f'log {n}'] + deltas.get(n, 0.0):.3f} log({n})"
+                for n in model["features"]
+            )
+        )
+    for note in model.get("notes", []):
+        lines.append(f"  note: {note}")
     for name, offset in sorted(model["classes"].items(), key=lambda kv: kv[1]):
         if name != model["reference_class"]:
             lines.append(f"  class {name or '(none)'}: x{math.exp(offset):.2f}")
