@@ -74,7 +74,11 @@ What this gives a step:
   recomputes them; a task whose inputs changed is recomputed. A task that failed is
   not retried within a run, but is tried again on a rerun, up to three attempts in
   all (the count resets when the inputs change). A task that stopped only because
-  the evaluator stopped (killed, out of walltime) does not count as an attempt. A
+  the evaluator stopped (killed, out of walltime), or because the step cancelled it,
+  does not count as an attempt. Nor does a task running out of its own time, the
+  first four times (``max_timeouts``): its estimate was too low, and each retry
+  gets twice the time. Later timeouts count, so a task that cannot finish in the
+  longest time the queue allows still stops. A
   process that a crashed run left behind is killed on the rerun, after checking it
   is the same process.
 * **Success beyond the exit code.** ``success_text`` names text that must appear in
@@ -194,6 +198,7 @@ With ``tasks = queue`` the ``TaskSet`` submits them, in bundles, as batch jobs:
 - A task whose bundle the queue stopped for running out of time is submitted
   again with twice the estimated time, and twice that after a second timeout,
   within ``bundle_walltime``. A walltime the task gives itself is used as given.
+  The first four such timeouts do not use up any of the task's attempts.
 - Tasks estimated to take less than ``inline_below`` seconds (default 60) run on
   the evaluator's machine when their program is installed there.
 - A task that carries its own ``config`` was configured for the evaluator's
@@ -251,8 +256,11 @@ tasks in flight are cancelled on their back end (``scancel`` of their bundle,
 or the local process killed), those still held for room are dropped, all are
 marked ``cancelled`` in the manifest so that a later run of the step submits
 them afresh rather than adopting a killed job, and ``run()`` yields a
-``cancelled`` result for each before returning. Results already produced
-stand. A step that runs several task sets at once can therefore stop the
+``cancelled`` result for each before returning. A cancelled task gets its
+attempt back. Results already produced stand, and so does a task that had
+already finished but was not yet collected -- in a bundle still running, or
+finishing while being cancelled: it is collected with its result, not marked
+cancelled. A step that runs several task sets at once can therefore stop the
 others when one fails.
 
 Several task sets submitting at once to the same cluster share one count of

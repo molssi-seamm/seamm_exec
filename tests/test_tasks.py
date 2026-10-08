@@ -1194,3 +1194,97 @@ def test_cancel_kills_local_tasks(tmp_path):
     assert time.time() - t0 < 5
     (result,) = results
     assert result.state == "cancelled"
+
+
+def test_timeouts_do_not_use_up_attempts_until_the_limit(tmp_path):
+    """Running out of time is the estimate's fault and the retry gets twice the
+    time, so the first max_timeouts timeouts give the attempt back (mbe's FEC
+    pilot: estimate-caused timeouts exhausted max_attempts). Later ones count,
+    so a task that cannot finish in the longest time allowed still stops."""
+    ts = TaskSet(
+        directory=tmp_path / "step",
+        backend=FakeRemote(),
+        local=pool(root=tmp_path),
+        executor=Local(),
+        max_timeouts=2,
+    )
+    ts.manifest.update("t", attempts=1)
+    for n in range(4):
+        ts.manifest.update("t", attempts=ts.manifest.get("t")["attempts"] + 1)
+        ts._finish_attempt("t", "lost", None, reason="job ended", timed_out=True)
+    record = ts.manifest.get("t")
+    assert [h["counted"] for h in record["history"]] == [False, False, True, True]
+    assert record["attempts"] == 1 + 2
+    assert "not counted" in record["history"][0]["reason"]
+    # A failure that is not a timeout counts as before
+    ts._finish_attempt("u", "failed", 1, reason="return code 1")
+    assert ts.manifest.get("u")["history"][0]["counted"] is True
+
+
+class PartlyDoneRemote(SlowRemote):
+    """Tasks t0 has finished (its bundle still running); t1 finishes while
+    being cancelled; the rest run until cancelled."""
+
+    def __init__(self):
+        super().__init__()
+        self.cancelling = False
+
+    def status(self, ids):
+        states = {}
+        for i in ids:
+            if i == "r-t0" or (i == "r-t1" and self.cancelling):
+                states[i] = "finished"
+            elif i in self.cancelled:
+                states[i] = "cancelled"
+            else:
+                states[i] = "running"
+        return states
+
+    def cancel(self, ids):
+        self.cancelling = True
+        super().cancel(ids)
+
+    def fetch(self, task, backend_id):
+        if backend_id in ("r-t0", "r-t1"):
+            return FakeRemote.fetch(self, task, backend_id)
+        return super().fetch(task, backend_id)
+
+
+def test_cancel_collects_tasks_that_already_finished(tmp_path):
+    """A task that finished before -- or while -- the step was cancelled keeps
+    its result and its DONE, not a 'cancelled' state; the cancelled ones get
+    their attempt back."""
+    import threading
+
+    remote = PartlyDoneRemote()
+    ts = TaskSet(
+        directory=tmp_path / "step",
+        backend=remote,
+        local=pool(root=tmp_path),
+        executor=Local(),
+        inline_below=0,
+        poll_interval=0.05,
+    )
+    # t0 is reported finished at once, so make the loop see it only at cancel:
+    # cancel before the first poll by setting the stop flag up front.
+    for i in range(3):
+        ts.add(shell_task(f"t{i}", "echo x", estimated_seconds=3600))
+    ts.cancel()
+    results = []
+    worker = threading.Thread(target=lambda: results.extend(ts.run()))
+    worker.start()
+    worker.join(timeout=10)
+    assert not worker.is_alive()
+    by_key = {r.key: r for r in results}
+    assert by_key["t0"].state == "finished"
+    assert by_key["t1"].state == "finished"
+    assert by_key["t2"].state == "cancelled"
+    assert remote.cancelled == ["r-t1", "r-t2"]  # t0 was not cancelled
+    for key in ("t0", "t1"):
+        record = ts.manifest.get(key)
+        assert record["state"] == "finished"
+        assert (ts.marker_directory(key) / "DONE").exists()
+    record = ts.manifest.get("t2")
+    assert record["state"] == "cancelled"
+    assert record["attempts"] == 0
+    assert record["history"][-1]["counted"] is False
