@@ -12,6 +12,7 @@ from .timing import (  # noqa: F401
     machine_class,
     record_task_timing,
     record_timing,
+    neighbour_count,
     structure_descriptors,
 )
 from .local_pool import LocalPool  # noqa: F401

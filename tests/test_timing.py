@@ -208,3 +208,44 @@ def test_benchmark_rows_are_marked(tmp_path, monkeypatch):
     record_timing("code", 2.0, {"n_atoms": 3}, directory=tmp_path)
     rows = read_timings("code", directory=tmp_path)
     assert rows[0]["benchmark"] == "set-1" and rows[1]["benchmark"] == ""
+
+
+def test_neighbour_count_tells_a_chain_from_a_cluster():
+    """Along a chain an atom has few neighbours within 8 Å; in dense 3D matter
+    many more, and the count is about what the density says."""
+    import numpy as np
+
+    from seamm_exec.timing import neighbour_count
+
+    chain = [(1.5 * i, 0.0, 0.0) for i in range(600)]
+    assert abs(neighbour_count(chain) - 10.0) < 0.5  # 5 each way within 8 Å
+    rng = np.random.default_rng(1)
+    density = 0.1  # atoms / Å^3, about water's
+    side = (6000 / density) ** (1 / 3)
+    cluster = rng.uniform(0, side, (6000, 3))
+    inside = 4 / 3 * np.pi * 8.0**3 * density  # ~214, less at the surface
+    count = neighbour_count(cluster)
+    assert 0.5 * inside < count < inside
+    assert count > 10 * neighbour_count(chain)
+    # Periodic: the same random box, no surface, by minimum image
+    assert abs(neighbour_count(cluster, cell=np.eye(3) * side) - inside) < 0.1 * inside
+    # A cell narrower than twice the radius needs explicit images: one atom in
+    # a 5 Å cube, against the lattice points within 8 Å counted directly
+    small = neighbour_count([(0.0, 0.0, 0.0)], cell=np.eye(3) * 5.0)
+    big = [
+        (5.0 * i, 5.0 * j, 5.0 * k)
+        for i in range(-3, 4)
+        for j in range(-3, 4)
+        for k in range(-3, 4)
+    ]
+    assert neighbour_count([(0, 0, 0)]) is None
+    centre = sum(1 for x, y, z in big if 0 < x * x + y * y + z * z <= 64.0)
+    assert small == centre
+
+
+def test_structure_descriptors_include_neighbours():
+    from seamm_exec import Geometry, structure_descriptors
+
+    g = Geometry([6] * 50, [(1.5 * i, 0.0, 0.0) for i in range(50)])
+    d = structure_descriptors(g)
+    assert 9.0 < d["neighbours"] < 10.0

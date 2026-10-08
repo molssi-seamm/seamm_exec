@@ -14,6 +14,11 @@ History
       -- was left out of the fit. The bundle worker now writes each task's start in
       its ``DONE``, and the result carries it back. For older records the fit uses
       the code's own time in place of the missing wall time.
+    * ``structure_descriptors`` adds ``neighbours``, the mean number of other atoms
+      within 8 Å of an atom (``neighbour_count``, sampled over up to 256 atoms,
+      periodic cells by minimum image or explicit images): how crowded a structure
+      is. MOZYME's cost per atom is about 8 times higher in a 1,000-atom water cluster
+      than along a 900-atom alkane chain.
 
 2026.10.8 -- The cost model's fit: no negative exponents, an exponent per regime, weighted by time
     * No size exponent is negative any more. Related size variables (basis functions

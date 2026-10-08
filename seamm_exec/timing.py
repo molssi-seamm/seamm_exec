@@ -278,6 +278,78 @@ def task_wall_seconds(result):
     return None
 
 
+#: The radius (Å) within which ``neighbours`` counts other atoms
+NEIGHBOUR_RADIUS = 8.0
+#: At most this many atoms are the centres the mean is taken over
+NEIGHBOUR_SAMPLE = 256
+
+
+def neighbour_count(coordinates, cell=None, radius=NEIGHBOUR_RADIUS):
+    """The mean number of other atoms within ``radius`` Å of an atom.
+
+    How crowded a structure is: small and nearly constant along a chain, several
+    times larger in dense 3D matter (a liquid, a protein, a crystal). The cost of
+    a calculation with local orbitals or prescreened integrals -- MOPAC's MOZYME,
+    a large ORCA basis -- follows it as well as the size: a 1,000-atom water
+    cluster took 8 times as long per atom with MOZYME as a 900-atom alkane chain.
+
+    ``coordinates``: (n, 3) Å. ``cell``: (3, 3) lattice vectors (rows, Å) for a
+    periodic structure, else None. The mean is over up to ``NEIGHBOUR_SAMPLE``
+    atoms, spread evenly through the list, against all atoms, so it costs little
+    even for 100,000 atoms. Returns a float, or None for a lone atom (no cell).
+    """
+    import numpy as np
+
+    xyz = np.asarray(coordinates, dtype=float).reshape(-1, 3)
+    n = len(xyz)
+    if n == 0 or (n == 1 and cell is None):
+        return None
+    centres = xyz[np.linspace(0, n - 1, min(n, NEIGHBOUR_SAMPLE)).astype(int)]
+    r2 = radius * radius
+    counts = []
+    if cell is None:
+        for c in centres:
+            d2 = ((xyz - c) ** 2).sum(axis=1)
+            counts.append(int((d2 <= r2).sum()) - 1)
+        return float(np.mean(counts))
+    lattice = np.asarray(cell, dtype=float).reshape(3, 3)
+    inverse = np.linalg.inv(lattice)
+    # The perpendicular widths of the cell decide how many images are needed
+    volume = abs(np.linalg.det(lattice))
+    widths = [
+        volume / np.linalg.norm(np.cross(lattice[(i + 1) % 3], lattice[(i + 2) % 3]))
+        for i in range(3)
+    ]
+    reach = [int(np.ceil(radius / w)) for w in widths]
+    if all(w >= 2 * radius for w in widths):
+        # Minimum image suffices
+        for c in centres:
+            f = (xyz - c) @ inverse
+            f -= np.round(f)
+            d2 = ((f @ lattice) ** 2).sum(axis=1)
+            counts.append(int((d2 <= r2).sum()) - 1)
+        return float(np.mean(counts))
+    shifts = (
+        np.array(
+            [
+                (i, j, k)
+                for i in range(-reach[0], reach[0] + 1)
+                for j in range(-reach[1], reach[1] + 1)
+                for k in range(-reach[2], reach[2] + 1)
+            ],
+            dtype=float,
+        )
+        @ lattice
+    )
+    for c in centres:
+        d = xyz - c
+        total = 0
+        for s in shifts:
+            total += int((((d + s) ** 2).sum(axis=1) <= r2).sum())
+        counts.append(total - 1)
+    return float(np.mean(counts))
+
+
 def structure_descriptors(configuration, atom_indices=None, ghost_atoms=None):
     """The descriptors of a structure every code's record shares.
 
@@ -285,7 +357,11 @@ def structure_descriptors(configuration, atom_indices=None, ghost_atoms=None):
     given (``atom_indices``, default all; ``ghost_atoms`` excluded and counted
     as ``n_ghosts``), ``n_electrons`` (the atoms' electrons less the charge),
     ``charge``, ``multiplicity``, ``periodicity`` and, for a periodic system,
-    ``volume`` (Å^3). Never raises: a missing attribute leaves its key out.
+    ``volume`` (Å^3); and ``neighbours``, the mean number of other atoms within
+    ``NEIGHBOUR_RADIUS`` (8 Å) of an atom -- the code's atoms, ghosts included,
+    which have basis functions -- how crowded the structure is
+    (:func:`neighbour_count`). Never raises: a missing attribute leaves its key
+    out.
     """
     d = {}
     try:
@@ -307,6 +383,18 @@ def structure_descriptors(configuration, atom_indices=None, ghost_atoms=None):
             d["volume"] = float(configuration.volume)
     except Exception as e:
         logger.debug(f"Structure descriptors incomplete: {e}")
+    try:
+        from .evaluator import structure_data
+
+        data = structure_data(configuration)
+        xyz = data["coordinates"]
+        if atom_indices is not None:
+            xyz = [xyz[i] for i in atom_indices]
+        count = neighbour_count(xyz, data.get("cell"))
+        if count is not None:
+            d["neighbours"] = round(count, 2)
+    except Exception as e:
+        logger.debug(f"No neighbour count: {e}")
     return d
 
 
