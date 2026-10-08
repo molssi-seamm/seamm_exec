@@ -83,6 +83,12 @@ class Spec:
         with regimes that scale differently, such as MOPAC's MOZYME (roughly
         linear) and traditional SCF (roughly cubic). The class columns give
         each value its own intercept; this gives it its own slope as well.
+    setup_by : str or None
+        A column whose values each get a fixed cost per run, in units of one
+        iteration: the work is ``units + setup``. For a code whose first step
+        is much dearer than the rest -- MOPAC's MOZYME localizes the orbitals
+        once, then runs fast cycles -- so a single point and a long
+        optimization share one per-cycle cost.
     """
 
     size: tuple = ("n_atoms",)
@@ -92,6 +98,7 @@ class Spec:
     multiplier: str | None = None
     default_alpha: float = 0.8
     slope_by: str | None = None
+    setup_by: str | None = None
 
     def to_dict(self):
         return {
@@ -102,6 +109,7 @@ class Spec:
             "multiplier": self.multiplier,
             "default_alpha": self.default_alpha,
             "slope_by": self.slope_by,
+            "setup_by": self.setup_by,
         }
 
     @classmethod
@@ -115,6 +123,7 @@ class Spec:
             multiplier=data.get("multiplier"),
             default_alpha=float(data.get("default_alpha", 0.8)),
             slope_by=data.get("slope_by"),
+            setup_by=data.get("setup_by"),
         )
 
 
@@ -141,6 +150,7 @@ FALLBACK_SPECS = {
         units="geometry_cycles",
         default_alpha=0.0,
         slope_by="regime",
+        setup_by="regime",
     ),
     "vasp": Spec(
         size=("nelect", "grid", "volume"),
@@ -201,6 +211,8 @@ CORES_SIZE_CORRELATION = 0.7
 #: How far outside the fitted size range (as a factor) a prediction is still made
 EXTRAPOLATION = 1.5
 RIDGE = 1e-3
+#: The setups tried for each group of ``Spec.setup_by``, in iterations
+SETUP_CANDIDATES = (0.0, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0)
 #: Each run's weight in the power-law fit is its net time (wall less start-up)
 #: to this power, normalized. The cost exponent grows with size, so a single
 #: power law fitted equally to many small runs bends low at the large end --
@@ -374,7 +386,7 @@ def fit(program, directory=None, spec=None, min_rows=8, weight_power=None):
 
     fractions = (None,) if len(measured) == len(machines) else (0.0, 0.3, 0.6, 0.9)
 
-    def search(features, zero, no_delta):
+    def search(features, zero, no_delta, setup=None):
         best = None
         for fraction in fractions:
             if fraction is None:
@@ -382,7 +394,15 @@ def fit(program, directory=None, spec=None, min_rows=8, weight_power=None):
             else:
                 t0 = {m: measured.get(m, fraction * p05[m]) for m in machines}
             result = _fit_rows(
-                rows, features, t0, spec, min_rows, zero, no_delta, weight_power
+                rows,
+                features,
+                t0,
+                spec,
+                min_rows,
+                zero,
+                no_delta,
+                weight_power,
+                setup or {},
             )
             if result is not None and (best is None or result["score"] < best["score"]):
                 best = result
@@ -436,6 +456,22 @@ def fit(program, directory=None, spec=None, min_rows=8, weight_power=None):
             f"held the exponent of {', '.join(sorted(zero))} at zero "
             "(the fit gave a negative one)"
         )
+    # A fixed cost per run for each group of spec.setup_by, in iterations:
+    # coordinate search over the candidates, keeping the best score.
+    setup = {}
+    if spec.setup_by:
+        groups = sorted({str(r.get(spec.setup_by, "") or "") for r in rows})
+        for _ in range(2):
+            for g in groups:
+                scores = []
+                for value in SETUP_CANDIDATES:
+                    trial = search(features, zero, no_delta, {**setup, g: value})
+                    if trial is not None:
+                        scores.append((trial["score"], value))
+                if scores:
+                    setup[g] = min(scores)[1]
+        best = search(features, zero, no_delta, setup)
+    best["setup"] = setup
     best["feature_log_means"] = {n: feature_log_means[n] for n in features}
     best["notes"] = notes
     model = _assemble(program, spec, features, best)
@@ -464,7 +500,15 @@ def _negative_slopes(f, features, zero):
 
 
 def _fit_rows(
-    all_rows, features, t0, spec, min_rows, zero=(), no_delta=(), weight_power=None
+    all_rows,
+    features,
+    t0,
+    spec,
+    min_rows,
+    zero=(),
+    no_delta=(),
+    weight_power=None,
+    setup=None,
 ):
     """One ridge fit for a given start-up constant; the pieces for the model.
 
@@ -478,7 +522,9 @@ def _fit_rows(
         # power law (its remainder is noise); it is predicted by t0 alone.
         if net > max(0.02, 0.1 * t0[r["_machine"]]):
             r = dict(r)
-            r["_y"] = math.log(net / (r["_units"] * r["_mult"]))
+            extra = (setup or {}).get(str(r.get(spec.setup_by, "") or ""), 0.0)
+            r["_work"] = r["_units"] + extra if spec.setup_by else r["_units"]
+            r["_y"] = math.log(net / (r["_work"] * r["_mult"]))
             r["_net"] = net
             rows.append(r)
     if len(rows) < min_rows:
@@ -591,7 +637,7 @@ def _fit_rows(
         alpha_size_mean = float(np.log([r["_size"][features[0]] for r in rows]).mean())
 
     predicted = np.exp(X @ beta + offsets[machine_index]) * np.array(
-        [r["_units"] * r["_mult"] for r in rows]
+        [r["_work"] * r["_mult"] for r in rows]
     ) + np.array([t0[r["_machine"]] for r in rows])
     wall = np.array([r["_wall"] for r in rows])
     # The score a start-up constant is chosen by: the log error of the wall
@@ -680,6 +726,8 @@ def _assemble(program, spec, features, f):
         "slope_by": spec.slope_by,
         "slope_groups": f["slope_groups"],
         "slope_deltas": slope_deltas,  # {group: {feature: added slope}}
+        "setup_by": spec.setup_by,
+        "setup": f.get("setup", {}),  # {group: fixed cost per run, in units}
         "notes": f.get("notes", []),
         "alpha": f["alpha"],
         "alpha_slope": f["alpha_slope"],
@@ -1005,8 +1053,12 @@ def predict(
         spread += model["machine_offset_sd"] * _interp_quantile(
             {str(k): v for k, v in z.items()}, quantile
         )
-    median = math.exp(y) * units * mult + t0
-    seconds = math.exp(y + spread) * units * mult + t0
+    work = units
+    if model.get("setup_by"):
+        group = str(descriptors.get(model["setup_by"], "") or "")
+        work = units + model.get("setup", {}).get(group, 0.0)
+    median = math.exp(y) * work * mult + t0
+    seconds = math.exp(y + spread) * work * mult + t0
     return {
         "seconds": seconds,
         "median": median,
@@ -1059,6 +1111,11 @@ def report_text(model):
                 f"{model['coefficients'][f'log {n}'] + deltas.get(n, 0.0):.3f} log({n})"
                 for n in model["features"]
             )
+        )
+    for group, value in sorted(model.get("setup", {}).items()):
+        lines.append(
+            f"  {model['setup_by']} {group or '(none)'}: setup {value:g} "
+            "iterations per run"
         )
     for note in model.get("notes", []):
         lines.append(f"  note: {note}")

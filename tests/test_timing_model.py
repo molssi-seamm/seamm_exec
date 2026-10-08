@@ -534,3 +534,46 @@ def test_large_runs_weigh_more(tmp_path):
         ratios[power] = p["median"] / largest
     assert abs(ratios[tm.WEIGHT_POWER] - 1) < abs(ratios[0.0] - 1)
     assert ratios[tm.WEIGHT_POWER] > 0.85
+
+
+def test_a_fixed_setup_per_run(tmp_path):
+    """A code whose first step is much dearer than the rest (MOZYME localizes
+    the orbitals once): with setup_by the fit finds the setup in iterations,
+    so a single point and a long optimization share one per-cycle cost."""
+    rng = random.Random(11)
+    entries = []
+    for n in (200, 400, 800, 1600) * 3:
+        for task, cycles in (("energy", 0), ("opt", 40), ("opt", 150)):
+            per_cycle = math.exp(-9 + 1.0 * math.log(n) + rng.gauss(0, 0.03))
+            code = (max(cycles, 1) + 20) * per_cycle  # setup = 20 cycles
+            entries.append(
+                {
+                    "task": task,
+                    "regime": "mozyme",
+                    "n": n,
+                    "cycles": cycles,
+                    "wall": 0.5 + code,
+                    "code_seconds": code,
+                }
+            )
+    _rows(tmp_path, "testcode", entries)
+    plain = tm.Spec(size=("n",), klass=("regime",), units="cycles")
+    with_setup = tm.Spec(
+        size=("n",), klass=("regime",), units="cycles", setup_by="regime"
+    )
+    errors = {}
+    for name, spec in (("plain", plain), ("setup", with_setup)):
+        model = tm.fit("testcode", directory=tmp_path, spec=spec)
+        worst = 0.0
+        # optimizations far shorter and longer than the records': where a
+        # per-cycle cost that has absorbed the setup goes wrong
+        for task, cycles in (("energy", 0), ("opt", 5), ("opt", 600)):
+            d = {"task": task, "regime": "mozyme", "n": 1600}
+            p = tm.predict("testcode", d, model=model, units=max(cycles, 1))
+            truth = 0.5 + (max(cycles, 1) + 20) * math.exp(-9 + math.log(1600))
+            worst = max(worst, abs(math.log(p["median"] / truth)))
+        errors[name] = worst
+        if name == "setup":
+            assert model["setup"]["mozyme"] == 20.0
+            assert "setup 20 iterations" in tm.report_text(model)
+    assert errors["setup"] < 0.1 < errors["plain"]

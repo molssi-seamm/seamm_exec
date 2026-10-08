@@ -1,6 +1,14 @@
 =======
 History
 =======
+2026.10.8.1 -- A fixed cost per run in the cost model
+    * A step's spec may name a column (``setup_by``) whose values each get a fixed
+      cost per run, in iterations, found by the fit: the work is ``iterations +
+      setup``. For codes whose first step is much dearer than the rest -- MOPAC's
+      MOZYME localizes the orbitals once, then runs fast cycles -- so a single point
+      and a long optimization share one per-cycle cost, and an optimization much
+      shorter or longer than the records' is predicted right.
+
 2026.10.8 -- The cost model's fit: no negative exponents, an exponent per regime, weighted by time
     * No size exponent is negative any more. Related size variables (basis functions
       and electrons over a mix of basis sets) could split one effect into a large
