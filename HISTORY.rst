@@ -8,6 +8,12 @@ History
       MOZYME localizes the orbitals once, then runs fast cycles -- so a single point
       and a long optimization share one per-cycle cost, and an optimization much
       shorter or longer than the records' is predicted right.
+    * Bugfix: a task run in a queue bundle never had a wall time in its timing record:
+      the worker on the node knew when it started but that never reached the
+      manifest, so every such record -- all 1,725 of the FEC pilot's on TinkerCliffs
+      -- was left out of the fit. The bundle worker now writes each task's start in
+      its ``DONE``, and the result carries it back. For older records the fit uses
+      the code's own time in place of the missing wall time.
 
 2026.10.8 -- The cost model's fit: no negative exponents, an exponent per regime, weighted by time
     * No size exponent is negative any more. Related size variables (basis functions

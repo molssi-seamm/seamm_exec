@@ -194,6 +194,10 @@ class TaskResult:
         The tar holding the task's directory, once archived.
     timed_out : bool
         Whether the queue stopped it for running past the time limit.
+    started, finished : float or None
+        When the task itself started and ended (epoch seconds), measured where
+        it ran -- for a task in a queue bundle, by the worker on the node. Its
+        wall time for the timing records; None when the back end cannot tell.
     raw : dict or None
         The ``Base.run()``-style dictionary, for this run's results.
     """
@@ -213,6 +217,8 @@ class TaskResult:
     archive: Path | None = None
     reason: str | None = None
     timed_out: bool = False
+    started: float | None = None
+    finished: float | None = None
     raw: dict | None = None
 
     @property
@@ -1062,9 +1068,23 @@ class TaskSet:
         self._stop.wait(self.poll_interval)
 
     def _finish_attempt(
-        self, key, state, returncode, reason=None, counted=True, timed_out=False
+        self,
+        key,
+        state,
+        returncode,
+        reason=None,
+        counted=True,
+        timed_out=False,
+        started=None,
+        finished=None,
     ):
-        """Record how an attempt ended; ``counted=False`` gives the attempt back."""
+        """Record how an attempt ended; ``counted=False`` gives the attempt back.
+
+        ``started``/``finished``: when the task itself ran, if the back end
+        knows (a queue bundle's worker writes them in the task's DONE); else
+        the manifest's start and now. A task in a queue bundle has no start in
+        the manifest (it starts on the node), so without them its wall time is
+        lost."""
         record = self.manifest.get(key) or {}
         history = list(record.get("history", []))
         history.append(
@@ -1078,8 +1098,8 @@ class TaskSet:
                 "returncode": returncode,
                 "reason": reason,
                 "submitted": record.get("submitted"),
-                "started": record.get("started"),
-                "finished": _now(),
+                "started": started if started is not None else record.get("started"),
+                "finished": finished if finished is not None else _now(),
             }
         )
         attempts = record.get("attempts", 0)
@@ -1132,6 +1152,8 @@ class TaskSet:
             result.returncode,
             reason=result.reason,
             timed_out=result.timed_out,
+            started=result.started,
+            finished=result.finished,
         )
         record = self.manifest.get(task.key)
         result.attempts = record.get("attempts", 0)

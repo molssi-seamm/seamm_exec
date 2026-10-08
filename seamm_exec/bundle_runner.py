@@ -95,7 +95,12 @@ def run_seamm_bundle(bundle):
     if not tasks:
         return 0
 
+    # When each task starts here: its wall time for the timing records (the
+    # submitting side only knows when it was queued)
+    start_times = {}
+
     def started(task, info):
+        start_times[task.key] = time.time()
         _log(f"{task.key}: started")
 
     submitted = time.time()
@@ -142,6 +147,7 @@ def run_seamm_bundle(bundle):
             else:
                 reason = f"return code {result.returncode}"
             marker = markers[task.key]
+            started_at = start_times.get(task.key)
             if result.state == "finished" and reason is None:
                 _write_json(
                     marker / "DONE",
@@ -153,6 +159,7 @@ def run_seamm_bundle(bundle):
                         "files": sorted(result.files),
                         "in_situ": result.in_situ,
                         "run_directory": result.run_directory,
+                        "started": started_at,
                         "finished": time.time(),
                     },
                 )
@@ -167,6 +174,7 @@ def run_seamm_bundle(bundle):
                         "returncode": result.returncode,
                         "reason": reason,
                         "fingerprint": task.digest(),
+                        "started": started_at,
                         "finished": time.time(),
                     },
                 )

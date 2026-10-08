@@ -577,3 +577,20 @@ def test_a_fixed_setup_per_run(tmp_path):
             assert model["setup"]["mozyme"] == 20.0
             assert "setup 20 iterations" in tm.report_text(model)
     assert errors["setup"] < 0.1 < errors["plain"]
+
+
+def test_code_time_stands_in_for_a_missing_wall_time(tmp_path):
+    """Tasks run in queue bundles before 2026.10.8.1 have no wall time; their
+    code's own time is used, and not for the start-up estimate."""
+    rows = []
+    for n in (100, 200, 400, 800) * 3:
+        code = math.exp(-9 + 2.0 * math.log(n))
+        rows.append({"n": n, "wall": 1.0 + code, "code_seconds": code})
+        rows.append({"n": n, "wall": 0.0, "code_seconds": code})
+    _rows(tmp_path, "testcode", rows)
+    spec = tm.Spec(size=("n",), klass=(), units=None)
+    loaded = tm.load_rows("testcode", tmp_path, spec)
+    assert len(loaded) == len(rows)
+    assert sum(r["_wall_from_code"] for r in loaded) == len(rows) // 2
+    model = tm.fit("testcode", directory=tmp_path, spec=spec)
+    assert abs(model["machines"]["m:q:CPU"]["t0"] - 1.0) < 0.05

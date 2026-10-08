@@ -284,8 +284,16 @@ def load_rows(program, directory=None, spec=None):
         if row.get("state", "finished") not in ("finished", ""):
             continue
         wall = _num(row.get("wall"))
+        from_code = False
         if wall is None or wall <= 0:
-            continue
+            # A task run in a queue bundle before seamm-exec 2026.10.8.1 has no
+            # wall time (its start was not carried back from the node); its
+            # code's own time stands in, a few percent short of the wall time,
+            # and it says nothing about the start-up.
+            wall = _num(row.get("code_seconds"))
+            if wall is None or wall <= 0:
+                continue
+            from_code = True
         ntasks = _num(row.get("ntasks")) or 1.0
         cpus = _num(row.get("cpus_per_task")) or 1.0
         sizes = {}
@@ -297,6 +305,7 @@ def load_rows(program, directory=None, spec=None):
         mult = _num(row.get(spec.multiplier)) if spec.multiplier else None
         row = dict(row)
         row["_wall"] = wall
+        row["_wall_from_code"] = from_code
         row["_cores"] = max(1.0, ntasks * cpus)
         row["_units"] = units if units and units > 0 else 1.0
         row["_mult"] = mult if mult and mult > 0 else 1.0
@@ -372,7 +381,7 @@ def fit(program, directory=None, spec=None, min_rows=8, weight_power=None):
             r["_wall"] - c
             for r in mine
             for c in [_num(r.get("code_seconds"))]
-            if c is not None and 0 <= c <= r["_wall"]
+            if c is not None and 0 <= c <= r["_wall"] and not r["_wall_from_code"]
         ]
         if len(gaps) >= max(3, len(mine) // 2):
             measured[machine] = max(0.0, float(np.median(gaps)))

@@ -33,6 +33,7 @@ from seamm_exec.scheduler_backend import (
     remote_name,
 )
 from seamm_exec.targets import find_target, write_target
+from seamm_exec import timing
 
 
 class FakeQueue:
@@ -202,6 +203,12 @@ def test_bundles_run_through_the_worker(job):
         # The TaskSet rewrote the worker's DONE in its own form
         done = json.loads((job / "step" / "tasks" / f"t{i}" / "DONE").read_text())
         assert done["files"] == ["out.txt"]
+        # The worker's start and end reach the attempt's history, so the
+        # timing records have the task's wall time (it starts on the node)
+        attempt = r.history[-1]
+        assert attempt["started"] is not None
+        assert 0 <= attempt["finished"] - attempt["started"] < 60
+        assert timing.task_wall_seconds(r) is not None
     script = queue.scripts[0]
     assert "#SBATCH --job-name" not in script  # given on the sbatch command
     assert "#SBATCH --ntasks=1" in script
