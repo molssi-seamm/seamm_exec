@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.scheduler_backend &#8212; SEAMM seamm-exec Plug-in 2026.10.8 documentation</title>
+    <title>seamm_exec.scheduler_backend &#8212; SEAMM seamm-exec Plug-in 2026.10.8.1 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=e2241af4"></script>
+    <script src="../../_static/documentation_options.js?v=ac5092dc"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.8" />
+  <meta name="docsearch:version" content="2026.10.8.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1156,6 +1156,8 @@
                 <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span>
                 <span class="n">in_situ</span><span class="o">=</span><span class="n">done</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"in_situ"</span><span class="p">),</span>
                 <span class="n">run_directory</span><span class="o">=</span><span class="n">done</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"run_directory"</span><span class="p">),</span>
+                <span class="n">started</span><span class="o">=</span><span class="n">done</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"started"</span><span class="p">),</span>
+                <span class="n">finished</span><span class="o">=</span><span class="n">done</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"finished"</span><span class="p">),</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="n">state</span> <span class="o">==</span> <span class="n">FAILED</span><span class="p">:</span>
             <span class="n">failed</span> <span class="o">=</span> <span class="n">_read_json</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">marker</span> <span class="o">/</span> <span class="s2">"FAILED"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
@@ -1167,6 +1169,8 @@
                 <span class="n">stderr</span><span class="o">=</span><span class="n">stderr</span><span class="p">,</span>
                 <span class="n">directory</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span>
                 <span class="n">reason</span><span class="o">=</span><span class="n">failed</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"reason"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">entry</span><span class="o">.</span><span class="n">reason</span><span class="p">,</span>
+                <span class="n">started</span><span class="o">=</span><span class="n">failed</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"started"</span><span class="p">),</span>
+                <span class="n">finished</span><span class="o">=</span><span class="n">failed</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"finished"</span><span class="p">),</span>
             <span class="p">)</span>
         <span class="k">return</span> <span class="n">TaskResult</span><span class="p">(</span>
             <span class="n">key</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>

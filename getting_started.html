@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.8 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.8.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="_static/documentation_options.js?v=e2241af4"></script>
+    <script src="_static/documentation_options.js?v=ac5092dc"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.8" />
+  <meta name="docsearch:version" content="2026.10.8.1" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -704,8 +704,10 @@ through <code class="xref py py-func docutils literal notranslate"><span class="
 layer) or <code class="xref py py-func docutils literal notranslate"><span class="pre">record_timing()</span></code> (one made with <code class="docutils literal notranslate"><span class="pre">executor.run</span></code>):
 the machine class (cluster, partition and CPU model, not the hostname), the
 cores, the wall time and outcome, and the descriptors of the calculation –
-the kind of task, the method’s class, basis functions, electrons, atoms, the
-iterations taken, the code’s own time. A file is set aside when it grows past
+the kind of task, the method’s class, basis functions, electrons, atoms, how
+crowded the structure is (<code class="docutils literal notranslate"><span class="pre">neighbours</span></code>, the mean number of atoms within 8 Å),
+the iterations taken, the code’s own time. A task run in a queue bundle gets its
+wall time from the worker on the node that ran it. A file is set aside when it grows past
 50 MB or when the columns change, and many runs may append at once. The design
 is in <code class="docutils literal notranslate"><span class="pre">docs/developer_guide/campaigns/2026-10-05</span></code>.</p>
 <p>The fit is a power law in the size variables a step declares, with an offset per
@@ -716,7 +718,9 @@ would split one effect that way, the fit leaves one out and its report says so;
 records that vary the basis at a fixed number of electrons, as the seed benchmark’s
 basis-set ladder does, let it keep both. A step whose code has regimes that scale
 differently names the column that tells them apart (<code class="docutils literal notranslate"><span class="pre">slope_by</span></code>, MOPAC’s
-<code class="docutils literal notranslate"><span class="pre">regime</span></code>) and each gets its own exponents.</p>
+<code class="docutils literal notranslate"><span class="pre">regime</span></code>) and each gets its own exponents; one whose first step is much dearer
+than the rest names a column (<code class="docutils literal notranslate"><span class="pre">setup_by</span></code>) whose groups each get a fixed cost per
+run, in iterations, found by the fit.</p>
 <p>A model only predicts what its records cover: a calculation whose size lies
 outside the fitted range (by more than a factor of 1.5), whose method class or
 task the records lack, or whose descriptors lack a size variable gets no

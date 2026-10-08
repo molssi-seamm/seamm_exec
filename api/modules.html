@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec &#8212; SEAMM seamm-exec Plug-in 2026.10.8 documentation</title>
+    <title>seamm_exec &#8212; SEAMM seamm-exec Plug-in 2026.10.8.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=e2241af4"></script>
+    <script src="../_static/documentation_options.js?v=ac5092dc"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.8" />
+  <meta name="docsearch:version" content="2026.10.8.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -683,6 +683,7 @@
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.tasks.TaskResult.attempts"><code class="docutils literal notranslate"><span class="pre">TaskResult.attempts</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.tasks.TaskResult.directory"><code class="docutils literal notranslate"><span class="pre">TaskResult.directory</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.tasks.TaskResult.files"><code class="docutils literal notranslate"><span class="pre">TaskResult.files</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.tasks.TaskResult.finished"><code class="docutils literal notranslate"><span class="pre">TaskResult.finished</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.tasks.TaskResult.from_raw"><code class="docutils literal notranslate"><span class="pre">TaskResult.from_raw()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.tasks.TaskResult.history"><code class="docutils literal notranslate"><span class="pre">TaskResult.history</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.tasks.TaskResult.in_situ"><code class="docutils literal notranslate"><span class="pre">TaskResult.in_situ</span></code></a></li>
@@ -693,6 +694,7 @@
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.tasks.TaskResult.restored"><code class="docutils literal notranslate"><span class="pre">TaskResult.restored</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.tasks.TaskResult.returncode"><code class="docutils literal notranslate"><span class="pre">TaskResult.returncode</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.tasks.TaskResult.run_directory"><code class="docutils literal notranslate"><span class="pre">TaskResult.run_directory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.tasks.TaskResult.started"><code class="docutils literal notranslate"><span class="pre">TaskResult.started</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.tasks.TaskResult.state"><code class="docutils literal notranslate"><span class="pre">TaskResult.state</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.tasks.TaskResult.stderr"><code class="docutils literal notranslate"><span class="pre">TaskResult.stderr</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.tasks.TaskResult.stdout"><code class="docutils literal notranslate"><span class="pre">TaskResult.stdout</span></code></a></li>
@@ -731,9 +733,12 @@
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing.COMMON_COLUMNS"><code class="docutils literal notranslate"><span class="pre">COMMON_COLUMNS</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing.DEFAULT_DIRECTORY"><code class="docutils literal notranslate"><span class="pre">DEFAULT_DIRECTORY</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing.MAX_BYTES"><code class="docutils literal notranslate"><span class="pre">MAX_BYTES</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing.NEIGHBOUR_RADIUS"><code class="docutils literal notranslate"><span class="pre">NEIGHBOUR_RADIUS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing.NEIGHBOUR_SAMPLE"><code class="docutils literal notranslate"><span class="pre">NEIGHBOUR_SAMPLE</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing.SCHEMA"><code class="docutils literal notranslate"><span class="pre">SCHEMA</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing.append_timing"><code class="docutils literal notranslate"><span class="pre">append_timing()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing.machine_class"><code class="docutils literal notranslate"><span class="pre">machine_class()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing.neighbour_count"><code class="docutils literal notranslate"><span class="pre">neighbour_count()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing.read_timings"><code class="docutils literal notranslate"><span class="pre">read_timings()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing.record_task_timing"><code class="docutils literal notranslate"><span class="pre">record_task_timing()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing.record_timing"><code class="docutils literal notranslate"><span class="pre">record_timing()</span></code></a></li>
@@ -761,11 +766,13 @@
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.QUANTILES"><code class="docutils literal notranslate"><span class="pre">QUANTILES</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.REFIT_DAYS"><code class="docutils literal notranslate"><span class="pre">REFIT_DAYS</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.REFIT_GROWTH"><code class="docutils literal notranslate"><span class="pre">REFIT_GROWTH</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.SETUP_CANDIDATES"><code class="docutils literal notranslate"><span class="pre">SETUP_CANDIDATES</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.Spec"><code class="docutils literal notranslate"><span class="pre">Spec</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.Spec.default_alpha"><code class="docutils literal notranslate"><span class="pre">Spec.default_alpha</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.Spec.from_dict"><code class="docutils literal notranslate"><span class="pre">Spec.from_dict()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.Spec.klass"><code class="docutils literal notranslate"><span class="pre">Spec.klass</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.Spec.multiplier"><code class="docutils literal notranslate"><span class="pre">Spec.multiplier</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.Spec.setup_by"><code class="docutils literal notranslate"><span class="pre">Spec.setup_by</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.Spec.size"><code class="docutils literal notranslate"><span class="pre">Spec.size</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.Spec.slope_by"><code class="docutils literal notranslate"><span class="pre">Spec.slope_by</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.timing_model.Spec.task"><code class="docutils literal notranslate"><span class="pre">Spec.task</span></code></a></li>

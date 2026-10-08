@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.timing &#8212; SEAMM seamm-exec Plug-in 2026.10.8 documentation</title>
+    <title>seamm_exec.timing &#8212; SEAMM seamm-exec Plug-in 2026.10.8.1 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=e2241af4"></script>
+    <script src="../../_static/documentation_options.js?v=ac5092dc"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.8" />
+  <meta name="docsearch:version" content="2026.10.8.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -723,8 +723,83 @@
 
 
 
+<span class="c1">#: The radius (Å) within which ``neighbours`` counts other atoms</span>
+<span class="n">NEIGHBOUR_RADIUS</span> <span class="o">=</span> <span class="mf">8.0</span>
+<span class="c1">#: At most this many atoms are the centres the mean is taken over</span>
+<span class="n">NEIGHBOUR_SAMPLE</span> <span class="o">=</span> <span class="mi">256</span>
+
+
+<div class="viewcode-block" id="neighbour_count">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing.neighbour_count">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">neighbour_count</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="n">NEIGHBOUR_RADIUS</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The mean number of other atoms within ``radius`` Å of an atom.</span>
+
+<span class="sd">    How crowded a structure is: small and nearly constant along a chain, several</span>
+<span class="sd">    times larger in dense 3D matter (a liquid, a protein, a crystal). The cost of</span>
+<span class="sd">    a calculation with local orbitals or prescreened integrals -- MOPAC's MOZYME,</span>
+<span class="sd">    a large ORCA basis -- follows it as well as the size: a 1,000-atom water</span>
+<span class="sd">    cluster took 8 times as long per atom with MOZYME as a 900-atom alkane chain.</span>
+
+<span class="sd">    ``coordinates``: (n, 3) Å. ``cell``: (3, 3) lattice vectors (rows, Å) for a</span>
+<span class="sd">    periodic structure, else None. The mean is over up to ``NEIGHBOUR_SAMPLE``</span>
+<span class="sd">    atoms, spread evenly through the list, against all atoms, so it costs little</span>
+<span class="sd">    even for 100,000 atoms. Returns a float, or None for a lone atom (no cell).</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+    <span class="n">xyz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">xyz</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="p">(</span><span class="n">n</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">cell</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">centres</span> <span class="o">=</span> <span class="n">xyz</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">NEIGHBOUR_SAMPLE</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)]</span>
+    <span class="n">r2</span> <span class="o">=</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">radius</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">cell</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">centres</span><span class="p">:</span>
+            <span class="n">d2</span> <span class="o">=</span> <span class="p">((</span><span class="n">xyz</span> <span class="o">-</span> <span class="n">c</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">counts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">((</span><span class="n">d2</span> <span class="o">&lt;=</span> <span class="n">r2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">counts</span><span class="p">))</span>
+    <span class="n">lattice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">inverse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">lattice</span><span class="p">)</span>
+    <span class="c1"># The perpendicular widths of the cell decide how many images are needed</span>
+    <span class="n">volume</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">lattice</span><span class="p">))</span>
+    <span class="n">widths</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">volume</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">lattice</span><span class="p">[(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span><span class="p">],</span> <span class="n">lattice</span><span class="p">[(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span><span class="p">]))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">reach</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">radius</span> <span class="o">/</span> <span class="n">w</span><span class="p">))</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">widths</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">w</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">radius</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">widths</span><span class="p">):</span>
+        <span class="c1"># Minimum image suffices</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">centres</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="p">(</span><span class="n">xyz</span> <span class="o">-</span> <span class="n">c</span><span class="p">)</span> <span class="o">@</span> <span class="n">inverse</span>
+            <span class="n">f</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="n">d2</span> <span class="o">=</span> <span class="p">((</span><span class="n">f</span> <span class="o">@</span> <span class="n">lattice</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">counts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">((</span><span class="n">d2</span> <span class="o">&lt;=</span> <span class="n">r2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">counts</span><span class="p">))</span>
+    <span class="n">shifts</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="n">reach</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">reach</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="n">reach</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">reach</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="n">reach</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">reach</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="p">],</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="p">)</span>
 <div class="viewcode-block" id="structure_descriptors">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing.structure_descriptors">[docs]</a>
+        <span class="o">@</span> <span class="n">lattice</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">centres</span><span class="p">:</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">xyz</span> <span class="o">-</span> <span class="n">c</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">shifts</span><span class="p">:</span>
+            <span class="n">total</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">((((</span><span class="n">d</span> <span class="o">+</span> <span class="n">s</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">r2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+        <span class="n">counts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">total</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">counts</span><span class="p">))</span></div>
+
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">structure_descriptors</span><span class="p">(</span><span class="n">configuration</span><span class="p">,</span> <span class="n">atom_indices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ghost_atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""The descriptors of a structure every code's record shares.</span>
 
@@ -732,7 +807,11 @@
 <span class="sd">    given (``atom_indices``, default all; ``ghost_atoms`` excluded and counted</span>
 <span class="sd">    as ``n_ghosts``), ``n_electrons`` (the atoms' electrons less the charge),</span>
 <span class="sd">    ``charge``, ``multiplicity``, ``periodicity`` and, for a periodic system,</span>
-<span class="sd">    ``volume`` (Å^3). Never raises: a missing attribute leaves its key out.</span>
+<span class="sd">    ``volume`` (Å^3); and ``neighbours``, the mean number of other atoms within</span>
+<span class="sd">    ``NEIGHBOUR_RADIUS`` (8 Å) of an atom -- the code's atoms, ghosts included,</span>
+<span class="sd">    which have basis functions -- how crowded the structure is</span>
+<span class="sd">    (:func:`neighbour_count`). Never raises: a missing attribute leaves its key</span>
+<span class="sd">    out.</span>
 <span class="sd">    """</span>
     <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">try</span><span class="p">:</span>
@@ -754,6 +833,18 @@
             <span class="n">d</span><span class="p">[</span><span class="s2">"volume"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">configuration</span><span class="o">.</span><span class="n">volume</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Structure descriptors incomplete: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.evaluator</span><span class="w"> </span><span class="kn">import</span> <span class="n">structure_data</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">structure_data</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
+        <span class="n">xyz</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">"coordinates"</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">atom_indices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">xyz</span> <span class="o">=</span> <span class="p">[</span><span class="n">xyz</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">atom_indices</span><span class="p">]</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="n">neighbour_count</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"cell"</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">count</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">d</span><span class="p">[</span><span class="s2">"neighbours"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No neighbour count: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">d</span></div>
 
 

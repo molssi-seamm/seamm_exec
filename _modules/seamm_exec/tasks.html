@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.tasks &#8212; SEAMM seamm-exec Plug-in 2026.10.8 documentation</title>
+    <title>seamm_exec.tasks &#8212; SEAMM seamm-exec Plug-in 2026.10.8.1 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=e2241af4"></script>
+    <script src="../../_static/documentation_options.js?v=ac5092dc"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.8" />
+  <meta name="docsearch:version" content="2026.10.8.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -635,6 +635,10 @@
 <span class="sd">        The tar holding the task's directory, once archived.</span>
 <span class="sd">    timed_out : bool</span>
 <span class="sd">        Whether the queue stopped it for running past the time limit.</span>
+<span class="sd">    started, finished : float or None</span>
+<span class="sd">        When the task itself started and ended (epoch seconds), measured where</span>
+<span class="sd">        it ran -- for a task in a queue bundle, by the worker on the node. Its</span>
+<span class="sd">        wall time for the timing records; None when the back end cannot tell.</span>
 <span class="sd">    raw : dict or None</span>
 <span class="sd">        The ``Base.run()``-style dictionary, for this run's results.</span>
 <span class="sd">    """</span>
@@ -654,6 +658,8 @@
     <span class="n">archive</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">reason</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">timed_out</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">started</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">finished</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">raw</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
@@ -1560,9 +1566,23 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">poll_interval</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_finish_attempt</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">returncode</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">counted</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timed_out</span><span class="o">=</span><span class="kc">False</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">key</span><span class="p">,</span>
+        <span class="n">state</span><span class="p">,</span>
+        <span class="n">returncode</span><span class="p">,</span>
+        <span class="n">reason</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">counted</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">timed_out</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">started</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">finished</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">"""Record how an attempt ended; ``counted=False`` gives the attempt back."""</span>
+<span class="w">        </span><span class="sd">"""Record how an attempt ended; ``counted=False`` gives the attempt back.</span>
+
+<span class="sd">        ``started``/``finished``: when the task itself ran, if the back end</span>
+<span class="sd">        knows (a queue bundle's worker writes them in the task's DONE); else</span>
+<span class="sd">        the manifest's start and now. A task in a queue bundle has no start in</span>
+<span class="sd">        the manifest (it starts on the node), so without them its wall time is</span>
+<span class="sd">        lost."""</span>
         <span class="n">record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
         <span class="n">history</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"history"</span><span class="p">,</span> <span class="p">[]))</span>
         <span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
@@ -1576,8 +1596,8 @@
                 <span class="s2">"returncode"</span><span class="p">:</span> <span class="n">returncode</span><span class="p">,</span>
                 <span class="s2">"reason"</span><span class="p">:</span> <span class="n">reason</span><span class="p">,</span>
                 <span class="s2">"submitted"</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"submitted"</span><span class="p">),</span>
-                <span class="s2">"started"</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"started"</span><span class="p">),</span>
-                <span class="s2">"finished"</span><span class="p">:</span> <span class="n">_now</span><span class="p">(),</span>
+                <span class="s2">"started"</span><span class="p">:</span> <span class="n">started</span> <span class="k">if</span> <span class="n">started</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"started"</span><span class="p">),</span>
+                <span class="s2">"finished"</span><span class="p">:</span> <span class="n">finished</span> <span class="k">if</span> <span class="n">finished</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">_now</span><span class="p">(),</span>
             <span class="p">}</span>
         <span class="p">)</span>
         <span class="n">attempts</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"attempts"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
@@ -1630,6 +1650,8 @@
             <span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span>
             <span class="n">reason</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">reason</span><span class="p">,</span>
             <span class="n">timed_out</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">timed_out</span><span class="p">,</span>
+            <span class="n">started</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">started</span><span class="p">,</span>
+            <span class="n">finished</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">finished</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
         <span class="n">result</span><span class="o">.</span><span class="n">attempts</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"attempts"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>

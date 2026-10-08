@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.bundle_runner &#8212; SEAMM seamm-exec Plug-in 2026.10.8 documentation</title>
+    <title>seamm_exec.bundle_runner &#8212; SEAMM seamm-exec Plug-in 2026.10.8.1 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=e2241af4"></script>
+    <script src="../../_static/documentation_options.js?v=ac5092dc"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.8" />
+  <meta name="docsearch:version" content="2026.10.8.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -527,7 +527,12 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">tasks</span><span class="p">:</span>
         <span class="k">return</span> <span class="mi">0</span>
 
+    <span class="c1"># When each task starts here: its wall time for the timing records (the</span>
+    <span class="c1"># submitting side only knows when it was queued)</span>
+    <span class="n">start_times</span> <span class="o">=</span> <span class="p">{}</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">started</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+        <span class="n">start_times</span><span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s2">: started"</span><span class="p">)</span>
 
     <span class="n">submitted</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
@@ -574,6 +579,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">reason</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"return code </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="si">}</span><span class="s2">"</span>
             <span class="n">marker</span> <span class="o">=</span> <span class="n">markers</span><span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">]</span>
+            <span class="n">started_at</span> <span class="o">=</span> <span class="n">start_times</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">"finished"</span> <span class="ow">and</span> <span class="n">reason</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">_write_json</span><span class="p">(</span>
                     <span class="n">marker</span> <span class="o">/</span> <span class="s2">"DONE"</span><span class="p">,</span>
@@ -585,6 +591,7 @@
                         <span class="s2">"files"</span><span class="p">:</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">files</span><span class="p">),</span>
                         <span class="s2">"in_situ"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">in_situ</span><span class="p">,</span>
                         <span class="s2">"run_directory"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">run_directory</span><span class="p">,</span>
+                        <span class="s2">"started"</span><span class="p">:</span> <span class="n">started_at</span><span class="p">,</span>
                         <span class="s2">"finished"</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span>
                     <span class="p">},</span>
                 <span class="p">)</span>
@@ -599,6 +606,7 @@
                         <span class="s2">"returncode"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span>
                         <span class="s2">"reason"</span><span class="p">:</span> <span class="n">reason</span><span class="p">,</span>
                         <span class="s2">"fingerprint"</span><span class="p">:</span> <span class="n">task</span><span class="o">.</span><span class="n">digest</span><span class="p">(),</span>
+                        <span class="s2">"started"</span><span class="p">:</span> <span class="n">started_at</span><span class="p">,</span>
                         <span class="s2">"finished"</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span>
                     <span class="p">},</span>
                 <span class="p">)</span>
