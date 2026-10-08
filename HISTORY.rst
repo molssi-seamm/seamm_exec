@@ -17,6 +17,7 @@ History
     * In a step's ``TIMING_BENCHMARK`` a chemistry may name the tasks it runs
       (``"tasks": ["Energy"]``), so a basis-set ladder runs energies and gradients
       without optimizations.
+    * Requires Python 3.12.
 
 2026.10.7.1 -- Bugfix: a provider that does not take the task; each code step declares its own timing benchmark
     * Bugfix: 2026.10.7 passed the task to a program's ``analyze_task`` whenever
