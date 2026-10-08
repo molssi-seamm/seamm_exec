@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>2026-10-05 – Predicting the time of calculations from timing records &#8212; SEAMM seamm-exec Plug-in 2026.10.7.1 documentation</title>
+    <title>2026-10-05 – Predicting the time of calculations from timing records &#8212; SEAMM seamm-exec Plug-in 2026.10.8 documentation</title>
   
   
   
@@ -26,8 +26,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
@@ -35,12 +35,12 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../../_static/documentation_options.js?v=1a433d58"></script>
+    <script src="../../../_static/documentation_options.js?v=e2241af4"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,8 +52,9 @@
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="prev" title="Rollout plan: phases 6 and 7, the orca.ini fix and the timing records" href="../2026-10-02/NOTES_rollout_plan_6-7-timing.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.7.1" />
+  <meta name="docsearch:version" content="2026.10.8" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -906,24 +907,84 @@ aside on a header change; tests.</p></td>
 Optimization, Frequencies, counterpoise sub-jobs, the model-chemistry task);
 <code class="docutils literal notranslate"><span class="pre">method_class</span></code> and the output parsing above; tests on the recorded output.</p></td>
 </tr>
-<tr class="row-even"><td><p>2</p></td>
-<td><p>The fit: <code class="docutils literal notranslate"><span class="pre">seamm-exec</span> <span class="pre">timing</span> <span class="pre">fit</span></code>, the model JSON, <code class="docutils literal notranslate"><span class="pre">predict()</span></code>, the report; the
-seed benchmark flowchart; fitted to ORCA rows from this Mac and ChemAI/ARC.</p></td>
+<tr class="row-even"><td><p>2 (done)</p></td>
+<td><p>The fit: <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">seamm_exec.timing_model</span> <span class="pre">fit</span></code>, the model JSON, <code class="docutils literal notranslate"><span class="pre">predict()</span></code>,
+the report, auto-refit; the seed benchmark, declared per step
+(<code class="docutils literal notranslate"><span class="pre">TIMING_BENCHMARK</span></code>, 2026.10.7.1); first fits on the Mac and TinkerCliffs.</p></td>
 </tr>
-<tr class="row-odd"><td><p>3</p></td>
-<td><p>ORCA’s <code class="docutils literal notranslate"><span class="pre">estimated_seconds</span></code> from <code class="docutils literal notranslate"><span class="pre">predict()</span></code>; score the fit against new rows.</p></td>
+<tr class="row-odd"><td><p>3 (done)</p></td>
+<td><p>ORCA’s <code class="docutils literal notranslate"><span class="pre">estimated_seconds</span></code> from <code class="docutils literal notranslate"><span class="pre">predict()</span></code>; the guards against what the
+records do not cover (2026.10.7).</p></td>
 </tr>
-<tr class="row-even"><td><p>4</p></td>
-<td><p>MOPAC (two regimes), Gaussian and VASP converted to the record; their old
-<code class="docutils literal notranslate"><span class="pre">_timing_data</span></code> code removed; the hand fit in <code class="docutils literal notranslate"><span class="pre">vasp_step.batch</span></code> replaced.</p></td>
+<tr class="row-even"><td><p>4 (done)</p></td>
+<td><p>MOPAC (two regimes), Gaussian, VASP, LAMMPS, Psi4 and DFTB+ converted to the
+record, each declaring its <code class="docutils literal notranslate"><span class="pre">TIMING_SPEC</span></code>; the old <code class="docutils literal notranslate"><span class="pre">_timing_data</span></code> code removed.
+Open: the hand fit in <code class="docutils literal notranslate"><span class="pre">vasp_step.batch</span></code> is still used for VASP estimates.</p></td>
 </tr>
-<tr class="row-odd"><td><p>5</p></td>
-<td><p>Bundle and job walltimes from the predictions; the GUI estimate; LAMMPS and the
-rest.</p></td>
+<tr class="row-odd"><td><p>5 (next)</p></td>
+<td><p><strong>Where a task runs, and where its time is predicted</strong> (section 8): the worker
+stamps the machine class into the result and the record uses it; a prediction
+names the target machine; models travel to the installation that needs them.</p></td>
+</tr>
+<tr class="row-even"><td><p>6</p></td>
+<td><p>Bundle and job walltimes from the predictions (the JobServer, with the target’s
+model); the GUI estimate; VASP’s estimate from the model; a bundle timeout
+under an estimate below the real time does not use up an attempt.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
+</section>
+<section id="where-a-task-runs-and-where-its-time-is-predicted">
+<h2>8. Where a task runs, and where its time is predicted<a class="headerlink" href="#where-a-task-runs-and-where-its-time-is-predicted" title="Link to this heading">#</a></h2>
+<p>Three things are tied today to the process that calls <code class="docutils literal notranslate"><span class="pre">analyze_task</span></code> – the
+evaluator – rather than to the machine that ran the task, and to the user’s
+home on that machine rather than to the installation:</p>
+<ul class="simple">
+<li><p><strong>The record’s machine class.</strong> <code class="docutils literal notranslate"><span class="pre">record_task_timing</span></code> calls
+<code class="docutils literal notranslate"><span class="pre">machine_class()</span></code> in the evaluator’s process. A <code class="docutils literal notranslate"><span class="pre">TaskResult</span></code> says
+nothing about where its bundle ran. This holds while the whole flowchart
+runs on the target (today’s routing: a job submitted on ChemAI to a
+TinkerCliffs queue runs entirely on TinkerCliffs, its bundles on the same
+cluster), but already mislabels within a cluster: TinkerCliffs’ <code class="docutils literal notranslate"><span class="pre">normal_q</span></code>
+has 296 AMD and 16 Intel nodes, and a bundle on an Intel node is recorded
+with the evaluator node’s CPU model, since the key is
+<code class="docutils literal notranslate"><span class="pre">cluster:partition:cpu_model</span></code>.</p></li>
+<li><p><strong>The prediction’s machine class.</strong> <code class="docutils literal notranslate"><span class="pre">predict()</span></code> defaults to the caller’s
+machine. An estimate made where the work will not run (the JobServer choosing
+a job’s walltime for a cluster queue, the GUI before submission) is the
+caller’s number with no offset and a widened spread.</p></li>
+<li><p><strong>Where the model lives.</strong> Records and models are in <code class="docutils literal notranslate"><span class="pre">~/.seamm.d/timing</span></code>
+of the user on each machine. TinkerCliffs’ model exists only in that user’s
+home there; nothing copies it, and a second user on the cluster has none
+until they seed.</p></li>
+</ul>
+<p>The design:</p>
+<ol class="arabic simple">
+<li><p>The task worker stamps <code class="docutils literal notranslate"><span class="pre">machine_class()</span></code> into the finished result when it
+writes <code class="docutils literal notranslate"><span class="pre">DONE</span></code> (the manifest carries it; <code class="docutils literal notranslate"><span class="pre">TaskResult</span></code> gets <code class="docutils literal notranslate"><span class="pre">machine</span></code>).
+<code class="docutils literal notranslate"><span class="pre">record_task_timing</span></code> prefers that stamp to its own environment, so a row
+says where the bundle ran, whatever ran the evaluator.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">predict()</span></code> takes the machine class of the queue the task is bound for
+(the queue section’s class, learned from the first stamped result or from
+the seed run), not the caller’s. A step’s <code class="docutils literal notranslate"><span class="pre">estimated_seconds</span></code> passes it
+through from the evaluator’s target.</p></li>
+<li><p>Records stay where they are written (large, needed only by the fit). Models
+(kilobytes of JSON) live under the installation, keyed by machine class:
+<code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/timing/models/&lt;machine&gt;/&lt;program&gt;.json</span></code>, written by the fit and
+read by <code class="docutils literal notranslate"><span class="pre">predict()</span></code> for any class, local or not. A JobServer queue that
+reaches a cluster over ssh pulls that cluster’s models into the local
+installation’s directory whenever it polls, so a job submitted from ChemAI
+to TinkerCliffs is estimated with TinkerCliffs’ model. The per-user
+directory remains the fallback for a machine without an installation root.</p></li>
+<li><p>Seeds are then per machine class that bundles land on: each TinkerCliffs
+node type (the Intel nodes with <code class="docutils literal notranslate"><span class="pre">--constraint</span></code>), ChemAI, the Macs; Owl and
+Falcon only when a queue targets them.</p></li>
+</ol>
+<p>This answers open question 1 for the common case: models are per installation
+and per machine class, copied between installations by the queues that connect
+them; publishing them centrally stays an option for machine classes a site has
+never run on.</p>
 </section>
 <section id="open-questions">
 <h2>Open questions<a class="headerlink" href="#open-questions" title="Link to this heading">#</a></h2>
@@ -989,6 +1050,7 @@ a login node are not always allowed) or only through the JobServer.</p></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#seeding-a-new-machine-class">5. Seeding a new machine class</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#descriptors-per-code">6. Descriptors per code</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#phases">7. Phases</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#where-a-task-runs-and-where-its-time-is-predicted">8. Where a task runs, and where its time is predicted</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#open-questions">Open questions</a></li>
 </ul>
 </li>
@@ -1018,8 +1080,8 @@ a login node are not always allowed) or only through the JobServer.</p></li>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1031,7 +1093,7 @@ a login node are not always allowed) or only through the JobServer.</p></li>
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

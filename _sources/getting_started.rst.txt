@@ -289,6 +289,16 @@ iterations taken, the code's own time. A file is set aside when it grows past
 50 MB or when the columns change, and many runs may append at once. The design
 is in ``docs/developer_guide/campaigns/2026-10-05``.
 
+The fit is a power law in the size variables a step declares, with an offset per
+method class, task and machine, and a parallel exponent that grows with size. Each
+run counts in proportion to its time, so the fit is best where the time is. No size
+exponent may be negative: when related variables (basis functions and electrons)
+would split one effect that way, the fit leaves one out and its report says so;
+records that vary the basis at a fixed number of electrons, as the seed benchmark's
+basis-set ladder does, let it keep both. A step whose code has regimes that scale
+differently names the column that tells them apart (``slope_by``, MOPAC's
+``regime``) and each gets its own exponents.
+
 A model only predicts what its records cover: a calculation whose size lies
 outside the fitted range (by more than a factor of 1.5), whose method class or
 task the records lack, or whose descriptors lack a size variable gets no

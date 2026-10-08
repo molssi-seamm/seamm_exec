@@ -531,3 +531,26 @@ prune it until 7870006 has finished).  Update 20:05–20:25 EDT, rc=0,
 strain-step 2026.10.6 and supercell-step 2026.10.6.  ``uv pip check`` clean;
 no services on TinkerCliffs; the flowchart record meant no scan.  Science
 told to release its held ion-shell relabels; MBE told the switch had happened.
+
+Round 5, 2026-10-07: seamm-exec 2026.10.7.1, orca-step and mopac-step 2026.10.7
+-------------------------------------------------------------------------------
+
+The MOPAC batch-task fix (2026.10.7 passed ``task=`` to a provider that did
+not take it), the per-step timing benchmark (``TIMING_BENCHMARK``) and the
+cost-model guards. ``update --latest --all`` on every site, services
+restarted afterwards so they run from the new venv; ``--all`` also took
+vasp-step 2026.10.7, mbe-step 2026.10.7 and seamm-mbe 2026.10.6.1 where
+they were behind. Gates: no SEAMM job running anywhere except TinkerCliffs,
+where the FEC pilot (7881654), its VASP bundle and the seed benchmark
+(7882747) all run from pinned real paths.
+
+================ ======================= ==============================
+Site             new venv                notes
+================ ======================= ==============================
+TinkerCliffs     2026-10-07T09-47-55     no services
+Mac mini         2026-10-07T09-50-39     manager not on the ssh PATH: use ~/.local/bin
+Mac ``~/SEAMM``  2026-10-07T09-52-30     switch refused (link-started services) -> ``--force`` + restart
+``~/SEAMM_DEV``  2026-10-07T09-52-42
+MolSSI10         2026-10-07T09-54-50
+ChemAI           2026-10-07T09-56-12     switched without refusal (services on real paths since round 4); restarted, no tracebacks
+================ ======================= ==============================

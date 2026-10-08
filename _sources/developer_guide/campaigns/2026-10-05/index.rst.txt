@@ -394,14 +394,73 @@ Phase     Content
 1 (done)  ``orca_step`` records the new rows from ``run_orca_job`` (every ORCA run: Energy,
           Optimization, Frequencies, counterpoise sub-jobs, the model-chemistry task);
           ``method_class`` and the output parsing above; tests on the recorded output.
-2         The fit: ``seamm-exec timing fit``, the model JSON, ``predict()``, the report; the
-          seed benchmark flowchart; fitted to ORCA rows from this Mac and ChemAI/ARC.
-3         ORCA's ``estimated_seconds`` from ``predict()``; score the fit against new rows.
-4         MOPAC (two regimes), Gaussian and VASP converted to the record; their old
-          ``_timing_data`` code removed; the hand fit in ``vasp_step.batch`` replaced.
-5         Bundle and job walltimes from the predictions; the GUI estimate; LAMMPS and the
-          rest.
+2 (done)  The fit: ``python -m seamm_exec.timing_model fit``, the model JSON, ``predict()``,
+          the report, auto-refit; the seed benchmark, declared per step
+          (``TIMING_BENCHMARK``, 2026.10.7.1); first fits on the Mac and TinkerCliffs.
+3 (done)  ORCA's ``estimated_seconds`` from ``predict()``; the guards against what the
+          records do not cover (2026.10.7).
+4 (done)  MOPAC (two regimes), Gaussian, VASP, LAMMPS, Psi4 and DFTB+ converted to the
+          record, each declaring its ``TIMING_SPEC``; the old ``_timing_data`` code removed.
+          Open: the hand fit in ``vasp_step.batch`` is still used for VASP estimates.
+5 (next)  **Where a task runs, and where its time is predicted** (section 8): the worker
+          stamps the machine class into the result and the record uses it; a prediction
+          names the target machine; models travel to the installation that needs them.
+6         Bundle and job walltimes from the predictions (the JobServer, with the target's
+          model); the GUI estimate; VASP's estimate from the model; a bundle timeout
+          under an estimate below the real time does not use up an attempt.
 ========= ====================================================================================
+
+8. Where a task runs, and where its time is predicted
+-----------------------------------------------------
+
+Three things are tied today to the process that calls ``analyze_task`` -- the
+evaluator -- rather than to the machine that ran the task, and to the user's
+home on that machine rather than to the installation:
+
+* **The record's machine class.** ``record_task_timing`` calls
+  ``machine_class()`` in the evaluator's process. A ``TaskResult`` says
+  nothing about where its bundle ran. This holds while the whole flowchart
+  runs on the target (today's routing: a job submitted on ChemAI to a
+  TinkerCliffs queue runs entirely on TinkerCliffs, its bundles on the same
+  cluster), but already mislabels within a cluster: TinkerCliffs' ``normal_q``
+  has 296 AMD and 16 Intel nodes, and a bundle on an Intel node is recorded
+  with the evaluator node's CPU model, since the key is
+  ``cluster:partition:cpu_model``.
+* **The prediction's machine class.** ``predict()`` defaults to the caller's
+  machine. An estimate made where the work will not run (the JobServer choosing
+  a job's walltime for a cluster queue, the GUI before submission) is the
+  caller's number with no offset and a widened spread.
+* **Where the model lives.** Records and models are in ``~/.seamm.d/timing``
+  of the user on each machine. TinkerCliffs' model exists only in that user's
+  home there; nothing copies it, and a second user on the cluster has none
+  until they seed.
+
+The design:
+
+1. The task worker stamps ``machine_class()`` into the finished result when it
+   writes ``DONE`` (the manifest carries it; ``TaskResult`` gets ``machine``).
+   ``record_task_timing`` prefers that stamp to its own environment, so a row
+   says where the bundle ran, whatever ran the evaluator.
+2. ``predict()`` takes the machine class of the queue the task is bound for
+   (the queue section's class, learned from the first stamped result or from
+   the seed run), not the caller's. A step's ``estimated_seconds`` passes it
+   through from the evaluator's target.
+3. Records stay where they are written (large, needed only by the fit). Models
+   (kilobytes of JSON) live under the installation, keyed by machine class:
+   ``<root>/timing/models/<machine>/<program>.json``, written by the fit and
+   read by ``predict()`` for any class, local or not. A JobServer queue that
+   reaches a cluster over ssh pulls that cluster's models into the local
+   installation's directory whenever it polls, so a job submitted from ChemAI
+   to TinkerCliffs is estimated with TinkerCliffs' model. The per-user
+   directory remains the fallback for a machine without an installation root.
+4. Seeds are then per machine class that bundles land on: each TinkerCliffs
+   node type (the Intel nodes with ``--constraint``), ChemAI, the Macs; Owl and
+   Falcon only when a queue targets them.
+
+This answers open question 1 for the common case: models are per installation
+and per machine class, copied between installations by the queues that connect
+them; publishing them centrally stays an option for machine classes a site has
+never run on.
 
 Open questions
 --------------
