@@ -375,7 +375,11 @@ class TaskSet:
     retried; a lost one is, up to ``max_lost_retries``. Across runs a failed or
     lost task is tried again until it has had ``max_attempts`` attempts in all.
     A local task that stopped because the evaluator stopped (killed, out of
-    walltime) does not use up an attempt.
+    walltime) does not use up an attempt, nor does a task the step cancelled.
+    Nor does running out of time, the first ``max_timeouts`` times: that is the
+    estimate's fault, not the task's, and each retry asks for twice the time
+    (within the queue's limits). Later timeouts count, so a task that cannot
+    finish even in the longest time allowed still stops.
 
     Parameters
     ----------
@@ -414,6 +418,9 @@ class TaskSet:
         Attempts per task over all runs.
     max_lost_retries : int = 2
         Resubmissions of a lost task within one run.
+    max_timeouts : int = 4
+        Times a task may run out of time without using up an attempt; with the
+        doubling, up to 16 times the first walltime.
     inline_below : float, optional
         Tasks estimated to take less than this many seconds run in the local
         pool rather than on a remote back end, if their program is installed
@@ -438,6 +445,7 @@ class TaskSet:
         bundle_walltime=None,
         max_attempts=3,
         max_lost_retries=2,
+        max_timeouts=4,
         inline_below=None,
         poll_interval=1.0,
     ):
@@ -455,6 +463,7 @@ class TaskSet:
         self.archive = archive
         self.max_attempts = max_attempts
         self.max_lost_retries = max_lost_retries
+        self.max_timeouts = max_timeouts
         self.poll_interval = poll_interval
 
         # The job's target, unless the caller chose the back end itself
@@ -704,27 +713,57 @@ class TaskSet:
 
     def _cancel_inflight(self, inflight, reason="cancelled"):
         """Cancel the tasks in flight and drop those held; yield their results."""
+        yield from self._stop_inflight(inflight, reason)
+        self.manifest.flush(force=True)
+
+    def _stop_inflight(self, inflight, reason):
+        """Cancel the tasks in flight and drop those held, returning their
+        results. A task that has already ended -- its bundle still running, or
+        not yet polled -- is collected as it ended, not marked cancelled. A
+        cancelled task gets its attempt back: it was stopped, it did not fail.
+        """
+        results = []
         by_backend = {}
         for (backend, backend_id), task in inflight.items():
             by_backend.setdefault(backend, []).append((backend_id, task))
         for backend, entries in by_backend.items():
-            try:
-                backend.cancel([i for i, _ in entries])
-            except Exception:
-                # Left as they were, so a restart adopts them rather than
-                # submitting duplicates.
-                logger.exception("Error cancelling tasks")
-                continue
-            for _, task in entries:
-                self.manifest.update(task.key, state=CANCELLED, reason=reason)
-                result = TaskResult(
-                    key=task.key,
-                    state=CANCELLED,
-                    directory=self.task_directory(task),
-                    reason=reason,
-                )
+            ended = self._ended(backend, entries)
+            running = [(i, t) for i, t in entries if i not in ended]
+            if running:
+                try:
+                    backend.cancel([i for i, _ in running])
+                except Exception:
+                    # Left as they were, so a restart adopts them rather than
+                    # submitting duplicates.
+                    logger.exception("Error cancelling tasks")
+                    running = []
+                # One that ended while being cancelled keeps its result.
+                ended.update(self._ended(backend, running))
+            for backend_id, task in entries:
+                if backend_id in ended:
+                    try:
+                        result = self._collect(
+                            task, backend, backend_id, ended[backend_id]
+                        )
+                    except Exception:
+                        logger.exception(f"Error collecting task {task.key}")
+                        continue
+                elif (backend_id, task) in running:
+                    self._finish_attempt(
+                        task.key, CANCELLED, None, reason=reason, counted=False
+                    )
+                    if hasattr(backend, "forget"):
+                        backend.forget(backend_id)
+                    result = TaskResult(
+                        key=task.key,
+                        state=CANCELLED,
+                        directory=self.task_directory(task),
+                        reason=reason,
+                    )
+                else:
+                    continue
                 self._results[task.key] = result
-                yield result
+                results.append(result)
         inflight.clear()
         for _, _, members in self._held:
             for task in members:
@@ -736,9 +775,21 @@ class TaskSet:
                     reason=reason,
                 )
                 self._results[task.key] = result
-                yield result
+                results.append(result)
         self._held = []
-        self.manifest.flush(force=True)
+        return results
+
+    @staticmethod
+    def _ended(backend, entries):
+        """``{backend_id: state}`` of the entries that have finished or failed."""
+        if not entries:
+            return {}
+        try:
+            states = backend.status([i for i, _ in entries])
+        except Exception:
+            logger.exception("Error asking for the tasks' states")
+            return {}
+        return {i: states[i] for i, _ in entries if states.get(i) in (FINISHED, FAILED)}
 
     def run(self) -> Iterator[TaskResult]:
         """Submit what is not done, wait, and yield results as they finish."""
@@ -879,19 +930,11 @@ class TaskSet:
                     self._wait(inflight)
         finally:
             if inflight:
-                by_backend = {}
-                for (backend, backend_id), task in inflight.items():
-                    by_backend.setdefault(backend, []).append((backend_id, task))
-                for backend, entries in by_backend.items():
-                    try:
-                        backend.cancel([i for i, _ in entries])
-                    except Exception:
-                        # Left as they were, so a restart adopts them rather
-                        # than submitting duplicates.
-                        logger.exception("Error cancelling tasks")
-                        continue
-                    for _, task in entries:
-                        self.manifest.update(task.key, state=CANCELLED)
+                # Stopped early (an error, or the caller stopped iterating).
+                try:
+                    self._stop_inflight(inflight, "stopped")
+                except Exception:
+                    logger.exception("Error stopping the tasks in flight")
             self.manifest.flush(force=True)
             self._close_tars()
 
@@ -1087,6 +1130,13 @@ class TaskSet:
         lost."""
         record = self.manifest.get(key) or {}
         history = list(record.get("history", []))
+        if timed_out and counted:
+            # Running out of time is the estimate's fault, and the retry gets
+            # twice the time: not counted, up to max_timeouts times.
+            earlier = sum(1 for h in history if h.get("timed_out"))
+            if earlier < self.max_timeouts:
+                counted = False
+                reason = f"{reason or 'out of time'} (not counted: out of time)"
         history.append(
             {
                 "attempt": record.get("attempts", 0),

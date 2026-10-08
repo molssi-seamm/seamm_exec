@@ -1,6 +1,19 @@
 =======
 History
 =======
+2026.10.8.2 -- Bugfix: timeouts and cancellations no longer use up a task's attempts
+    * A task that runs out of time no longer uses up one of its attempts, the first
+      four times (``TaskSet(max_timeouts=4)``): its estimate was too low, and each
+      retry asks for twice the time. Estimate-caused timeouts had exhausted the three
+      attempts of the FEC pilot's ORCA tasks, which were then never resubmitted. Later
+      timeouts count, so a task that cannot finish in the longest time the queue
+      allows still stops.
+    * Bugfix: cancelling a task set marked every task in flight ``cancelled``, even
+      one that had already finished -- in a bundle still running, or between polls --
+      and its result was lost to the run. Such tasks are now collected with their
+      results. A cancelled task also gets its attempt back, so cancelling and
+      rerunning a step no longer exhausts its tasks' attempts.
+
 2026.10.8.1 -- Bugfix: tasks in queue bundles record their wall time; a fixed cost per run; the neighbour count
     * A step's spec may name a column (``setup_by``) whose values each get a fixed
       cost per run, in iterations, found by the fit: the work is ``iterations +

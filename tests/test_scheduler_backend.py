@@ -371,8 +371,10 @@ def test_lost_tasks_go_back_together_as_one_bundle(job):
     assert len(queue.scripts) == 2  # the resubmission is one bundle, not three
     manifest = json.loads((job / "step" / "tasks" / "manifest.json").read_text())
     record = manifest["tasks"]["t1"]
-    assert record["attempts"] == 2
+    # Running out of time is not one of the task's attempts.
+    assert record["attempts"] == 1
     assert "ended (TIMEOUT)" in record["history"][0]["reason"]
+    assert record["history"][0]["counted"] is False
     assert parse_id(record["id"])[1] == "bundle_0000.2"
 
 
