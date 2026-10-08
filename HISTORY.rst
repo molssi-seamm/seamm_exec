@@ -1,7 +1,7 @@
 =======
 History
 =======
-2026.10.8.1 -- A fixed cost per run in the cost model
+2026.10.8.1 -- Bugfix: tasks in queue bundles record their wall time; a fixed cost per run; the neighbour count
     * A step's spec may name a column (``setup_by``) whose values each get a fixed
       cost per run, in iterations, found by the fit: the work is ``iterations +
       setup``. For codes whose first step is much dearer than the rest -- MOPAC's
