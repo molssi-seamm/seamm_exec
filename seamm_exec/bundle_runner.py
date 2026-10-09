@@ -161,6 +161,7 @@ def run_seamm_bundle(bundle):
                         "run_directory": result.run_directory,
                         "started": started_at,
                         "finished": time.time(),
+                        "code": result.code,
                     },
                 )
                 _log(f"{task.key}: finished")
