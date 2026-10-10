@@ -1,7 +1,7 @@
 =======
 History
 =======
-2026.10.11 -- Option flags in the cost model, learned where the records contrast them
+2026.10.10.2 -- Option flags in the cost model, learned where the records contrast them
     * A step may name the column holding a run's options (``flags`` in its spec, with
       the words that are not options: the task, basis sets, method). Each option gets a
       factor of its own, shrunk toward none -- but only where the records contrast it:
