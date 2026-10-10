@@ -1,6 +1,17 @@
 =======
 History
 =======
+2026.10.10 -- Each task records the code that ran it; a set from mixed codes is noted
+    * A finished task records what ran its program -- the modules loaded, the conda
+      environment, or the command from ``<program>.ini`` -- in its ``DONE`` marker, the
+      manifest and its result (``TaskResult.code``), from the evaluator's machine or
+      the node of a queue bundle.
+    * A rerun still reuses finished results whatever the code is now: for a mature
+      code a new version rarely changes them. But when a set's results come from more
+      than one code -- e.g. some reused from a run with VASP/6.6.0 and the rest run
+      with 6.6.1 -- a warning says so, with the counts (``TaskSet.codes``), so a mixed
+      campaign is visible.
+
 2026.10.8.2 -- Bugfix: timeouts and cancellations no longer use up a task's attempts
     * A task that runs out of time no longer uses up one of its attempts, the first
       four times (``TaskSet(max_timeouts=4)``): its estimate was too low, and each

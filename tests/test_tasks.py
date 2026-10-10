@@ -1288,3 +1288,58 @@ def test_cancel_collects_tasks_that_already_finished(tmp_path):
     assert record["state"] == "cancelled"
     assert record["attempts"] == 0
     assert record["history"][-1]["counted"] is False
+
+
+def test_code_identity():
+    from seamm_exec.tasks import code_identity
+
+    assert code_identity(None) is None
+    assert code_identity(
+        {"installation": "modules", "modules": "VASP/6.6.1-intel2025b", "code": "x"}
+    ) == ("modules: VASP/6.6.1-intel2025b")
+    assert code_identity({"installation": "conda", "conda-environment": "seamm-xtb"})
+    assert code_identity({"installation": "local", "code": "/opt/orca  orca"}) == (
+        "code: /opt/orca orca"
+    )
+
+
+def test_the_code_is_recorded_and_a_mixed_set_noted(tmp_path, caplog):
+    """Each finished task records what ran it in its DONE; a rerun reuses the
+    results whatever the code now is, but says when the set is mixed (mbe's EC
+    cell, part VASP/6.6.0 and part 6.6.1, 2026-10-09)."""
+    import logging
+
+    old = {"installation": "local", "code": "/opt/vasp-6.6.0/vasp_std"}
+    new = {"installation": "local", "code": "/opt/vasp-6.6.1/vasp_std"}
+
+    def task_set():
+        return TaskSet(
+            directory=tmp_path / "step", local=pool(root=tmp_path), executor=Local()
+        )
+
+    ts = task_set()
+    for key in ("a", "b"):
+        ts.add(shell_task(key, "echo x > x.txt", config=old))
+    results = run_all(ts)
+    assert {r.code for r in results.values()} == {"code: /opt/vasp-6.6.0/vasp_std"}
+    done = json.loads((ts.marker_directory("a") / "DONE").read_text())
+    assert done["code"] == "code: /opt/vasp-6.6.0/vasp_std"
+    assert ts.manifest.get("a")["code"] == "code: /opt/vasp-6.6.0/vasp_std"
+    assert ts.codes == {"code: /opt/vasp-6.6.0/vasp_std": (0, 2)}
+
+    # A rerun with a new task on the new code: a and b are reused, not rerun
+    ts = task_set()
+    for key in ("a", "b"):
+        ts.add(shell_task(key, "echo x > x.txt", config=old))
+    ts.add(shell_task("c", "echo x > x.txt", config=new))
+    with caplog.at_level(logging.WARNING, logger="seamm-exec"):
+        results = run_all(ts)
+    assert results["a"].restored and results["a"].code.endswith("6.6.0/vasp_std")
+    assert not results["c"].restored
+    assert ts.codes == {
+        "code: /opt/vasp-6.6.0/vasp_std": (2, 0),
+        "code: /opt/vasp-6.6.1/vasp_std": (0, 1),
+    }
+    text = " ".join(r.getMessage() for r in caplog.records)
+    assert "different versions of the code" in text
+    assert "2 reused from an earlier run" in text and "1 run now" in text

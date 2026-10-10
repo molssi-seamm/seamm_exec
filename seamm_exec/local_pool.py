@@ -38,6 +38,7 @@ from .tasks import (
     RUNNING,
     TERMINAL_STATES,
     TaskResult,
+    code_identity,
 )
 
 logger = logging.getLogger("seamm-exec")
@@ -64,6 +65,7 @@ class _Job:
         self.thread = None
         self.on_start = None
         self.concurrent = False
+        self.code = None  # what ran the program (tasks.code_identity)
 
 
 class _Hooks:
@@ -309,7 +311,9 @@ class LocalPool:
             return TaskResult(
                 key=task.key, state=FAILED, stderr=job.error, directory=job.directory
             )
-        return TaskResult.from_raw(task.key, job.raw, directory=job.directory)
+        result = TaskResult.from_raw(task.key, job.raw, directory=job.directory)
+        result.code = job.code
+        return result
 
     def reattach(self, records):
         """Tasks from an earlier evaluator: kill any still running here; lost.
@@ -424,8 +428,10 @@ class LocalPool:
         if self.synchronous:
             config = task.config
             env = task.env
+            job.code = code_identity(config)
         else:
             config, cmd, env = self._configure(task, job.ce)
+            job.code = code_identity(config)
             if concurrent:
                 # Keep concurrent tasks off each other's cores. A lone task
                 # gets the environment it always had.

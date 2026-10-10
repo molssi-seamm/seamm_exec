@@ -163,6 +163,22 @@ class Task:
         return "sha256:" + h.hexdigest()
 
 
+def code_identity(config):
+    """What runs a program, from its configuration (``<program>.ini``): the
+    modules a module installation loads, a conda installation's environment,
+    else the command. Enough to tell when the code changed (VASP/6.6.0 to
+    VASP/6.6.1), not its exact version. None without a configuration."""
+    if not config:
+        return None
+    installation = str(config.get("installation", "") or "").strip()
+    if installation == "modules" and config.get("modules"):
+        return f"modules: {' '.join(str(config['modules']).split())}"
+    if installation == "conda" and config.get("conda-environment"):
+        return f"conda: {str(config['conda-environment']).strip()}"
+    code = " ".join(str(config.get("code", "") or "").split())
+    return f"code: {code}" if code else None
+
+
 @dataclass
 class TaskResult:
     """The outcome of a task.
@@ -194,6 +210,10 @@ class TaskResult:
         The tar holding the task's directory, once archived.
     timed_out : bool
         Whether the queue stopped it for running past the time limit.
+    code : str or None
+        What ran the program -- the modules loaded, the conda environment, or
+        the command (see :func:`code_identity`) -- recorded in ``DONE``, so that a
+        rerun can tell when reused results came from another version of the code.
     started, finished : float or None
         When the task itself started and ended (epoch seconds), measured where
         it ran -- for a task in a queue bundle, by the worker on the node. Its
@@ -219,6 +239,7 @@ class TaskResult:
     timed_out: bool = False
     started: float | None = None
     finished: float | None = None
+    code: str | None = None
     raw: dict | None = None
 
     @property
@@ -522,6 +543,7 @@ class TaskSet:
         self.tasks = {}  # key -> Task, in the order added
         self._bundles = {}  # key -> bundle name
         self._results = {}  # key -> final TaskResult of this run
+        self.codes = {}  # code -> (reused, run now): see _note_mixed_code
 
     # ------------------------------------------------------------------
     # Setup
@@ -710,6 +732,40 @@ class TaskSet:
     def cancelled(self):
         """Whether :meth:`cancel` was called."""
         return self._stop.is_set()
+
+    def _note_mixed_code(self):
+        """Warn once when the finished results came from more than one code --
+        e.g. some reused from an earlier run with VASP/6.6.0, the rest run now
+        with VASP/6.6.1. Nothing is rerun: for a mature code a new version rarely
+        changes the results, so this only makes a mixed set visible.
+
+        ``self.codes`` holds ``{code: (reused, run now)}``.
+        """
+        counts = {}
+        for result in self._results.values():
+            if result.state != FINISHED or result.code is None:
+                continue
+            reused, now = counts.get(result.code, (0, 0))
+            if result.restored:
+                reused += 1
+            else:
+                now += 1
+            counts[result.code] = (reused, now)
+        self.codes = counts
+        if len(counts) < 2:
+            return
+        parts = []
+        for code, (reused, now) in sorted(counts.items()):
+            how = []
+            if reused:
+                how.append(f"{reused} reused from an earlier run")
+            if now:
+                how.append(f"{now} run now")
+            parts.append(f"'{code}': {' and '.join(how)}")
+        logger.warning(
+            f"The tasks in {self.directory} ran with different versions of the "
+            "code; their results are used as they are. " + "; ".join(parts) + "."
+        )
 
     def _cancel_inflight(self, inflight, reason="cancelled"):
         """Cancel the tasks in flight and drop those held; yield their results."""
@@ -928,6 +984,7 @@ class TaskSet:
                     self._submit(resubmit, inflight)
                 if not changed and inflight:
                     self._wait(inflight)
+            self._note_mixed_code()
         finally:
             if inflight:
                 # Stopped early (an error, or the caller stopped iterating).
@@ -1208,6 +1265,8 @@ class TaskSet:
         record = self.manifest.get(task.key)
         result.attempts = record.get("attempts", 0)
         result.history = history
+        if result.code is not None:
+            self.manifest.update(task.key, code=result.code)
         if state == FINISHED:
             self._write_done(task, result)
         else:
@@ -1251,6 +1310,7 @@ class TaskSet:
             "run_directory": result.run_directory,
             "directory": self._relative(self.task_directory(task)),
             "finished": _now(),
+            "code": result.code,
         }
         marker = self.marker_directory(task.key)
         marker.mkdir(parents=True, exist_ok=True)
@@ -1328,6 +1388,7 @@ class TaskSet:
             run_directory=done.get("run_directory"),
             restored=True,
             archive=archive,
+            code=done.get("code"),
         )
 
     def _reattach(self, pending, inflight):

@@ -1476,3 +1476,17 @@ def test_queue_count_is_shared_between_back_ends():
         count_jobs=count_jobs,
     )
     assert shared_count_for(other) is not a._shared_count
+
+
+def test_a_bundled_task_records_its_code(job):
+    """The bundle worker resolves the program on the node, from <root>/fake.ini,
+    and writes what ran it into the task's DONE, which comes back with it."""
+    job, root = job
+    queue = FakeQueue()
+    ts = TaskSet(directory=job / "step", backend=make_backend(queue, job, root))
+    ts.add(fake_task("a"))
+    results = run_all(ts)
+    assert results["a"].ok
+    assert results["a"].code == "code: echo"
+    done = json.loads((job / "step" / "tasks" / "a" / "DONE").read_text())
+    assert done["code"] == "code: echo"

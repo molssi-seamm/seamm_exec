@@ -688,6 +688,7 @@ class SchedulerBackend:
                 run_directory=done.get("run_directory"),
                 started=done.get("started"),
                 finished=done.get("finished"),
+                code=done.get("code"),
             )
         if state == FAILED:
             failed = _read_json(entry.marker / "FAILED") or {}

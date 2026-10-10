@@ -71,7 +71,13 @@ What this gives a step:
 * **Restart.** The set keeps ``tasks/manifest.json`` in the step directory and a
   ``DONE`` marker in each task's directory, ``tasks/<key>/``. Rerunning the job in
   the same directory restores finished tasks from their markers and never
-  recomputes them; a task whose inputs changed is recomputed. A task that failed is
+  recomputes them; a task whose inputs changed is recomputed. Each ``DONE`` records what
+  ran the program -- the modules loaded, the conda environment, or the command
+  (``TaskResult.code``) -- but a change of code does not cause a recomputation:
+  for a mature code a new version rarely changes the results. When the results of
+  a set come from more than one code, e.g. some reused from a run with
+  VASP/6.6.0 and the rest run with 6.6.1, a warning says so, with the counts
+  (``TaskSet.codes``). A task that failed is
   not retried within a run, but is tried again on a rerun, up to three attempts in
   all (the count resets when the inputs change). A task that stopped only because
   the evaluator stopped (killed, out of walltime), or because the step cancelled it,
