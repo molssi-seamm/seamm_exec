@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.10 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.10.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=355f04a4"></script>
+    <script src="../_static/documentation_options.js?v=ece42590"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.10" />
+  <meta name="docsearch:version" content="2026.10.10.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -2799,6 +2799,25 @@ Remove once every step writes its spec.</p>
 </dd></dl>
 
 <dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.PAIRED_MIN_GROUPS">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">PAIRED_MIN_GROUPS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></span><a class="headerlink" href="#seamm_exec.timing_model.PAIRED_MIN_GROUPS" title="Link to this definition">#</a></dt>
+<dd><p>Paired runs – the same calculation on several core counts – needed to
+take the parallel exponent from them rather than from the main fit</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.PARALLEL_FRACTIONS">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">PARALLEL_FRACTIONS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(0.0,</span> <span class="pre">0.5,</span> <span class="pre">0.75,</span> <span class="pre">0.9)</span></span><a class="headerlink" href="#seamm_exec.timing_model.PARALLEL_FRACTIONS" title="Link to this definition">#</a></dt>
+<dd><p>The parallel start-up tried per machine, as fractions of the 5th percentile
+of the net times of its smallest parallel runs. A parallel run pays a fixed
+cost serial ones do not – launching the MPI processes, about 9 s on Owl and
+3-4 s on TinkerCliffs for ORCA, nearly the same for 4 or 16 of them – which
+a power law in the cores cannot describe (tiny molecules ran slower on more
+cores). A large fraction on a machine whose smallest parallel runs are long
+hurts their fit and is not chosen.</p>
+</dd></dl>
+
+<dl class="py data">
 <dt class="sig sig-object py" id="seamm_exec.timing_model.QUANTILES">
 <span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">QUANTILES</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(0.5,</span> <span class="pre">0.68,</span> <span class="pre">0.84,</span> <span class="pre">0.95,</span> <span class="pre">0.99)</span></span><a class="headerlink" href="#seamm_exec.timing_model.QUANTILES" title="Link to this definition">#</a></dt>
 <dd><p>Residual quantiles stored in a model</p>
@@ -3435,6 +3454,8 @@ raises.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.MACHINE_SHRINK"><code class="docutils literal notranslate"><span class="pre">MACHINE_SHRINK</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.MODELS_SUBDIR"><code class="docutils literal notranslate"><span class="pre">MODELS_SUBDIR</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.MODEL_VERSION"><code class="docutils literal notranslate"><span class="pre">MODEL_VERSION</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.PAIRED_MIN_GROUPS"><code class="docutils literal notranslate"><span class="pre">PAIRED_MIN_GROUPS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.PARALLEL_FRACTIONS"><code class="docutils literal notranslate"><span class="pre">PARALLEL_FRACTIONS</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.QUANTILES"><code class="docutils literal notranslate"><span class="pre">QUANTILES</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.REFIT_DAYS"><code class="docutils literal notranslate"><span class="pre">REFIT_DAYS</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.REFIT_GROWTH"><code class="docutils literal notranslate"><span class="pre">REFIT_GROWTH</span></code></a></li>
