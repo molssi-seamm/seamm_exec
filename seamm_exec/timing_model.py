@@ -211,6 +211,17 @@ CORES_SIZE_CORRELATION = 0.7
 #: How far outside the fitted size range (as a factor) a prediction is still made
 EXTRAPOLATION = 1.5
 RIDGE = 1e-3
+#: The parallel start-up tried per machine, as fractions of the 5th percentile
+#: of the net times of its smallest parallel runs. A parallel run pays a fixed
+#: cost serial ones do not -- launching the MPI processes, about 9 s on Owl and
+#: 3-4 s on TinkerCliffs for ORCA, nearly the same for 4 or 16 of them -- which
+#: a power law in the cores cannot describe (tiny molecules ran slower on more
+#: cores). A large fraction on a machine whose smallest parallel runs are long
+#: hurts their fit and is not chosen.
+PARALLEL_FRACTIONS = (0.0, 0.5, 0.75, 0.9)
+#: Paired runs -- the same calculation on several core counts -- needed to
+#: take the parallel exponent from them rather than from the main fit
+PAIRED_MIN_GROUPS = 4
 #: The setups tried for each group of ``Spec.setup_by``, in iterations
 SETUP_CANDIDATES = (0.0, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0)
 #: Each run's weight in the power-law fit is its net time (wall less start-up)
@@ -378,13 +389,17 @@ def fit(program, directory=None, spec=None, min_rows=8, weight_power=None):
     for machine in machines:
         mine = [r for r in rows if r["_machine"] == machine]
         gaps = [
-            r["_wall"] - c
+            (r["_size"][features[0]] if features else 0.0, r["_wall"] - c)
             for r in mine
             for c in [_num(r.get("code_seconds"))]
             if c is not None and 0 <= c <= r["_wall"] and not r["_wall_from_code"]
         ]
         if len(gaps) >= max(3, len(mine) // 2):
-            measured[machine] = max(0.0, float(np.median(gaps)))
+            # The gap grows with the run (more output to copy and parse), so the
+            # start-up is measured on the smallest fifth of the runs.
+            gaps.sort()
+            small = [g for _, g in gaps[: max(3, len(gaps) // 5)]]
+            measured[machine] = max(0.0, float(np.median(small)))
     p05 = {}
     for machine in machines:
         mine = [r for r in rows if r["_machine"] == machine]
@@ -395,10 +410,16 @@ def fit(program, directory=None, spec=None, min_rows=8, weight_power=None):
 
     fractions = (None,) if len(measured) == len(machines) else (0.0, 0.3, 0.6, 0.9)
 
-    def search(features, zero, no_delta, setup=None):
+    parallel = {m: 0.0 for m in machines}
+    alpha_fixed = None
+    fixed_t0 = None
+
+    def search(features, zero, no_delta, setup=None, parallel_=None):
         best = None
-        for fraction in fractions:
-            if fraction is None:
+        for fraction in fractions if fixed_t0 is None else ("fixed",):
+            if fraction == "fixed":
+                t0 = dict(fixed_t0)
+            elif fraction is None:
                 t0 = dict(measured)
             else:
                 t0 = {m: measured.get(m, fraction * p05[m]) for m in machines}
@@ -412,11 +433,17 @@ def fit(program, directory=None, spec=None, min_rows=8, weight_power=None):
                 no_delta,
                 weight_power,
                 setup or {},
+                parallel if parallel_ is None else parallel_,
+                alpha_fixed,
             )
             if result is not None and (best is None or result["score"] < best["score"]):
                 best = result
                 best["t0"] = t0
-                best["t0_fraction"] = "measured" if fraction is None else fraction
+                best["t0_fraction"] = (
+                    t0_fraction
+                    if fraction == "fixed"
+                    else "measured" if fraction is None else fraction
+                )
         return best
 
     # No size exponent may be negative: a calculation does not get faster as
@@ -428,7 +455,61 @@ def fit(program, directory=None, spec=None, min_rows=8, weight_power=None):
     # informative variable (the last in the spec's order) and fit again; a
     # group's own exponent that goes negative is pooled with the rest; a lone
     # variable whose exponent is still negative is held at zero.
+    # The start-up of every run, from a fit without a parallel start-up; then
+    # the parallel start-up on top of it (coordinate search per machine) and
+    # the parallel exponent from paired runs, alternated twice: each changes
+    # the other. The parallel start-up per machine is tried as fractions of
+    # the 5th percentile of the net times of its smallest fifth of parallel
+    # runs.
+    provisional = search(features, set(), set())
+    if provisional is None:
+        return None
+    fixed_t0 = provisional["t0"]
+    t0_fraction = provisional["t0_fraction"]
+    p05_parallel = {}
+    for machine in machines:
+        mine = [r for r in rows if r["_machine"] == machine and r["_cores"] > 1]
+        if len(mine) < 3:
+            continue
+        if features:
+            mine.sort(key=lambda r: r["_size"][features[0]])
+        small = mine[: max(3, len(mine) // 5)]
+        value = _quantile([r["_wall"] - fixed_t0[machine] for r in small], 0.05)
+        if value and value > 0:
+            p05_parallel[machine] = float(value)
+    for _ in range(2):
+        for machine in sorted(p05_parallel):
+            scores = []
+            for fraction in PARALLEL_FRACTIONS:
+                trial_parallel = {
+                    **parallel,
+                    machine: fraction * p05_parallel[machine],
+                }
+                trial = search(features, set(), set(), None, trial_parallel)
+                if trial is not None:
+                    scores.append((trial["score"], fraction, trial_parallel[machine]))
+            if scores:
+                parallel[machine] = min(scores)[2]
+        provisional = search(features, set(), set())
+        if provisional is None:
+            return None
+        paired = _paired_alpha(rows, features, provisional["t0"], parallel)
+        if paired is not None:
+            alpha_fixed = paired
+
     zero, no_delta, notes = set(), set(), []
+    if alpha_fixed is not None:
+        notes.append(
+            f"parallel exponent from {alpha_fixed['groups']} paired runs (the same "
+            "calculation on several core counts)"
+        )
+    if any(parallel.values()):
+        notes.append(
+            "parallel start-up: "
+            + ", ".join(
+                f"{m.split(':')[0]} {v:.1f} s" for m, v in parallel.items() if v
+            )
+        )
     for _ in range(4 * (len(features) + 4)):
         best = search(features, zero, no_delta)
         if best is None:
@@ -518,22 +599,42 @@ def _fit_rows(
     no_delta=(),
     weight_power=None,
     setup=None,
+    parallel=None,
+    alpha_fixed=None,
 ):
     """One ridge fit for a given start-up constant; the pieces for the model.
 
     ``zero``: size variables whose exponent is held at zero (kept as features,
     so a prediction still needs them and checks their range). ``no_delta``:
-    groups of ``spec.slope_by`` that use the shared exponents."""
+    groups of ``spec.slope_by`` that use the shared exponents. ``parallel``:
+    the start-up of a parallel run per machine, added to ``t0`` when the run
+    has more than one core. ``alpha_fixed``: the parallel exponent from paired
+    runs ({"alpha", "slope", "size_mean"}), held fixed instead of fitted."""
+    parallel = parallel or {}
+
+    def start(r):
+        return t0[r["_machine"]] + (
+            parallel.get(r["_machine"], 0.0) if r["_cores"] > 1 else 0.0
+        )
+
     rows = []
     for r in all_rows:
-        net = r["_wall"] - t0[r["_machine"]]
+        net0 = r["_wall"] - t0[r["_machine"]]
         # A run whose time is nearly all start-up says nothing about the
         # power law (its remainder is noise); it is predicted by t0 alone.
-        if net > max(0.02, 0.1 * t0[r["_machine"]]):
+        # The parallel start-up does not change which runs are fitted (a
+        # candidate that dropped the small parallel runs would score better for
+        # fitting fewer of them): one it overstates leaves a floor of net time,
+        # which the score then penalizes.
+        net = max(r["_wall"] - start(r), 0.1 * net0)
+        if net0 > max(0.02, 0.1 * t0[r["_machine"]]):
             r = dict(r)
             extra = (setup or {}).get(str(r.get(spec.setup_by, "") or ""), 0.0)
             r["_work"] = r["_units"] + extra if spec.setup_by else r["_units"]
             r["_y"] = math.log(net / (r["_work"] * r["_mult"]))
+            if alpha_fixed is not None:
+                # Back to one core with the paired-run exponent
+                r["_y"] += _alpha_at(alpha_fixed, r, features) * math.log(r["_cores"])
             r["_net"] = net
             rows.append(r)
     if len(rows) < min_rows:
@@ -545,8 +646,8 @@ def _fit_rows(
     ref_class = max(classes, key=lambda c: sum(1 for r in rows if r["_class"] == c))
     ref_task = max(tasks, key=lambda t: sum(1 for r in rows if r["_task"] == t))
     cores = np.array([r["_cores"] for r in rows])
-    fit_alpha = len({round(c) for c in cores}) > 1
-    alpha_note = ""
+    fit_alpha = len({round(c) for c in cores}) > 1 and alpha_fixed is None
+    alpha_note = "from paired runs" if alpha_fixed is not None else ""
     if fit_alpha and features:
         # Cores chosen by size (4 for the small runs, 8 for the large) say
         # nothing about scaling: the fit would put the size's effect on the
@@ -644,10 +745,20 @@ def _fit_rows(
     if fit_alpha and "log cores x log size" in columns:
         alpha_slope = -float(beta[columns.index("log cores x log size")])
         alpha_size_mean = float(np.log([r["_size"][features[0]] for r in rows]).mean())
+    if alpha_fixed is not None:
+        alpha = alpha_fixed["alpha"]
+        alpha_slope = alpha_fixed["slope"]
+        alpha_size_mean = alpha_fixed["size_mean"]
+        # The fit's predictions back on the run's own cores
+        X_cores = np.array(
+            [-_alpha_at(alpha_fixed, r, features) * math.log(r["_cores"]) for r in rows]
+        )
+    else:
+        X_cores = np.zeros(len(rows))
 
-    predicted = np.exp(X @ beta + offsets[machine_index]) * np.array(
+    predicted = np.exp(X @ beta + offsets[machine_index] + X_cores) * np.array(
         [r["_work"] * r["_mult"] for r in rows]
-    ) + np.array([t0[r["_machine"]] for r in rows])
+    ) + np.array([start(r) for r in rows])
     wall = np.array([r["_wall"] for r in rows])
     # The score a start-up constant is chosen by: the log error of the wall
     # time itself, which both the constant and the power law must explain
@@ -682,6 +793,84 @@ def _fit_rows(
         },
         "predicted": predicted,
         "ss_res": float((resid**2).sum()),
+        "parallel": dict(parallel),
+    }
+
+
+def _alpha_at(alpha_fixed, r, features):
+    """The paired-run parallel exponent at a run's size, within [0, 1]."""
+    alpha = alpha_fixed["alpha"]
+    if features and alpha_fixed.get("size_mean") is not None:
+        alpha += alpha_fixed["slope"] * (
+            math.log(r["_size"][features[0]]) - alpha_fixed["size_mean"]
+        )
+    return min(1.0, max(0.0, alpha))
+
+
+def _paired_alpha(rows, features, t0, parallel):
+    """The parallel exponent from paired runs, or None if there are too few.
+
+    Runs that are the same calculation -- machine, method class, task, sizes and
+    keywords -- on several core counts give the speed-up directly: with the
+    start-up (and a parallel run's start-up) removed, the slope of log time
+    against log cores is -alpha for that size. Production cannot show this,
+    since its core counts follow its sizes (the main fit would put the size's
+    effect on the cores). Per group alpha, weighted by its time; then
+    alpha = a + b (log size - mean), the form :func:`predict` uses.
+    """
+    if not features:
+        return None
+    groups = {}
+    for r in rows:
+        key = (
+            r["_machine"],
+            r["_class"],
+            r["_task"],
+            tuple(round(r["_size"][n], 6) for n in features),
+            str(r.get("keywords", "") or ""),
+            r["_units"],
+        )
+        groups.setdefault(key, []).append(r)
+    points = []
+    for key, mine in groups.items():
+        by_cores = {}
+        for r in mine:
+            start = t0[r["_machine"]] + (
+                parallel.get(r["_machine"], 0.0) if r["_cores"] > 1 else 0.0
+            )
+            net = r["_wall"] - start
+            if net > 0.5:
+                by_cores.setdefault(r["_cores"], []).append(net)
+        if len(by_cores) < 2:
+            continue
+        cores = np.array(sorted(by_cores))
+        net = np.array([float(np.median(by_cores[c])) for c in cores])
+        slope = np.polyfit(np.log(cores), np.log(net), 1)[0]
+        points.append(
+            (
+                math.log(mine[0]["_size"][features[0]]),
+                min(1.0, max(0.0, -float(slope))),
+                float(net.sum()),
+            )
+        )
+    if len(points) < PAIRED_MIN_GROUPS:
+        return None
+    s = np.array([p[0] for p in points])
+    a = np.array([p[1] for p in points])
+    w = np.array([p[2] for p in points])
+    w = w / w.sum()
+    mean = float(np.average(s, weights=w))
+    if np.ptp(s) > 0:
+        A = np.column_stack([np.ones_like(s), s - mean])
+        coef = np.linalg.lstsq(A * np.sqrt(w)[:, None], a * np.sqrt(w), rcond=None)[0]
+        alpha, slope = float(coef[0]), float(coef[1])
+    else:
+        alpha, slope = float(np.average(a, weights=w)), 0.0
+    return {
+        "alpha": alpha,
+        "slope": slope,
+        "size_mean": mean,
+        "groups": len(points),
     }
 
 
@@ -759,6 +948,7 @@ def _assemble(program, spec, features, f):
                 "offset": float(offsets[i]),
                 "rows": int((machine_index == i).sum()),
                 "t0": float(t0[m]),
+                "parallel_startup": float(f.get("parallel", {}).get(m, 0.0)),
             }
             for i, m in enumerate(machines)
         },
@@ -1039,6 +1229,8 @@ def predict(
     if known:
         y += info["offset"]
         t0 = info["t0"]
+        if cores > 1:
+            t0 += info.get("parallel_startup", 0.0)
     else:
         t0 = model["t0_pooled"]
 
