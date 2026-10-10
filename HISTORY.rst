@@ -1,7 +1,7 @@
 =======
 History
 =======
-2026.10.9 -- Each task records the code that ran it; a set from mixed codes is noted
+2026.10.10 -- Each task records the code that ran it; a set from mixed codes is noted
     * A finished task records what ran its program -- the modules loaded, the conda
       environment, or the command from ``<program>.ini`` -- in its ``DONE`` marker, the
       manifest and its result (``TaskResult.code``), from the evaluator's machine or
