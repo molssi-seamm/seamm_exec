@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.tasks &#8212; SEAMM seamm-exec Plug-in 2026.10.8.2 documentation</title>
+    <title>seamm_exec.tasks &#8212; SEAMM seamm-exec Plug-in 2026.10.10 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=9ba818b6"></script>
+    <script src="../../_static/documentation_options.js?v=355f04a4"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.8.2" />
+  <meta name="docsearch:version" content="2026.10.10" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -602,6 +602,22 @@
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">code_identity</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""What runs a program, from its configuration (``&lt;program&gt;.ini``): the</span>
+<span class="sd">    modules a module installation loads, a conda installation's environment,</span>
+<span class="sd">    else the command. Enough to tell when the code changed (VASP/6.6.0 to</span>
+<span class="sd">    VASP/6.6.1), not its exact version. None without a configuration."""</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">config</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">installation</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"installation"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">installation</span> <span class="o">==</span> <span class="s2">"modules"</span> <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"modules"</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"modules: </span><span class="si">{</span><span class="s1">' '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">'modules'</span><span class="p">])</span><span class="o">.</span><span class="n">split</span><span class="p">())</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">if</span> <span class="n">installation</span> <span class="o">==</span> <span class="s2">"conda"</span> <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"conda-environment"</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"conda: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">'conda-environment'</span><span class="p">])</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"code"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"code: </span><span class="si">{</span><span class="n">code</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">code</span> <span class="k">else</span> <span class="kc">None</span>
+
+
 <div class="viewcode-block" id="TaskResult">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.tasks.TaskResult">[docs]</a>
 <span class="nd">@dataclass</span>
@@ -635,6 +651,10 @@
 <span class="sd">        The tar holding the task's directory, once archived.</span>
 <span class="sd">    timed_out : bool</span>
 <span class="sd">        Whether the queue stopped it for running past the time limit.</span>
+<span class="sd">    code : str or None</span>
+<span class="sd">        What ran the program -- the modules loaded, the conda environment, or</span>
+<span class="sd">        the command (see :func:`code_identity`) -- recorded in ``DONE``, so that a</span>
+<span class="sd">        rerun can tell when reused results came from another version of the code.</span>
 <span class="sd">    started, finished : float or None</span>
 <span class="sd">        When the task itself started and ended (epoch seconds), measured where</span>
 <span class="sd">        it ran -- for a task in a queue bundle, by the worker on the node. Its</span>
@@ -660,6 +680,7 @@
     <span class="n">timed_out</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">started</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">finished</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">raw</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
@@ -999,6 +1020,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># key -&gt; Task, in the order added</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_bundles</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># key -&gt; bundle name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_results</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># key -&gt; final TaskResult of this run</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">codes</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># code -&gt; (reused, run now): see _note_mixed_code</span>
 
     <span class="c1"># ------------------------------------------------------------------</span>
     <span class="c1"># Setup</span>
@@ -1205,6 +1227,40 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">cancelled</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Whether :meth:`cancel` was called."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span><span class="o">.</span><span class="n">is_set</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_note_mixed_code</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Warn once when the finished results came from more than one code --</span>
+<span class="sd">        e.g. some reused from an earlier run with VASP/6.6.0, the rest run now</span>
+<span class="sd">        with VASP/6.6.1. Nothing is rerun: for a mature code a new version rarely</span>
+<span class="sd">        changes the results, so this only makes a mixed set visible.</span>
+
+<span class="sd">        ``self.codes`` holds ``{code: (reused, run now)}``.</span>
+<span class="sd">        """</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_results</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">state</span> <span class="o">!=</span> <span class="n">FINISHED</span> <span class="ow">or</span> <span class="n">result</span><span class="o">.</span><span class="n">code</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">reused</span><span class="p">,</span> <span class="n">now</span> <span class="o">=</span> <span class="n">counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">restored</span><span class="p">:</span>
+                <span class="n">reused</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">now</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">counts</span><span class="p">[</span><span class="n">result</span><span class="o">.</span><span class="n">code</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">reused</span><span class="p">,</span> <span class="n">now</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">codes</span> <span class="o">=</span> <span class="n">counts</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">code</span><span class="p">,</span> <span class="p">(</span><span class="n">reused</span><span class="p">,</span> <span class="n">now</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">counts</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="n">how</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="n">reused</span><span class="p">:</span>
+                <span class="n">how</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">reused</span><span class="si">}</span><span class="s2"> reused from an earlier run"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">now</span><span class="p">:</span>
+                <span class="n">how</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">now</span><span class="si">}</span><span class="s2"> run now"</span><span class="p">)</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">code</span><span class="si">}</span><span class="s2">': </span><span class="si">{</span><span class="s1">' and '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">how</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"The tasks in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="si">}</span><span class="s2"> ran with different versions of the "</span>
+            <span class="s2">"code; their results are used as they are. "</span> <span class="o">+</span> <span class="s2">"; "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"."</span>
+        <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_cancel_inflight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inflight</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s2">"cancelled"</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Cancel the tasks in flight and drop those held; yield their results."""</span>
@@ -1425,6 +1481,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">_submit</span><span class="p">(</span><span class="n">resubmit</span><span class="p">,</span> <span class="n">inflight</span><span class="p">)</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">changed</span> <span class="ow">and</span> <span class="n">inflight</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_wait</span><span class="p">(</span><span class="n">inflight</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_note_mixed_code</span><span class="p">()</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">inflight</span><span class="p">:</span>
                 <span class="c1"># Stopped early (an error, or the caller stopped iterating).</span>
@@ -1706,6 +1763,8 @@
         <span class="n">record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
         <span class="n">result</span><span class="o">.</span><span class="n">attempts</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"attempts"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="n">result</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="n">history</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">code</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">code</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">state</span> <span class="o">==</span> <span class="n">FINISHED</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_write_done</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1749,6 +1808,7 @@
             <span class="s2">"run_directory"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">run_directory</span><span class="p">,</span>
             <span class="s2">"directory"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_relative</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_directory</span><span class="p">(</span><span class="n">task</span><span class="p">)),</span>
             <span class="s2">"finished"</span><span class="p">:</span> <span class="n">_now</span><span class="p">(),</span>
+            <span class="s2">"code"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">code</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="n">marker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">marker_directory</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
         <span class="n">marker</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -1826,6 +1886,7 @@
             <span class="n">run_directory</span><span class="o">=</span><span class="n">done</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"run_directory"</span><span class="p">),</span>
             <span class="n">restored</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">archive</span><span class="o">=</span><span class="n">archive</span><span class="p">,</span>
+            <span class="n">code</span><span class="o">=</span><span class="n">done</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"code"</span><span class="p">),</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_reattach</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pending</span><span class="p">,</span> <span class="n">inflight</span><span class="p">):</span>
