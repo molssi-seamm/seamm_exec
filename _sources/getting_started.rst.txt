@@ -307,7 +307,12 @@ is in ``docs/developer_guide/campaigns/2026-10-05``.
 
 The fit is a power law in the size variables a step declares, with an offset per
 method class, task and machine, and a parallel exponent that grows with size. Each
-run counts in proportion to its time, so the fit is best where the time is. No size
+run counts in proportion to its time, so the fit is best where the time is. Every
+run has a start-up time, measured on a machine's smallest runs as the gap between
+the wall time and the code's own time; a parallel run has a second one, fitted per
+machine -- launching the MPI processes, for ORCA about 11 s on Owl and 1-3 s on
+TinkerCliffs whatever the number of processes, so that a tiny molecule runs slower
+on more cores. No size
 exponent may be negative: when related variables (basis functions and electrons)
 would split one effect that way, the fit leaves one out and its report says so;
 records that vary the basis at a fixed number of electrons, as the seed benchmark's
@@ -320,9 +325,27 @@ run, in iterations, found by the fit.
 A model only predicts what its records cover: a calculation whose size lies
 outside the fitted range (by more than a factor of 1.5), whose method class or
 task the records lack, or whose descriptors lack a size variable gets no
-prediction, and the step's own estimate stands. When the records' core counts
-follow the size (small runs on 4 cores, large on 8) the parallel exponent is
-assumed, not fitted, and the fit's summary says so.
+prediction, and the step's own estimate stands. The parallel exponent comes from
+*paired runs* when there are at least four: the same calculation (machine, method
+class, task, sizes and options) on several core counts, as the seed benchmark makes,
+with the start-up times removed. Production cannot show it, since its core counts
+follow its sizes (small runs on 4 cores, large on 16); without paired runs the
+exponent is fitted with the rest, or assumed when the core counts follow the size,
+and the fit's summary says which.
+
+A step may also name the column holding a run's *options* (``flags`` in its spec:
+ORCA's '!' line, less the task, basis sets and method), and each option gets a
+factor of its own, shrunk toward none. An option gets a factor only where the
+records *contrast* it -- at least three calculations run both with and without it
+on one machine. An option that always comes with its own calculations (one
+campaign's settings, a molecule's elements) cannot be told from them: fitted
+anyway, the factors took up differences between machines and campaigns instead.
+The seed benchmarks make the contrasts with *toggle ladders*, a few runs repeated
+with one option changed (ORCA: NoCOSX, VERYTIGHTSCF). An option the records have
+never seen widens a prediction's upper quantiles. The fit's report lists the
+learned factors and *possible cost drivers*: recorded values and options without
+a factor whose runs are still systematically off, the candidates for a new size
+variable, class or toggle ladder.
 
 A cost model is fitted to those rows with::
 
@@ -332,11 +355,11 @@ A cost model is fitted to those rows with::
 which writes ``~/.seamm.d/timing/models/<program>.json`` and prints a report:
 the rows used, R^2 in log space, the fraction of runs predicted within 1.3x and
 2x, the fitted power law, and a factor per method class, task and machine
-class. The model is a product of separable factors -- a start-up constant, a
+class. The model is a product of separable factors -- start-up constants, a
 unit cost as a power law in the program's size variables with an intercept per
-method class, an offset per kind of task, a parallel exponent, and an offset per
-machine class -- so rows from every machine improve it and a new machine needs
-only a few runs to be placed.
+method class, an offset per kind of task, a factor per contrasted option, a
+parallel exponent, and an offset per machine class -- so rows from every machine
+improve it and a new machine needs only a few runs to be placed.
 
 A prediction is a *quantile* of the fitted spread, never a mean::
 
@@ -351,7 +374,8 @@ the median for packing tasks into a bundle.
 
 The models keep themselves current: a prediction refits the model when the
 records have grown by a fifth since the fit, or when it is a week old and the
-records have changed, under a lock so that concurrent runs do not all refit,
+records have changed, or when the step's spec or the fitting method has changed
+since, under a lock so that concurrent runs do not all refit,
 and only replaces the old model when the new one is fitted to at least as many
 rows and predicts at least as well. The ``fit`` command remains for a report, or
 to refit on demand.
@@ -366,7 +390,8 @@ Each code step declares what to run (``TIMING_BENCHMARK``, beside its
 build them, and its model chemistries, tasks and variants with a size limit per
 tier -- ORCA a few molecules from water to a 300-atom alkane at two or three
 method classes, including the MLFF labelling level (REVDSD-PBEP86-D4_2021/def2-TZVPPD) with every energy also as a
-gradient; MOPAC the same molecules to 3000 atoms in both its regimes. seamm_exec
+gradient, a basis-set ladder, and toggle ladders (a chemistry may carry its own
+variants); MOPAC the same molecules to 3000 atoms in both its regimes. seamm_exec
 finds the declarations through the step entry points, assembles one flowchart
 per run and sweeps the core counts where a code is parallel; it knows nothing
 of any code. ``--bin`` names the installation whose ``run_flowchart`` to use

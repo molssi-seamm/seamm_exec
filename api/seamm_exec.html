@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.10.1 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.10.2 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=ece42590"></script>
+    <script src="../_static/documentation_options.js?v=db1caffa"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.10.1" />
+  <meta name="docsearch:version" content="2026.10.10.2" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -2653,6 +2653,12 @@ LAMMPS, cells and k-points for VASP). The declaration:</p>
         <span class="c1"># optionally only some of the tasks below, e.g. a basis-set ladder</span>
         <span class="s2">"ORCA:DFT@B3LYP/def2-QZVPPD"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"quick"</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span> <span class="s2">"full"</span><span class="p">:</span> <span class="mi">24</span><span class="p">,</span>
                                       <span class="s2">"tasks"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"Energy"</span><span class="p">]},</span>
+        <span class="c1"># and its own variants, replacing the task's below for it: e.g.</span>
+        <span class="c1"># one option toggled ("NoCOSX" on and off), so that the fit can</span>
+        <span class="c1"># tell what the option costs from what the molecule does</span>
+        <span class="s2">"ORCA:DFT@B3LYP/def2-TZVP"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"quick"</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span> <span class="s2">"full"</span><span class="p">:</span> <span class="mi">24</span><span class="p">,</span>
+                                    <span class="s2">"variants"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"Energy"</span><span class="p">:</span> <span class="p">[</span>
+                                        <span class="p">{},</span> <span class="p">{</span><span class="s2">"extra keywords"</span><span class="p">:</span> <span class="s2">"NoCOSX"</span><span class="p">}]}},</span>
     <span class="p">},</span>
     <span class="s2">"parameter"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>        <span class="c1"># or the sub-step parameter the chemistry sets</span>
                               <span class="c1"># (MOPAC's "hamiltonian") when the step does</span>
@@ -2769,10 +2775,48 @@ with numpy alone. The prediction is a <em>quantile</em> of the residual distribu
 
 <dl class="py data">
 <dt class="sig sig-object py" id="seamm_exec.timing_model.FALLBACK_SPECS">
-<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">FALLBACK_SPECS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'dftbplus':</span> <span class="pre">Spec(size=('n_atoms',),</span> <span class="pre">klass=('model',),</span> <span class="pre">task='task',</span> <span class="pre">units='scc_cycles',</span> <span class="pre">multiplier=None,</span> <span class="pre">default_alpha=0.8,</span> <span class="pre">slope_by=None,</span> <span class="pre">setup_by=None),</span> <span class="pre">'gaussian':</span> <span class="pre">Spec(size=('nbf',</span> <span class="pre">'n_electrons',</span> <span class="pre">'n_atoms'),</span> <span class="pre">klass=('method',),</span> <span class="pre">task='task',</span> <span class="pre">units='scf_runs',</span> <span class="pre">multiplier=None,</span> <span class="pre">default_alpha=0.8,</span> <span class="pre">slope_by=None,</span> <span class="pre">setup_by=None),</span> <span class="pre">'lammps':</span> <span class="pre">Spec(size=('n_atoms',),</span> <span class="pre">klass=(),</span> <span class="pre">task=None,</span> <span class="pre">units='md_steps',</span> <span class="pre">multiplier=None,</span> <span class="pre">default_alpha=0.8,</span> <span class="pre">slope_by=None,</span> <span class="pre">setup_by=None),</span> <span class="pre">'mopac':</span> <span class="pre">Spec(size=('n_basis',</span> <span class="pre">'n_atoms'),</span> <span class="pre">klass=('hamiltonian',</span> <span class="pre">'regime'),</span> <span class="pre">task='task',</span> <span class="pre">units='geometry_cycles',</span> <span class="pre">multiplier=None,</span> <span class="pre">default_alpha=0.0,</span> <span class="pre">slope_by='regime',</span> <span class="pre">setup_by='regime'),</span> <span class="pre">'orca':</span> <span class="pre">Spec(size=('nbf',</span> <span class="pre">'n_electrons',</span> <span class="pre">'n_atoms'),</span> <span class="pre">klass=('method_class',),</span> <span class="pre">task='task',</span> <span class="pre">units='scf_runs',</span> <span class="pre">multiplier=None,</span> <span class="pre">default_alpha=0.8,</span> <span class="pre">slope_by=None,</span> <span class="pre">setup_by=None),</span> <span class="pre">'psi4':</span> <span class="pre">Spec(size=('nbf',</span> <span class="pre">'n_electrons',</span> <span class="pre">'n_atoms'),</span> <span class="pre">klass=('method',),</span> <span class="pre">task='task',</span> <span class="pre">units='scf_runs',</span> <span class="pre">multiplier=None,</span> <span class="pre">default_alpha=0.8,</span> <span class="pre">slope_by=None,</span> <span class="pre">setup_by=None),</span> <span class="pre">'vasp':</span> <span class="pre">Spec(size=('nelect',</span> <span class="pre">'grid',</span> <span class="pre">'volume'),</span> <span class="pre">klass=('model',),</span> <span class="pre">task='task',</span> <span class="pre">units='ionic_steps',</span> <span class="pre">multiplier='kpoints',</span> <span class="pre">default_alpha=0.5,</span> <span class="pre">slope_by=None,</span> <span class="pre">setup_by=None)}</span></span><a class="headerlink" href="#seamm_exec.timing_model.FALLBACK_SPECS" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">FALLBACK_SPECS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'dftbplus':</span> <span class="pre">Spec(size=('n_atoms',),</span> <span class="pre">klass=('model',),</span> <span class="pre">task='task',</span> <span class="pre">units='scc_cycles',</span> <span class="pre">multiplier=None,</span> <span class="pre">default_alpha=0.8,</span> <span class="pre">slope_by=None,</span> <span class="pre">setup_by=None,</span> <span class="pre">flags=None),</span> <span class="pre">'gaussian':</span> <span class="pre">Spec(size=('nbf',</span> <span class="pre">'n_electrons',</span> <span class="pre">'n_atoms'),</span> <span class="pre">klass=('method',),</span> <span class="pre">task='task',</span> <span class="pre">units='scf_runs',</span> <span class="pre">multiplier=None,</span> <span class="pre">default_alpha=0.8,</span> <span class="pre">slope_by=None,</span> <span class="pre">setup_by=None,</span> <span class="pre">flags=None),</span> <span class="pre">'lammps':</span> <span class="pre">Spec(size=('n_atoms',),</span> <span class="pre">klass=(),</span> <span class="pre">task=None,</span> <span class="pre">units='md_steps',</span> <span class="pre">multiplier=None,</span> <span class="pre">default_alpha=0.8,</span> <span class="pre">slope_by=None,</span> <span class="pre">setup_by=None,</span> <span class="pre">flags=None),</span> <span class="pre">'mopac':</span> <span class="pre">Spec(size=('n_basis',</span> <span class="pre">'n_atoms'),</span> <span class="pre">klass=('hamiltonian',</span> <span class="pre">'regime'),</span> <span class="pre">task='task',</span> <span class="pre">units='geometry_cycles',</span> <span class="pre">multiplier=None,</span> <span class="pre">default_alpha=0.0,</span> <span class="pre">slope_by='regime',</span> <span class="pre">setup_by='regime',</span> <span class="pre">flags=None),</span> <span class="pre">'orca':</span> <span class="pre">Spec(size=('nbf',</span> <span class="pre">'n_electrons',</span> <span class="pre">'n_atoms'),</span> <span class="pre">klass=('method_class',),</span> <span class="pre">task='task',</span> <span class="pre">units='scf_runs',</span> <span class="pre">multiplier=None,</span> <span class="pre">default_alpha=0.8,</span> <span class="pre">slope_by=None,</span> <span class="pre">setup_by=None,</span> <span class="pre">flags=None),</span> <span class="pre">'psi4':</span> <span class="pre">Spec(size=('nbf',</span> <span class="pre">'n_electrons',</span> <span class="pre">'n_atoms'),</span> <span class="pre">klass=('method',),</span> <span class="pre">task='task',</span> <span class="pre">units='scf_runs',</span> <span class="pre">multiplier=None,</span> <span class="pre">default_alpha=0.8,</span> <span class="pre">slope_by=None,</span> <span class="pre">setup_by=None,</span> <span class="pre">flags=None),</span> <span class="pre">'vasp':</span> <span class="pre">Spec(size=('nelect',</span> <span class="pre">'grid',</span> <span class="pre">'volume'),</span> <span class="pre">klass=('model',),</span> <span class="pre">task='task',</span> <span class="pre">units='ionic_steps',</span> <span class="pre">multiplier='kpoints',</span> <span class="pre">default_alpha=0.5,</span> <span class="pre">slope_by=None,</span> <span class="pre">setup_by=None,</span> <span class="pre">flags=None)}</span></span><a class="headerlink" href="#seamm_exec.timing_model.FALLBACK_SPECS" title="Link to this definition">#</a></dt>
 <dd><p>Specs for the code steps of 2026.10.6, which wrote records before the steps
 declared their own: used only when a program has no <code class="docutils literal notranslate"><span class="pre">&lt;program&gt;.spec.json</span></code>.
 Remove once every step writes its spec.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.FLAG_MIN_CONTRASTS">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">FLAG_MIN_CONTRASTS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></span><a class="headerlink" href="#seamm_exec.timing_model.FLAG_MIN_CONTRASTS" title="Link to this definition">#</a></dt>
+<dd><p>… and only when this many calculations – the same machine, method class,
+task and sizes – ran both with and without it. A flag that always comes
+with its own calculations (one campaign’s settings, a molecule’s elements)
+cannot be told from them: on ARC’s ORCA records every flag was like that,
+and the factors fitted anyway took machine and campaign differences
+(Owl’s production predictions fell from 96 % to 92 % within 2x). The timing
+benchmarks’ toggle ladders make the contrasts.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.FLAG_MIN_ROWS">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">FLAG_MIN_ROWS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10</span></span><a class="headerlink" href="#seamm_exec.timing_model.FLAG_MIN_ROWS" title="Link to this definition">#</a></dt>
+<dd><p>A flag (<code class="docutils literal notranslate"><span class="pre">Spec.flags</span></code>) gets a factor only with this many runs with it,
+and as many without it …</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.FLAG_RIDGE">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">FLAG_RIDGE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.01</span></span><a class="headerlink" href="#seamm_exec.timing_model.FLAG_RIDGE" title="Link to this definition">#</a></dt>
+<dd><p>a flag the records do not
+clearly need stays near no effect</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The ridge penalty on a flag’s factor, per row</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.FLAG_UNKNOWN_SPREAD">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">FLAG_UNKNOWN_SPREAD</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.15</span></span><a class="headerlink" href="#seamm_exec.timing_model.FLAG_UNKNOWN_SPREAD" title="Link to this definition">#</a></dt>
+<dd><p>The added log-spread of a prediction (above the median) per flag the
+records have never seen, and its most</p>
 </dd></dl>
 
 <dl class="py data">
@@ -2794,7 +2838,7 @@ Remove once every step writes its spec.</p>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="seamm_exec.timing_model.MODEL_VERSION">
-<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">MODEL_VERSION</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#seamm_exec.timing_model.MODEL_VERSION" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">MODEL_VERSION</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#seamm_exec.timing_model.MODEL_VERSION" title="Link to this definition">#</a></dt>
 <dd><p>The model file’s format</p>
 </dd></dl>
 
@@ -2844,7 +2888,7 @@ fraction since the fit …</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="seamm_exec.timing_model.Spec">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">Spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">('n_atoms',)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">klass</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'task'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiplier</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slope_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">setup_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_model.html#Spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_model.Spec" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">Spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">('n_atoms',)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">klass</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'task'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiplier</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slope_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">setup_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_model.html#Spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_model.Spec" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>What the cost model of a program is made of: plain data a code step
 declares and passes when it records a run (<code class="docutils literal notranslate"><span class="pre">record_timing(...,</span>
@@ -2873,12 +2917,24 @@ iteration: the work is <code class="docutils literal notranslate"><span class="p
 is much dearer than the rest – MOPAC’s MOZYME localizes the orbitals
 once, then runs fast cycles – so a single point and a long
 optimization share one per-cycle cost.</p></li>
+<li><p><strong>flags</strong> (<em>dict</em><em> or </em><em>None</em>) – The run’s options as flags, each with its own factor learned by the fit
+(shrunk to none unless the records support it): <code class="docutils literal notranslate"><span class="pre">{&quot;column&quot;:</span> <span class="pre">the</span>
+<span class="pre">column</span> <span class="pre">holding</span> <span class="pre">them,</span> <span class="pre">space</span> <span class="pre">separated</span> <span class="pre">(ORCA's</span> <span class="pre">'!'</span> <span class="pre">line);</span> <span class="pre">&quot;drop&quot;:</span> <span class="pre">regular</span>
+<span class="pre">expressions</span> <span class="pre">of</span> <span class="pre">words</span> <span class="pre">that</span> <span class="pre">are</span> <span class="pre">not</span> <span class="pre">options</span> <span class="pre">(task</span> <span class="pre">keywords,</span> <span class="pre">basis</span> <span class="pre">sets);</span>
+<span class="pre">&quot;drop_columns&quot;:</span> <span class="pre">columns</span> <span class="pre">whose</span> <span class="pre">values</span> <span class="pre">are</span> <span class="pre">dropped</span> <span class="pre">from</span> <span class="pre">the</span> <span class="pre">words</span> <span class="pre">(the</span>
+<span class="pre">method</span> <span class="pre">and</span> <span class="pre">basis,</span> <span class="pre">which</span> <span class="pre">the</span> <span class="pre">model</span> <span class="pre">has</span> <span class="pre">already)}</span></code>. See
+<a class="reference internal" href="#seamm_exec.timing_model.flag_tokens" title="seamm_exec.timing_model.flag_tokens"><code class="xref py py-func docutils literal notranslate"><span class="pre">flag_tokens()</span></code></a>.</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="seamm_exec.timing_model.Spec.default_alpha">
 <span class="sig-name descname"><span class="pre">default_alpha</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.8</span></span><a class="headerlink" href="#seamm_exec.timing_model.Spec.default_alpha" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.Spec.flags">
+<span class="sig-name descname"><span class="pre">flags</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#seamm_exec.timing_model.Spec.flags" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -2951,6 +3007,16 @@ time puts the fit where the time is; small runs still set the start-up time.</p>
 <dd class="field-even"><p>dict</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing_model.flag_tokens">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">flag_tokens</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_model.html#flag_tokens"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_model.flag_tokens" title="Link to this definition">#</a></dt>
+<dd><p>The option flags of a run, as upper-case words, per a spec’s <code class="docutils literal notranslate"><span class="pre">flags</span></code>.</p>
+<p>The words of <code class="docutils literal notranslate"><span class="pre">flags[&quot;column&quot;]</span></code>, less those matching a <code class="docutils literal notranslate"><span class="pre">drop</span></code> pattern
+and those that are another column’s value (<code class="docutils literal notranslate"><span class="pre">drop_columns</span></code>, compared
+ignoring case, with “_” and “/” the same, and also as the parts of a
+value like “R2SCAN-D4”). An empty set without a spec or a value.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -3451,6 +3517,10 @@ raises.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.CORES_SIZE_CORRELATION"><code class="docutils literal notranslate"><span class="pre">CORES_SIZE_CORRELATION</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.EXTRAPOLATION"><code class="docutils literal notranslate"><span class="pre">EXTRAPOLATION</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.FALLBACK_SPECS"><code class="docutils literal notranslate"><span class="pre">FALLBACK_SPECS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.FLAG_MIN_CONTRASTS"><code class="docutils literal notranslate"><span class="pre">FLAG_MIN_CONTRASTS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.FLAG_MIN_ROWS"><code class="docutils literal notranslate"><span class="pre">FLAG_MIN_ROWS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.FLAG_RIDGE"><code class="docutils literal notranslate"><span class="pre">FLAG_RIDGE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.FLAG_UNKNOWN_SPREAD"><code class="docutils literal notranslate"><span class="pre">FLAG_UNKNOWN_SPREAD</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.MACHINE_SHRINK"><code class="docutils literal notranslate"><span class="pre">MACHINE_SHRINK</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.MODELS_SUBDIR"><code class="docutils literal notranslate"><span class="pre">MODELS_SUBDIR</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.MODEL_VERSION"><code class="docutils literal notranslate"><span class="pre">MODEL_VERSION</span></code></a></li>
@@ -3462,6 +3532,7 @@ raises.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.SETUP_CANDIDATES"><code class="docutils literal notranslate"><span class="pre">SETUP_CANDIDATES</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.Spec"><code class="docutils literal notranslate"><span class="pre">Spec</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.Spec.default_alpha"><code class="docutils literal notranslate"><span class="pre">Spec.default_alpha</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.Spec.flags"><code class="docutils literal notranslate"><span class="pre">Spec.flags</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.Spec.from_dict"><code class="docutils literal notranslate"><span class="pre">Spec.from_dict()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.Spec.klass"><code class="docutils literal notranslate"><span class="pre">Spec.klass</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.Spec.multiplier"><code class="docutils literal notranslate"><span class="pre">Spec.multiplier</span></code></a></li>
@@ -3475,6 +3546,7 @@ raises.</p>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.WEIGHT_POWER"><code class="docutils literal notranslate"><span class="pre">WEIGHT_POWER</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.flag_tokens"><code class="docutils literal notranslate"><span class="pre">flag_tokens()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.load_model"><code class="docutils literal notranslate"><span class="pre">load_model()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.load_rows"><code class="docutils literal notranslate"><span class="pre">load_rows()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_model.load_spec"><code class="docutils literal notranslate"><span class="pre">load_spec()</span></code></a></li>
