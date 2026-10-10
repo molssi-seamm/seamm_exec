@@ -14,7 +14,16 @@ CLASSES = {"global hybrid": 0.0, "MP2": 1.2}
 TASKS = {"energy": (1, 1), "opt": (8, 25)}  # units range
 
 
-def _synthetic(tmp_path, n=400, seed=1, alpha=0.7, b_nbf=2.6):
+def _synthetic(
+    tmp_path,
+    n=400,
+    seed=1,
+    alpha=0.7,
+    b_nbf=2.6,
+    parallel=0.0,
+    alpha_slope=0.0,
+    code=False,
+):
     """Rows from a known law: t = t0 + units * exp(a + b log nbf - alpha log cores
     + class + machine) * noise."""
     rng = random.Random(seed)
@@ -25,9 +34,10 @@ def _synthetic(tmp_path, n=400, seed=1, alpha=0.7, b_nbf=2.6):
         units = rng.randint(*TASKS[task])
         nbf = rng.choice([24, 60, 120, 240, 480, 960])
         cores = rng.choice([1, 2, 4, 8, 16])
-        log_unit = -9.0 + b_nbf * math.log(nbf) - alpha * math.log(cores)
+        a = alpha + alpha_slope * (math.log(nbf) - math.log(170.0))
+        log_unit = -9.0 + b_nbf * math.log(nbf) - a * math.log(cores)
         log_unit += CLASSES[klass] + MACHINES[machine] + rng.gauss(0, 0.15)
-        wall = 0.8 + units * math.exp(log_unit)
+        wall = 0.8 + (parallel if cores > 1 else 0.0) + units * math.exp(log_unit)
         append_timing(
             "orca",
             {
@@ -44,6 +54,7 @@ def _synthetic(tmp_path, n=400, seed=1, alpha=0.7, b_nbf=2.6):
                 "n_electrons": nbf // 2,
                 "n_atoms": nbf // 10,
                 "scf_runs": units,
+                **({"code_seconds": f"{wall - 0.8:.3f}"} if code else {}),
             },
             directory=tmp_path,
         )
@@ -55,7 +66,10 @@ def test_fit_recovers_the_law(tmp_path):
     assert model is not None and model["rows"] >= 380
     assert model["features"] == ["nbf"]  # electrons and atoms are collinear with it
     assert abs(model["coefficients"]["log nbf"] - 2.6) < 0.15
-    assert model["alpha_fitted"] and abs(model["alpha"] - 0.7) < 0.1
+    # The parallel exponent comes from the runs that are the same calculation
+    # on several core counts (paired runs), as the random draws make many
+    assert abs(model["alpha"] - 0.7) < 0.1
+    assert model["alpha_fitted"] or model["alpha_note"] == "from paired runs"
     # Class and machine effects (differences, since each set is centred)
     assert abs(model["classes"]["MP2"] - model["classes"]["global hybrid"] - 1.2) < 0.15
     fast = model["machines"]["fast:q:CPU-A"]["offset"]
@@ -594,3 +608,72 @@ def test_code_time_stands_in_for_a_missing_wall_time(tmp_path):
     assert sum(r["_wall_from_code"] for r in loaded) == len(rows) // 2
     model = tm.fit("testcode", directory=tmp_path, spec=spec)
     assert abs(model["machines"]["m:q:CPU"]["t0"] - 1.0) < 0.05
+
+
+def test_a_parallel_start_up_is_found_and_predicted(tmp_path):
+    """A parallel run pays a fixed start-up a serial one does not (ORCA's MPI
+    launch, ~9 s on Owl); with it the exponent is still recovered, and a
+    prediction adds it for more than one core only."""
+    # The code's own time is recorded, as ORCA's is: the start-up outside the
+    # code (0.8 s) is measured, and the parallel one is fitted on top of it
+    _synthetic(tmp_path, parallel=6.0, code=True)
+    model = tm.fit("orca", directory=tmp_path)
+    for info in model["machines"].values():
+        assert abs(info["parallel_startup"] - 6.0) < 1.5
+    assert abs(model["alpha"] - 0.7) < 0.1
+    d = {"task": "energy", "method_class": "global hybrid", "nbf": 24}
+    one = tm.predict(
+        "orca", d, ntasks=1, machine="fast:q:CPU-A", quantile=0.5, model=model
+    )
+    four = tm.predict(
+        "orca", d, ntasks=4, machine="fast:q:CPU-A", quantile=0.5, model=model
+    )
+    # A tiny calculation: four cores are slower, by about the start-up
+    assert four["median"] > one["median"] + 4.0
+
+
+def test_the_paired_exponent_grows_with_size(tmp_path):
+    _synthetic(tmp_path, alpha=0.6, alpha_slope=0.15)
+    model = tm.fit("orca", directory=tmp_path)
+    assert model["alpha_note"] == "from paired runs"
+    assert abs(model["alpha_slope"] - 0.15) < 0.06
+
+
+def test_paired_runs_override_cores_chosen_by_size(tmp_path):
+    """Production picks cores by size, which says nothing about the speed-up;
+    a few benchmark runs of the same calculation on several core counts do."""
+    rng = random.Random(3)
+    for _ in range(300):  # production: 4 cores for small, 16 for large
+        nbf = rng.choice([100, 200, 400, 800])
+        cores = 4 if nbf < 300 else 16
+        t = 0.8 + math.exp(-9 + 2.6 * math.log(nbf) - 0.8 * math.log(cores))
+        _row(tmp_path, nbf, cores, t * math.exp(rng.gauss(0, 0.1)))
+    for nbf in (100, 200, 400, 800):  # paired benchmark runs
+        for cores in (1, 4, 16):
+            t = 0.8 + math.exp(-9 + 2.6 * math.log(nbf) - 0.8 * math.log(cores))
+            _row(tmp_path, nbf, cores, t)
+    model = tm.fit("orca", directory=tmp_path)
+    assert model["alpha_note"] == "from paired runs"
+    assert abs(model["alpha"] - 0.8) < 0.1
+
+
+def _row(tmp_path, nbf, cores, wall):
+    append_timing(
+        "orca",
+        {
+            "schema": 1,
+            "machine": "m:q:CPU",
+            "program": "orca",
+            "ntasks": cores,
+            "cpus_per_task": 1,
+            "wall": f"{wall:.3f}",
+            "state": "finished",
+            "task": "energy",
+            "method_class": "global hybrid",
+            "nbf": nbf,
+            "n_electrons": nbf // 2,
+            "n_atoms": nbf // 10,
+            "scf_runs": 1,
+        },
+        directory=tmp_path,
+    )

@@ -1,6 +1,21 @@
 =======
 History
 =======
+2026.10.10.1 -- The cost model's parallel start-up and parallel exponent from paired runs
+    * A parallel run pays a fixed start-up that a serial one does not -- launching the
+      MPI processes: for ORCA about 11 s on Owl and 1-3 s on TinkerCliffs, nearly the
+      same for 4 or 16 processes. The cost model now fits it per machine, on top of
+      the start-up of every run; tiny molecules, which ran slower on more cores, are
+      no longer predicted to speed up.
+    * The parallel exponent (how the time falls with the cores, as a function of
+      size) is taken from paired runs -- the same calculation on several core counts,
+      as the timing benchmarks make -- with the start-up removed, and held fixed in the
+      main fit. Production cannot show it, since its core counts follow its sizes.
+    * The start-up of every run is measured on the smallest runs (the gap between the
+      wall time and the code's own time grows with the run).
+    * On ARC's ORCA records, predictions within 2x of the time rose from 86 % to 96 %
+      for Owl's production runs and from 44 % to 82 % for its benchmarks.
+
 2026.10.10 -- Each task records the code that ran it; a set from mixed codes is noted
     * A finished task records what ran its program -- the modules loaded, the conda
       environment, or the command from ``<program>.ini`` -- in its ``DONE`` marker, the
