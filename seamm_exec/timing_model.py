@@ -38,6 +38,7 @@ import logging
 import math
 import os
 from pathlib import Path
+import re
 import time
 
 import numpy as np
@@ -49,7 +50,7 @@ logger = logging.getLogger("seamm-exec")
 #: Where the fitted models go: ``<timing directory>/models/<program>.json``
 MODELS_SUBDIR = "models"
 #: The model file's format
-MODEL_VERSION = 1
+MODEL_VERSION = 2
 
 
 @dataclass
@@ -89,6 +90,14 @@ class Spec:
         is much dearer than the rest -- MOPAC's MOZYME localizes the orbitals
         once, then runs fast cycles -- so a single point and a long
         optimization share one per-cycle cost.
+    flags : dict or None
+        The run's options as flags, each with its own factor learned by the fit
+        (shrunk to none unless the records support it): ``{"column": the
+        column holding them, space separated (ORCA's '!' line); "drop": regular
+        expressions of words that are not options (task keywords, basis sets);
+        "drop_columns": columns whose values are dropped from the words (the
+        method and basis, which the model has already)}``. See
+        :func:`flag_tokens`.
     """
 
     size: tuple = ("n_atoms",)
@@ -99,6 +108,7 @@ class Spec:
     default_alpha: float = 0.8
     slope_by: str | None = None
     setup_by: str | None = None
+    flags: dict | None = None
 
     def to_dict(self):
         return {
@@ -110,6 +120,7 @@ class Spec:
             "default_alpha": self.default_alpha,
             "slope_by": self.slope_by,
             "setup_by": self.setup_by,
+            "flags": self.flags,
         }
 
     @classmethod
@@ -124,7 +135,37 @@ class Spec:
             default_alpha=float(data.get("default_alpha", 0.8)),
             slope_by=data.get("slope_by"),
             setup_by=data.get("setup_by"),
+            flags=data.get("flags"),
         )
+
+
+def flag_tokens(record, flags):
+    """The option flags of a run, as upper-case words, per a spec's ``flags``.
+
+    The words of ``flags["column"]``, less those matching a ``drop`` pattern
+    and those that are another column's value (``drop_columns``, compared
+    ignoring case, with "_" and "/" the same, and also as the parts of a
+    value like "R2SCAN-D4"). An empty set without a spec or a value.
+    """
+    if not flags:
+        return frozenset()
+    text = str(record.get(flags.get("column", ""), "") or "")
+    if not text:
+        return frozenset()
+    drops = [re.compile(p, re.IGNORECASE) for p in flags.get("drop", ())]
+    same = set()
+    for column in flags.get("drop_columns", ()):
+        value = str(record.get(column, "") or "").upper().strip()
+        if not value:
+            continue
+        for v in (value, *value.split(), *value.rsplit("-", 1)):
+            same.update({v, v.replace("_", "/"), v.replace("/", "_")})
+    words = set()
+    for word in text.upper().split():
+        if word in same or any(d.search(word) for d in drops):
+            continue
+        words.add(word)
+    return frozenset(words)
 
 
 DEFAULT_SPEC = Spec()
@@ -222,6 +263,24 @@ PARALLEL_FRACTIONS = (0.0, 0.5, 0.75, 0.9)
 #: Paired runs -- the same calculation on several core counts -- needed to
 #: take the parallel exponent from them rather than from the main fit
 PAIRED_MIN_GROUPS = 4
+#: A flag (``Spec.flags``) gets a factor only with this many runs with it,
+#: and as many without it ...
+FLAG_MIN_ROWS = 10
+#: ... and only when this many calculations -- the same machine, method class,
+#: task and sizes -- ran both with and without it. A flag that always comes
+#: with its own calculations (one campaign's settings, a molecule's elements)
+#: cannot be told from them: on ARC's ORCA records every flag was like that,
+#: and the factors fitted anyway took machine and campaign differences
+#: (Owl's production predictions fell from 96 % to 92 % within 2x). The timing
+#: benchmarks' toggle ladders make the contrasts.
+FLAG_MIN_CONTRASTS = 3
+#: The ridge penalty on a flag's factor, per row: a flag the records do not
+#: clearly need stays near no effect
+FLAG_RIDGE = 0.01
+#: The added log-spread of a prediction (above the median) per flag the
+#: records have never seen, and its most
+FLAG_UNKNOWN_SPREAD = 0.15
+FLAG_UNKNOWN_MAX = 0.5
 #: The setups tried for each group of ``Spec.setup_by``, in iterations
 SETUP_CANDIDATES = (0.0, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0)
 #: Each run's weight in the power-law fit is its net time (wall less start-up)
@@ -326,6 +385,7 @@ def load_rows(program, directory=None, spec=None):
         )
         row["_task"] = str(row.get(spec.task, "") or "") if spec.task else ""
         row["_machine"] = str(row.get("machine", "") or "")
+        row["_flags"] = flag_tokens(row, spec.flags)
         rows.append(row)
     return rows
 
@@ -377,6 +437,37 @@ def fit(program, directory=None, spec=None, min_rows=8, weight_power=None):
                 kept.append(n)
     features = kept
     feature_log_means = {n: float(logs[n].mean()) for n in features}
+
+    # The flags with enough support to get a factor of their own
+    flag_features = []
+    vocabulary = sorted({t for r in rows for t in r["_flags"]})
+    if spec.flags:
+        counts = {}
+        by_calculation = {}
+        for r in rows:
+            calc = (
+                r["_machine"],
+                r["_class"],
+                r["_task"],
+                tuple(round(r["_size"][n], 6) for n in features),
+            )
+            by_calculation.setdefault(calc, []).append(r["_flags"])
+            for t in r["_flags"]:
+                counts[t] = counts.get(t, 0) + 1
+        contrasts = {
+            t: sum(
+                1
+                for flags in by_calculation.values()
+                if any(t in f for f in flags) and any(t not in f for f in flags)
+            )
+            for t in counts
+        }
+        flag_features = sorted(
+            t
+            for t, c in counts.items()
+            if FLAG_MIN_ROWS <= c <= len(rows) - FLAG_MIN_ROWS
+            and contrasts[t] >= FLAG_MIN_CONTRASTS
+        )
 
     # Start-up constant per machine. Where the code reports its own time
     # (``code_seconds``) the constant is measured: the median of wall minus the
@@ -435,6 +526,7 @@ def fit(program, directory=None, spec=None, min_rows=8, weight_power=None):
                 setup or {},
                 parallel if parallel_ is None else parallel_,
                 alpha_fixed,
+                flag_features,
             )
             if result is not None and (best is None or result["score"] < best["score"]):
                 best = result
@@ -562,6 +654,7 @@ def fit(program, directory=None, spec=None, min_rows=8, weight_power=None):
                     setup[g] = min(scores)[1]
         best = search(features, zero, no_delta, setup)
     best["setup"] = setup
+    best["vocabulary"] = vocabulary
     best["feature_log_means"] = {n: feature_log_means[n] for n in features}
     best["notes"] = notes
     model = _assemble(program, spec, features, best)
@@ -601,6 +694,7 @@ def _fit_rows(
     setup=None,
     parallel=None,
     alpha_fixed=None,
+    flag_features=(),
 ):
     """One ridge fit for a given start-up constant; the pieces for the model.
 
@@ -707,6 +801,9 @@ def _fit_rows(
         if t != ref_task:
             columns.append(f"task {t}")
             X.append(np.array([1.0 if r["_task"] == t else 0.0 for r in rows]))
+    for t in flag_features:
+        columns.append(f"flag {t}")
+        X.append(np.array([1.0 if t in r["_flags"] else 0.0 for r in rows]))
     X = np.column_stack(X)
     y = np.array([r["_y"] for r in rows])
     machine_index = np.array([machines.index(r["_machine"]) for r in rows])
@@ -720,6 +817,9 @@ def _fit_rows(
     offsets = np.zeros(len(machines))
     penalty = np.full(X.shape[1], RIDGE)
     penalty[0] = 0.0
+    for i, name in enumerate(columns):
+        if name.startswith("flag "):
+            penalty[i] = FLAG_RIDGE * len(rows)
     XW = X * weights[:, None]
     for _ in range(4):
         target = y - offsets[machine_index]
@@ -874,6 +974,63 @@ def _paired_alpha(rows, features, t0, parallel):
     }
 
 
+#: Columns that say where or how a run was recorded, not what it computed
+_NOT_DRIVERS = {
+    "schema", "date", "machine", "cluster", "partition", "cpu_model", "cpu_cores",
+    "gpu_model", "host", "program", "ntasks", "cpus_per_task", "mem_per_cpu",
+    "ngpus", "nprocs", "wall", "estimated", "state", "timed_out", "attempts",
+    "in_situ", "code_seconds", "terminated_normally", "benchmark", "model",
+}  # fmt: skip
+
+
+def _residual_drivers(
+    rows, resid, spec, min_rows=20, threshold=math.log(1.3), modeled=()
+):
+    """Recorded values the model does not use that still go with a systematic
+    error -- candidates for a cost driver to add (a size, class or flag): for
+    each other column with 2-30 values, each value seen in at least
+    ``min_rows`` runs whose mean log error is beyond ``threshold``; and flags
+    too rare for a factor of their own, the same way. The 20 largest."""
+    used = set(spec.size) | set(spec.klass)
+    used |= {spec.task, spec.units, spec.multiplier, spec.slope_by, spec.setup_by}
+    if spec.flags:
+        used.add(spec.flags.get("column"))
+    columns = {k for r in rows for k in r if not k.startswith("_")}
+    columns -= used | _NOT_DRIVERS
+    drivers = []
+    for column in sorted(columns):
+        values = {}
+        for r, e in zip(rows, resid):
+            v = r.get(column)
+            if v not in (None, ""):
+                values.setdefault(str(v), []).append(float(e))
+        if not 2 <= len(values) <= 30 or all(_num(v) is not None for v in values):
+            # Numbers (sizes, counts, memory) are not categories
+            continue
+        for value, errors in values.items():
+            mean = float(np.mean(errors))
+            if len(errors) >= min_rows and abs(mean) > threshold:
+                drivers.append(
+                    {"column": column, "value": value, "rows": len(errors)}
+                    | {"factor": math.exp(mean)}
+                )
+    flagged = {}
+    for r, e in zip(rows, resid):
+        for t in r["_flags"]:
+            flagged.setdefault(t, []).append(float(e))
+    for t, errors in flagged.items():
+        mean = float(np.mean(errors))
+        # A flag without a factor (too rare, or never contrasted) whose runs
+        # are still off: a toggle ladder for it would let the fit learn it
+        if t not in modeled and len(errors) >= 5 and abs(mean) > threshold:
+            drivers.append(
+                {"column": "flag", "value": t, "rows": len(errors)}
+                | {"factor": math.exp(mean)}
+            )
+    drivers.sort(key=lambda d: -abs(math.log(d["factor"])))
+    return drivers[:20]
+
+
 def _assemble(program, spec, features, f):
     """The model dictionary from a fit's pieces."""
     rows, columns, beta, resid = f["rows"], f["columns"], f["beta"], f["resid"]
@@ -892,6 +1049,11 @@ def _assemble(program, spec, features, f):
             if f"log {n} @ {g}" in coefficients
         }
         for g in f["delta_groups"]
+    }
+    flag_factors = {
+        name[5:]: coefficients.pop(name)
+        for name in list(coefficients)
+        if name.startswith("flag ")
     }
     class_offsets = {c: coefficients.pop(f"class {c}", 0.0) for c in f["classes"]}
     task_offsets = {t: coefficients.pop(f"task {t}", 0.0) for t in f["tasks"]}
@@ -935,6 +1097,12 @@ def _assemble(program, spec, features, f):
         "feature_log_range": f["feature_log_range"],
         "classes": class_offsets,
         "reference_class": f["ref_class"],
+        "flags": flag_factors,  # {flag: log factor}
+        "flag_vocabulary": f.get("vocabulary", []),
+        "flag_support": {
+            t: int(sum(1 for r in rows if t in r["_flags"])) for t in flag_factors
+        },
+        "drivers": _residual_drivers(rows, resid, spec, modeled=flag_factors),
         "tasks": task_offsets,
         "reference_task": f["ref_task"],
         "spec": spec.to_dict(),
@@ -1019,7 +1187,11 @@ def refresh_if_stale(
                 age_days = float("inf")
             grown = size > (1.0 + growth) * old_size
             aged = age_days > max_age_days and mtime > (model.get("records_mtime") or 0)
-            if not (grown or aged):
+            # A new spec (e.g. a step that now declares flags) or a model made
+            # by an older version of the fit is refitted too
+            respec = load_spec(program, directory).to_dict() != model.get("spec")
+            outdated = model.get("model_version", 1) < MODEL_VERSION
+            if not (grown or aged or respec or outdated):
                 return "fresh"
         lock_path = model_path(program, directory).with_suffix(".lock")
         lock_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1222,6 +1394,13 @@ def predict(
     if model["task_column"] and task not in model["tasks"]:
         return None
     y += model["tasks"].get(task, 0.0)
+    unknown = []
+    flag_spec = (model.get("spec") or {}).get("flags")
+    if flag_spec:
+        flags = flag_tokens(descriptors, flag_spec)
+        y += sum(model.get("flags", {}).get(t, 0.0) for t in flags)
+        vocabulary = set(model.get("flag_vocabulary", []))
+        unknown = sorted(t for t in flags if t not in vocabulary)
 
     machine = machine or machine_class()["machine"]
     info = model["machines"].get(machine)
@@ -1254,6 +1433,9 @@ def predict(
         spread += model["machine_offset_sd"] * _interp_quantile(
             {str(k): v for k, v in z.items()}, quantile
         )
+    if unknown and quantile > 0.5:
+        # Options the records have never seen may cost anything
+        spread += min(FLAG_UNKNOWN_MAX, FLAG_UNKNOWN_SPREAD * len(unknown))
     work = units
     if model.get("setup_by"):
         group = str(descriptors.get(model["setup_by"], "") or "")
@@ -1268,6 +1450,7 @@ def predict(
         "machine": machine,
         "quantile": quantile,
         "spread": spread,
+        "unknown_flags": unknown,
         "model": {"fitted": model["fitted"], "rows": model["rows"]},
     }
 
@@ -1330,10 +1513,25 @@ def report_text(model):
                 f"  task {name or '(none)'}: x{math.exp(offset):.2f} per unit"
                 + (f", median {units:.0f} units" if units else "")
             )
+    for name, offset in sorted(
+        model.get("flags", {}).items(), key=lambda kv: -abs(kv[1])
+    ):
+        lines.append(
+            f"  flag {name}: x{math.exp(offset):.2f} "
+            f"({model.get('flag_support', {}).get(name, 0)} runs)"
+        )
     for name, info in sorted(model["machines"].items(), key=lambda kv: kv[1]["offset"]):
+        parallel = info.get("parallel_startup", 0.0)
         lines.append(
             f"  machine {name or '(unknown)'}: x{math.exp(info['offset']):.2f} "
-            f"({info['rows']} rows, t0 {info['t0']:.2f} s)"
+            f"({info['rows']} rows, t0 {info['t0']:.2f} s"
+            + (f", parallel start-up {parallel:.1f} s" if parallel else "")
+            + ")"
+        )
+    for d in model.get("drivers", []):
+        lines.append(
+            f"  possible cost driver (not in the model): {d['column']} = "
+            f"{d['value']}: x{d['factor']:.2f} ({d['rows']} runs)"
         )
     q = model["residual_quantiles"]
     lines.append(

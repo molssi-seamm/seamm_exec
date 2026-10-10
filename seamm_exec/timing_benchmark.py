@@ -34,6 +34,12 @@ LAMMPS, cells and k-points for VASP). The declaration::
             # optionally only some of the tasks below, e.g. a basis-set ladder
             "ORCA:DFT@B3LYP/def2-QZVPPD": {"quick": 15, "full": 24,
                                           "tasks": ["Energy"]},
+            # and its own variants, replacing the task's below for it: e.g.
+            # one option toggled ("NoCOSX" on and off), so that the fit can
+            # tell what the option costs from what the molecule does
+            "ORCA:DFT@B3LYP/def2-TZVP": {"quick": 15, "full": 24,
+                                        "variants": {"Energy": [
+                                            {}, {"extra keywords": "NoCOSX"}]}},
         },
         "parameter": None,        # or the sub-step parameter the chemistry sets
                                   # (MOPAC's "hamiltonian") when the step does
@@ -124,7 +130,8 @@ def build_spec(codes=None, tier="quick"):
                         continue
                     if "tasks" in limits and task not in limits["tasks"]:
                         continue
-                    for variant in spec.get("variants", {}).get(task, [{}]):
+                    variants = limits.get("variants", spec.get("variants", {}))
+                    for variant in variants.get(task, [{}]):
                         variant = dict(variant)
                         if size < variant.pop("_min_size", 0):
                             continue

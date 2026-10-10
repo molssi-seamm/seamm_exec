@@ -1,6 +1,22 @@
 =======
 History
 =======
+2026.10.10.2 -- Option flags in the cost model, learned where the records contrast them
+    * A step may name the column holding a run's options (``flags`` in its spec, with
+      the words that are not options: the task, basis sets, method). Each option gets a
+      factor of its own, shrunk toward none -- but only where the records contrast it:
+      at least three calculations run both with and without it on one machine. Fitted
+      on ARC's ORCA records without that rule, the factors took up differences between
+      machines and campaigns, and Owl's predictions got worse.
+    * The fit's report lists the learned option factors, and possible cost drivers:
+      recorded values and options without a factor whose runs are still
+      systematically off.
+    * A prediction with an option the records have never seen gets a wider spread
+      above the median.
+    * A model is refitted when the step's spec, or the fitting method, has changed.
+    * A seed-benchmark chemistry may carry its own variants (a toggle ladder: a few
+      runs repeated with one option changed), instead of its task's.
+
 2026.10.10.1 -- The cost model's parallel start-up and parallel exponent from paired runs
     * A parallel run pays a fixed start-up that a serial one does not -- launching the
       MPI processes: for ORCA about 11 s on Owl and 1-3 s on TinkerCliffs, nearly the
