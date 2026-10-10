@@ -187,6 +187,12 @@ class SchedulerBackend:
         transport). On a remote cluster it is not sent.
     bundle_walltime : float, optional
         Seconds to request for a bundle whose tasks give no walltime.
+    estimate_scale : float, optional
+        Multiplies each task's estimate when a bundle's walltime comes from
+        the estimates (default 1).
+    min_task_walltime : float, optional
+        The least seconds a bundle gives each task whose walltime comes from
+        its estimate.
     max_queued : int, optional
         The most jobs this user may have queued and running at once.
     poll_interval : float = 30
@@ -215,6 +221,8 @@ class SchedulerBackend:
         poll_interval=30.0,
         job_name_prefix="seamm",
         max_walltime=None,
+        estimate_scale=None,
+        min_task_walltime=None,
     ):
         self.queue = queue
         self.name = name
@@ -235,6 +243,10 @@ class SchedulerBackend:
         self.bundle_walltime = bundle_walltime
         # The queue's longest walltime: retries after a timeout never ask more
         self.max_walltime = max_walltime
+        # Guards on walltimes from estimates (the target's estimate_scale and
+        # min_task_walltime)
+        self.estimate_scale = estimate_scale
+        self.min_task_walltime = min_task_walltime
         self.max_queued = max_queued
         self.poll_interval = poll_interval
         self.job_name_prefix = job_name_prefix
@@ -307,6 +319,8 @@ class SchedulerBackend:
             accepts_config=section.task_transport == "local",
             bundle_walltime=section.bundle_walltime,
             max_walltime=_max_walltime(section),
+            estimate_scale=getattr(section, "estimate_scale", None),
+            min_task_walltime=getattr(section, "min_task_walltime", None),
             max_queued=section.max_queued_tasks,
             poll_interval=(
                 section.poll_interval if section.poll_interval is not None else 30.0
@@ -784,15 +798,21 @@ class SchedulerBackend:
         else:
             # Without the tasks' walltimes the queue's default would apply (an
             # hour on some partitions) and kill a long bundle: use their
-            # estimates with a margin, within the bundle limit.
+            # estimates with a margin, within the bundle limit. The target may
+            # scale the estimates and give each task a least walltime, as a
+            # guard against estimates that are too low.
+            scale = self.estimate_scale or 1.0
             estimate = sum(
-                w if w is not None else (t.estimated_seconds or 0.0)
+                w if w is not None else scale * (t.estimated_seconds or 0.0)
                 for t, w in zip(tasks, walltimes)
             )
-            if estimate > 0:
+            floor = (self.min_task_walltime or 0.0) * sum(
+                1 for w in walltimes if w is None
+            )
+            if estimate > 0 or floor > 0:
                 # A retry after running out of time gets more (walltime_scale),
                 # within the bundle limit and the queue's longest walltime
-                walltime = walltime_scale * (2.0 * estimate + 600.0)
+                walltime = walltime_scale * max(2.0 * estimate + 600.0, floor)
                 if limit:
                     walltime = min(walltime, limit)
                 if self.max_walltime:

@@ -522,6 +522,14 @@ class TaskSet:
             bundle_tasks = 1
         self.bundle_tasks = bundle_tasks
         self.bundle_walltime = bundle_walltime
+        # The target's guards on walltimes from estimates, which the packing
+        # into bundles follows too
+        self.estimate_scale = (
+            getattr(section, "estimate_scale", None) if on_queue else None
+        )
+        self.min_task_walltime = (
+            getattr(section, "min_task_walltime", None) if on_queue else None
+        )
         self._bundle_index = 0
         self._bundle_count = 0
         self._bundle_seconds = 0.0
@@ -616,7 +624,10 @@ class TaskSet:
         # A new bundle when this one is full, by count or by walltime
         seconds = task.resources.walltime
         if seconds is None:
-            seconds = task.estimated_seconds or 0.0
+            seconds = max(
+                (self.estimate_scale or 1.0) * (task.estimated_seconds or 0.0),
+                self.min_task_walltime or 0.0,
+            )
         if self._bundle_count > 0 and (
             (self.bundle_tasks and self._bundle_count >= self.bundle_tasks)
             or (

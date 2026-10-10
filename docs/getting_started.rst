@@ -205,6 +205,12 @@ With ``tasks = queue`` the ``TaskSet`` submits them, in bundles, as batch jobs:
   again with twice the estimated time, and twice that after a second timeout,
   within ``bundle_walltime``. A walltime the task gives itself is used as given.
   The first four such timeouts do not use up any of the task's attempts.
+- A bundle asks for twice its tasks' estimated time plus ten minutes. Where the
+  estimates are too low on a machine, the target section can guard against
+  them: ``estimate_scale`` multiplies each estimate, and ``min_task_walltime``
+  (seconds, or a SLURM time such as ``30`` minutes) gives each task at least that
+  much. Tasks are packed into bundles with the same times, still within
+  ``bundle_walltime``.
 - Tasks estimated to take less than ``inline_below`` seconds (default 60) run on
   the evaluator's machine when their program is installed there.
 - A task that carries its own ``config`` was configured for the evaluator's
@@ -352,7 +358,8 @@ A cost model is fitted to those rows with::
     python -m seamm_exec.timing_model fit            # every program with records
     python -m seamm_exec.timing_model fit orca vasp
 
-which writes ``~/.seamm.d/timing/models/<program>.json`` and prints a report:
+which writes ``~/.seamm.d/timing/models/<program>.v<N>.json`` (one file per version
+of the model) and prints a report:
 the rows used, R^2 in log space, the fraction of runs predicted within 1.3x and
 2x, the fitted power law, and a factor per method class, task and machine
 class. The model is a product of separable factors -- start-up constants, a

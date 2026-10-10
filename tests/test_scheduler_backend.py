@@ -491,6 +491,44 @@ def test_bundle_resources_and_walltime(job):
     assert backend._bundle_resources(tasks)["walltime"] == 300
 
 
+def test_bundle_walltime_guards(job):
+    """The target's estimate_scale and min_task_walltime guard a bundle's
+    walltime against estimates that are too low; within bundle_walltime."""
+    job, root = job
+    tasks = [fake_task(k, estimated_seconds=100) for k in "abcd"]
+    plain = make_backend(FakeQueue(), job, root, bundle_walltime=6 * 3600)
+    assert plain._bundle_resources(tasks)["walltime"] == 2 * 400 + 600
+    # The least walltime per task wins over twice the (scaled) estimates
+    floor = make_backend(
+        FakeQueue(), job, root, bundle_walltime=6 * 3600, min_task_walltime=1800
+    )
+    assert floor._bundle_resources(tasks)["walltime"] == 4 * 1800
+    # The scale multiplies each estimate
+    scaled = make_backend(
+        FakeQueue(), job, root, bundle_walltime=6 * 3600, estimate_scale=10
+    )
+    assert scaled._bundle_resources(tasks)["walltime"] == 2 * 4000 + 600
+    # A retry's scale applies too, and the bundle limit still caps it
+    assert floor._bundle_resources(tasks, walltime_scale=4)["walltime"] == 6 * 3600
+    # A task with its own walltime is not floored
+    mixed = [fake_task("w", resources=Resources(walltime=100))] + tasks[:1]
+    assert floor._bundle_resources(mixed)["walltime"] == max(2 * 200 + 600, 1800)
+
+
+def test_bundles_by_walltime_with_a_least_task_time():
+    """Packing follows the guards: each task counts at least min_task_walltime."""
+    ts = TaskSet(manifest=False, backend=LocalPool(_executor()), bundle_walltime=100)
+    ts.min_task_walltime = 50
+    for i, seconds in enumerate([10, 10, 10, 80]):
+        ts.add(fake_task(f"t{i}", estimated_seconds=seconds))
+    assert [ts._bundles[f"t{i}"] for i in range(4)] == [
+        "bundle_0000",  # 50
+        "bundle_0000",  # 100
+        "bundle_0001",  # 150 > 100
+        "bundle_0002",  # 50 + 80 > 100
+    ]
+
+
 def test_bundles_by_walltime():
     ts = TaskSet(manifest=False, backend=LocalPool(_executor()), bundle_walltime=100)
     for i, seconds in enumerate([40, 40, 40, 90, 5, 5]):
