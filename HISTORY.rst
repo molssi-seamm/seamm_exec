@@ -1,7 +1,7 @@
 =======
 History
 =======
-2026.10.11 -- The cost model's parallel start-up and parallel exponent from paired runs
+2026.10.10.1 -- The cost model's parallel start-up and parallel exponent from paired runs
     * A parallel run pays a fixed start-up that a serial one does not -- launching the
       MPI processes: for ORCA about 11 s on Owl and 1-3 s on TinkerCliffs, nearly the
       same for 4 or 16 processes. The cost model now fits it per machine, on top of
