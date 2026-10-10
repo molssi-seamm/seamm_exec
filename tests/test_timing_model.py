@@ -2,6 +2,8 @@
 """The cost model fitted to the timing records (seamm_exec.timing_model)."""
 
 import math
+
+import pytest
 import random
 import subprocess
 import sys
@@ -677,3 +679,167 @@ def _row(tmp_path, nbf, cores, wall):
         },
         directory=tmp_path,
     )
+
+
+FLAGS = {
+    "column": "keywords",
+    "drop": ["^ENGRAD$", "OPT$", "^AUTOAUX$", "^DEF2-"],
+    "drop_columns": ["method", "basis"],
+}
+
+
+def test_flag_tokens():
+    record = {
+        "keywords": "R2SCAN D4 AutoAux def2-TZVPPD TIGHTSCF DEFGRID3 NoCOSX EnGrad",
+        "method": "R2SCAN-D4",
+        "basis": "def2-TZVPPD",
+    }
+    assert tm.flag_tokens(record, FLAGS) == {"TIGHTSCF", "DEFGRID3", "NOCOSX"}
+    record = {
+        "keywords": "REVDSD-PBEP86-D4/2021 def2-SVP VERYTIGHTSCF TightOpt",
+        "method": "REVDSD-PBEP86-D4_2021",
+        "basis": "def2-SVP",
+    }
+    assert tm.flag_tokens(record, FLAGS) == {"VERYTIGHTSCF"}
+    assert tm.flag_tokens(record, None) == frozenset()
+    assert tm.flag_tokens({}, FLAGS) == frozenset()
+
+
+def _flagged(tmp_path, n=600, seed=5, factor=2.0, rare=0, unknown=False):
+    """ORCA-like rows with a keyword line: NOCOSX (on a third of the runs, over
+    many molecules) costs ``factor``; TIGHTSCF is on every run; RARE on
+    ``rare`` runs costs 3x."""
+    rng = random.Random(seed)
+    for i in range(n):
+        nbf = rng.choice([60, 120, 240, 480, 960])
+        cores = 4
+        nocosx = rng.random() < 1 / 3
+        is_rare = i < rare
+        log_t = -9.0 + 2.6 * math.log(nbf) - 0.7 * math.log(cores)
+        log_t += math.log(factor) * nocosx + math.log(3.0) * is_rare
+        log_t += rng.gauss(0, 0.1)
+        words = ["B3LYP", "def2-SVP", "TIGHTSCF"]
+        words += ["NoCOSX"] * nocosx + ["RARE"] * is_rare + ["EnGrad"]
+        append_timing(
+            "orca",
+            {
+                "schema": 1,
+                "machine": "m:q:CPU",
+                "program": "orca",
+                "ntasks": cores,
+                "cpus_per_task": 1,
+                "wall": f"{0.8 + math.exp(log_t):.3f}",
+                "code_seconds": f"{math.exp(log_t):.3f}",
+                "state": "finished",
+                "task": "gradient",
+                "method_class": "global hybrid",
+                "method": "B3LYP",
+                "basis": "def2-SVP",
+                "keywords": " ".join(words),
+                "nbf": nbf,
+                "n_electrons": nbf // 2,
+                "n_atoms": nbf // 10,
+                "scf_runs": 1,
+            },
+            directory=tmp_path,
+        )
+
+
+def _flag_spec():
+    return tm.Spec(
+        size=("nbf",), klass=("method_class",), units="scf_runs", flags=FLAGS
+    )
+
+
+def test_a_flag_is_learned(tmp_path):
+    """No one told the model that NoCOSX costs 2x; it finds it. A flag on
+    every run (TIGHTSCF) has nothing to compare and gets no factor."""
+    _flagged(tmp_path)
+    model = tm.fit("orca", directory=tmp_path, spec=_flag_spec())
+    assert set(model["flags"]) == {"NOCOSX"}
+    assert abs(math.exp(model["flags"]["NOCOSX"]) - 2.0) < 0.2
+    d = {"task": "gradient", "method_class": "global hybrid", "nbf": 240}
+    d.update(method="B3LYP", basis="def2-SVP")
+    plain = tm.predict(
+        "orca",
+        {**d, "keywords": "B3LYP def2-SVP TIGHTSCF EnGrad"},
+        ntasks=4,
+        machine="m:q:CPU",
+        quantile=0.5,
+        model=model,
+    )
+    slow = tm.predict(
+        "orca",
+        {**d, "keywords": "B3LYP def2-SVP TIGHTSCF NoCOSX EnGrad"},
+        ntasks=4,
+        machine="m:q:CPU",
+        quantile=0.5,
+        model=model,
+    )
+    assert 1.7 < (slow["median"] - 0.8) / (plain["median"] - 0.8) < 2.3
+    assert "flag NOCOSX: x" in tm.report_text(model)
+
+
+def test_a_rare_flag_is_a_driver_not_a_factor(tmp_path):
+    _flagged(tmp_path, rare=8)
+    model = tm.fit("orca", directory=tmp_path, spec=_flag_spec())
+    assert "RARE" not in model["flags"]
+    drivers = {(d["column"], d["value"]) for d in model["drivers"]}
+    assert ("flag", "RARE") in drivers
+
+
+def test_an_unknown_flag_widens_the_upper_quantiles(tmp_path):
+    _flagged(tmp_path)
+    model = tm.fit("orca", directory=tmp_path, spec=_flag_spec())
+    d = {"task": "gradient", "method_class": "global hybrid", "nbf": 240}
+    d.update(method="B3LYP", basis="def2-SVP")
+    seen = {**d, "keywords": "B3LYP def2-SVP TIGHTSCF EnGrad"}
+    new = {**d, "keywords": "B3LYP def2-SVP TIGHTSCF SLOWCONV EnGrad"}
+    kw = dict(ntasks=4, machine="m:q:CPU", model=model)
+    assert tm.predict("orca", new, quantile=0.5, **kw)["median"] == pytest.approx(
+        tm.predict("orca", seen, quantile=0.5, **kw)["median"]
+    )
+    high = tm.predict("orca", new, quantile=0.95, **kw)
+    assert high["unknown_flags"] == ["SLOWCONV"]
+    assert high["seconds"] > tm.predict("orca", seen, quantile=0.95, **kw)["seconds"]
+
+
+def test_a_flag_never_contrasted_gets_no_factor(tmp_path):
+    """A flag that always comes with its own calculations -- here NoCOSX only
+    ever on the 960-function runs -- cannot be told from them, however many
+    runs carry it."""
+    rng = random.Random(9)
+    for _ in range(300):
+        nbf = rng.choice([60, 120, 240, 480, 960])
+        log_t = -9.0 + 2.6 * math.log(nbf) + math.log(2.0) * (nbf == 960)
+        words = "B3LYP def2-SVP TIGHTSCF" + (" NoCOSX" if nbf == 960 else "")
+        append_timing(
+            "orca",
+            {
+                "schema": 1, "machine": "m:q:CPU", "program": "orca",
+                "ntasks": 1, "cpus_per_task": 1,
+                "wall": f"{0.8 + math.exp(log_t + rng.gauss(0, 0.1)):.3f}",
+                "state": "finished", "task": "gradient",
+                "method_class": "global hybrid", "method": "B3LYP",
+                "basis": "def2-SVP", "keywords": words + " EnGrad", "nbf": nbf,
+                "n_electrons": nbf // 2, "n_atoms": nbf // 10, "scf_runs": 1,
+            },  # fmt: skip
+            directory=tmp_path,
+        )
+    model = tm.fit("orca", directory=tmp_path, spec=_flag_spec())
+    assert model["flags"] == {}
+
+
+def test_a_new_spec_refits(tmp_path):
+    """A step that now declares flags gets a model that uses them, without
+    waiting for its records to grow."""
+    _flagged(tmp_path)
+    old = tm.fit(
+        "orca",
+        directory=tmp_path,
+        spec=tm.Spec(size=("nbf",), klass=("method_class",), units="scf_runs"),
+    )
+    tm.save_model(old, directory=tmp_path)
+    tm.write_spec("orca", _flag_spec(), directory=tmp_path)
+    assert tm.refresh_if_stale("orca", directory=tmp_path) == "refitted"
+    assert "NOCOSX" in tm.load_model("orca", directory=tmp_path)["flags"]

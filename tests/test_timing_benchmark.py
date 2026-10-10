@@ -180,3 +180,25 @@ def test_a_chemistry_can_run_only_some_tasks(monkeypatch):
     assert (
         text.count("def2-QZVPPD") == 6
     )  # water, ethanol, toluene x (energy, gradient)
+
+
+def test_a_chemistry_with_its_own_variants(monkeypatch):
+    """A chemistry may carry its own variants -- an option toggled on and off
+    for a few runs -- instead of the task's, so the fit can tell the option's
+    cost from the molecule's without doubling every run."""
+    orca = dict(ORCA)
+    orca["chemistries"] = {
+        **ORCA["chemistries"],
+        "ORCA:DFT@B3LYP/def2-TZVP": {
+            "quick": 9,
+            "full": 9,
+            "variants": {"Energy": [{}, {"extra keywords": "NoCOSX"}]},
+        },
+    }
+    monkeypatch.setattr(tb, "declarations", lambda refresh=False: {"orca": orca})
+    text = tb.build_spec(("orca",), "quick")
+    assert text.count('extra keywords: "NoCOSX"') == sum(
+        1 for _, _, size in MOLECULES if size <= 9
+    )
+    # Other chemistries keep the task's variants (energy and gradients)
+    assert text.count('"gradients"') > 0
