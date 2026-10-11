@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.timing_model &#8212; SEAMM seamm-exec Plug-in 2026.10.10.2 documentation</title>
+    <title>seamm_exec.timing_model &#8212; SEAMM seamm-exec Plug-in 2026.10.10.3 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=db1caffa"></script>
+    <script src="../../_static/documentation_options.js?v=7f642be3"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.10.2" />
+  <meta name="docsearch:version" content="2026.10.10.3" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -450,7 +450,7 @@
 <span class="sd">  has few rows (the calibration a new machine gets from a few standard runs).</span>
 
 <span class="sd">The fit is ridge regression in numpy; the model is a JSON file,</span>
-<span class="sd">``~/.seamm.d/timing/models/&lt;program&gt;.json``, and :func:`predict` evaluates it</span>
+<span class="sd">``~/.seamm.d/timing/models/&lt;program&gt;.v&lt;N&gt;.json``, and :func:`predict` evaluates it</span>
 <span class="sd">with numpy alone. The prediction is a *quantile* of the residual distribution</span>
 <span class="sd">(the 95th for a queue walltime), never the mean.</span>
 
@@ -477,10 +477,13 @@
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"seamm-exec"</span><span class="p">)</span>
 
-<span class="c1">#: Where the fitted models go: ``&lt;timing directory&gt;/models/&lt;program&gt;.json``</span>
+<span class="c1">#: Where the fitted models go: ``&lt;timing directory&gt;/models/&lt;program&gt;.v&lt;N&gt;.json``</span>
 <span class="n">MODELS_SUBDIR</span> <span class="o">=</span> <span class="s2">"models"</span>
-<span class="c1">#: The model file's format</span>
-<span class="n">MODEL_VERSION</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="c1">#: The model file's format, and the fit that made it. Each version keeps its own</span>
+<span class="c1">#: file, so that a process running an older seamm-exec (a long job pinned to an</span>
+<span class="c1">#: older environment) cannot replace a model with one from its older fit. Version</span>
+<span class="c1">#: 3: an assumed parallel exponent is applied in the fit as in predict().</span>
+<span class="n">MODEL_VERSION</span> <span class="o">=</span> <span class="mi">3</span>
 
 
 <div class="viewcode-block" id="Spec">
@@ -757,7 +760,7 @@
 <div class="viewcode-block" id="model_path">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_model.model_path">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">model_path</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">models_directory</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">program</span><span class="si">}</span><span class="s2">.json"</span></div>
+    <span class="k">return</span> <span class="n">models_directory</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">program</span><span class="si">}</span><span class="s2">.v</span><span class="si">{</span><span class="n">MODEL_VERSION</span><span class="si">}</span><span class="s2">.json"</span></div>
 
 
 
@@ -1218,6 +1221,16 @@
             <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">corr</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">CORES_SIZE_CORRELATION</span><span class="p">:</span>
                 <span class="n">fit_alpha</span> <span class="o">=</span> <span class="kc">False</span>
                 <span class="n">alpha_note</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"cores follow the size (r=</span><span class="si">{</span><span class="n">corr</span><span class="si">:</span><span class="s2">+.2f</span><span class="si">}</span><span class="s2">); alpha assumed"</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">fit_alpha</span> <span class="ow">and</span> <span class="n">alpha_fixed</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Neither fitted nor from paired runs: the assumed exponent. predict()</span>
+        <span class="c1"># divides by cores**alpha, so the fit must be of the time on one core</span>
+        <span class="c1"># too, as with a paired exponent; otherwise every prediction for a run</span>
+        <span class="c1"># on n cores is low by n**alpha.</span>
+        <span class="n">alpha_fixed</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"alpha"</span><span class="p">:</span> <span class="n">spec</span><span class="o">.</span><span class="n">default_alpha</span><span class="p">,</span> <span class="s2">"slope"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">"size_mean"</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+            <span class="n">r</span><span class="p">[</span><span class="s2">"_y"</span><span class="p">]</span> <span class="o">+=</span> <span class="n">spec</span><span class="o">.</span><span class="n">default_alpha</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"_cores"</span><span class="p">])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">alpha_note</span><span class="p">:</span>
+            <span class="n">alpha_note</span> <span class="o">=</span> <span class="s2">"alpha assumed"</span>
 
     <span class="c1"># Groups with their own size exponents (spec.slope_by): the most common</span>
     <span class="c1"># value is the reference and uses the shared exponents; another gets its</span>

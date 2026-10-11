@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.scheduler_backend &#8212; SEAMM seamm-exec Plug-in 2026.10.10.2 documentation</title>
+    <title>seamm_exec.scheduler_backend &#8212; SEAMM seamm-exec Plug-in 2026.10.10.3 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=db1caffa"></script>
+    <script src="../../_static/documentation_options.js?v=7f642be3"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.10.2" />
+  <meta name="docsearch:version" content="2026.10.10.3" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -622,6 +622,12 @@
 <span class="sd">        transport). On a remote cluster it is not sent.</span>
 <span class="sd">    bundle_walltime : float, optional</span>
 <span class="sd">        Seconds to request for a bundle whose tasks give no walltime.</span>
+<span class="sd">    estimate_scale : float, optional</span>
+<span class="sd">        Multiplies each task's estimate when a bundle's walltime comes from</span>
+<span class="sd">        the estimates (default 1).</span>
+<span class="sd">    min_task_walltime : float, optional</span>
+<span class="sd">        The least seconds a bundle gives each task whose walltime comes from</span>
+<span class="sd">        its estimate.</span>
 <span class="sd">    max_queued : int, optional</span>
 <span class="sd">        The most jobs this user may have queued and running at once.</span>
 <span class="sd">    poll_interval : float = 30</span>
@@ -650,6 +656,8 @@
         <span class="n">poll_interval</span><span class="o">=</span><span class="mf">30.0</span><span class="p">,</span>
         <span class="n">job_name_prefix</span><span class="o">=</span><span class="s2">"seamm"</span><span class="p">,</span>
         <span class="n">max_walltime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">estimate_scale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">min_task_walltime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">queue</span> <span class="o">=</span> <span class="n">queue</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
@@ -670,6 +678,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">bundle_walltime</span> <span class="o">=</span> <span class="n">bundle_walltime</span>
         <span class="c1"># The queue's longest walltime: retries after a timeout never ask more</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_walltime</span> <span class="o">=</span> <span class="n">max_walltime</span>
+        <span class="c1"># Guards on walltimes from estimates (the target's estimate_scale and</span>
+        <span class="c1"># min_task_walltime)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">estimate_scale</span> <span class="o">=</span> <span class="n">estimate_scale</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_task_walltime</span> <span class="o">=</span> <span class="n">min_task_walltime</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_queued</span> <span class="o">=</span> <span class="n">max_queued</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">poll_interval</span> <span class="o">=</span> <span class="n">poll_interval</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">job_name_prefix</span> <span class="o">=</span> <span class="n">job_name_prefix</span>
@@ -744,6 +756,8 @@
             <span class="n">accepts_config</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">task_transport</span> <span class="o">==</span> <span class="s2">"local"</span><span class="p">,</span>
             <span class="n">bundle_walltime</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">bundle_walltime</span><span class="p">,</span>
             <span class="n">max_walltime</span><span class="o">=</span><span class="n">_max_walltime</span><span class="p">(</span><span class="n">section</span><span class="p">),</span>
+            <span class="n">estimate_scale</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="s2">"estimate_scale"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="n">min_task_walltime</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="s2">"min_task_walltime"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
             <span class="n">max_queued</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">max_queued_tasks</span><span class="p">,</span>
             <span class="n">poll_interval</span><span class="o">=</span><span class="p">(</span>
                 <span class="n">section</span><span class="o">.</span><span class="n">poll_interval</span> <span class="k">if</span> <span class="n">section</span><span class="o">.</span><span class="n">poll_interval</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mf">30.0</span>
@@ -1264,15 +1278,21 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Without the tasks' walltimes the queue's default would apply (an</span>
             <span class="c1"># hour on some partitions) and kill a long bundle: use their</span>
-            <span class="c1"># estimates with a margin, within the bundle limit.</span>
+            <span class="c1"># estimates with a margin, within the bundle limit. The target may</span>
+            <span class="c1"># scale the estimates and give each task a least walltime, as a</span>
+            <span class="c1"># guard against estimates that are too low.</span>
+            <span class="n">scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimate_scale</span> <span class="ow">or</span> <span class="mf">1.0</span>
             <span class="n">estimate</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
-                <span class="n">w</span> <span class="k">if</span> <span class="n">w</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">estimated_seconds</span> <span class="ow">or</span> <span class="mf">0.0</span><span class="p">)</span>
+                <span class="n">w</span> <span class="k">if</span> <span class="n">w</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">scale</span> <span class="o">*</span> <span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">estimated_seconds</span> <span class="ow">or</span> <span class="mf">0.0</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="n">walltimes</span><span class="p">)</span>
             <span class="p">)</span>
-            <span class="k">if</span> <span class="n">estimate</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">floor</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_task_walltime</span> <span class="ow">or</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="nb">sum</span><span class="p">(</span>
+                <span class="mi">1</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">walltimes</span> <span class="k">if</span> <span class="n">w</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">estimate</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">floor</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="c1"># A retry after running out of time gets more (walltime_scale),</span>
                 <span class="c1"># within the bundle limit and the queue's longest walltime</span>
-                <span class="n">walltime</span> <span class="o">=</span> <span class="n">walltime_scale</span> <span class="o">*</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">estimate</span> <span class="o">+</span> <span class="mf">600.0</span><span class="p">)</span>
+                <span class="n">walltime</span> <span class="o">=</span> <span class="n">walltime_scale</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">estimate</span> <span class="o">+</span> <span class="mf">600.0</span><span class="p">,</span> <span class="n">floor</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">limit</span><span class="p">:</span>
                     <span class="n">walltime</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">walltime</span><span class="p">,</span> <span class="n">limit</span><span class="p">)</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_walltime</span><span class="p">:</span>

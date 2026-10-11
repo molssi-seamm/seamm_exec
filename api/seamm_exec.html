@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.10.2 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.10.3 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=db1caffa"></script>
+    <script src="../_static/documentation_options.js?v=7f642be3"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.10.2" />
+  <meta name="docsearch:version" content="2026.10.10.3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -1421,7 +1421,7 @@ recorded as queued, so that a restart looks for the job by name.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="seamm_exec.scheduler_backend.SchedulerBackend">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.scheduler_backend.</span></span><span class="sig-name descname"><span class="pre">SchedulerBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queue</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'queue'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stager</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_job_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directives</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">setup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'local'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">accepts_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bundle_walltime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_queued</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poll_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_name_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'seamm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_walltime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#SchedulerBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.scheduler_backend.</span></span><span class="sig-name descname"><span class="pre">SchedulerBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queue</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'queue'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stager</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_job_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directives</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">setup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'local'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">accepts_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bundle_walltime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_queued</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poll_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_name_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'seamm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_walltime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimate_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_task_walltime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#SchedulerBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A <code class="docutils literal notranslate"><span class="pre">TaskBackend</span></code> that submits bundles of tasks to a queueing system.</p>
 <dl class="field-list simple">
@@ -1442,6 +1442,10 @@ directive keys: partition, account, qos, export, …).</p></li>
 <li><p><strong>accepts_config</strong> (<em>bool = True</em>) – Whether <code class="docutils literal notranslate"><span class="pre">Task.config</span></code> is valid where the tasks run (local
 transport). On a remote cluster it is not sent.</p></li>
 <li><p><strong>bundle_walltime</strong> (<em>float</em><em>, </em><em>optional</em>) – Seconds to request for a bundle whose tasks give no walltime.</p></li>
+<li><p><strong>estimate_scale</strong> (<em>float</em><em>, </em><em>optional</em>) – Multiplies each task’s estimate when a bundle’s walltime comes from
+the estimates (default 1).</p></li>
+<li><p><strong>min_task_walltime</strong> (<em>float</em><em>, </em><em>optional</em>) – The least seconds a bundle gives each task whose walltime comes from
+its estimate.</p></li>
 <li><p><strong>max_queued</strong> (<em>int</em><em>, </em><em>optional</em>) – The most jobs this user may have queued and running at once.</p></li>
 <li><p><strong>poll_interval</strong> (<em>float = 30</em>) – Seconds between polls of the queue.</p></li>
 </ul>
@@ -2752,7 +2756,7 @@ for plane waves the valence electrons and the grid volume).</p></li>
 has few rows (the calibration a new machine gets from a few standard runs).</p></li>
 </ul>
 <p>The fit is ridge regression in numpy; the model is a JSON file,
-<code class="docutils literal notranslate"><span class="pre">~/.seamm.d/timing/models/&lt;program&gt;.json</span></code>, and <a class="reference internal" href="#seamm_exec.timing_model.predict" title="seamm_exec.timing_model.predict"><code class="xref py py-func docutils literal notranslate"><span class="pre">predict()</span></code></a> evaluates it
+<code class="docutils literal notranslate"><span class="pre">~/.seamm.d/timing/models/&lt;program&gt;.v&lt;N&gt;.json</span></code>, and <a class="reference internal" href="#seamm_exec.timing_model.predict" title="seamm_exec.timing_model.predict"><code class="xref py py-func docutils literal notranslate"><span class="pre">predict()</span></code></a> evaluates it
 with numpy alone. The prediction is a <em>quantile</em> of the residual distribution
 (the 95th for a queue walltime), never the mean.</p>
 <p>Command line:</p>
@@ -2828,7 +2832,7 @@ records have never seen, and its most</p>
 <dl class="py data">
 <dt class="sig sig-object py" id="seamm_exec.timing_model.MODELS_SUBDIR">
 <span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">MODELS_SUBDIR</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'models'</span></span><a class="headerlink" href="#seamm_exec.timing_model.MODELS_SUBDIR" title="Link to this definition">#</a></dt>
-<dd><p><code class="docutils literal notranslate"><span class="pre">&lt;timing</span> <span class="pre">directory&gt;/models/&lt;program&gt;.json</span></code></p>
+<dd><p><code class="docutils literal notranslate"><span class="pre">&lt;timing</span> <span class="pre">directory&gt;/models/&lt;program&gt;.v&lt;N&gt;.json</span></code></p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Where the fitted models go</p>
@@ -2838,8 +2842,11 @@ records have never seen, and its most</p>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="seamm_exec.timing_model.MODEL_VERSION">
-<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">MODEL_VERSION</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#seamm_exec.timing_model.MODEL_VERSION" title="Link to this definition">#</a></dt>
-<dd><p>The model file’s format</p>
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">MODEL_VERSION</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></span><a class="headerlink" href="#seamm_exec.timing_model.MODEL_VERSION" title="Link to this definition">#</a></dt>
+<dd><p>The model file’s format, and the fit that made it. Each version keeps its own
+file, so that a process running an older seamm-exec (a long job pinned to an
+older environment) cannot replace a model with one from its older fit. Version
+3: an assumed parallel exponent is applied in the fit as in predict().</p>
 </dd></dl>
 
 <dl class="py data">
