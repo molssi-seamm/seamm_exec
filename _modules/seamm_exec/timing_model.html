@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.timing_model &#8212; SEAMM seamm-exec Plug-in 2026.10.10.3 documentation</title>
+    <title>seamm_exec.timing_model &#8212; SEAMM seamm-exec Plug-in 2026.10.10.4 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=7f642be3"></script>
+    <script src="../../_static/documentation_options.js?v=b4edbb2e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.10.3" />
+  <meta name="docsearch:version" content="2026.10.10.4" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -881,6 +881,10 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">program</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span><span class="si">}</span><span class="s2"> usable rows, fewer than </span><span class="si">{</span><span class="n">min_rows</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span>
 
+    <span class="c1"># Every usable row, for the paired runs: they need only be the same</span>
+    <span class="c1"># calculation on several core counts, not have all the size features.</span>
+    <span class="n">all_rows</span> <span class="o">=</span> <span class="n">rows</span>
+
     <span class="c1"># Size features: those present in most rows; rows lacking one are dropped.</span>
     <span class="n">counts</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">r</span><span class="p">[</span><span class="s2">"_size"</span><span class="p">])</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">spec</span><span class="o">.</span><span class="n">size</span><span class="p">}</span>
     <span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">spec</span><span class="o">.</span><span class="n">size</span> <span class="k">if</span> <span class="n">counts</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mf">0.8</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)]</span>
@@ -1053,12 +1057,28 @@
         <span class="n">provisional</span> <span class="o">=</span> <span class="n">search</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="nb">set</span><span class="p">(),</span> <span class="nb">set</span><span class="p">())</span>
         <span class="k">if</span> <span class="n">provisional</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
-        <span class="n">paired</span> <span class="o">=</span> <span class="n">_paired_alpha</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">provisional</span><span class="p">[</span><span class="s2">"t0"</span><span class="p">],</span> <span class="n">parallel</span><span class="p">)</span>
+        <span class="n">paired</span> <span class="o">=</span> <span class="n">_paired_alpha</span><span class="p">(</span><span class="n">all_rows</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">provisional</span><span class="p">[</span><span class="s2">"t0"</span><span class="p">],</span> <span class="n">parallel</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">paired</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">alpha_fixed</span> <span class="o">=</span> <span class="n">paired</span>
+    <span class="k">if</span> <span class="n">alpha_fixed</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># No paired runs now: keep the exponent the previous fit measured from</span>
+        <span class="c1"># them, rather than assume one (the runs may be in records this fit no</span>
+        <span class="c1"># longer uses, or the benchmark not yet repeated on this version).</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">previous</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">previous</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">kept</span> <span class="o">=</span> <span class="p">(</span><span class="n">previous</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"alpha_paired"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">kept</span><span class="p">:</span>
+            <span class="n">alpha_fixed</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">kept</span><span class="p">,</span> <span class="s2">"kept"</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
 
     <span class="n">zero</span><span class="p">,</span> <span class="n">no_delta</span><span class="p">,</span> <span class="n">notes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(),</span> <span class="nb">set</span><span class="p">(),</span> <span class="p">[]</span>
-    <span class="k">if</span> <span class="n">alpha_fixed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">alpha_fixed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">alpha_fixed</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"kept"</span><span class="p">):</span>
+        <span class="n">notes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"parallel exponent kept from the previous fit (</span><span class="si">{</span><span class="n">alpha_fixed</span><span class="p">[</span><span class="s1">'groups'</span><span class="p">]</span><span class="si">}</span><span class="s2"> "</span>
+            <span class="s2">"paired runs); no paired runs in these records"</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">alpha_fixed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">notes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">"parallel exponent from </span><span class="si">{</span><span class="n">alpha_fixed</span><span class="p">[</span><span class="s1">'groups'</span><span class="p">]</span><span class="si">}</span><span class="s2"> paired runs (the same "</span>
             <span class="s2">"calculation on several core counts)"</span>
@@ -1125,6 +1145,11 @@
     <span class="n">best</span><span class="p">[</span><span class="s2">"vocabulary"</span><span class="p">]</span> <span class="o">=</span> <span class="n">vocabulary</span>
     <span class="n">best</span><span class="p">[</span><span class="s2">"feature_log_means"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="n">feature_log_means</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">features</span><span class="p">}</span>
     <span class="n">best</span><span class="p">[</span><span class="s2">"notes"</span><span class="p">]</span> <span class="o">=</span> <span class="n">notes</span>
+    <span class="n">best</span><span class="p">[</span><span class="s2">"alpha_paired"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">alpha_fixed</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">"kept"</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">alpha_fixed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">else</span> <span class="kc">None</span>
+    <span class="p">)</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">_assemble</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">best</span><span class="p">)</span>
     <span class="n">size</span><span class="p">,</span> <span class="n">mtime</span> <span class="o">=</span> <span class="n">records_state</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
     <span class="n">model</span><span class="p">[</span><span class="s2">"records_bytes"</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span>
@@ -1401,11 +1426,15 @@
         <span class="k">return</span> <span class="kc">None</span>
     <span class="n">groups</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+        <span class="c1"># Rows from older records may lack a size feature added since: they are</span>
+        <span class="c1"># still the same calculation as each other, by all the sizes they have.</span>
+        <span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">r</span><span class="p">[</span><span class="s2">"_size"</span><span class="p">]</span> <span class="ow">or</span> <span class="n">r</span><span class="p">[</span><span class="s2">"_machine"</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">t0</span><span class="p">:</span>
+            <span class="k">continue</span>
         <span class="n">key</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">r</span><span class="p">[</span><span class="s2">"_machine"</span><span class="p">],</span>
             <span class="n">r</span><span class="p">[</span><span class="s2">"_class"</span><span class="p">],</span>
             <span class="n">r</span><span class="p">[</span><span class="s2">"_task"</span><span class="p">],</span>
-            <span class="nb">tuple</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"_size"</span><span class="p">][</span><span class="n">n</span><span class="p">],</span> <span class="mi">6</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">features</span><span class="p">),</span>
+            <span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">r</span><span class="p">[</span><span class="s2">"_size"</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">())),</span>
             <span class="nb">str</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"keywords"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">),</span>
             <span class="n">r</span><span class="p">[</span><span class="s2">"_units"</span><span class="p">],</span>
         <span class="p">)</span>
@@ -1573,6 +1602,9 @@
         <span class="s2">"alpha_size_mean"</span><span class="p">:</span> <span class="n">f</span><span class="p">[</span><span class="s2">"alpha_size_mean"</span><span class="p">],</span>
         <span class="s2">"alpha_fitted"</span><span class="p">:</span> <span class="n">f</span><span class="p">[</span><span class="s2">"fit_alpha"</span><span class="p">],</span>
         <span class="s2">"alpha_note"</span><span class="p">:</span> <span class="n">f</span><span class="p">[</span><span class="s2">"alpha_note"</span><span class="p">],</span>
+        <span class="c1"># The exponent measured from paired runs, which a later fit without</span>
+        <span class="c1"># paired runs keeps</span>
+        <span class="s2">"alpha_paired"</span><span class="p">:</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"alpha_paired"</span><span class="p">),</span>
         <span class="s2">"feature_log_range"</span><span class="p">:</span> <span class="n">f</span><span class="p">[</span><span class="s2">"feature_log_range"</span><span class="p">],</span>
         <span class="s2">"classes"</span><span class="p">:</span> <span class="n">class_offsets</span><span class="p">,</span>
         <span class="s2">"reference_class"</span><span class="p">:</span> <span class="n">f</span><span class="p">[</span><span class="s2">"ref_class"</span><span class="p">],</span>

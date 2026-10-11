@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.10.3 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.10.4 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="_static/documentation_options.js?v=7f642be3"></script>
+    <script src="_static/documentation_options.js?v=b4edbb2e"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.10.3" />
+  <meta name="docsearch:version" content="2026.10.10.4" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -753,9 +753,11 @@ prediction, and the step’s own estimate stands. The parallel exponent comes fr
 <em>paired runs</em> when there are at least four: the same calculation (machine, method
 class, task, sizes and options) on several core counts, as the seed benchmark makes,
 with the start-up times removed. Production cannot show it, since its core counts
-follow its sizes (small runs on 4 cores, large on 16); without paired runs the
-exponent is fitted with the rest, or assumed when the core counts follow the size,
-and the fit’s summary says which.</p>
+follow its sizes (small runs on 4 cores, large on 16). Paired runs count from every
+record, including older ones that lack a size column added since (and so are left out
+of the rest of the fit). Without paired runs a refit keeps the exponent the previous
+fit measured; failing that the exponent is fitted with the rest, or assumed when the
+core counts follow the size (or are all the same), and the fit’s summary says which.</p>
 <p>A step may also name the column holding a run’s <em>options</em> (<code class="docutils literal notranslate"><span class="pre">flags</span></code> in its spec:
 ORCA’s ‘!’ line, less the task, basis sets and method), and each option gets a
 factor of its own, shrunk toward none. An option gets a factor only where the
