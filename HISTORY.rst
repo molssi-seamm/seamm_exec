@@ -1,6 +1,16 @@
 =======
 History
 =======
+2026.10.11 -- Bugfix: a task that ran out of time no longer gets the same walltime again
+    * A task that gives its own walltime was retried after running out of time with
+      that same walltime, so it ran out of time again on every retry. Its walltime is
+      now doubled after each timeout, as an estimate's is, within the queue's longest
+      walltime.
+    * The Loop step's "time per iteration" is an estimate, and is now treated as one:
+      a bundle of iterations asks for twice their estimates plus ten minutes, within
+      the target's guards (estimate_scale, min_task_walltime). Before, it was used as
+      the exact walltime, with no margin.
+
 2026.10.10.4 -- Bugfix: the parallel exponent survives new size columns
     * The parallel exponent comes from paired runs -- the same calculation on several
       core counts. The fit dropped every row lacking a size column added later (e.g.

@@ -515,6 +515,18 @@ def test_bundle_walltime_guards(job):
     assert floor._bundle_resources(mixed)["walltime"] == max(2 * 200 + 600, 1800)
 
 
+def test_own_walltimes_grow_after_a_timeout(job):
+    """A task's own walltime is used as given -- but a retry after running out
+    of time gets more, or it would only time out again (DMC pilot smoke test),
+    still within the queue's longest walltime."""
+    job, root = job
+    tasks = [fake_task(k, resources=Resources(walltime=2700)) for k in "ab"]
+    backend = make_backend(FakeQueue(), job, root, max_walltime=4 * 3600)
+    assert backend._bundle_resources(tasks)["walltime"] == 5400
+    assert backend._bundle_resources(tasks, walltime_scale=2)["walltime"] == 10800
+    assert backend._bundle_resources(tasks, walltime_scale=4)["walltime"] == 4 * 3600
+
+
 def test_bundles_by_walltime_with_a_least_task_time():
     """Packing follows the guards: each task counts at least min_task_walltime."""
     ts = TaskSet(manifest=False, backend=LocalPool(_executor()), bundle_walltime=100)
@@ -1347,9 +1359,12 @@ def test_timed_out_retry_stays_within_the_bundle_limit(job):
         2 * base
     )
     assert backend._bundle_resources(tasks, 3000, walltime_scale=4)["walltime"] == 3000
-    # A walltime the task gives is used as given.
+    # A walltime the task gives is used as given the first time, and grows after
+    # running out of time like an estimate's (before 2026.10.11 it never grew,
+    # so the task timed out on every retry).
     timed = [fake_task("t", resources=Resources(walltime=100))]
-    assert backend._bundle_resources(timed, walltime_scale=4)["walltime"] == 100
+    assert backend._bundle_resources(timed)["walltime"] == 100
+    assert backend._bundle_resources(timed, walltime_scale=4)["walltime"] == 400
 
 
 def test_job_status_timed_out():
