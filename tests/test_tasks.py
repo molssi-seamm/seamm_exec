@@ -1045,7 +1045,7 @@ def test_an_ignored_sighup_stays_ignored(tmp_path):
             ts.add(Task(key=k, program="sh", config={}, shell=True, cmd=["true"]))
         list(ts.run())
         print(signal.getsignal(signal.SIGHUP) == signal.SIG_IGN,
-              signal.getsignal(signal.SIGTERM) is _on_signal)
+              signal.getsignal(signal.SIGTERM) is not _on_signal)
     """))
     out = subprocess.run(
         [sys.executable, str(script), str(tmp_path / "step")],
@@ -1055,6 +1055,75 @@ def test_an_ignored_sighup_stays_ignored(tmp_path):
         env=_driver_env(),
     ).stdout
     assert out.split() == ["True", "True"]
+
+
+def test_handlers_only_while_tasks_run(tmp_path):
+    script = tmp_path / "s.py"
+    script.write_text(textwrap.dedent("""
+        import os, signal, sys
+        from seamm_exec import Local, LocalPool, Task
+        from seamm_exec.local_pool import _on_signal
+        ce = {"NTASKS": 2, "MEM_PER_NODE": 2**33, "MEM_PER_CPU": 2**32}
+        pool = LocalPool(Local(), ce=ce)
+        during = []
+        def started(task, info):
+            during.append(signal.getsignal(signal.SIGTERM) is _on_signal)
+        tasks = [
+            Task(key=k, program="sh", config={}, shell=True, cmd=["sleep 0.5"])
+            for k in "ab"
+        ]
+        dirs = [sys.argv[1] + "/" + t.key for t in tasks]
+        for d in dirs:
+            os.makedirs(d)
+        ids = pool.submit(tasks, dirs, on_start=started)
+        while any(s in ("queued", "running") for s in pool.status(ids).values()):
+            pool.wait(ids, timeout=1)
+        for task, i in zip(tasks, ids):
+            pool.fetch(task, i)
+        print(during == [True, True],
+              signal.getsignal(signal.SIGTERM) == signal.SIG_DFL,
+              signal.getsignal(signal.SIGHUP) == signal.SIG_DFL)
+    """))
+    out = subprocess.run(
+        [sys.executable, str(script), str(tmp_path / "step")],
+        check=True,
+        stdout=subprocess.PIPE,
+        universal_newlines=True,
+        env=_driver_env(),
+    ).stdout
+    assert out.split() == ["True", "True", "True"]
+
+
+def test_sigterm_is_prompt_after_the_tasks(tmp_path):
+    """After its tasks, an evaluator busy in C code dies on SIGTERM at once: a
+    Python handler left in place would wait for the C call, and a cancelled
+    Slurm job could outlive its batch shell (ChemAI job 11842)."""
+    script = tmp_path / "s.py"
+    script.write_text(textwrap.dedent("""
+        import sys
+        from seamm_exec import Local, LocalPool, Task, TaskSet
+        ce = {"NTASKS": 2, "MEM_PER_NODE": 2**33, "MEM_PER_CPU": 2**32}
+        ts = TaskSet(directory=sys.argv[1], backend=LocalPool(Local(), ce=ce),
+                     executor=Local())
+        ts.add(Task(key="a", program="sh", config={}, shell=True, cmd=["true"]))
+        list(ts.run())
+        print("busy", flush=True)
+        sum(range(10**12))  # minutes in C, never back in the interpreter
+    """))
+    process = subprocess.Popen(
+        [sys.executable, str(script), str(tmp_path / "step")],
+        stdout=subprocess.PIPE,
+        universal_newlines=True,
+        env=_driver_env(),
+    )
+    try:
+        assert process.stdout.readline().strip() == "busy"
+        process.send_signal(signal.SIGTERM)
+        assert process.wait(timeout=10) == -signal.SIGTERM
+    finally:
+        if process.poll() is None:
+            process.kill()
+            process.wait()
 
 
 def test_failed_tasks_are_not_archived(tmp_path):
