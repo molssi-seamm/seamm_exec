@@ -335,9 +335,11 @@ prediction, and the step's own estimate stands. The parallel exponent comes from
 *paired runs* when there are at least four: the same calculation (machine, method
 class, task, sizes and options) on several core counts, as the seed benchmark makes,
 with the start-up times removed. Production cannot show it, since its core counts
-follow its sizes (small runs on 4 cores, large on 16); without paired runs the
-exponent is fitted with the rest, or assumed when the core counts follow the size,
-and the fit's summary says which.
+follow its sizes (small runs on 4 cores, large on 16). Paired runs count from every
+record, including older ones that lack a size column added since (and so are left out
+of the rest of the fit). Without paired runs a refit keeps the exponent the previous
+fit measured; failing that the exponent is fitted with the rest, or assumed when the
+core counts follow the size (or are all the same), and the fit's summary says which.
 
 A step may also name the column holding a run's *options* (``flags`` in its spec:
 ORCA's '!' line, less the task, basis sets and method), and each option gets a

@@ -1,6 +1,15 @@
 =======
 History
 =======
+2026.10.10.4 -- Bugfix: the parallel exponent survives new size columns
+    * The parallel exponent comes from paired runs -- the same calculation on several
+      core counts. The fit dropped every row lacking a size column added later (e.g.
+      ORCA's "neighbours", from 2026-10-09), and with them all the paired runs, which
+      were older; the exponent was then assumed. Paired runs now come from every
+      usable row, whatever size columns it has.
+    * A refit that finds no paired runs keeps the exponent the previous fit measured,
+      rather than assuming one.
+
 2026.10.10.3 -- Bugfix: estimates too low when every run used the same number of cores
     * When all of a program's timing records were on one core count, the cost model
       assumed the parallel exponent but fitted the times without it, so every
