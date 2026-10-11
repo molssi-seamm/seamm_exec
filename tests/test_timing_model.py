@@ -26,6 +26,7 @@ def _synthetic(
     alpha_slope=0.0,
     code=False,
     cores_choices=(1, 2, 4, 8, 16),
+    extra=None,
 ):
     """Rows from a known law: t = t0 + units * exp(a + b log nbf - alpha log cores
     + class + machine) * noise."""
@@ -58,6 +59,7 @@ def _synthetic(
                 "n_atoms": nbf // 10,
                 "scf_runs": units,
                 **({"code_seconds": f"{wall - 0.8:.3f}"} if code else {}),
+                **(extra or {}),
             },
             directory=tmp_path,
         )
@@ -88,6 +90,46 @@ def test_one_core_count_predicts_the_runs(tmp_path):
     within = sum(1 for r in ratios if 0.5 < r < 2) / len(ratios)
     assert within > 0.9
     assert abs(within - model["report"]["within_2x"]) < 0.05
+
+
+def _spec_with_neighbours(tmp_path):
+    spec = tm.load_spec("orca", tmp_path).to_dict()
+    return tm.Spec.from_dict({**spec, "size": ["nbf", "neighbours"]})
+
+
+def test_paired_runs_in_older_records(tmp_path):
+    """Paired runs from before a size column was added still give the exponent,
+    though the power law uses only the newer rows, which have the column."""
+    _synthetic(tmp_path, n=300, alpha=0.6)  # 1-16 cores, no "neighbours"
+    _synthetic(
+        tmp_path,
+        n=1500,
+        seed=2,
+        alpha=0.6,
+        cores_choices=(4,),
+        extra={"neighbours": 12},
+    )
+    assert len(list(tmp_path.glob("orca-*.csv"))) == 1  # the old file set aside
+    model = tm.fit("orca", directory=tmp_path, spec=_spec_with_neighbours(tmp_path))
+    assert model["alpha_note"] == "from paired runs"
+    assert abs(model["alpha"] - 0.6) < 0.1
+    assert model["alpha_paired"]["groups"] >= tm.PAIRED_MIN_GROUPS
+
+
+def test_paired_exponent_is_kept(tmp_path):
+    """A refit without any paired runs keeps the exponent measured before,
+    rather than assuming one."""
+    _synthetic(tmp_path, n=400, alpha=0.6)
+    spec = tm.load_spec("orca", tmp_path)
+    first = tm.fit("orca", directory=tmp_path, spec=spec)
+    assert first["alpha_paired"] is not None
+    tm.save_model(first, tmp_path)
+    for path in tmp_path.glob("orca*.csv"):
+        path.unlink()
+    _synthetic(tmp_path, n=400, seed=3, alpha=0.6, cores_choices=(4,))
+    second = tm.fit("orca", directory=tmp_path, spec=spec)
+    assert second["alpha"] == pytest.approx(first["alpha_paired"]["alpha"])
+    assert any("kept from the previous fit" in note for note in second["notes"])
 
 
 def test_model_file_is_versioned(tmp_path):

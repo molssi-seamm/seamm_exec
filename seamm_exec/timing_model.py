@@ -416,6 +416,10 @@ def fit(program, directory=None, spec=None, min_rows=8, weight_power=None):
         logger.info(f"{program}: {len(rows)} usable rows, fewer than {min_rows}")
         return None
 
+    # Every usable row, for the paired runs: they need only be the same
+    # calculation on several core counts, not have all the size features.
+    all_rows = rows
+
     # Size features: those present in most rows; rows lacking one are dropped.
     counts = {name: sum(1 for r in rows if name in r["_size"]) for name in spec.size}
     features = [n for n in spec.size if counts[n] >= 0.8 * len(rows)]
@@ -588,12 +592,28 @@ def fit(program, directory=None, spec=None, min_rows=8, weight_power=None):
         provisional = search(features, set(), set())
         if provisional is None:
             return None
-        paired = _paired_alpha(rows, features, provisional["t0"], parallel)
+        paired = _paired_alpha(all_rows, features, provisional["t0"], parallel)
         if paired is not None:
             alpha_fixed = paired
+    if alpha_fixed is None:
+        # No paired runs now: keep the exponent the previous fit measured from
+        # them, rather than assume one (the runs may be in records this fit no
+        # longer uses, or the benchmark not yet repeated on this version).
+        try:
+            previous = load_model(program, directory)
+        except Exception:
+            previous = None
+        kept = (previous or {}).get("alpha_paired")
+        if kept:
+            alpha_fixed = {**kept, "kept": True}
 
     zero, no_delta, notes = set(), set(), []
-    if alpha_fixed is not None:
+    if alpha_fixed is not None and alpha_fixed.get("kept"):
+        notes.append(
+            f"parallel exponent kept from the previous fit ({alpha_fixed['groups']} "
+            "paired runs); no paired runs in these records"
+        )
+    elif alpha_fixed is not None:
         notes.append(
             f"parallel exponent from {alpha_fixed['groups']} paired runs (the same "
             "calculation on several core counts)"
@@ -660,6 +680,11 @@ def fit(program, directory=None, spec=None, min_rows=8, weight_power=None):
     best["vocabulary"] = vocabulary
     best["feature_log_means"] = {n: feature_log_means[n] for n in features}
     best["notes"] = notes
+    best["alpha_paired"] = (
+        {k: v for k, v in alpha_fixed.items() if k != "kept"}
+        if alpha_fixed is not None
+        else None
+    )
     model = _assemble(program, spec, features, best)
     size, mtime = records_state(program, directory)
     model["records_bytes"] = size
@@ -935,11 +960,15 @@ def _paired_alpha(rows, features, t0, parallel):
         return None
     groups = {}
     for r in rows:
+        # Rows from older records may lack a size feature added since: they are
+        # still the same calculation as each other, by all the sizes they have.
+        if features[0] not in r["_size"] or r["_machine"] not in t0:
+            continue
         key = (
             r["_machine"],
             r["_class"],
             r["_task"],
-            tuple(round(r["_size"][n], 6) for n in features),
+            tuple(sorted((n, round(v, 6)) for n, v in r["_size"].items())),
             str(r.get("keywords", "") or ""),
             r["_units"],
         )
@@ -1107,6 +1136,9 @@ def _assemble(program, spec, features, f):
         "alpha_size_mean": f["alpha_size_mean"],
         "alpha_fitted": f["fit_alpha"],
         "alpha_note": f["alpha_note"],
+        # The exponent measured from paired runs, which a later fit without
+        # paired runs keeps
+        "alpha_paired": f.get("alpha_paired"),
         "feature_log_range": f["feature_log_range"],
         "classes": class_offsets,
         "reference_class": f["ref_class"],
