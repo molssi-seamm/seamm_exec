@@ -1,6 +1,21 @@
 =======
 History
 =======
+2026.10.10.3 -- Bugfix: estimates too low when every run used the same number of cores
+    * When all of a program's timing records were on one core count, the cost model
+      assumed the parallel exponent but fitted the times without it, so every
+      prediction for a run on n cores was low by about n**0.8 (3x on 4 cores), while
+      the model reported itself accurate. Bundles then asked for far too little time
+      and ran out of it. The fit now applies the assumed exponent as the predictions
+      do.
+    * Each version of the model is kept in its own file (models/<program>.v3.json),
+      so a long job still running an older seamm-exec cannot replace the model with
+      one from its older fit.
+    * Two guards in a target section against estimates that are too low:
+      estimate_scale multiplies each task's estimate, and min_task_walltime gives
+      each task at least that much time in its bundle. Requires seamm-scheduler
+      2026.10.10.
+
 2026.10.10.2 -- Option flags in the cost model, learned where the records contrast them
     * A step may name the column holding a run's options (``flags`` in its spec, with
       the words that are not options: the task, basis sets, method). Each option gets a

@@ -20,7 +20,7 @@ of separable factors, fitted as a sum in log space::
   has few rows (the calibration a new machine gets from a few standard runs).
 
 The fit is ridge regression in numpy; the model is a JSON file,
-``~/.seamm.d/timing/models/<program>.json``, and :func:`predict` evaluates it
+``~/.seamm.d/timing/models/<program>.v<N>.json``, and :func:`predict` evaluates it
 with numpy alone. The prediction is a *quantile* of the residual distribution
 (the 95th for a queue walltime), never the mean.
 
@@ -47,10 +47,13 @@ from .timing import DEFAULT_DIRECTORY, machine_class, read_timings
 
 logger = logging.getLogger("seamm-exec")
 
-#: Where the fitted models go: ``<timing directory>/models/<program>.json``
+#: Where the fitted models go: ``<timing directory>/models/<program>.v<N>.json``
 MODELS_SUBDIR = "models"
-#: The model file's format
-MODEL_VERSION = 2
+#: The model file's format, and the fit that made it. Each version keeps its own
+#: file, so that a process running an older seamm-exec (a long job pinned to an
+#: older environment) cannot replace a model with one from its older fit. Version
+#: 3: an assumed parallel exponent is applied in the fit as in predict().
+MODEL_VERSION = 3
 
 
 @dataclass
@@ -301,7 +304,7 @@ def models_directory(directory=None):
 
 
 def model_path(program, directory=None):
-    return models_directory(directory) / f"{program}.json"
+    return models_directory(directory) / f"{program}.v{MODEL_VERSION}.json"
 
 
 def records_state(program, directory=None):
@@ -752,6 +755,16 @@ def _fit_rows(
             if abs(corr) > CORES_SIZE_CORRELATION:
                 fit_alpha = False
                 alpha_note = f"cores follow the size (r={corr:+.2f}); alpha assumed"
+    if not fit_alpha and alpha_fixed is None:
+        # Neither fitted nor from paired runs: the assumed exponent. predict()
+        # divides by cores**alpha, so the fit must be of the time on one core
+        # too, as with a paired exponent; otherwise every prediction for a run
+        # on n cores is low by n**alpha.
+        alpha_fixed = {"alpha": spec.default_alpha, "slope": 0.0, "size_mean": None}
+        for r in rows:
+            r["_y"] += spec.default_alpha * math.log(r["_cores"])
+        if not alpha_note:
+            alpha_note = "alpha assumed"
 
     # Groups with their own size exponents (spec.slope_by): the most common
     # value is the reference and uses the shared exponents; another gets its

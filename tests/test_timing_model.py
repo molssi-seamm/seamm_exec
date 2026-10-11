@@ -25,6 +25,7 @@ def _synthetic(
     parallel=0.0,
     alpha_slope=0.0,
     code=False,
+    cores_choices=(1, 2, 4, 8, 16),
 ):
     """Rows from a known law: t = t0 + units * exp(a + b log nbf - alpha log cores
     + class + machine) * noise."""
@@ -35,7 +36,7 @@ def _synthetic(
         task = rng.choice(list(TASKS))
         units = rng.randint(*TASKS[task])
         nbf = rng.choice([24, 60, 120, 240, 480, 960])
-        cores = rng.choice([1, 2, 4, 8, 16])
+        cores = rng.choice(cores_choices)
         a = alpha + alpha_slope * (math.log(nbf) - math.log(170.0))
         log_unit = -9.0 + b_nbf * math.log(nbf) - a * math.log(cores)
         log_unit += CLASSES[klass] + MACHINES[machine] + rng.gauss(0, 0.15)
@@ -60,6 +61,43 @@ def _synthetic(
             },
             directory=tmp_path,
         )
+
+
+def test_one_core_count_predicts_the_runs(tmp_path):
+    """Every run on 4 cores: no paired runs, so alpha is assumed -- and the fit
+    must apply it as predict() does, or every prediction is low by 4**alpha."""
+    _synthetic(tmp_path, cores_choices=(4,))
+    model = tm.fit("orca", directory=tmp_path)
+    assert model is not None
+    assert not model["alpha_fitted"] and model["alpha_note"] == "alpha assumed"
+    ratios = []
+    for row in tm.load_rows("orca", directory=tmp_path):
+        p = tm.predict(
+            "orca",
+            row,
+            ntasks=4,
+            machine=row["_machine"],
+            quantile=0.5,
+            units=row["_units"],
+            model=model,
+            refresh=False,
+        )
+        ratios.append(row["_wall"] / p["seconds"])
+    ratios.sort()
+    assert 0.8 < ratios[len(ratios) // 2] < 1.25
+    within = sum(1 for r in ratios if 0.5 < r < 2) / len(ratios)
+    assert within > 0.9
+    assert abs(within - model["report"]["within_2x"]) < 0.05
+
+
+def test_model_file_is_versioned(tmp_path):
+    """Each model version has its own file, so an older seamm-exec cannot
+    replace a model with its own fit."""
+    _synthetic(tmp_path, n=60)
+    assert tm.refresh_if_stale("orca", directory=tmp_path) == "refitted"
+    path = tm.model_path("orca", tmp_path)
+    assert path.name == f"orca.v{tm.MODEL_VERSION}.json" and path.exists()
+    assert not (tmp_path / "models" / "orca.json").exists()
 
 
 def test_fit_recovers_the_law(tmp_path):
@@ -192,7 +230,7 @@ def test_command_line(tmp_path):
     )
     assert out.returncode == 0, out.stderr
     assert "orca:" in out.stdout and "within 2x" in out.stdout
-    assert (tmp_path / "models" / "orca.json").exists()
+    assert tm.model_path("orca", tmp_path).exists()
     out = subprocess.run(
         [
             sys.executable,
