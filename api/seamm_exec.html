@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.10.4 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.11 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=b4edbb2e"></script>
+    <script src="../_static/documentation_options.js?v=912780bd"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.10.4" />
+  <meta name="docsearch:version" content="2026.10.11" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -1065,7 +1065,7 @@ the child’s directory)</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="seamm_exec.iteration.iteration_task">
-<span class="sig-prename descclassname"><span class="pre">seamm_exec.iteration.</span></span><span class="sig-name descname"><span class="pre">iteration_task</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evaluator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command_line</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cores</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">walltime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'inline'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_directories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/iteration.html#iteration_task"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.iteration.iteration_task" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.iteration.</span></span><span class="sig-name descname"><span class="pre">iteration_task</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evaluator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command_line</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cores</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">walltime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'inline'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_directories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimated_seconds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/iteration.html#iteration_task"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.iteration.iteration_task" title="Link to this definition">#</a></dt>
 <dd><p>The task that runs one iteration in its <code class="docutils literal notranslate"><span class="pre">_evaluator</span></code> directory.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1077,13 +1077,19 @@ the child’s directory)</p>
 <li><p><strong>command_line</strong> (<em>[</em><em>str</em><em>]</em>) – The parent’s command-line arguments (as in its checkpoint).</p></li>
 <li><p><strong>cores</strong> (<em>int</em>) – Cores for the iteration.</p></li>
 <li><p><strong>memory</strong> (<em>int</em><em>, </em><em>optional</em>) – Memory for the iteration, in bytes.</p></li>
-<li><p><strong>walltime</strong> (<em>float</em><em>, </em><em>optional</em>) – Seconds.</p></li>
+<li><p><strong>walltime</strong> (<em>float</em><em>, </em><em>optional</em>) – An estimate of the iteration’s time, in seconds: the same as
+<code class="docutils literal notranslate"><span class="pre">estimated_seconds</span></code>, which it is kept for. (The Loop’s “time per
+iteration” is an estimate; as a hard walltime it got no margin, no
+guards, and the same walltime again after running out of time.)</p></li>
 <li><p><strong>placement</strong> (<em>str</em>) – “inline”: the iteration’s codes run in its own share of the machine;
 “separate”: they go to the job’s target like any job’s.</p></li>
 <li><p><strong>root_directory</strong> (<em>str</em><em> or </em><em>Path</em><em>, </em><em>optional</em>) – Where the steps’ directories are, by default <code class="docutils literal notranslate"><span class="pre">job_directory</span></code>: the
 job’s, also for a parallel loop nested in an iteration of another.</p></li>
 <li><p><strong>read_directories</strong> (<em>[</em><em>str</em><em> or </em><em>Path</em><em>]</em><em>, </em><em>optional</em>) – Where the child reads job-level files it has not written, innermost
 first; by default <code class="docutils literal notranslate"><span class="pre">job_directory</span></code>.</p></li>
+<li><p><strong>estimated_seconds</strong> (<em>float</em><em>, </em><em>optional</em>) – An estimate of the iteration’s time, in seconds. A bundle asks for
+twice its tasks’ estimates plus ten minutes, within the target’s guards,
+and more after running out of time.</p></li>
 </ul>
 </dd>
 </dl>

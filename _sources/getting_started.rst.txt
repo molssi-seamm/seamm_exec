@@ -203,7 +203,8 @@ With ``tasks = queue`` the ``TaskSet`` submits them, in bundles, as batch jobs:
   them again, and a bundle that ran out of time leaves its finished tasks done.
 - A task whose bundle the queue stopped for running out of time is submitted
   again with twice the estimated time, and twice that after a second timeout,
-  within ``bundle_walltime``. A walltime the task gives itself is used as given.
+  within ``bundle_walltime``. A walltime the task gives itself is used as given the
+  first time, and doubled in the same way after running out of time.
   The first four such timeouts do not use up any of the task's attempts.
 - A bundle asks for twice its tasks' estimated time plus ten minutes. Where the
   estimates are too low on a machine, the target section can guard against

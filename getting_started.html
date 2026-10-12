@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.10.4 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.11 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="_static/documentation_options.js?v=b4edbb2e"></script>
+    <script src="_static/documentation_options.js?v=912780bd"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.10.4" />
+  <meta name="docsearch:version" content="2026.10.11" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -629,7 +629,8 @@ where the evaluator runs.</p></li>
 them again, and a bundle that ran out of time leaves its finished tasks done.</p></li>
 <li><p>A task whose bundle the queue stopped for running out of time is submitted
 again with twice the estimated time, and twice that after a second timeout,
-within <code class="docutils literal notranslate"><span class="pre">bundle_walltime</span></code>. A walltime the task gives itself is used as given.
+within <code class="docutils literal notranslate"><span class="pre">bundle_walltime</span></code>. A walltime the task gives itself is used as given the
+first time, and doubled in the same way after running out of time.
 The first four such timeouts do not use up any of the task’s attempts.</p></li>
 <li><p>A bundle asks for twice its tasks’ estimated time plus ten minutes. Where the
 estimates are too low on a machine, the target section can guard against

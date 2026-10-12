@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.local_pool &#8212; SEAMM seamm-exec Plug-in 2026.10.10.4 documentation</title>
+    <title>seamm_exec.local_pool &#8212; SEAMM seamm-exec Plug-in 2026.10.11 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=b4edbb2e"></script>
+    <script src="../../_static/documentation_options.js?v=912780bd"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.10.4" />
+  <meta name="docsearch:version" content="2026.10.11" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -455,6 +455,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">weakref</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">psutil</span>
 
@@ -687,6 +688,7 @@
                 <span class="n">ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">backend_id</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">synchronous</span><span class="p">:</span>
             <span class="c1"># signal.signal works only in the main thread, which submits.</span>
+            <span class="n">_pools</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
             <span class="n">_install_handlers</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">synchronous</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">backend_id</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">:</span>
@@ -702,7 +704,9 @@
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.local_pool.LocalPool.status">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">):</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">state</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span> <span class="k">else</span> <span class="n">LOST</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">}</span></div>
+            <span class="n">states</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">state</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span> <span class="k">else</span> <span class="n">LOST</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">}</span>
+        <span class="n">_release_handlers</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">states</span></div>
 
 
 <div class="viewcode-block" id="LocalPool.wait">
@@ -715,17 +719,18 @@
             <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"_woken"</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_woken</span> <span class="o">=</span> <span class="kc">False</span>
-                    <span class="k">return</span>
+                    <span class="k">break</span>
                 <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">state</span> <span class="ow">in</span> <span class="n">TERMINAL_STATES</span>
                     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ids</span>
                     <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span>
                 <span class="p">):</span>
-                    <span class="k">return</span>
+                    <span class="k">break</span>
                 <span class="n">remaining</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">deadline</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">deadline</span> <span class="o">-</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
                 <span class="k">if</span> <span class="n">remaining</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">remaining</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="k">return</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_condition</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">remaining</span><span class="p">)</span></div>
+                    <span class="k">break</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_condition</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">remaining</span><span class="p">)</span>
+        <span class="n">_release_handlers</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="LocalPool.wake">
@@ -763,6 +768,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">fetch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">backend_id</span><span class="p">):</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition</span><span class="p">:</span>
             <span class="n">job</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">backend_id</span><span class="p">)</span>
+        <span class="n">_release_handlers</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">job</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">CANCELLED</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">TaskResult</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">CANCELLED</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="n">job</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">job</span><span class="o">.</span><span class="n">error</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1010,10 +1016,18 @@
 <span class="c1"># what they did before. A signal the evaluator ignores (SIGHUP under nohup) is</span>
 <span class="c1"># left ignored. (A SIGKILL cannot be caught; the next run of the step kills the</span>
 <span class="c1"># leftovers it finds in the manifest.)</span>
+<span class="c1">#</span>
+<span class="c1"># The handlers are put back once no task is queued or running. A Python handler</span>
+<span class="c1"># runs only between bytecodes, so one left in place delays SIGTERM for as long</span>
+<span class="c1"># as the evaluator is busy in C code (an RDKit embedding, say). Under Slurm's</span>
+<span class="c1"># proctrack/linuxproc the batch shell then dies first, the evaluator is</span>
+<span class="c1"># reparented to init, and the SIGKILL that follows no longer finds it: a</span>
+<span class="c1"># cancelled job keeps running outside Slurm (ChemAI job 11842).</span>
 <span class="c1"># ----------------------------------------------------------------------</span>
 <span class="n">_live_groups</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 <span class="n">_live_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
 <span class="n">_previous_handlers</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">_pools</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">WeakSet</span><span class="p">()</span>  <span class="c1"># pools that may have tasks queued or running</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_register</span><span class="p">(</span><span class="n">pgid</span><span class="p">):</span>
@@ -1042,6 +1056,28 @@
             <span class="n">_previous_handlers</span><span class="p">[</span><span class="n">signum</span><span class="p">]</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">_on_signal</span><span class="p">)</span>
         <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">):</span>
             <span class="k">pass</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_release_handlers</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Put the handlers back if no task is queued or running (main thread only)."""</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_previous_handlers</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">threading</span><span class="o">.</span><span class="n">main_thread</span><span class="p">():</span>
+        <span class="k">return</span>
+    <span class="k">with</span> <span class="n">_live_lock</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">_live_groups</span><span class="p">:</span>
+            <span class="k">return</span>
+    <span class="k">for</span> <span class="n">pool</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">_pools</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">j</span><span class="o">.</span><span class="n">state</span> <span class="ow">in</span> <span class="p">(</span><span class="n">QUEUED</span><span class="p">,</span> <span class="n">RUNNING</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">_jobs</span><span class="o">.</span><span class="n">values</span><span class="p">())):</span>
+            <span class="k">return</span>
+    <span class="k">for</span> <span class="n">signum</span><span class="p">,</span> <span class="n">previous</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">_previous_handlers</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">signal</span><span class="o">.</span><span class="n">getsignal</span><span class="p">(</span><span class="n">signum</span><span class="p">)</span> <span class="ow">is</span> <span class="n">_on_signal</span><span class="p">:</span>
+                <span class="c1"># None: the previous handler was not set from Python.</span>
+                <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIG_DFL</span> <span class="k">if</span> <span class="n">previous</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">previous</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">):</span>
+            <span class="k">pass</span>
+    <span class="n">_previous_handlers</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_on_signal</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
