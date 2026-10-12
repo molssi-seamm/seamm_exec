@@ -136,6 +136,7 @@ def iteration_task(
     placement="inline",
     root_directory=None,
     read_directories=None,
+    estimated_seconds=None,
 ):
     """The task that runs one iteration in its ``_evaluator`` directory.
 
@@ -155,7 +156,10 @@ def iteration_task(
     memory : int, optional
         Memory for the iteration, in bytes.
     walltime : float, optional
-        Seconds.
+        An estimate of the iteration's time, in seconds: the same as
+        ``estimated_seconds``, which it is kept for. (The Loop's "time per
+        iteration" is an estimate; as a hard walltime it got no margin, no
+        guards, and the same walltime again after running out of time.)
     placement : str
         "inline": the iteration's codes run in its own share of the machine;
         "separate": they go to the job's target like any job's.
@@ -165,6 +169,10 @@ def iteration_task(
     read_directories : [str or Path], optional
         Where the child reads job-level files it has not written, innermost
         first; by default ``job_directory``.
+    estimated_seconds : float, optional
+        An estimate of the iteration's time, in seconds. A bundle asks for
+        twice its tasks' estimates plus ten minutes, within the target's guards,
+        and more after running out of time.
     """
     evaluator = Path(evaluator)
     job_directory = Path(job_directory)
@@ -206,8 +214,9 @@ def iteration_task(
         in_situ=True,
         shell=True,
         keep=["."],
-        resources=Resources(
-            ntasks=cores, cpus_per_task=1, mem_per_cpu=mem_per_cpu, walltime=walltime
+        resources=Resources(ntasks=cores, cpus_per_task=1, mem_per_cpu=mem_per_cpu),
+        estimated_seconds=(
+            estimated_seconds if estimated_seconds is not None else walltime
         ),
     )
 

@@ -25,6 +25,7 @@ import socket
 import threading
 import time
 import traceback
+import weakref
 
 import psutil
 
@@ -244,6 +245,7 @@ class LocalPool:
                 ids.append(backend_id)
         if not self.synchronous:
             # signal.signal works only in the main thread, which submits.
+            _pools.add(self)
             _install_handlers()
         if self.synchronous:
             for backend_id in ids:
@@ -256,7 +258,9 @@ class LocalPool:
 
     def status(self, ids):
         with self._condition:
-            return {i: self._jobs[i].state if i in self._jobs else LOST for i in ids}
+            states = {i: self._jobs[i].state if i in self._jobs else LOST for i in ids}
+        _release_handlers()
+        return states
 
     def wait(self, ids, timeout=None):
         """Block until one of ``ids`` is finished, ``timeout`` seconds pass, or
@@ -266,17 +270,18 @@ class LocalPool:
             while True:
                 if getattr(self, "_woken", False):
                     self._woken = False
-                    return
+                    break
                 if any(
                     self._jobs[i].state in TERMINAL_STATES
                     for i in ids
                     if i in self._jobs
                 ):
-                    return
+                    break
                 remaining = None if deadline is None else deadline - time.monotonic()
                 if remaining is not None and remaining <= 0:
-                    return
+                    break
                 self._condition.wait(remaining)
+        _release_handlers()
 
     def wake(self):
         """Make a :meth:`wait` return early (a TaskSet being cancelled)."""
@@ -305,6 +310,7 @@ class LocalPool:
     def fetch(self, task, backend_id):
         with self._condition:
             job = self._jobs.pop(backend_id)
+        _release_handlers()
         if job.state == CANCELLED:
             return TaskResult(key=task.key, state=CANCELLED, directory=job.directory)
         if job.error is not None:
@@ -547,10 +553,18 @@ def _state_of(raw):
 # what they did before. A signal the evaluator ignores (SIGHUP under nohup) is
 # left ignored. (A SIGKILL cannot be caught; the next run of the step kills the
 # leftovers it finds in the manifest.)
+#
+# The handlers are put back once no task is queued or running. A Python handler
+# runs only between bytecodes, so one left in place delays SIGTERM for as long
+# as the evaluator is busy in C code (an RDKit embedding, say). Under Slurm's
+# proctrack/linuxproc the batch shell then dies first, the evaluator is
+# reparented to init, and the SIGKILL that follows no longer finds it: a
+# cancelled job keeps running outside Slurm (ChemAI job 11842).
 # ----------------------------------------------------------------------
 _live_groups = set()
 _live_lock = threading.Lock()
 _previous_handlers = {}
+_pools = weakref.WeakSet()  # pools that may have tasks queued or running
 
 
 def _register(pgid):
@@ -579,6 +593,28 @@ def _install_handlers():
             _previous_handlers[signum] = signal.signal(signum, _on_signal)
         except (ValueError, OSError):
             pass
+
+
+def _release_handlers():
+    """Put the handlers back if no task is queued or running (main thread only)."""
+    if not _previous_handlers:
+        return
+    if threading.current_thread() is not threading.main_thread():
+        return
+    with _live_lock:
+        if _live_groups:
+            return
+    for pool in list(_pools):
+        if any(j.state in (QUEUED, RUNNING) for j in list(pool._jobs.values())):
+            return
+    for signum, previous in list(_previous_handlers.items()):
+        try:
+            if signal.getsignal(signum) is _on_signal:
+                # None: the previous handler was not set from Python.
+                signal.signal(signum, signal.SIG_DFL if previous is None else previous)
+        except (ValueError, OSError):
+            pass
+    _previous_handlers.clear()
 
 
 def _on_signal(signum, frame):

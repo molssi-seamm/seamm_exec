@@ -244,3 +244,16 @@ def test_citations_merged_again_give_the_same_counts(tmp_path):
         it.merge_citations(evaluator, job, before)
     count = job.conn.execute("SELECT count FROM context").fetchall()
     assert count == [(3,)]
+
+
+def test_iteration_time_is_an_estimate(tmp_path):
+    """The Loop's "time per iteration" is an estimate: as a hard walltime it got no
+    margin and no guards, and the same walltime again after a timeout (DMC pilot)."""
+    job = tmp_path / "job"
+    job.mkdir()
+    evaluator = job / "loop" / "_evaluator"
+    evaluator.mkdir(parents=True)
+    task = it.iteration_task("iteration_1", evaluator, job, cores=4, walltime=2700)
+    assert task.estimated_seconds == 2700 and task.resources.walltime is None
+    task = it.iteration_task("iteration_1", evaluator, job, estimated_seconds=1800)
+    assert task.estimated_seconds == 1800 and task.resources.walltime is None

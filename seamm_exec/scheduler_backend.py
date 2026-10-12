@@ -794,7 +794,12 @@ class SchedulerBackend:
         walltimes = [t.resources.walltime for t in tasks]
         limit = bundle_walltime or self.bundle_walltime
         if all(w is not None for w in walltimes):
-            walltime = sum(walltimes)
+            # The tasks' own walltimes, as given -- but more after running out of
+            # time (walltime_scale), or a retry would only time out again; still
+            # within the queue's longest walltime.
+            walltime = walltime_scale * sum(walltimes)
+            if walltime_scale > 1.0 and self.max_walltime:
+                walltime = min(walltime, self.max_walltime)
         else:
             # Without the tasks' walltimes the queue's default would apply (an
             # hour on some partitions) and kill a long bundle: use their

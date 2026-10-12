@@ -1,6 +1,23 @@
 =======
 History
 =======
+2026.10.11 -- Bugfix: longer walltimes on retry; cancelled jobs no longer keep running
+    * A task that gives its own walltime was retried after running out of time with
+      that same walltime, so it ran out of time again on every retry. Its walltime is
+      now doubled after each timeout, as an estimate's is, within the queue's longest
+      walltime.
+    * The Loop step's "time per iteration" is an estimate, and is now treated as one:
+      a bundle of iterations asks for twice their estimates plus ten minutes, within
+      the target's guards (estimate_scale, min_task_walltime). Before, it was used as
+      the exact walltime, with no margin.
+    * A cancelled job could keep running outside the queue. While running tasks, a
+      flowchart catches SIGTERM to stop them first, and it kept doing so afterwards.
+      Python acts on a caught signal only between its own instructions, so a
+      flowchart busy in compiled code (e.g. RDKit building a large structure) ignored
+      the cancel. Under Slurm's proctrack/linuxproc the job's shell then died first
+      and the flowchart was lost to Slurm. The handler is now removed once no task is
+      running, so a busy flowchart stops at once.
+
 2026.10.10.4 -- Bugfix: the parallel exponent survives new size columns
     * The parallel exponent comes from paired runs -- the same calculation on several
       core counts. The fit dropped every row lacking a size column added later (e.g.
