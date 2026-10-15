@@ -669,6 +669,30 @@ def run_from_jobserver():
             raise
 
 
+def flowchart_problems(flowchart):
+    """Check the flowchart as a whole before running it.
+
+    Uses ``seamm.builder.validate``, which checks the order of the steps and asks
+    each step that can (e.g. an analysis step that needs the MD before it to sample
+    the heat flux) to check itself. A failure of the check itself is logged, not
+    reported, so that it never stops a job that could run.
+
+    Returns
+    -------
+    [str]
+        A description of each problem; empty if none.
+    """
+    try:
+        from seamm.builder import validate
+    except ImportError:
+        return []
+    try:
+        return list(validate(flowchart))
+    except Exception as e:
+        logger.warning(f"Could not check the flowchart: {e}", exc_info=True)
+        return []
+
+
 def run(
     job_id=None,
     wdir=None,
@@ -1000,6 +1024,15 @@ def run(
                 printer.job(plan["message"])
                 data["iteration"] = plan["iteration"]
             else:
+                # An iteration of a parallel loop was checked with its parent job
+                problems = []
+                if not os.environ.get(PARENT_JOB_ENVIRONMENT):
+                    problems = flowchart_problems(flowchart)
+                if len(problems) > 0:
+                    raise RuntimeError(
+                        "The flowchart has problems, so the job stopped before "
+                        "running any step:\n    " + "\n    ".join(problems)
+                    )
                 exec = ExecFlowchart(flowchart, cmdline=cmdline, plan=plan)
                 exec.run(root=wdir, job_id=job_id)
                 if exec.iteration is not None:

@@ -1,6 +1,13 @@
 =======
 History
 =======
+2026.10.15 -- Checking the flowchart before a job runs
+    * A job now checks its flowchart as a whole before running any step (with
+      ``seamm.builder.validate``), and stops at once if there are problems, for
+      example an analysis step whose MD does not sample what it needs. Before, such a
+      job ran all its MD and failed only at the analysis. An iteration of a parallel
+      loop is not checked again, and a failure of the check itself never stops a job.
+
 2026.10.11 -- Bugfix: longer walltimes on retry; cancelled jobs no longer keep running
     * A task that gives its own walltime was retried after running out of time with
       that same walltime, so it ran out of time again on every retry. Its walltime is
