@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.11 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.15 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=912780bd"></script>
+    <script src="../_static/documentation_options.js?v=6d569a1a"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.11" />
+  <meta name="docsearch:version" content="2026.10.15" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -903,6 +903,24 @@ mirror goes with it. Returns the directory it was moved to, or None.</p>
 <p><code class="docutils literal notranslate"><span class="pre">[Dashboard:</span> <span class="pre">&lt;name&gt;]</span></code> where name is the installation’s root directory name
 (<code class="docutils literal notranslate"><span class="pre">SEAMM_DEV</span></code>, <code class="docutils literal notranslate"><span class="pre">SEAMM_NEW</span></code>, …), then, as before, <code class="docutils literal notranslate"><span class="pre">dev</span></code> for a root whose
 path contains “dev” or <code class="docutils literal notranslate"><span class="pre">localhost</span></code> otherwise, then this host’s name.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.exec_flowchart.flowchart_problems">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.exec_flowchart.</span></span><span class="sig-name descname"><span class="pre">flowchart_problems</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flowchart</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/exec_flowchart.html#flowchart_problems"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.exec_flowchart.flowchart_problems" title="Link to this definition">#</a></dt>
+<dd><p>Check the flowchart as a whole before running it.</p>
+<p>Uses <code class="docutils literal notranslate"><span class="pre">seamm.builder.validate</span></code>, which checks the order of the steps and asks
+each step that can (e.g. an analysis step that needs the MD before it to sample
+the heat flux) to check itself. A failure of the check itself is logged, not
+reported, so that it never stops a job that could run.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A description of each problem; empty if none.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>[str]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -3294,6 +3312,7 @@ raises.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.exec_flowchart.cd"><code class="docutils literal notranslate"><span class="pre">cd</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.exec_flowchart.comparable_command_line"><code class="docutils literal notranslate"><span class="pre">comparable_command_line()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.exec_flowchart.credential_sections"><code class="docutils literal notranslate"><span class="pre">credential_sections()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.exec_flowchart.flowchart_problems"><code class="docutils literal notranslate"><span class="pre">flowchart_problems()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.exec_flowchart.get_job_id"><code class="docutils literal notranslate"><span class="pre">get_job_id()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.exec_flowchart.open_datastore"><code class="docutils literal notranslate"><span class="pre">open_datastore()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.exec_flowchart.plan_start"><code class="docutils literal notranslate"><span class="pre">plan_start()</span></code></a></li>
