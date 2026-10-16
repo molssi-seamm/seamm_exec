@@ -28,6 +28,7 @@ Command line::
 
     python -m seamm_exec.timing_model fit [program ...] [--directory DIR]
     python -m seamm_exec.timing_model predict orca task=energy nbf=240 ... [-q 0.95]
+    python -m seamm_exec.timing_model check [program ...] [--since 2h]
 """
 
 import argparse
@@ -1610,7 +1611,60 @@ def main(argv=None):
     p_pred.add_argument("--cpus-per-task", type=int, default=1)
     p_pred.add_argument("--machine")
     p_pred.add_argument("--units", type=float)
+    p_check = sub.add_parser(
+        "check",
+        help="compare the estimates of recent runs with their times",
+        description="Compare the estimates of recent runs with their times, by "
+        "machine and calculation, and flag groups far from 1x or estimated the same "
+        "on machines of different speed (a step's fallback formula, not the model). "
+        "The exit status is 1 when a group is flagged.",
+    )
+    p_check.add_argument(
+        "programs", nargs="*", help="default: every program with records"
+    )
+    p_check.add_argument(
+        "--since",
+        default="1d",
+        help="runs recorded since: a span (90m, 2h, 1d) or a local date and time "
+        "(2026-10-16T10:30); 'all' for every record. Default 1d",
+    )
+    p_check.add_argument(
+        "--by", help="the columns describing a calculation, comma separated"
+    )
+    p_check.add_argument(
+        "--limit",
+        type=float,
+        default=2.0,
+        help="flag groups whose estimates are further than this factor from the "
+        "times (default 2)",
+    )
+    p_check.add_argument(
+        "--min-rows", type=int, default=1, help="show only groups this large"
+    )
     args = parser.parse_args(argv)
+
+    if args.command == "check":
+        from .timing_check import check, parse_since, report
+
+        directory = Path(args.directory or DEFAULT_DIRECTORY).expanduser()
+        programs = args.programs or sorted(
+            {p.stem.split("-")[0] for p in directory.glob("*.csv")}
+        )
+        since = None if args.since == "all" else parse_since(args.since)
+        by = args.by.split(",") if args.by else None
+        flagged = False
+        for program in programs:
+            summary = check(
+                program, args.directory, since=since, by=by, limit=args.limit
+            )
+            if not summary["groups"]:
+                print(f"{program}: no runs with an estimate since {args.since}\n")
+                continue
+            print(report(summary, min_rows=args.min_rows) + "\n")
+            flagged = flagged or any(
+                g["flags"] for g in summary["groups"] if g["rows"] >= args.min_rows
+            )
+        return 1 if flagged else 0
 
     if args.command == "fit":
         directory = Path(args.directory or DEFAULT_DIRECTORY).expanduser()
