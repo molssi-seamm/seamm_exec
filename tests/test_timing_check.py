@@ -104,12 +104,13 @@ def test_since_timed_out_and_missing_estimates():
 
 def test_grouping_columns_and_sources():
     rows = [_row(OWL, 100, 100, estimate_source="model") for _ in range(2)]
-    rows += [_row(OWL, 100, 900, estimate_source="formula")]
+    rows += [_row(OWL, 100, 300, estimate_source="formula")]
     summary = check("orca", rows=rows, by=["method"])
     assert summary["columns"] == ["method"] and len(summary["groups"]) == 1
     group = summary["groups"][0]
     assert group["sources"] == {"model": 2, "formula": 1}
     assert group["distinct"] == 2
+    assert group["flags"] == ["1 from the step's formula"]
     assert "formula 1 model 2" in report(summary)
     # Columns no record has are left out
     assert check("orca", rows=rows, by=["method", "nbf"])["columns"] == ["method"]

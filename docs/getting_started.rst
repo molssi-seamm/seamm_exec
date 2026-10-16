@@ -335,7 +335,15 @@ run, in iterations, found by the fit.
 A model only predicts what its records cover: a calculation whose size lies
 outside the fitted range (by more than a factor of 1.5), whose method class or
 task the records lack, or whose descriptors lack a size variable gets no
-prediction, and the step's own estimate stands. The parallel exponent comes from
+prediction, and the step's own estimate stands. A step asks for its estimate
+with :func:`seamm_exec.timing_model.estimate`, giving its own formula as the
+fallback: it returns the seconds, where they came from (``model``, ``formula``
+or ``none``), which the step puts in the task's ``estimate_source`` and the
+timing record keeps, and the reason the model was not used, which it logs once
+per process -- as a warning when the step left out a size variable the model
+was fitted with, since then every estimate falls back to the formula. A step's
+tests check that its estimate has every size variable its records have with
+:func:`seamm_exec.timing_model.missing_sizes`. The parallel exponent comes from
 *paired runs* when there are at least four: the same calculation (machine, method
 class, task, sizes and options) on several core counts, as the seed benchmark makes,
 with the start-up times removed. Production cannot show it, since its core counts
@@ -359,10 +367,11 @@ learned factors and *possible cost drivers*: recorded values and options without
 a factor whose runs are still systematically off, the candidates for a new size
 variable, class or toggle ladder.
 
-A cost model is fitted to those rows with::
+A cost model is fitted to those rows with ``seamm-timing`` (also
+``python -m seamm_exec.timing_model``)::
 
-    python -m seamm_exec.timing_model fit            # every program with records
-    python -m seamm_exec.timing_model fit orca vasp
+    seamm-timing fit            # every program with records
+    seamm-timing fit orca vasp
 
 which writes ``~/.seamm.d/timing/models/<program>.v<N>.json`` (one file per version
 of the model) and prints a report:
@@ -376,7 +385,7 @@ improve it and a new machine needs only a few runs to be placed.
 
 A prediction is a *quantile* of the fitted spread, never a mean::
 
-    python -m seamm_exec.timing_model predict orca task=energy \
+    seamm-timing predict orca task=energy \
         method_class="global hybrid" nbf=240 --ntasks 8 -q 0.95
 
 or, from a step, :func:`seamm_exec.timing_model.predict`, which returns the
@@ -397,9 +406,9 @@ Whether the estimates the tasks were given match their times is checked from the
 records themselves, which carry both (``estimated``, before a target's
 ``estimate_scale``, and ``wall``)::
 
-    python -m seamm_exec.timing_model check                  # every program, last day
-    python -m seamm_exec.timing_model check orca --since 2h
-    python -m seamm_exec.timing_model check orca --since 2026-10-16T10:30
+    seamm-timing check                  # every program, last day
+    seamm-timing check orca --since 2h
+    seamm-timing check orca --since 2026-10-16T10:30
 
 It prints, for each machine and calculation (method class, task, method, basis
 and atom count, those the records have; ``--by`` names others), the runs, their
@@ -407,7 +416,8 @@ mean time and estimate, and the geometric mean of estimate / time with its 10th
 and 90th percentiles. It flags a group whose estimates are further than a factor
 of two from the times (``--limit``), and a calculation estimated the same on
 machines whose times differ, the sign that the estimates came from a step's
-fallback formula, which knows nothing of the machine, and not from the model.
+fallback formula, which knows nothing of the machine, and not from the model,
+and a group with estimates recorded as from the formula.
 ``--since`` takes a span (``90m``, ``2h``, ``1d``, the default) or a local date
 and time (the records' dates are in UTC), or ``all``; runs that timed out are
 left out. The exit status is 1 when a group is flagged. Run it after every
