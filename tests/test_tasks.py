@@ -4,6 +4,7 @@ import json
 import logging
 import os
 from pathlib import Path
+import shutil
 import signal
 import subprocess
 import sys
@@ -579,6 +580,85 @@ def test_archive_one_tar_per_bundle(tmp_path):
         r = second[f"t{i}"]
         assert r.restored and r.files["r.txt"] == f"{i}\n"
         assert r.archive is not None
+
+
+def test_the_manifest_names_the_archive_before_the_directories_go(
+    tmp_path, monkeypatch
+):
+    """An evaluator stopped right after a bundle is archived (scancel, or a stall
+    before the manifest's next flush) left records with neither the task's
+    directory nor the archive's name, so the finished tasks ran again on
+    restart (MBE wave 2, 2026-10-16)."""
+
+    def make():
+        ts = TaskSet(
+            directory=tmp_path,
+            backend=pool(),
+            executor=Local(),
+            archive=True,
+            bundle_tasks=2,
+        )
+        for i in range(2):
+            ts.add(shell_task(f"t{i}", f"echo {i} > r.txt", resources=Resources(1)))
+        return ts
+
+    manifest = tmp_path / "tasks" / "manifest.json"
+    seen = []
+    real_rmtree = shutil.rmtree
+
+    def rmtree(path, *args, **kwargs):
+        # What a restarted evaluator would find, were this one killed now
+        seen.append(json.loads(manifest.read_text())["tasks"])
+        return real_rmtree(path, *args, **kwargs)
+
+    monkeypatch.setattr(shutil, "rmtree", rmtree)
+    run_all(make())
+    monkeypatch.setattr(shutil, "rmtree", real_rmtree)
+    assert seen
+    for records in seen:
+        assert all(records[k].get("archive") == "bundle_0000.tar" for k in records)
+
+
+def test_a_manifest_without_the_archive_is_restored_from_the_bundle(tmp_path):
+    """Manifests an older seamm-exec left without the archive's name: the
+    bundle's tar is found from the record's bundle, and nothing reruns."""
+
+    def make():
+        ts = TaskSet(
+            directory=tmp_path,
+            backend=pool(),
+            executor=Local(),
+            archive=True,
+            bundle_tasks=2,
+        )
+        for i in range(2):
+            ts.add(
+                shell_task(
+                    f"t{i}",
+                    f"echo {i} > r.txt; echo x >> {tmp_path / 'ran'}",
+                    resources=Resources(1),
+                )
+            )
+        return ts
+
+    run_all(make())
+    tasks = tmp_path / "tasks"
+    ran = (tmp_path / "ran").read_text()
+    assert ran == "x\nx\n"
+    data = json.loads((tasks / "manifest.json").read_text())
+    for record in data["tasks"].values():
+        assert record["bundle"] == "bundle_0000"
+        del record["archive"]
+    (tasks / "manifest.json").write_text(json.dumps(data))
+
+    second = run_all(make())
+    for i in range(2):
+        r = second[f"t{i}"]
+        assert r.restored and r.files["r.txt"] == f"{i}\n"
+        assert r.archive == tasks / "bundle_0000.tar"
+    assert (tmp_path / "ran").read_text() == ran  # nothing ran again
+    data = json.loads((tasks / "manifest.json").read_text())
+    assert all(r.get("archive") == "bundle_0000.tar" for r in data["tasks"].values())
 
 
 # ----------------------------------------------------------------------

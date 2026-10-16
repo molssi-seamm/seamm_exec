@@ -411,9 +411,11 @@ Phase     Content
 4 (done)  MOPAC (two regimes), Gaussian, VASP, LAMMPS, Psi4 and DFTB+ converted to the
           record, each declaring its ``TIMING_SPEC``; the old ``_timing_data`` code removed.
           Open: the hand fit in ``vasp_step.batch`` is still used for VASP estimates.
-5 (next)  **Where a task runs, and where its time is predicted** (section 8): the worker
-          stamps the machine class into the result and the record uses it; a prediction
-          names the target machine; models travel to the installation that needs them.
+5 (next)  **Where a task runs, and where its time is predicted** (section 8, revised
+          2026-10-16 in section 9): the worker stamps where each task ran and the record
+          uses it; a prediction is for the job's target -- its node type if the target
+          pins one, else the slowest type its tasks have run on; the check reports the
+          spread of a target's node types. Models per installation: a later phase.
 6         Bundle and job walltimes from the predictions (the JobServer, with the target's
           model); the GUI estimate; VASP's estimate from the model; a bundle timeout
           under an estimate below the real time does not use up an attempt.
@@ -470,6 +472,94 @@ This answers open question 1 for the common case: models are per installation
 and per machine class, copied between installations by the queues that connect
 them; publishing them centrally stays an option for machine classes a site has
 never run on.
+
+9. Revision, 2026-10-16: the node is not known before the bundle starts
+------------------------------------------------------------------------
+
+Section 8 assumed a task's machine class is known before it runs. It is not: a
+target names a cluster and partition, and on a partition of mixed nodes the
+scheduler chooses the node type when the bundle starts, unless the target pins
+it (``constraint = amd`` on TinkerCliffs). TinkerCliffs' ``normal_q`` has 296
+AMD EPYC 7702 nodes and 16 Intel nodes; Owl's ``normal_q`` is uniform (EPYC
+9454). A bundle's walltime is fixed when it is submitted, so the estimate cannot
+wait to learn the node.
+
+What happened on 2026-10-16 shows what matters in practice. The MBE evaluators
+run as one-core jobs on their target cluster, so ``predict()``'s default -- the
+caller's machine -- was the bundles' machine only by luck: on TinkerCliffs an
+evaluator on an Intel node would have estimated for a class the model had
+never seen (no offset, about 1.5x short for AMD bundles), and a bundle on an
+Intel node is recorded under the evaluator's AMD class. MBE now pins both
+evaluators and bundles to AMD, which removes the problem for that campaign but
+not in general.
+
+Revised design
+~~~~~~~~~~~~~~
+
+1. **Stamp where each task ran** (as section 8, item 1). The task worker
+   (``task_worker.py``) and the bundle runner (``bundle_runner.py``) add
+   ``machine_class()`` -- the node's ``cluster:partition:cpu_model`` and its
+   parts -- to the ``DONE`` manifest; ``TaskResult`` gets ``machine``;
+   ``record_task_timing`` prefers it to the evaluator's own. The row also
+   records the job's **target**, the section name (a new ``target`` column),
+   so the records say which node types each target's tasks landed on. A result
+   from an older worker has no stamp, and the evaluator's class stands, as
+   today.
+
+2. **Estimate for the target, not the caller.** ``predict()``'s default machine
+   becomes the target's, found as the task layer finds the target
+   (``targets.find_target``: ``target.json``, ``SEAMM_TARGET``):
+
+   - if the records show the target's tasks on **one** machine class (a pinned
+     target, or a uniform partition), that class;
+   - if on **several** (a mixed partition, unpinned), the **slowest** of them
+     -- the largest machine offset in the model -- since a walltime that is
+     too short costs a whole rerun of the bundle and one too long only
+     packing; the result says so (``machine_choice``: ``target``,
+     ``slowest of N``) and carries the spread between the classes;
+   - an explicit ``machine_class`` in the target's section overrides both,
+     for a new target with no records yet;
+   - with no target, or a target without records or setting, the caller's
+     machine, as today.
+
+   Steps need no change: they call ``timing_model.estimate()`` without a
+   machine, and the default follows the job's target.
+
+3. **Report the spread of a target's node types.** ``seamm-timing check``
+   groups by where a task actually ran (the stamped class), and adds a line per
+   target whose tasks ran on several classes with their factors relative to
+   the fastest, flagging a target whose classes differ by more than about 1.3x:
+   the hint to add a ``constraint`` to that target, after which its estimates
+   are exact rather than cautious.
+
+What this does not do
+~~~~~~~~~~~~~~~~~~~~~
+
+- **It does not choose the node.** Pinning a target to a node type stays the
+  user's decision (a ``constraint`` in its section); the check shows when it
+  is worth it, and the estimate is safe either way.
+- **Models per installation and machine class** (section 8, items 3 and 4:
+  ``<root>/timing/models/<machine>/``, pulled by ssh queues; seeds per node
+  type) are deferred to a later phase. Today every job that estimates runs on
+  the cluster whose records and model are in the same user's home, so the
+  model is where it is needed; the case that needs them is a job submitted
+  from one installation to another (ChemAI to TinkerCliffs) that estimates
+  *before* it reaches the cluster, which the JobServer does not yet do
+  (phase 6).
+
+Order of work
+~~~~~~~~~~~~~
+
+1. seamm_exec: the stamp in both writers of ``DONE``, ``TaskResult.machine``,
+   the ``target`` column, ``record_task_timing`` using them; tests on a
+   bundle run in the testing harness. Released and rolled out on its own: the
+   records improve from then on, and nothing is predicted differently yet.
+2. seamm_exec: the target's machine for ``predict()``, with the slowest-class
+   rule and the ``machine_class`` override; tests with records on one and on
+   several classes. ``seamm-timing check`` gets the per-target spread.
+3. After a week of stamped records on TinkerCliffs: whether the Intel nodes
+   differ enough to matter, from the check, and whether an unpinned target's
+   estimates should use the slowest class or a quantile across the classes.
 
 Open questions
 --------------
