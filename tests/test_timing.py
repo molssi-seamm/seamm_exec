@@ -249,3 +249,109 @@ def test_structure_descriptors_include_neighbours():
     g = Geometry([6] * 50, [(1.5 * i, 0.0, 0.0) for i in range(50)])
     d = structure_descriptors(g)
     assert 9.0 < d["neighbours"] < 10.0
+
+
+def _hold_lock(path, seconds):
+    """A process holding the lock on ``path`` for ``seconds``; returns once it
+    has the lock."""
+    code = (
+        "import fcntl, sys, time\n"
+        f"fd = open({str(path)!r}, 'a+')\n"
+        "fcntl.lockf(fd.fileno(), fcntl.LOCK_EX)\n"
+        "print('locked', flush=True)\n"
+        f"time.sleep({seconds})\n"
+    )
+    proc = subprocess.Popen(
+        [sys.executable, "-c", code], stdout=subprocess.PIPE, text=True
+    )
+    assert proc.stdout.readline().strip() == "locked"
+    return proc
+
+
+def test_busy_file_does_not_block_the_writer(tmp_path):
+    """While another process holds the lock, a row goes to the writer's own
+    pending file at once, and is read with the others."""
+    import time
+
+    from seamm_exec.timing import pending_paths
+
+    append_timing("code", {"i": 0}, directory=tmp_path)
+    holder = _hold_lock(timing_path("code", tmp_path), 30)
+    try:
+        start = time.monotonic()
+        path = append_timing("code", {"i": 1}, directory=tmp_path, lock_wait=0.2)
+        assert time.monotonic() - start < 5
+    finally:
+        holder.kill()
+        holder.wait()
+    assert path.parent.name == "code.pending"
+    assert pending_paths("code", tmp_path) == [path]
+    assert [r["i"] for r in read_timings("code", directory=tmp_path)] == ["0", "1"]
+
+
+def test_pending_rows_are_moved_in_with_the_next_row(tmp_path):
+    from seamm_exec.timing import pending_paths
+
+    append_timing("code", {"i": 0}, directory=tmp_path)
+    holder = _hold_lock(timing_path("code", tmp_path), 30)
+    try:
+        for i in (1, 2):
+            append_timing("code", {"i": i}, directory=tmp_path, lock_wait=0.1)
+        # a new column goes to a second pending file
+        append_timing("code", {"i": 3, "x": 7}, directory=tmp_path, lock_wait=0.1)
+    finally:
+        holder.kill()
+        holder.wait()
+    assert len(pending_paths("code", tmp_path)) == 2
+    path = append_timing("code", {"i": 4}, directory=tmp_path)
+    assert path == timing_path("code", tmp_path)
+    assert pending_paths("code", tmp_path) == []
+    rows = read_timings("code", directory=tmp_path, all_files=True)
+    assert [r["i"] for r in rows] == ["0", "1", "2", "3", "4"]
+    assert rows[3]["x"] == "7"
+
+
+def test_records_state_counts_pending_rows(tmp_path):
+    from seamm_exec.timing_model import records_state
+
+    append_timing("code", {"i": 0}, directory=tmp_path)
+    before = records_state("code", tmp_path)[0]
+    holder = _hold_lock(timing_path("code", tmp_path), 30)
+    try:
+        append_timing("code", {"i": 1}, directory=tmp_path, lock_wait=0.1)
+    finally:
+        holder.kill()
+        holder.wait()
+    assert records_state("code", tmp_path)[0] > before
+
+
+def test_threads_of_one_process_lose_no_rows(tmp_path):
+    """Threads share the process's lock and pending file: while another process
+    holds the lock, and after it lets go, every row of every thread is kept once."""
+    import threading
+
+    holder = _hold_lock(timing_path("code", tmp_path), 30)
+
+    def write(name, start, n, wait):
+        for i in range(start, start + n):
+            append_timing(
+                "code", {"thread": name, "i": i}, directory=tmp_path, lock_wait=wait
+            )
+
+    try:
+        threads = [threading.Thread(target=write, args=(t, 0, 50, 0.0)) for t in "ab"]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+    finally:
+        holder.kill()
+        holder.wait()
+    threads = [threading.Thread(target=write, args=(t, 50, 50, 1.0)) for t in "ab"]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    rows = read_timings("code", directory=tmp_path, all_files=True)
+    for t in "ab":
+        assert sorted(int(r["i"]) for r in rows if r["thread"] == t) == list(range(100))

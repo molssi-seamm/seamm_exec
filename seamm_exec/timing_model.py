@@ -43,7 +43,7 @@ import time
 
 import numpy as np
 
-from .timing import DEFAULT_DIRECTORY, machine_class, read_timings
+from .timing import DEFAULT_DIRECTORY, machine_class, pending_paths, read_timings
 
 logger = logging.getLogger("seamm-exec")
 
@@ -308,15 +308,17 @@ def model_path(program, directory=None):
 
 
 def records_state(program, directory=None):
-    """``(bytes, mtime)`` over the program's record files, current and set
-    aside: a cheap measure of how much the records have grown (no read)."""
+    """``(bytes, mtime)`` over the program's record files, current, set aside
+    and pending: a cheap measure of how much the records have grown (no read)."""
     path = Path(directory or DEFAULT_DIRECTORY).expanduser()
     total = 0
     latest = 0.0
-    for p in path.glob(f"{program}*.csv"):
-        stem = p.stem
-        if stem != program and not stem[len(program) + 1 :].replace("-", "").isdigit():
-            continue
+    paths = [
+        p
+        for p in path.glob(f"{program}*.csv")
+        if p.stem == program or p.stem[len(program) + 1 :].replace("-", "").isdigit()
+    ]
+    for p in paths + pending_paths(program, directory):
         try:
             st = p.stat()
         except OSError:

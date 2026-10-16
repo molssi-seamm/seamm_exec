@@ -1,6 +1,17 @@
 =======
 History
 =======
+2026.10.16 -- Bugfix: writing a timing record no longer holds up the Evaluator
+    * Every run appends a row to the shared timing file, under a lock. On a cluster
+      the file is on a network file system, whose lock daemon can take many seconds
+      to hand the lock on, and a run waited for it. Many Evaluators writing at once
+      took turns at the lock, which capped how fast they could take in results and
+      submit more tasks. A run now tries for the lock for a second at most, and
+      otherwise writes its row to a file of its own,
+      ``~/.seamm.d/timing/<program>.pending/<host>-<pid>.csv``. It moves those rows
+      into the shared file the next time it gets the lock, and the rows are read with
+      the others in the meantime.
+
 2026.10.15 -- Checking the flowchart before a job runs
     * A job now checks its flowchart as a whole before running any step (with
       ``seamm.builder.validate``), and stops at once if there are problems, for
