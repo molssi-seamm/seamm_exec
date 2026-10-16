@@ -8,9 +8,13 @@ already keep), which are fitted to estimate the cost of later calculations.
 Many runs append to the same file at once -- on a cluster from many nodes, on a
 network file system -- so rows are written under a lock and in one write, and the
 file is set aside when it grows past a size instead of growing without bound
-(vasp-step#18). Rows should hold numbers that characterize the calculation
-(atoms, electrons, basis or cutoff, k-points, cores, node, wall time), not its
-input files.
+(vasp-step#18). A writer never waits long for the lock: if the file stays busy it
+writes the row to a file of its own in ``<program>.pending/``, and moves its rows
+into the shared file the next time it gets the lock. Waiting on a network file
+system's lock daemon held up every Evaluator of a cluster in turn, capping how
+fast it could take in its results. Rows should hold numbers that characterize the
+calculation (atoms, electrons, basis or cutoff, k-points, cores, node, wall time),
+not its input files.
 
 A code step writes its row with :func:`record_task_timing` once it has run a
 :class:`seamm_exec.Task` and parsed the output: the common columns (the machine
@@ -26,10 +30,12 @@ import socket
 import subprocess
 
 import csv
+import errno
 import io
 import logging
 import os
 from pathlib import Path
+import random
 import time
 
 logger = logging.getLogger("seamm-exec")
@@ -38,6 +44,8 @@ logger = logging.getLogger("seamm-exec")
 DEFAULT_DIRECTORY = Path("~/.seamm.d/timing")
 #: A file larger than this is set aside (renamed with the date) and begun again
 MAX_BYTES = 50 * 1024 * 1024
+#: How long a writer tries for the lock before writing to its own file, in seconds
+LOCK_WAIT = 1.0
 #: The version of the record written by :func:`record_task_timing`
 SCHEMA = 1
 #: The common columns of a record, before the step's descriptors
@@ -71,7 +79,29 @@ def timing_path(program, directory=None):
     return directory / f"{program}.csv"
 
 
-def append_timing(program, row, fieldnames=None, directory=None, max_bytes=MAX_BYTES):
+def pending_directory(program, directory=None):
+    """Where writers that could not get the lock put their rows, a file each."""
+    directory = Path(directory or DEFAULT_DIRECTORY).expanduser()
+    return directory / f"{program}.pending"
+
+
+def pending_paths(program, directory=None):
+    """The files of rows waiting to be moved into ``program``'s timing file."""
+    pending = pending_directory(program, directory)
+    try:
+        return sorted(pending.glob("*.csv"))
+    except OSError:
+        return []
+
+
+def append_timing(
+    program,
+    row,
+    fieldnames=None,
+    directory=None,
+    max_bytes=MAX_BYTES,
+    lock_wait=LOCK_WAIT,
+):
     """Append one timing row for ``program``, safely with concurrent writers.
 
     Parameters
@@ -92,6 +122,12 @@ def append_timing(program, row, fieldnames=None, directory=None, max_bytes=MAX_B
     max_bytes : int
         Set the file aside, as ``<program>-<YYYYmmdd-HHMMSS>[-n].csv``, when it is
         larger than this.
+    lock_wait : float
+        How long to try for the lock, in seconds. If another writer holds it all
+        that time, the row goes to this process's own file in
+        ``<program>.pending/`` (see :func:`pending_paths`), which needs no lock.
+        Rows waiting there are moved into the timing file, in the same single
+        write, the next time this process gets the lock.
 
     Returns
     -------
@@ -101,19 +137,20 @@ def append_timing(program, row, fieldnames=None, directory=None, max_bytes=MAX_B
     Notes
     -----
     The lock is a POSIX ``lockf`` lock, which network file systems honour through
-    their lock daemon; on a file system whose lock daemon has hung, the call
-    waits for it.
+    their lock daemon. It is only ever tried, never waited for: a waiting request
+    is granted by a call back from the lock daemon, which on a busy cluster may
+    not come for many seconds, and meanwhile the calling process -- an Evaluator
+    taking in results, say -- does nothing else.
     """
     path = timing_path(program, directory)
     path.parent.mkdir(parents=True, exist_ok=True)
     fieldnames = list(fieldnames or row.keys())
-    clean = {
-        k: ("" if v is None else str(v).replace("\r", " ").replace("\n", " "))
-        for k, v in row.items()
-    }
+    clean = _clean(row)
+    deadline = time.monotonic() + max(lock_wait, 0.0)
     for _ in range(10):
         with open(path, "a+", newline="") as fd:
-            _lock(fd)
+            if not _lock(fd, deadline):
+                return _append_pending(program, clean, fieldnames, directory)
             try:
                 # Another writer may have set the file aside while this one
                 # waited for the lock: then this is the old file, not the file
@@ -123,6 +160,16 @@ def append_timing(program, row, fieldnames=None, directory=None, max_bytes=MAX_B
                         continue
                 except FileNotFoundError:
                     continue
+                # This process's rows that could not be written earlier go first
+                pending = _own_pending(program, directory)
+                rows = []
+                for p in pending:
+                    try:
+                        with open(p, newline="") as fd_p:
+                            rows.extend(_clean(r) for r in csv.DictReader(fd_p))
+                    except OSError:
+                        pass
+                rows.append(clean)
                 fd.seek(0, os.SEEK_END)
                 if fd.tell() > max_bytes:
                     aside = _aside_name(path)
@@ -130,15 +177,19 @@ def append_timing(program, row, fieldnames=None, directory=None, max_bytes=MAX_B
                     logger.info(f"Set the timing file aside as {aside}")
                     continue  # and write to a new file
                 if fd.tell() == 0:
-                    header = fieldnames
+                    header = list(fieldnames)
+                    for r in rows:
+                        header.extend(k for k in r if k not in header)
                     text = io.StringIO()
                     csv.writer(text).writerow(header)
-                    fd.write(text.getvalue())
                 else:
                     fd.seek(0)
                     header = next(csv.reader([fd.readline()]), fieldnames)
                     fd.seek(0, os.SEEK_END)
-                extra = [k for k in clean if k not in header]
+                    text = io.StringIO()
+                extra = []
+                for r in rows:
+                    extra.extend(k for k in r if k not in header and k not in extra)
                 if extra:
                     aside = _aside_name(path)
                     os.replace(path, aside)
@@ -147,17 +198,88 @@ def append_timing(program, row, fieldnames=None, directory=None, max_bytes=MAX_B
                     )
                     fieldnames = list(header) + extra
                     continue  # and write to a new file with the wider header
-                text = io.StringIO()
-                csv.DictWriter(text, fieldnames=header, extrasaction="ignore").writerow(
-                    clean
-                )
-                fd.write(text.getvalue())  # one write: one line
+                writer = csv.DictWriter(text, fieldnames=header, extrasaction="ignore")
+                for r in rows:
+                    writer.writerow(r)
+                fd.write(text.getvalue())  # one write: whole lines
                 fd.flush()
                 os.fsync(fd.fileno())
+                for p in pending:
+                    try:
+                        p.unlink()
+                    except OSError:
+                        pass
                 return path
             finally:
                 _unlock(fd)
     raise RuntimeError(f"Could not write to the timing file {path}")
+
+
+def _clean(row):
+    """The row's values as text on one line."""
+    return {
+        k: ("" if v is None else str(v).replace("\r", " ").replace("\n", " "))
+        for k, v in row.items()
+        if k is not None  # the overflow of a malformed line, from csv.DictReader
+    }
+
+
+def _writer_name():
+    """This process's name among the writers: ``<host>-<pid>``."""
+    host = socket.gethostname().split(".")[0] or "host"
+    return f"{host}-{os.getpid()}"
+
+
+def _own_pending(program, directory=None):
+    """This process's files of rows waiting for the lock."""
+    pending = pending_directory(program, directory)
+    name = _writer_name()
+    try:
+        paths = [
+            p
+            for p in pending.glob(f"{name}*.csv")
+            if p.stem == name or p.stem[len(name) + 1 :].isdigit()
+        ]
+    except OSError:
+        return []
+    # In the order written: <name>.csv, <name>-1.csv, <name>-2.csv, ...
+    return sorted(paths, key=lambda p: int(p.stem[len(name) + 1 :] or 0))
+
+
+def _append_pending(program, clean, fieldnames, directory=None):
+    """Append a row to this process's own file in ``<program>.pending/``.
+
+    Only this process writes the file, so it needs no lock. A row with columns
+    the file's header lacks goes to the next file, ``<host>-<pid>-<n>.csv``.
+    """
+    pending = pending_directory(program, directory)
+    pending.mkdir(parents=True, exist_ok=True)
+    name = _writer_name()
+    n = 0
+    while True:
+        path = pending / (f"{name}.csv" if n == 0 else f"{name}-{n}.csv")
+        with open(path, "a+", newline="") as fd:
+            fd.seek(0, os.SEEK_END)
+            text = io.StringIO()
+            if fd.tell() == 0:
+                header = list(fieldnames)
+                header.extend(k for k in clean if k not in header)
+                csv.writer(text).writerow(header)
+            else:
+                fd.seek(0)
+                header = next(csv.reader([fd.readline()]), fieldnames)
+                fd.seek(0, os.SEEK_END)
+                if any(k not in header for k in clean):
+                    n += 1
+                    continue
+            csv.DictWriter(text, fieldnames=header, extrasaction="ignore").writerow(
+                clean
+            )
+            fd.write(text.getvalue())
+            fd.flush()
+            os.fsync(fd.fileno())
+        logger.debug(f"The timing file was busy: wrote the row to {path}")
+        return path
 
 
 def _aside_name(path):
@@ -176,7 +298,9 @@ def read_timings(program, directory=None, all_files=False):
 
     ``all_files=True`` also reads the files set aside
     (``<program>-<stamp>.csv``), oldest first, as a fit does; their columns may
-    differ, so a row only has the keys of its own file.
+    differ, so a row only has the keys of its own file. The rows still waiting in
+    ``<program>.pending/`` for writers to move them in (see
+    :func:`append_timing`) are always read, after the timing file's.
     """
     path = timing_path(program, directory)
     paths = []
@@ -192,6 +316,13 @@ def read_timings(program, directory=None, all_files=False):
     for p in paths:
         with open(p, newline="") as fd:
             rows.extend(csv.DictReader(fd))
+    for p in pending_paths(program, directory):
+        # Its writer may have just moved it into the timing file
+        try:
+            with open(p, newline="") as fd:
+                rows.extend(csv.DictReader(fd))
+        except FileNotFoundError:
+            pass
     return rows
 
 
@@ -538,15 +669,33 @@ def _flag(value):
     return "" if value is None else int(bool(value))
 
 
-def _lock(fd):
-    """An exclusive POSIX lock (``lockf``, which network file systems honour
-    through their lock daemon, unlike ``flock``)."""
+def _lock(fd, deadline):
+    """Try for an exclusive POSIX lock (``lockf``, which network file systems
+    honour through their lock daemon, unlike ``flock``) until ``deadline``
+    (``time.monotonic()``).
+
+    Returns False if another process held it all that time; True if this process
+    has it, or if the file system has no locks, which leaves the file unlocked as
+    before.
+    """
     try:
         import fcntl
-
-        fcntl.lockf(fd.fileno(), fcntl.LOCK_EX)
-    except (ImportError, OSError) as e:
-        logger.debug(f"Could not lock the timing file: {e}")
+    except ImportError:
+        return True
+    delay = 0.02
+    while True:
+        try:
+            fcntl.lockf(fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            return True
+        except OSError as e:
+            if e.errno not in (errno.EACCES, errno.EAGAIN):
+                logger.debug(f"Could not lock the timing file: {e}")
+                return True
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            return False
+        time.sleep(min(remaining, delay * random.uniform(0.5, 1.5)))
+        delay = min(2 * delay, 0.25)
 
 
 def _unlock(fd):
