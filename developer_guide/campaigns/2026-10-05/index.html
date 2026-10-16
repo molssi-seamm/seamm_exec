@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>2026-10-05 – Predicting the time of calculations from timing records &#8212; SEAMM seamm-exec Plug-in 2026.10.15 documentation</title>
+    <title>2026-10-05 – Predicting the time of calculations from timing records &#8212; SEAMM seamm-exec Plug-in 2026.10.16 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../../_static/documentation_options.js?v=6d569a1a"></script>
+    <script src="../../../_static/documentation_options.js?v=5aae1070"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.15" />
+  <meta name="docsearch:version" content="2026.10.16" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -679,6 +679,14 @@ aside and a new one begun with the new header, instead of the columns being
 dropped. So a schema change starts a new file and the fit reads every file for
 a program, current and set aside, keeping the rows whose <code class="docutils literal notranslate"><span class="pre">schema</span></code> it
 understands.</p>
+<p>Later change (2026-10-16): the lock is only tried, for up to a second, never
+waited for. On Owl the 23 Evaluators of a wave all sat in the NFS lock daemon’s
+queue for <code class="docutils literal notranslate"><span class="pre">orca.csv</span></code> (a waiting lock is granted by a call back that often did not
+come, leaving ~30 s retries), and one row per wait capped how fast the wave took
+in results. A writer that does not get the lock appends its row, unlocked, to its
+own file <code class="docutils literal notranslate"><span class="pre">&lt;program&gt;.pending/&lt;host&gt;-&lt;pid&gt;.csv</span></code>, and moves those rows into the
+shared file in the same single write the next time it gets the lock.
+<code class="docutils literal notranslate"><span class="pre">read_timings</span></code> and the model’s <code class="docutils literal notranslate"><span class="pre">records_state</span></code> include the pending files.</p>
 </section>
 <section id="the-machine-class">
 <h2>2. The machine class<a class="headerlink" href="#the-machine-class" title="Link to this heading">#</a></h2>

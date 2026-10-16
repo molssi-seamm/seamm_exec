@@ -154,6 +154,15 @@ dropped. So a schema change starts a new file and the fit reads every file for
 a program, current and set aside, keeping the rows whose ``schema`` it
 understands.
 
+Later change (2026-10-16): the lock is only tried, for up to a second, never
+waited for. On Owl the 23 Evaluators of a wave all sat in the NFS lock daemon's
+queue for ``orca.csv`` (a waiting lock is granted by a call back that often did not
+come, leaving ~30 s retries), and one row per wait capped how fast the wave took
+in results. A writer that does not get the lock appends its row, unlocked, to its
+own file ``<program>.pending/<host>-<pid>.csv``, and moves those rows into the
+shared file in the same single write the next time it gets the lock.
+``read_timings`` and the model's ``records_state`` include the pending files.
+
 2. The machine class
 --------------------
 

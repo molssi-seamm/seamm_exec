@@ -309,8 +309,11 @@ the kind of task, the method's class, basis functions, electrons, atoms, how
 crowded the structure is (``neighbours``, the mean number of atoms within 8 Å),
 the iterations taken, the code's own time. A task run in a queue bundle gets its
 wall time from the worker on the node that ran it. A file is set aside when it grows past
-50 MB or when the columns change, and many runs may append at once. The design
-is in ``docs/developer_guide/campaigns/2026-10-05``.
+50 MB or when the columns change, and many runs may append at once. A run never
+waits long for another to finish writing: if the file stays locked for a second, its
+row goes to a file of its own in ``~/.seamm.d/timing/<program>.pending/``, which
+it moves into the shared file the next time it writes one. Reading the records
+includes these rows. The design is in ``docs/developer_guide/campaigns/2026-10-05``.
 
 The fit is a power law in the size variables a step declares, with an offset per
 method class, task and machine, and a parallel exponent that grows with size. Each

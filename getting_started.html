@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.15 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.16 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="_static/documentation_options.js?v=6d569a1a"></script>
+    <script src="_static/documentation_options.js?v=5aae1070"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.15" />
+  <meta name="docsearch:version" content="2026.10.16" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -729,8 +729,11 @@ the kind of task, the method’s class, basis functions, electrons, atoms, how
 crowded the structure is (<code class="docutils literal notranslate"><span class="pre">neighbours</span></code>, the mean number of atoms within 8 Å),
 the iterations taken, the code’s own time. A task run in a queue bundle gets its
 wall time from the worker on the node that ran it. A file is set aside when it grows past
-50 MB or when the columns change, and many runs may append at once. The design
-is in <code class="docutils literal notranslate"><span class="pre">docs/developer_guide/campaigns/2026-10-05</span></code>.</p>
+50 MB or when the columns change, and many runs may append at once. A run never
+waits long for another to finish writing: if the file stays locked for a second, its
+row goes to a file of its own in <code class="docutils literal notranslate"><span class="pre">~/.seamm.d/timing/&lt;program&gt;.pending/</span></code>, which
+it moves into the shared file the next time it writes one. Reading the records
+includes these rows. The design is in <code class="docutils literal notranslate"><span class="pre">docs/developer_guide/campaigns/2026-10-05</span></code>.</p>
 <p>The fit is a power law in the size variables a step declares, with an offset per
 method class, task and machine, and a parallel exponent that grows with size. Each
 run counts in proportion to its time, so the fit is best where the time is. Every

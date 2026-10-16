@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.15 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.16 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=6d569a1a"></script>
+    <script src="../_static/documentation_options.js?v=5aae1070"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.15" />
+  <meta name="docsearch:version" content="2026.10.16" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -2456,9 +2456,13 @@ already keep), which are fitted to estimate the cost of later calculations.
 Many runs append to the same file at once – on a cluster from many nodes, on a
 network file system – so rows are written under a lock and in one write, and the
 file is set aside when it grows past a size instead of growing without bound
-(vasp-step#18). Rows should hold numbers that characterize the calculation
-(atoms, electrons, basis or cutoff, k-points, cores, node, wall time), not its
-input files.</p>
+(vasp-step#18). A writer never waits long for the lock: if the file stays busy it
+writes the row to a file of its own in <code class="docutils literal notranslate"><span class="pre">&lt;program&gt;.pending/</span></code>, and moves its rows
+into the shared file the next time it gets the lock. Waiting on a network file
+system’s lock daemon held up every Evaluator of a cluster in turn, capping how
+fast it could take in its results. Rows should hold numbers that characterize the
+calculation (atoms, electrons, basis or cutoff, k-points, cores, node, wall time),
+not its input files.</p>
 <p>A code step writes its row with <a class="reference internal" href="#seamm_exec.timing.record_task_timing" title="seamm_exec.timing.record_task_timing"><code class="xref py py-func docutils literal notranslate"><span class="pre">record_task_timing()</span></code></a> once it has run a
 <code class="xref py py-class docutils literal notranslate"><span class="pre">seamm_exec.Task</span></code> and parsed the output: the common columns (the machine
 class, the task’s resources, the wall time from the task manifest, the outcome)
@@ -2475,6 +2479,12 @@ the model fitted to the rows and the descriptors each code records are in
 <dt class="sig sig-object py" id="seamm_exec.timing.DEFAULT_DIRECTORY">
 <span class="sig-prename descclassname"><span class="pre">seamm_exec.timing.</span></span><span class="sig-name descname"><span class="pre">DEFAULT_DIRECTORY</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">PosixPath('~/.seamm.d/timing')</span></span><a class="headerlink" href="#seamm_exec.timing.DEFAULT_DIRECTORY" title="Link to this definition">#</a></dt>
 <dd><p>Where the timing files are</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing.LOCK_WAIT">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing.</span></span><span class="sig-name descname"><span class="pre">LOCK_WAIT</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.0</span></span><a class="headerlink" href="#seamm_exec.timing.LOCK_WAIT" title="Link to this definition">#</a></dt>
+<dd><p>How long a writer tries for the lock before writing to its own file, in seconds</p>
 </dd></dl>
 
 <dl class="py data">
@@ -2503,7 +2513,7 @@ the model fitted to the rows and the descriptors each code records are in
 
 <dl class="py function">
 <dt class="sig sig-object py" id="seamm_exec.timing.append_timing">
-<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing.</span></span><span class="sig-name descname"><span class="pre">append_timing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fieldnames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_bytes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">52428800</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing.html#append_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing.append_timing" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing.</span></span><span class="sig-name descname"><span class="pre">append_timing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fieldnames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_bytes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">52428800</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lock_wait</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing.html#append_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing.append_timing" title="Link to this definition">#</a></dt>
 <dd><p>Append one timing row for <code class="docutils literal notranslate"><span class="pre">program</span></code>, safely with concurrent writers.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2519,6 +2529,11 @@ schema never loses columns and never mixes two schemas in one file.</p></li>
 <li><p><strong>directory</strong> (<em>str</em><em> or </em><em>Path</em><em>, </em><em>optional</em>) – Default <code class="docutils literal notranslate"><span class="pre">~/.seamm.d/timing</span></code>.</p></li>
 <li><p><strong>max_bytes</strong> (<em>int</em>) – Set the file aside, as <code class="docutils literal notranslate"><span class="pre">&lt;program&gt;-&lt;YYYYmmdd-HHMMSS&gt;[-n].csv</span></code>, when it is
 larger than this.</p></li>
+<li><p><strong>lock_wait</strong> (<em>float</em>) – How long to try for the lock, in seconds. If another writer holds it all
+that time, the row goes to this process’s own file in
+<code class="docutils literal notranslate"><span class="pre">&lt;program&gt;.pending/</span></code> (see <a class="reference internal" href="#seamm_exec.timing.pending_paths" title="seamm_exec.timing.pending_paths"><code class="xref py py-func docutils literal notranslate"><span class="pre">pending_paths()</span></code></a>), which needs no lock.
+Rows waiting there are moved into the timing file, in the same single
+write, the next time this process gets the lock.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2530,8 +2545,11 @@ larger than this.</p></li>
 </dl>
 <p class="rubric">Notes</p>
 <p>The lock is a POSIX <code class="docutils literal notranslate"><span class="pre">lockf</span></code> lock, which network file systems honour through
-their lock daemon; on a file system whose lock daemon has hung, the call
-waits for it.</p>
+their lock daemon. It is only ever tried, never waited for: a waiting request
+is granted by a call back from the lock daemon, which on a busy cluster may
+not come for many seconds, and meanwhile the calling process – an Evaluator
+taking in results, say – does nothing else. The lock is the process’s, so
+the threads of a process take turns here.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -2571,12 +2589,26 @@ even for 100,000 atoms. Returns a float, or None for a lone atom (no cell).</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing.pending_directory">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing.</span></span><span class="sig-name descname"><span class="pre">pending_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing.html#pending_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing.pending_directory" title="Link to this definition">#</a></dt>
+<dd><p>Where writers that could not get the lock put their rows, a file each.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing.pending_paths">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing.</span></span><span class="sig-name descname"><span class="pre">pending_paths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing.html#pending_paths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing.pending_paths" title="Link to this definition">#</a></dt>
+<dd><p>The files of rows waiting to be moved into <code class="docutils literal notranslate"><span class="pre">program</span></code>’s timing file.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="seamm_exec.timing.read_timings">
 <span class="sig-prename descclassname"><span class="pre">seamm_exec.timing.</span></span><span class="sig-name descname"><span class="pre">read_timings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing.html#read_timings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing.read_timings" title="Link to this definition">#</a></dt>
 <dd><p>The rows of <code class="docutils literal notranslate"><span class="pre">program</span></code>’s timing file, as dicts.</p>
 <p><code class="docutils literal notranslate"><span class="pre">all_files=True</span></code> also reads the files set aside
 (<code class="docutils literal notranslate"><span class="pre">&lt;program&gt;-&lt;stamp&gt;.csv</span></code>), oldest first, as a fit does; their columns may
-differ, so a row only has the keys of its own file.</p>
+differ, so a row only has the keys of its own file. The rows still waiting in
+<code class="docutils literal notranslate"><span class="pre">&lt;program&gt;.pending/</span></code> for writers to move them in (see
+<a class="reference internal" href="#seamm_exec.timing.append_timing" title="seamm_exec.timing.append_timing"><code class="xref py py-func docutils literal notranslate"><span class="pre">append_timing()</span></code></a>) are always read, after the timing file’s.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -3126,8 +3158,8 @@ size variable.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="seamm_exec.timing_model.records_state">
 <span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_model.</span></span><span class="sig-name descname"><span class="pre">records_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_model.html#records_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_model.records_state" title="Link to this definition">#</a></dt>
-<dd><p><code class="docutils literal notranslate"><span class="pre">(bytes,</span> <span class="pre">mtime)</span></code> over the program’s record files, current and set
-aside: a cheap measure of how much the records have grown (no read).</p>
+<dd><p><code class="docutils literal notranslate"><span class="pre">(bytes,</span> <span class="pre">mtime)</span></code> over the program’s record files, current, set aside
+and pending: a cheap measure of how much the records have grown (no read).</p>
 </dd></dl>
 
 <dl class="py function">
@@ -3521,6 +3553,7 @@ raises.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.timing">seamm_exec.timing module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing.COMMON_COLUMNS"><code class="docutils literal notranslate"><span class="pre">COMMON_COLUMNS</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing.DEFAULT_DIRECTORY"><code class="docutils literal notranslate"><span class="pre">DEFAULT_DIRECTORY</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing.LOCK_WAIT"><code class="docutils literal notranslate"><span class="pre">LOCK_WAIT</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing.MAX_BYTES"><code class="docutils literal notranslate"><span class="pre">MAX_BYTES</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing.NEIGHBOUR_RADIUS"><code class="docutils literal notranslate"><span class="pre">NEIGHBOUR_RADIUS</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing.NEIGHBOUR_SAMPLE"><code class="docutils literal notranslate"><span class="pre">NEIGHBOUR_SAMPLE</span></code></a></li>
@@ -3528,6 +3561,8 @@ raises.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing.append_timing"><code class="docutils literal notranslate"><span class="pre">append_timing()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing.machine_class"><code class="docutils literal notranslate"><span class="pre">machine_class()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing.neighbour_count"><code class="docutils literal notranslate"><span class="pre">neighbour_count()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing.pending_directory"><code class="docutils literal notranslate"><span class="pre">pending_directory()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing.pending_paths"><code class="docutils literal notranslate"><span class="pre">pending_paths()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing.read_timings"><code class="docutils literal notranslate"><span class="pre">read_timings()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing.record_task_timing"><code class="docutils literal notranslate"><span class="pre">record_task_timing()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing.record_timing"><code class="docutils literal notranslate"><span class="pre">record_timing()</span></code></a></li>

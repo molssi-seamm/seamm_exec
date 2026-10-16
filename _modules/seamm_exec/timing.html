@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.timing &#8212; SEAMM seamm-exec Plug-in 2026.10.15 documentation</title>
+    <title>seamm_exec.timing &#8212; SEAMM seamm-exec Plug-in 2026.10.16 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=6d569a1a"></script>
+    <script src="../../_static/documentation_options.js?v=5aae1070"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.15" />
+  <meta name="docsearch:version" content="2026.10.16" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -438,9 +438,13 @@
 <span class="sd">Many runs append to the same file at once -- on a cluster from many nodes, on a</span>
 <span class="sd">network file system -- so rows are written under a lock and in one write, and the</span>
 <span class="sd">file is set aside when it grows past a size instead of growing without bound</span>
-<span class="sd">(vasp-step#18). Rows should hold numbers that characterize the calculation</span>
-<span class="sd">(atoms, electrons, basis or cutoff, k-points, cores, node, wall time), not its</span>
-<span class="sd">input files.</span>
+<span class="sd">(vasp-step#18). A writer never waits long for the lock: if the file stays busy it</span>
+<span class="sd">writes the row to a file of its own in ``&lt;program&gt;.pending/``, and moves its rows</span>
+<span class="sd">into the shared file the next time it gets the lock. Waiting on a network file</span>
+<span class="sd">system's lock daemon held up every Evaluator of a cluster in turn, capping how</span>
+<span class="sd">fast it could take in its results. Rows should hold numbers that characterize the</span>
+<span class="sd">calculation (atoms, electrons, basis or cutoff, k-points, cores, node, wall time),</span>
+<span class="sd">not its input files.</span>
 
 <span class="sd">A code step writes its row with :func:`record_task_timing` once it has run a</span>
 <span class="sd">:class:`seamm_exec.Task` and parsed the output: the common columns (the machine</span>
@@ -456,10 +460,13 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">csv</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">errno</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"seamm-exec"</span><span class="p">)</span>
@@ -468,6 +475,12 @@
 <span class="n">DEFAULT_DIRECTORY</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"~/.seamm.d/timing"</span><span class="p">)</span>
 <span class="c1">#: A file larger than this is set aside (renamed with the date) and begun again</span>
 <span class="n">MAX_BYTES</span> <span class="o">=</span> <span class="mi">50</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>
+<span class="c1">#: How long a writer tries for the lock before writing to its own file, in seconds</span>
+<span class="n">LOCK_WAIT</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="c1"># POSIX locks belong to the process, not to a thread or a file descriptor, and the</span>
+<span class="c1"># threads of a process share its pending file, so its threads write one at a time.</span>
+<span class="n">_thread_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+<span class="n">_warned_no_lock</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="c1">#: The version of the record written by :func:`record_task_timing`</span>
 <span class="n">SCHEMA</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="c1">#: The common columns of a record, before the step's descriptors</span>
@@ -504,9 +517,37 @@
 
 
 
+<div class="viewcode-block" id="pending_directory">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing.pending_directory">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">pending_directory</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Where writers that could not get the lock put their rows, a file each."""</span>
+    <span class="n">directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span> <span class="ow">or</span> <span class="n">DEFAULT_DIRECTORY</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">directory</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">program</span><span class="si">}</span><span class="s2">.pending"</span></div>
+
+
+
+<div class="viewcode-block" id="pending_paths">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing.pending_paths">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">pending_paths</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The files of rows waiting to be moved into ``program``'s timing file."""</span>
+    <span class="n">pending</span> <span class="o">=</span> <span class="n">pending_directory</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">pending</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"*.csv"</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
+
+
+
 <div class="viewcode-block" id="append_timing">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing.append_timing">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">append_timing</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_bytes</span><span class="o">=</span><span class="n">MAX_BYTES</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">append_timing</span><span class="p">(</span>
+    <span class="n">program</span><span class="p">,</span>
+    <span class="n">row</span><span class="p">,</span>
+    <span class="n">fieldnames</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">max_bytes</span><span class="o">=</span><span class="n">MAX_BYTES</span><span class="p">,</span>
+    <span class="n">lock_wait</span><span class="o">=</span><span class="n">LOCK_WAIT</span><span class="p">,</span>
+<span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Append one timing row for ``program``, safely with concurrent writers.</span>
 
 <span class="sd">    Parameters</span>
@@ -527,6 +568,12 @@
 <span class="sd">    max_bytes : int</span>
 <span class="sd">        Set the file aside, as ``&lt;program&gt;-&lt;YYYYmmdd-HHMMSS&gt;[-n].csv``, when it is</span>
 <span class="sd">        larger than this.</span>
+<span class="sd">    lock_wait : float</span>
+<span class="sd">        How long to try for the lock, in seconds. If another writer holds it all</span>
+<span class="sd">        that time, the row goes to this process's own file in</span>
+<span class="sd">        ``&lt;program&gt;.pending/`` (see :func:`pending_paths`), which needs no lock.</span>
+<span class="sd">        Rows waiting there are moved into the timing file, in the same single</span>
+<span class="sd">        write, the next time this process gets the lock.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -536,19 +583,28 @@
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
 <span class="sd">    The lock is a POSIX ``lockf`` lock, which network file systems honour through</span>
-<span class="sd">    their lock daemon; on a file system whose lock daemon has hung, the call</span>
-<span class="sd">    waits for it.</span>
+<span class="sd">    their lock daemon. It is only ever tried, never waited for: a waiting request</span>
+<span class="sd">    is granted by a call back from the lock daemon, which on a busy cluster may</span>
+<span class="sd">    not come for many seconds, and meanwhile the calling process -- an Evaluator</span>
+<span class="sd">    taking in results, say -- does nothing else. The lock is the process's, so</span>
+<span class="sd">    the threads of a process take turns here.</span>
 <span class="sd">    """</span>
+    <span class="k">with</span> <span class="n">_thread_lock</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_append_timing</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">fieldnames</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">max_bytes</span><span class="p">,</span> <span class="n">lock_wait</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_append_timing</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">fieldnames</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">max_bytes</span><span class="p">,</span> <span class="n">lock_wait</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">""":func:`append_timing`, with this process's other threads kept out."""</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">timing_path</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
     <span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">fieldnames</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">fieldnames</span> <span class="ow">or</span> <span class="n">row</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-    <span class="n">clean</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="n">k</span><span class="p">:</span> <span class="p">(</span><span class="s2">""</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="se">\r</span><span class="s2">"</span><span class="p">,</span> <span class="s2">" "</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="s2">" "</span><span class="p">))</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">row</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-    <span class="p">}</span>
+    <span class="n">clean</span> <span class="o">=</span> <span class="n">_clean</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+    <span class="n">deadline</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="n">lock_wait</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"a+"</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">""</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
-            <span class="n">_lock</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">_lock</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">deadline</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">_append_pending</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">clean</span><span class="p">,</span> <span class="n">fieldnames</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="c1"># Another writer may have set the file aside while this one</span>
                 <span class="c1"># waited for the lock: then this is the old file, not the file</span>
@@ -558,6 +614,16 @@
                         <span class="k">continue</span>
                 <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
                     <span class="k">continue</span>
+                <span class="c1"># This process's rows that could not be written earlier go first</span>
+                <span class="n">pending</span> <span class="o">=</span> <span class="n">_own_pending</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
+                <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pending</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">""</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd_p</span><span class="p">:</span>
+                            <span class="n">rows</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">_clean</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictReader</span><span class="p">(</span><span class="n">fd_p</span><span class="p">))</span>
+                    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                        <span class="k">pass</span>
+                <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">clean</span><span class="p">)</span>
                 <span class="n">fd</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">SEEK_END</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">fd</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">max_bytes</span><span class="p">:</span>
                     <span class="n">aside</span> <span class="o">=</span> <span class="n">_aside_name</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
@@ -565,15 +631,19 @@
                     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Set the timing file aside as </span><span class="si">{</span><span class="n">aside</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                     <span class="k">continue</span>  <span class="c1"># and write to a new file</span>
                 <span class="k">if</span> <span class="n">fd</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">header</span> <span class="o">=</span> <span class="n">fieldnames</span>
+                    <span class="n">header</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">fieldnames</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+                        <span class="n">header</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">r</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">header</span><span class="p">)</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
                     <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">text</span><span class="p">)</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
-                    <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">fd</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
                     <span class="n">header</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">([</span><span class="n">fd</span><span class="o">.</span><span class="n">readline</span><span class="p">()]),</span> <span class="n">fieldnames</span><span class="p">)</span>
                     <span class="n">fd</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">SEEK_END</span><span class="p">)</span>
-                <span class="n">extra</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">clean</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">header</span><span class="p">]</span>
+                    <span class="n">text</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
+                <span class="n">extra</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+                    <span class="n">extra</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">r</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">header</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">extra</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">extra</span><span class="p">:</span>
                     <span class="n">aside</span> <span class="o">=</span> <span class="n">_aside_name</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
                     <span class="n">os</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">aside</span><span class="p">)</span>
@@ -582,18 +652,88 @@
                     <span class="p">)</span>
                     <span class="n">fieldnames</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">header</span><span class="p">)</span> <span class="o">+</span> <span class="n">extra</span>
                     <span class="k">continue</span>  <span class="c1"># and write to a new file with the wider header</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
-                <span class="n">csv</span><span class="o">.</span><span class="n">DictWriter</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="n">header</span><span class="p">,</span> <span class="n">extrasaction</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">)</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span>
-                    <span class="n">clean</span>
-                <span class="p">)</span>
-                <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>  <span class="c1"># one write: one line</span>
+                <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictWriter</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="n">header</span><span class="p">,</span> <span class="n">extrasaction</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+                    <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+                <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>  <span class="c1"># one write: whole lines</span>
                 <span class="n">fd</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">fsync</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">fileno</span><span class="p">())</span>
+                <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pending</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">p</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+                    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                        <span class="k">pass</span>
                 <span class="k">return</span> <span class="n">path</span>
             <span class="k">finally</span><span class="p">:</span>
                 <span class="n">_unlock</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
-    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not write to the timing file </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
+    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not write to the timing file </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_clean</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The row's values as text on one line."""</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="p">(</span><span class="s2">""</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="se">\r</span><span class="s2">"</span><span class="p">,</span> <span class="s2">" "</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="s2">" "</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">row</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>  <span class="c1"># the overflow of a malformed line, from csv.DictReader</span>
+    <span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_writer_name</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""This process's name among the writers: ``&lt;host&gt;-&lt;pid&gt;``."""</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"."</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="s2">"host"</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_own_pending</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""This process's files of rows waiting for the lock."""</span>
+    <span class="n">pending</span> <span class="o">=</span> <span class="n">pending_directory</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_writer_name</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">p</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pending</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">*.csv"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">stem</span> <span class="o">==</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">p</span><span class="o">.</span><span class="n">stem</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span>
+        <span class="p">]</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="c1"># In the order written: &lt;name&gt;.csv, &lt;name&gt;-1.csv, &lt;name&gt;-2.csv, ...</span>
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">stem</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_append_pending</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">clean</span><span class="p">,</span> <span class="n">fieldnames</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Append a row to this process's own file in ``&lt;program&gt;.pending/``.</span>
+
+<span class="sd">    Only this process writes the file, so it needs no lock. A row with columns</span>
+<span class="sd">    the file's header lacks goes to the next file, ``&lt;host&gt;-&lt;pid&gt;-&lt;n&gt;.csv``.</span>
+<span class="sd">    """</span>
+    <span class="n">pending</span> <span class="o">=</span> <span class="n">pending_directory</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
+    <span class="n">pending</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_writer_name</span><span class="p">()</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">pending</span> <span class="o">/</span> <span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.csv"</span> <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">.csv"</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"a+"</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">""</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+            <span class="n">fd</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">SEEK_END</span><span class="p">)</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">fd</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">header</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">fieldnames</span><span class="p">)</span>
+                <span class="n">header</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">clean</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">header</span><span class="p">)</span>
+                <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">text</span><span class="p">)</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fd</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">header</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">([</span><span class="n">fd</span><span class="o">.</span><span class="n">readline</span><span class="p">()]),</span> <span class="n">fieldnames</span><span class="p">)</span>
+                <span class="n">fd</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">SEEK_END</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">header</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">clean</span><span class="p">):</span>
+                    <span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">continue</span>
+            <span class="n">csv</span><span class="o">.</span><span class="n">DictWriter</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="n">header</span><span class="p">,</span> <span class="n">extrasaction</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">)</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span>
+                <span class="n">clean</span>
+            <span class="p">)</span>
+            <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>
+            <span class="n">fd</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">fsync</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">fileno</span><span class="p">())</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The timing file was busy: wrote the row to </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">path</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_aside_name</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
@@ -614,7 +754,9 @@
 
 <span class="sd">    ``all_files=True`` also reads the files set aside</span>
 <span class="sd">    (``&lt;program&gt;-&lt;stamp&gt;.csv``), oldest first, as a fit does; their columns may</span>
-<span class="sd">    differ, so a row only has the keys of its own file.</span>
+<span class="sd">    differ, so a row only has the keys of its own file. The rows still waiting in</span>
+<span class="sd">    ``&lt;program&gt;.pending/`` for writers to move them in (see</span>
+<span class="sd">    :func:`append_timing`) are always read, after the timing file's.</span>
 <span class="sd">    """</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">timing_path</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
     <span class="n">paths</span> <span class="o">=</span> <span class="p">[]</span>
@@ -630,6 +772,13 @@
     <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">""</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
             <span class="n">rows</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">csv</span><span class="o">.</span><span class="n">DictReader</span><span class="p">(</span><span class="n">fd</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pending_paths</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+        <span class="c1"># Its writer may have just moved it into the timing file</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">""</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+                <span class="n">rows</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">csv</span><span class="o">.</span><span class="n">DictReader</span><span class="p">(</span><span class="n">fd</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+            <span class="k">pass</span>
     <span class="k">return</span> <span class="n">rows</span></div>
 
 
@@ -995,15 +1144,37 @@
     <span class="k">return</span> <span class="s2">""</span> <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_lock</span><span class="p">(</span><span class="n">fd</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""An exclusive POSIX lock (``lockf``, which network file systems honour</span>
-<span class="sd">    through their lock daemon, unlike ``flock``)."""</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_lock</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">deadline</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Try for an exclusive POSIX lock (``lockf``, which network file systems</span>
+<span class="sd">    honour through their lock daemon, unlike ``flock``) until ``deadline``</span>
+<span class="sd">    (``time.monotonic()``).</span>
+
+<span class="sd">    Returns False if another process held it all that time; True if this process</span>
+<span class="sd">    has it, or if the file system has no locks, which leaves the file unlocked as</span>
+<span class="sd">    before.</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">fcntl</span>
-
-        <span class="n">fcntl</span><span class="o">.</span><span class="n">lockf</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">fcntl</span><span class="o">.</span><span class="n">LOCK_EX</span><span class="p">)</span>
-    <span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not lock the timing file: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="n">delay</span> <span class="o">=</span> <span class="mf">0.02</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">fcntl</span><span class="o">.</span><span class="n">lockf</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">fcntl</span><span class="o">.</span><span class="n">LOCK_EX</span> <span class="o">|</span> <span class="n">fcntl</span><span class="o">.</span><span class="n">LOCK_NB</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">errno</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">errno</span><span class="o">.</span><span class="n">EACCES</span><span class="p">,</span> <span class="n">errno</span><span class="o">.</span><span class="n">EAGAIN</span><span class="p">):</span>
+                <span class="c1"># e.g. ENOLCK when a network file system's lock daemon is down</span>
+                <span class="k">global</span> <span class="n">_warned_no_lock</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">_warned_no_lock</span><span class="p">:</span>
+                    <span class="n">_warned_no_lock</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Writing the timing file without a lock: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="n">remaining</span> <span class="o">=</span> <span class="n">deadline</span> <span class="o">-</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">remaining</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">remaining</span><span class="p">,</span> <span class="n">delay</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">)))</span>
+        <span class="n">delay</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">delay</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_unlock</span><span class="p">(</span><span class="n">fd</span><span class="p">):</span>

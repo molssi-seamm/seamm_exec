@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.timing_model &#8212; SEAMM seamm-exec Plug-in 2026.10.15 documentation</title>
+    <title>seamm_exec.timing_model &#8212; SEAMM seamm-exec Plug-in 2026.10.16 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=6d569a1a"></script>
+    <script src="../../_static/documentation_options.js?v=5aae1070"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.15" />
+  <meta name="docsearch:version" content="2026.10.16" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -473,7 +473,7 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">.timing</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_DIRECTORY</span><span class="p">,</span> <span class="n">machine_class</span><span class="p">,</span> <span class="n">read_timings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.timing</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_DIRECTORY</span><span class="p">,</span> <span class="n">machine_class</span><span class="p">,</span> <span class="n">pending_paths</span><span class="p">,</span> <span class="n">read_timings</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"seamm-exec"</span><span class="p">)</span>
 
@@ -767,15 +767,17 @@
 <div class="viewcode-block" id="records_state">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_model.records_state">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">records_state</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""``(bytes, mtime)`` over the program's record files, current and set</span>
-<span class="sd">    aside: a cheap measure of how much the records have grown (no read)."""</span>
+<span class="w">    </span><span class="sd">"""``(bytes, mtime)`` over the program's record files, current, set aside</span>
+<span class="sd">    and pending: a cheap measure of how much the records have grown (no read)."""</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span> <span class="ow">or</span> <span class="n">DEFAULT_DIRECTORY</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
     <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">latest</span> <span class="o">=</span> <span class="mf">0.0</span>
-    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">program</span><span class="si">}</span><span class="s2">*.csv"</span><span class="p">):</span>
-        <span class="n">stem</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">stem</span>
-        <span class="k">if</span> <span class="n">stem</span> <span class="o">!=</span> <span class="n">program</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">stem</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">program</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"-"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
-            <span class="k">continue</span>
+    <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">p</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">program</span><span class="si">}</span><span class="s2">*.csv"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">stem</span> <span class="o">==</span> <span class="n">program</span> <span class="ow">or</span> <span class="n">p</span><span class="o">.</span><span class="n">stem</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">program</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"-"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span>
+    <span class="p">]</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span> <span class="o">+</span> <span class="n">pending_paths</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">st</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
