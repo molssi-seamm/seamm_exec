@@ -36,6 +36,7 @@ import logging
 import os
 from pathlib import Path
 import random
+import threading
 import time
 
 logger = logging.getLogger("seamm-exec")
@@ -46,6 +47,10 @@ DEFAULT_DIRECTORY = Path("~/.seamm.d/timing")
 MAX_BYTES = 50 * 1024 * 1024
 #: How long a writer tries for the lock before writing to its own file, in seconds
 LOCK_WAIT = 1.0
+# POSIX locks belong to the process, not to a thread or a file descriptor, and the
+# threads of a process share its pending file, so its threads write one at a time.
+_thread_lock = threading.Lock()
+_warned_no_lock = False
 #: The version of the record written by :func:`record_task_timing`
 SCHEMA = 1
 #: The common columns of a record, before the step's descriptors
@@ -140,8 +145,15 @@ def append_timing(
     their lock daemon. It is only ever tried, never waited for: a waiting request
     is granted by a call back from the lock daemon, which on a busy cluster may
     not come for many seconds, and meanwhile the calling process -- an Evaluator
-    taking in results, say -- does nothing else.
+    taking in results, say -- does nothing else. The lock is the process's, so
+    the threads of a process take turns here.
     """
+    with _thread_lock:
+        return _append_timing(program, row, fieldnames, directory, max_bytes, lock_wait)
+
+
+def _append_timing(program, row, fieldnames, directory, max_bytes, lock_wait):
+    """:func:`append_timing`, with this process's other threads kept out."""
     path = timing_path(program, directory)
     path.parent.mkdir(parents=True, exist_ok=True)
     fieldnames = list(fieldnames or row.keys())
@@ -689,7 +701,11 @@ def _lock(fd, deadline):
             return True
         except OSError as e:
             if e.errno not in (errno.EACCES, errno.EAGAIN):
-                logger.debug(f"Could not lock the timing file: {e}")
+                # e.g. ENOLCK when a network file system's lock daemon is down
+                global _warned_no_lock
+                if not _warned_no_lock:
+                    _warned_no_lock = True
+                    logger.warning(f"Writing the timing file without a lock: {e}")
                 return True
         remaining = deadline - time.monotonic()
         if remaining <= 0:

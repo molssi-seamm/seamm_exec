@@ -323,3 +323,35 @@ def test_records_state_counts_pending_rows(tmp_path):
         holder.kill()
         holder.wait()
     assert records_state("code", tmp_path)[0] > before
+
+
+def test_threads_of_one_process_lose_no_rows(tmp_path):
+    """Threads share the process's lock and pending file: while another process
+    holds the lock, and after it lets go, every row of every thread is kept once."""
+    import threading
+
+    holder = _hold_lock(timing_path("code", tmp_path), 30)
+
+    def write(name, start, n, wait):
+        for i in range(start, start + n):
+            append_timing(
+                "code", {"thread": name, "i": i}, directory=tmp_path, lock_wait=wait
+            )
+
+    try:
+        threads = [threading.Thread(target=write, args=(t, 0, 50, 0.0)) for t in "ab"]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+    finally:
+        holder.kill()
+        holder.wait()
+    threads = [threading.Thread(target=write, args=(t, 50, 50, 1.0)) for t in "ab"]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    rows = read_timings("code", directory=tmp_path, all_files=True)
+    for t in "ab":
+        assert sorted(int(r["i"]) for r in rows if r["thread"] == t) == list(range(100))
