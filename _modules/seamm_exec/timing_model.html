@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.timing_model &#8212; SEAMM seamm-exec Plug-in 2026.10.16 documentation</title>
+    <title>seamm_exec.timing_model &#8212; SEAMM seamm-exec Plug-in 2026.10.16.1 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=5aae1070"></script>
+    <script src="../../_static/documentation_options.js?v=136a9e07"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.16" />
+  <meta name="docsearch:version" content="2026.10.16.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -458,6 +458,7 @@
 
 <span class="sd">    python -m seamm_exec.timing_model fit [program ...] [--directory DIR]</span>
 <span class="sd">    python -m seamm_exec.timing_model predict orca task=energy nbf=240 ... [-q 0.95]</span>
+<span class="sd">    python -m seamm_exec.timing_model check [program ...] [--since 2h]</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
@@ -2093,7 +2094,60 @@
     <span class="n">p_pred</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--cpus-per-task"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">p_pred</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--machine"</span><span class="p">)</span>
     <span class="n">p_pred</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--units"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">p_check</span> <span class="o">=</span> <span class="n">sub</span><span class="o">.</span><span class="n">add_parser</span><span class="p">(</span>
+        <span class="s2">"check"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"compare the estimates of recent runs with their times"</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"Compare the estimates of recent runs with their times, by "</span>
+        <span class="s2">"machine and calculation, and flag groups far from 1x or estimated the same "</span>
+        <span class="s2">"on machines of different speed (a step's fallback formula, not the model). "</span>
+        <span class="s2">"The exit status is 1 when a group is flagged."</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">p_check</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"programs"</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s2">"*"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"default: every program with records"</span>
+    <span class="p">)</span>
+    <span class="n">p_check</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--since"</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">"1d"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"runs recorded since: a span (90m, 2h, 1d) or a local date and time "</span>
+        <span class="s2">"(2026-10-16T10:30); 'all' for every record. Default 1d"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">p_check</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--by"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"the columns describing a calculation, comma separated"</span>
+    <span class="p">)</span>
+    <span class="n">p_check</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--limit"</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"flag groups whose estimates are further than this factor from the "</span>
+        <span class="s2">"times (default 2)"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">p_check</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--min-rows"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"show only groups this large"</span>
+    <span class="p">)</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">command</span> <span class="o">==</span> <span class="s2">"check"</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.timing_check</span><span class="w"> </span><span class="kn">import</span> <span class="n">check</span><span class="p">,</span> <span class="n">parse_since</span><span class="p">,</span> <span class="n">report</span>
+
+        <span class="n">directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">directory</span> <span class="ow">or</span> <span class="n">DEFAULT_DIRECTORY</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
+        <span class="n">programs</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">programs</span> <span class="ow">or</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="p">{</span><span class="n">p</span><span class="o">.</span><span class="n">stem</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"-"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">directory</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"*.csv"</span><span class="p">)}</span>
+        <span class="p">)</span>
+        <span class="n">since</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">since</span> <span class="o">==</span> <span class="s2">"all"</span> <span class="k">else</span> <span class="n">parse_since</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">since</span><span class="p">)</span>
+        <span class="n">by</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">by</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">by</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">flagged</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">program</span> <span class="ow">in</span> <span class="n">programs</span><span class="p">:</span>
+            <span class="n">summary</span> <span class="o">=</span> <span class="n">check</span><span class="p">(</span>
+                <span class="n">program</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">since</span><span class="o">=</span><span class="n">since</span><span class="p">,</span> <span class="n">by</span><span class="o">=</span><span class="n">by</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">limit</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">summary</span><span class="p">[</span><span class="s2">"groups"</span><span class="p">]:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">program</span><span class="si">}</span><span class="s2">: no runs with an estimate since </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">since</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">report</span><span class="p">(</span><span class="n">summary</span><span class="p">,</span> <span class="n">min_rows</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">min_rows</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">flagged</span> <span class="o">=</span> <span class="n">flagged</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span>
+                <span class="n">g</span><span class="p">[</span><span class="s2">"flags"</span><span class="p">]</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">summary</span><span class="p">[</span><span class="s2">"groups"</span><span class="p">]</span> <span class="k">if</span> <span class="n">g</span><span class="p">[</span><span class="s2">"rows"</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">args</span><span class="o">.</span><span class="n">min_rows</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">flagged</span> <span class="k">else</span> <span class="mi">0</span>
 
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">command</span> <span class="o">==</span> <span class="s2">"fit"</span><span class="p">:</span>
         <span class="n">directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">directory</span> <span class="ow">or</span> <span class="n">DEFAULT_DIRECTORY</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>

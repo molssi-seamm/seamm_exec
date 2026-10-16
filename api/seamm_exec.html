@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.16 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.16.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=5aae1070"></script>
+    <script src="../_static/documentation_options.js?v=136a9e07"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.16" />
+  <meta name="docsearch:version" content="2026.10.16.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -2790,6 +2790,97 @@ code that is not parallel runs once.</p>
 </dd></dl>
 
 </section>
+<section id="module-seamm_exec.timing_check">
+<span id="seamm-exec-timing-check-module"></span><h2>seamm_exec.timing_check module<a class="headerlink" href="#module-seamm_exec.timing_check" title="Link to this heading">#</a></h2>
+<p>How well the estimates of recent runs matched their times.</p>
+<p>Every timing record carries the estimate the task was given (<code class="docutils literal notranslate"><span class="pre">estimated</span></code>,
+before a target’s <code class="docutils literal notranslate"><span class="pre">estimate_scale</span></code>) and the time it took (<code class="docutils literal notranslate"><span class="pre">wall</span></code>). After an
+update, or whenever packing or walltimes look wrong, this compares them over
+the newest records, grouped by machine and calculation, and flags</p>
+<ul class="simple">
+<li><p>groups whose estimates are far from the times (by default more than 2x), and</p></li>
+<li><p>calculations estimated the same on machines whose times differ: the sign
+that the estimates came from a step’s fallback formula, which knows nothing of
+the machine, instead of from the fitted model.</p></li>
+</ul>
+<p>Command line:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">timing_model</span> <span class="n">check</span> <span class="p">[</span><span class="n">program</span> <span class="o">...</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">since</span> <span class="mi">2</span><span class="n">h</span><span class="p">]</span>
+</pre></div>
+</div>
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing_check.CALCULATION_COLUMNS">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_check.</span></span><span class="sig-name descname"><span class="pre">CALCULATION_COLUMNS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('task',</span> <span class="pre">'method',</span> <span class="pre">'basis',</span> <span class="pre">'n_atoms')</span></span><a class="headerlink" href="#seamm_exec.timing_check.CALCULATION_COLUMNS" title="Link to this definition">#</a></dt>
+<dd><p>Columns that describe the calculation, when the records have them</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing_check.DIFFERENT">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_check.</span></span><span class="sig-name descname"><span class="pre">DIFFERENT</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.25</span></span><a class="headerlink" href="#seamm_exec.timing_check.DIFFERENT" title="Link to this definition">#</a></dt>
+<dd><p>… while times further apart than this factor are different</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing_check.LIMIT">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_check.</span></span><span class="sig-name descname"><span class="pre">LIMIT</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2.0</span></span><a class="headerlink" href="#seamm_exec.timing_check.LIMIT" title="Link to this definition">#</a></dt>
+<dd><p>A group is flagged when its estimates are further than this factor from the
+times (the geometric mean of estimate / wall)</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.timing_check.SAME">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_check.</span></span><span class="sig-name descname"><span class="pre">SAME</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.01</span></span><a class="headerlink" href="#seamm_exec.timing_check.SAME" title="Link to this definition">#</a></dt>
+<dd><p>Estimates closer than this fraction count as the same</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing_check.check">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_check.</span></span><span class="sig-name descname"><span class="pre">check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">since</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_check.html#check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_check.check" title="Link to this definition">#</a></dt>
+<dd><p>Compare the estimates of <code class="docutils literal notranslate"><span class="pre">program</span></code>’s recent runs with their times.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>program</strong> (<em>str</em>)</p></li>
+<li><p><strong>directory</strong> (<em>str</em><em>, </em><em>optional</em>) – The timing directory.</p></li>
+<li><p><strong>since</strong> (<em>datetime</em><em>, </em><em>optional</em>) – Only runs recorded at or after this (aware) time.</p></li>
+<li><p><strong>by</strong> (<em>sequence</em><em> of </em><em>str</em><em>, </em><em>optional</em>) – The columns describing a calculation; default the method class, task,
+method, basis and atom count, those the records have. The machine is
+always the first.</p></li>
+<li><p><strong>limit</strong> (<em>float</em>) – The factor beyond which a group’s estimates are flagged.</p></li>
+<li><p><strong>rows</strong> (<em>list</em><em> of </em><em>dict</em><em>, </em><em>optional</em>) – The records, instead of reading them.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">groups</span></code>: a list of dicts, one per machine and calculation, with
+<code class="docutils literal notranslate"><span class="pre">machine</span></code>, <code class="docutils literal notranslate"><span class="pre">key</span></code> (the calculation’s values), <code class="docutils literal notranslate"><span class="pre">rows</span></code>, <code class="docutils literal notranslate"><span class="pre">wall</span></code>
+(mean seconds), <code class="docutils literal notranslate"><span class="pre">estimated</span></code> (mean seconds), <code class="docutils literal notranslate"><span class="pre">ratio</span></code> (geometric mean
+of estimate / wall), <code class="docutils literal notranslate"><span class="pre">low</span></code> and <code class="docutils literal notranslate"><span class="pre">high</span></code> (its 10th and 90th
+percentiles), <code class="docutils literal notranslate"><span class="pre">distinct</span></code> (the number of different estimates),
+<code class="docutils literal notranslate"><span class="pre">sources</span></code> (rows per <code class="docutils literal notranslate"><span class="pre">estimate_source</span></code>, when recorded) and <code class="docutils literal notranslate"><span class="pre">flags</span></code>;
+<code class="docutils literal notranslate"><span class="pre">columns</span></code> (the calculation’s columns), <code class="docutils literal notranslate"><span class="pre">checked</span></code>, <code class="docutils literal notranslate"><span class="pre">no_estimate</span></code>
+and <code class="docutils literal notranslate"><span class="pre">timed_out</span></code> (counts of runs).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing_check.parse_since">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_check.</span></span><span class="sig-name descname"><span class="pre">parse_since</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">now</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_check.html#parse_since"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_check.parse_since" title="Link to this definition">#</a></dt>
+<dd><p>The time <code class="docutils literal notranslate"><span class="pre">text</span></code> names, as an aware datetime.</p>
+<p><code class="docutils literal notranslate"><span class="pre">text</span></code> is either a span back from now – a number and m, h or d (<code class="docutils literal notranslate"><span class="pre">90m</span></code>,
+<code class="docutils literal notranslate"><span class="pre">2h</span></code>, <code class="docutils literal notranslate"><span class="pre">1d</span></code>) – or a date and time, <code class="docutils literal notranslate"><span class="pre">2026-10-16T10:30</span></code>, in local time
+unless it gives its offset. The records’ dates are in UTC.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.timing_check.report">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.timing_check.</span></span><span class="sig-name descname"><span class="pre">report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">summary</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/timing_check.html#report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.timing_check.report" title="Link to this definition">#</a></dt>
+<dd><p>The text of a <a class="reference internal" href="#seamm_exec.timing_check.check" title="seamm_exec.timing_check.check"><code class="xref py py-func docutils literal notranslate"><span class="pre">check()</span></code></a>: a table of the groups, flags last.</p>
+</dd></dl>
+
+</section>
 <section id="module-seamm_exec.timing_model">
 <span id="seamm-exec-timing-model-module"></span><h2>seamm_exec.timing_model module<a class="headerlink" href="#module-seamm_exec.timing_model" title="Link to this heading">#</a></h2>
 <p>Fit a cost model to the timing records and predict the time of a calculation.</p>
@@ -2818,6 +2909,7 @@ with numpy alone. The prediction is a <em>quantile</em> of the residual distribu
 <p>Command line:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">timing_model</span> <span class="n">fit</span> <span class="p">[</span><span class="n">program</span> <span class="o">...</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">directory</span> <span class="n">DIR</span><span class="p">]</span>
 <span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">timing_model</span> <span class="n">predict</span> <span class="n">orca</span> <span class="n">task</span><span class="o">=</span><span class="n">energy</span> <span class="n">nbf</span><span class="o">=</span><span class="mi">240</span> <span class="o">...</span> <span class="p">[</span><span class="o">-</span><span class="n">q</span> <span class="mf">0.95</span><span class="p">]</span>
+<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">timing_model</span> <span class="n">check</span> <span class="p">[</span><span class="n">program</span> <span class="o">...</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">since</span> <span class="mi">2</span><span class="n">h</span><span class="p">]</span>
 </pre></div>
 </div>
 <dl class="py data">
@@ -3578,6 +3670,16 @@ raises.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_benchmark.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_benchmark.performance_cores"><code class="docutils literal notranslate"><span class="pre">performance_cores()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_benchmark.run"><code class="docutils literal notranslate"><span class="pre">run()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.timing_check">seamm_exec.timing_check module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_check.CALCULATION_COLUMNS"><code class="docutils literal notranslate"><span class="pre">CALCULATION_COLUMNS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_check.DIFFERENT"><code class="docutils literal notranslate"><span class="pre">DIFFERENT</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_check.LIMIT"><code class="docutils literal notranslate"><span class="pre">LIMIT</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_check.SAME"><code class="docutils literal notranslate"><span class="pre">SAME</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_check.check"><code class="docutils literal notranslate"><span class="pre">check()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_check.parse_since"><code class="docutils literal notranslate"><span class="pre">parse_since()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.timing_check.report"><code class="docutils literal notranslate"><span class="pre">report()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.timing_model">seamm_exec.timing_model module</a><ul class="pst-show_toc_level nav section-nav flex-column">
