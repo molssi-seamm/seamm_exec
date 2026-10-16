@@ -1,6 +1,16 @@
 =======
 History
 =======
+2026.10.16.3 -- Bugfix: finished tasks ran again after an evaluator was stopped
+    * When a bundle of tasks finished, its task directories were packed into the
+      bundle's archive and removed before the task manifest recorded the archive, and
+      the manifest is written at most once a second and may wait while the evaluator
+      is busy. An evaluator stopped in between -- cancelled, or stalled -- left tasks
+      recorded with neither their directory nor the archive, so a restarted evaluator
+      ran them again. The manifest now records the archive before the directories are
+      removed, and tasks that an earlier version left that way are found in their
+      bundle's archive and not run again.
+
 2026.10.16.2 -- Where each time estimate came from
     * Each timing record says where the task's estimate came from, in a new column
       ``estimate_source``: ``model`` (the fitted cost model), ``formula`` (the step's

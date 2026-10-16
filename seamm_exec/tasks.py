@@ -1353,6 +1353,15 @@ class TaskSet:
                 except Exception:
                     done = None
                 archive = None
+        if done is None and record is not None and record.get("bundle"):
+            # Archived by an older seamm-exec that was stopped before its
+            # manifest named the archive: the bundle's tar has it
+            tar_path = self.tasks_directory / f"{record['bundle']}.tar"
+            data = self._read_from_tar(tar_path, f"{task.key}/DONE")
+            if data is not None:
+                done = json.loads(data)
+                archive = tar_path
+                self.manifest.update(task.key, archive=tar_path.name)
         if done is None:
             return None
         if done.get("fingerprint") != task.digest():
@@ -1546,10 +1555,16 @@ class TaskSet:
             with tarfile.open(tar_path, "a" if tar_path.exists() else "w") as tar:
                 for k in to_pack:
                     tar.add(self.tasks_directory / k, arcname=k)
+            # The manifest names the archive, on disk, before the directories
+            # go: an evaluator stopped in between (scancel, or a stall before
+            # the next flush) otherwise left records with neither, and the
+            # finished tasks ran again on restart
             for k in to_pack:
-                shutil.rmtree(self.tasks_directory / k)
                 self.manifest.update(k, archive=tar_path.name)
                 self._results[k].archive = tar_path
+            self.manifest.save()
+            for k in to_pack:
+                shutil.rmtree(self.tasks_directory / k)
 
     def _read_from_tar(self, path, member):
         """A member of an archive, opening each archive once per run."""
