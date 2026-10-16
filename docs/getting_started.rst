@@ -393,6 +393,28 @@ and only replaces the old model when the new one is fitted to at least as many
 rows and predicts at least as well. The ``fit`` command remains for a report, or
 to refit on demand.
 
+Whether the estimates the tasks were given match their times is checked from the
+records themselves, which carry both (``estimated``, before a target's
+``estimate_scale``, and ``wall``)::
+
+    python -m seamm_exec.timing_model check                  # every program, last day
+    python -m seamm_exec.timing_model check orca --since 2h
+    python -m seamm_exec.timing_model check orca --since 2026-10-16T10:30
+
+It prints, for each machine and calculation (method class, task, method, basis
+and atom count, those the records have; ``--by`` names others), the runs, their
+mean time and estimate, and the geometric mean of estimate / time with its 10th
+and 90th percentiles. It flags a group whose estimates are further than a factor
+of two from the times (``--limit``), and a calculation estimated the same on
+machines whose times differ, the sign that the estimates came from a step's
+fallback formula, which knows nothing of the machine, and not from the model.
+``--since`` takes a span (``90m``, ``2h``, ``1d``, the default) or a local date
+and time (the records' dates are in UTC), or ``all``; runs that timed out are
+left out. The exit status is 1 when a group is flagged. Run it after every
+update of an installation that runs tasks, on the rows written since: a wrong
+estimate shows in the first finished runs, long before bundles run out of time
+or are packed too thinly.
+
 A machine the model has not seen is placed by the seed benchmark, a few minutes
 of standard runs whose rows the fit can tell apart (``benchmark=<set>``)::
 

@@ -1,6 +1,16 @@
 =======
 History
 =======
+2026.10.16.1 -- Checking the time estimates against the times
+    * A new command, ``python -m seamm_exec.timing_model check [program] [--since 2h]``,
+      compares the estimates the tasks were given with the times they took, from the
+      timing records, for each machine and calculation. It flags groups whose
+      estimates are more than twice or less than half the times, and calculations
+      estimated the same on machines of different speed -- the sign that a step fell
+      back to its own rough formula instead of the fitted model. Run it after every
+      update: it would have caught both of the ORCA estimate errors of 2026-10-16 in
+      the first finished runs.
+
 2026.10.16 -- Bugfix: writing a timing record no longer holds up the Evaluator
     * Every run appends a row to the shared timing file, under a lock. On a cluster
       the file is on a network file system, whose lock daemon can take many seconds
