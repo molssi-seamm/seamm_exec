@@ -24,11 +24,11 @@ The fit is ridge regression in numpy; the model is a JSON file,
 with numpy alone. The prediction is a *quantile* of the residual distribution
 (the 95th for a queue walltime), never the mean.
 
-Command line::
+Command line (``seamm-timing``, or ``python -m seamm_exec.timing_model``)::
 
-    python -m seamm_exec.timing_model fit [program ...] [--directory DIR]
-    python -m seamm_exec.timing_model predict orca task=energy nbf=240 ... [-q 0.95]
-    python -m seamm_exec.timing_model check [program ...] [--since 2h]
+    seamm-timing fit [program ...] [--directory DIR]
+    seamm-timing predict orca task=energy nbf=240 ... [-q 0.95]
+    seamm-timing check [program ...] [--since 2h]
 """
 
 import argparse
@@ -1025,6 +1025,7 @@ _NOT_DRIVERS = {
     "gpu_model", "host", "program", "ntasks", "cpus_per_task", "mem_per_cpu",
     "ngpus", "nprocs", "wall", "estimated", "state", "timed_out", "attempts",
     "in_situ", "code_seconds", "terminated_normally", "benchmark", "model",
+    "estimate_source",
 }  # fmt: skip
 
 
@@ -1350,6 +1351,7 @@ def predict(
     directory=None,
     model=None,
     refresh=True,
+    why=None,
 ):
     """The predicted wall time of a calculation.
 
@@ -1374,6 +1376,10 @@ def predict(
     refresh : bool
         Refit the model first if its records have grown by a fifth or it is a
         week old (:func:`refresh_if_stale`); a model given is used as it is.
+    why : list, optional
+        When there is no prediction, the reason is appended to it: no model, a
+        size variable missing (named), a size outside the fitted range, or a
+        regime, method class or task the records lack. See :func:`estimate`.
 
     Returns
     -------
@@ -1388,7 +1394,7 @@ def predict(
             refresh_if_stale(program, directory)
         model = load_model(program, directory)
     if model is None:
-        return None
+        return _no(why, f"no model of {program}")
     sizes = {}
     for name in model["features"]:
         value = _num(descriptors.get(name))
@@ -1396,7 +1402,8 @@ def predict(
             sizes[name] = value
     if len(sizes) < len(model["features"]) or not sizes:
         # Every size variable is needed: a mean in its place is a guess
-        return None
+        missing = [n for n in model["features"] if n not in sizes]
+        return _no(why, "missing " + ", ".join(missing or ["every size variable"]))
     margin = math.log(EXTRAPOLATION)
     for name, (low, high) in model.get("feature_log_range", {}).items():
         if name in sizes and not (
@@ -1405,13 +1412,17 @@ def predict(
             # Outside what the records cover: a power law extrapolated by
             # orders of magnitude is not an estimate (a model fitted to small
             # molecules gave 20-atom QZ fragments 11 hours and 20 s)
-            return None
+            return _no(
+                why,
+                f"{name} = {sizes[name]:g} outside the records' "
+                f"{math.exp(low):.4g}-{math.exp(high):.4g}",
+            )
     group = None
     if model.get("slope_by"):
         group = str(descriptors.get(model["slope_by"], "") or "")
         if group not in model.get("slope_groups", [group]):
             # A regime the records have not seen
-            return None
+            return _no(why, f"{model['slope_by']} '{group}' not in the records")
     deltas = model.get("slope_deltas", {}).get(group, {})
     coef = model["coefficients"]
     y = coef["intercept"]
@@ -1432,7 +1443,7 @@ def predict(
     ).strip(" /")
     if model["class_columns"] and klass not in model["classes"]:
         # A method class the records have not seen (or none given)
-        return None
+        return _no(why, f"method class '{klass}' not in the records")
     y += model["classes"].get(klass, 0.0)
     task = (
         str(descriptors.get(model["task_column"], "") or "")
@@ -1440,7 +1451,7 @@ def predict(
         else ""
     )
     if model["task_column"] and task not in model["tasks"]:
-        return None
+        return _no(why, f"task '{task}' not in the records")
     y += model["tasks"].get(task, 0.0)
     unknown = []
     flag_spec = (model.get("spec") or {}).get("flags")
@@ -1501,6 +1512,80 @@ def predict(
         "unknown_flags": unknown,
         "model": {"fitted": model["fitted"], "rows": model["rows"]},
     }
+
+
+def _no(why, reason):
+    """No prediction, for ``reason`` (appended to ``why`` when given)."""
+    if why is not None:
+        why.append(reason)
+    return None
+
+
+#: The reasons for no prediction already logged, per program, so each is logged
+#: once per process
+_logged_reasons = set()
+
+
+def estimate(program, descriptors, fallback=None, **kwargs):
+    """A task's estimated time, and where it came from.
+
+    The fitted model's prediction (:func:`predict`, with ``kwargs``) when it can
+    make one, else ``fallback`` -- the step's own formula -- and the reason the
+    model could not be used, logged once per process and reason: as a warning
+    when the descriptors lack a size variable the model was fitted with, which
+    is a fault of the step (every estimate falls back to the formula without
+    it), else at the info level (no model yet, a calculation outside the
+    records).
+
+    Parameters
+    ----------
+    program : str
+    descriptors : dict
+        As for :func:`predict`.
+    fallback : float, optional
+        The step's own estimate, in seconds.
+    **kwargs
+        Passed to :func:`predict` (``ntasks``, ``quantile``, ...).
+
+    Returns
+    -------
+    dict
+        ``seconds`` (None if there is neither), ``source`` -- ``"model"``,
+        ``"formula"`` or ``"none"``, for :attr:`seamm_exec.Task.estimate_source`
+        -- and ``reason`` (None when the model was used).
+    """
+    why = []
+    try:
+        result = predict(program, descriptors, why=why, **kwargs)
+    except Exception as e:  # an estimate never stops a step
+        result = None
+        why.append(f"the model failed: {e}")
+    if result is not None:
+        return {"seconds": float(result["seconds"]), "source": "model", "reason": None}
+    reason = why[0] if why else "no prediction"
+    if (program, reason) not in _logged_reasons:
+        _logged_reasons.add((program, reason))
+        text = f"The {program} time estimate is not from the model: {reason}."
+        if reason.startswith("missing"):
+            logger.warning(text + " The step does not give it, so it is a bug.")
+        else:
+            logger.info(text)
+    if fallback is None:
+        return {"seconds": None, "source": "none", "reason": reason}
+    return {"seconds": float(fallback), "source": "formula", "reason": reason}
+
+
+def missing_sizes(spec, descriptors):
+    """The size variables of ``spec`` that ``descriptors`` lack (or give as zero).
+
+    A step's tests check that the descriptors of its *estimate* have every size
+    variable of its ``TIMING_SPEC``: its records have them, so the model may be
+    fitted with any of them, and an estimate lacking one is never from the
+    model.
+    """
+    if isinstance(spec, dict):
+        spec = Spec.from_dict(spec)
+    return [n for n in spec.size if not (_num(descriptors.get(n)) or 0) > 0]
 
 
 # ----------------------------------------------------------------------
@@ -1591,7 +1676,7 @@ def report_text(model):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(
-        prog="python -m seamm_exec.timing_model",
+        prog="seamm-timing",
         description="Fit the cost models to the timing records, or predict a time.",
     )
     parser.add_argument(

@@ -71,6 +71,7 @@ COMMON_COLUMNS = (
     "ngpus",
     "wall",
     "estimated",
+    "estimate_source",
     "state",
     "timed_out",
     "attempts",
@@ -558,6 +559,7 @@ def record_timing(
     in_situ=None,
     directory=None,
     spec=None,
+    estimate_source=None,
 ):
     """Append the timing record of a run made outside the task layer.
 
@@ -565,7 +567,10 @@ def record_timing(
     itself. The arguments are the common columns (see the module docstring);
     ``descriptors`` as for :func:`record_task_timing`; ``spec``, the step's
     :class:`seamm_exec.timing_model.Spec` (or its dict) saying which
-    descriptors the cost model is made of, written once beside the records.
+    descriptors the cost model is made of, written once beside the records;
+    ``estimate_source``, where ``estimated`` came from (``"model"``,
+    ``"formula"``; see :func:`seamm_exec.timing_model.estimate`), else
+    ``"none"`` without an estimate and empty when not known.
     Never raises.
     """
     try:
@@ -591,6 +596,8 @@ def record_timing(
             "ngpus": ngpus,
             "wall": None if wall is None else f"{float(wall):.3f}",
             "estimated": _number(estimated),
+            "estimate_source": estimate_source
+            or ("none" if _number(estimated) is None else ""),
             "state": state,
             "timed_out": int(bool(timed_out)),
             "attempts": attempts,
@@ -654,6 +661,7 @@ def record_task_timing(task, result, descriptors=None, directory=None, spec=None
             gpu_model=(descriptors or {}).get("gpu_model")
             or ("gpu" if ngpus and gpu else None),
             estimated=getattr(task, "estimated_seconds", None),
+            estimate_source=getattr(task, "estimate_source", None),
             state=getattr(result, "state", ""),
             timed_out=getattr(result, "timed_out", False),
             attempts=getattr(result, "attempts", None),

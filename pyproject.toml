@@ -49,6 +49,7 @@ test = [
 [project.scripts]
 run_flowchart = "seamm_exec:run"
 run_from_jobserver = "seamm_exec:run_from_jobserver"
+seamm-timing = "seamm_exec.timing_model:main"
 
 [project.entry-points."org.molssi.seamm.exec.resolvers"]
 seamm = "seamm_exec.iteration:resolve"

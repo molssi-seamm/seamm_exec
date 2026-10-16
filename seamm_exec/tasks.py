@@ -106,6 +106,11 @@ class Task:
         Data for the standard input.
     estimated_seconds : float or None
         The step's estimate of the cost, used by the inline rule for tiny tasks.
+    estimate_source : str or None
+        Where ``estimated_seconds`` came from: ``"model"`` (the fitted cost
+        model), ``"formula"`` (the step's own) or ``"none"``, as
+        :func:`seamm_exec.timing_model.estimate` returns it; written in the
+        timing record, so estimates from the fallback show.
     target : str or None
         Reserved: None is the job's target.
     directory : str or Path or None
@@ -143,6 +148,7 @@ class Task:
     shell: bool = False
     input_data: str | None = None
     estimated_seconds: float | None = None
+    estimate_source: str | None = None
     target: str | None = None
     directory: str | Path | None = None
     config: dict | None = None

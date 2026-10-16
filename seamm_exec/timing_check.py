@@ -7,14 +7,16 @@ before a target's ``estimate_scale``) and the time it took (``wall``). After an
 update, or whenever packing or walltimes look wrong, this compares them over
 the newest records, grouped by machine and calculation, and flags
 
-- groups whose estimates are far from the times (by default more than 2x), and
+- groups whose estimates are far from the times (by default more than 2x),
+- groups with estimates from a step's fallback formula rather than the model
+  (the records' ``estimate_source``), and
 - calculations estimated the same on machines whose times differ: the sign
   that the estimates came from a step's fallback formula, which knows nothing of
   the machine, instead of from the fitted model.
 
 Command line::
 
-    python -m seamm_exec.timing_model check [program ...] [--since 2h]
+    seamm-timing check [program ...] [--since 2h]
 """
 
 from collections import defaultdict
@@ -152,6 +154,9 @@ def check(program, directory=None, since=None, by=None, limit=LIMIT, rows=None):
         flags = []
         if ratio > limit or ratio < 1 / limit:
             flags.append(f"estimates {ratio:.2g}x the time")
+        if sources.get("formula"):
+            # The step's fallback, not the model: its log says why
+            flags.append(f"{sources['formula']} from the step's formula")
         result.append(
             {
                 "machine": machine,

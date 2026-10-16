@@ -1,6 +1,22 @@
 =======
 History
 =======
+2026.10.16.2 -- Where each time estimate came from
+    * Each timing record says where the task's estimate came from, in a new column
+      ``estimate_source``: ``model`` (the fitted cost model), ``formula`` (the step's
+      own rough formula) or ``none``. ``seamm-timing check`` flags groups with
+      estimates from the formula.
+    * When the model cannot estimate a calculation, the step's log says why, once per
+      reason: as a warning when the step did not give a size the model needs, which
+      is a bug that makes every estimate come from the formula, otherwise as
+      information (no model yet, or a calculation unlike any in the records).
+    * The timing commands are available as ``seamm-timing`` (``fit``, ``predict``,
+      ``check``), which also avoids the warning that ``python -m
+      seamm_exec.timing_model`` printed.
+    * For step developers: ``timing_model.estimate()`` gives an estimate with its
+      source and the reason, and ``timing_model.missing_sizes()`` checks in a step's
+      tests that its estimates have every size its timing records have.
+
 2026.10.16.1 -- Checking the time estimates against the times
     * A new command, ``python -m seamm_exec.timing_model check [program] [--since 2h]``,
       compares the estimates the tasks were given with the times they took, from the
