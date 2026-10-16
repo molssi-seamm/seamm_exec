@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.timing_check &#8212; SEAMM seamm-exec Plug-in 2026.10.16.1 documentation</title>
+    <title>seamm_exec.timing_check &#8212; SEAMM seamm-exec Plug-in 2026.10.16.2 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=136a9e07"></script>
+    <script src="../../_static/documentation_options.js?v=2492146d"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.16.1" />
+  <meta name="docsearch:version" content="2026.10.16.2" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -437,14 +437,16 @@
 <span class="sd">update, or whenever packing or walltimes look wrong, this compares them over</span>
 <span class="sd">the newest records, grouped by machine and calculation, and flags</span>
 
-<span class="sd">- groups whose estimates are far from the times (by default more than 2x), and</span>
+<span class="sd">- groups whose estimates are far from the times (by default more than 2x),</span>
+<span class="sd">- groups with estimates from a step's fallback formula rather than the model</span>
+<span class="sd">  (the records' ``estimate_source``), and</span>
 <span class="sd">- calculations estimated the same on machines whose times differ: the sign</span>
 <span class="sd">  that the estimates came from a step's fallback formula, which knows nothing of</span>
 <span class="sd">  the machine, instead of from the fitted model.</span>
 
 <span class="sd">Command line::</span>
 
-<span class="sd">    python -m seamm_exec.timing_model check [program ...] [--since 2h]</span>
+<span class="sd">    seamm-timing check [program ...] [--since 2h]</span>
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
@@ -587,6 +589,9 @@
         <span class="n">flags</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="n">ratio</span> <span class="o">&gt;</span> <span class="n">limit</span> <span class="ow">or</span> <span class="n">ratio</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">limit</span><span class="p">:</span>
             <span class="n">flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"estimates </span><span class="si">{</span><span class="n">ratio</span><span class="si">:</span><span class="s2">.2g</span><span class="si">}</span><span class="s2">x the time"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sources</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"formula"</span><span class="p">):</span>
+            <span class="c1"># The step's fallback, not the model: its log says why</span>
+            <span class="n">flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">sources</span><span class="p">[</span><span class="s1">'formula'</span><span class="p">]</span><span class="si">}</span><span class="s2"> from the step's formula"</span><span class="p">)</span>
         <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
             <span class="p">{</span>
                 <span class="s2">"machine"</span><span class="p">:</span> <span class="n">machine</span><span class="p">,</span>

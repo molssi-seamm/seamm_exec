@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.16.1 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.16.2 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="_static/documentation_options.js?v=136a9e07"></script>
+    <script src="_static/documentation_options.js?v=2492146d"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.16.1" />
+  <meta name="docsearch:version" content="2026.10.16.2" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -753,7 +753,15 @@ run, in iterations, found by the fit.</p>
 <p>A model only predicts what its records cover: a calculation whose size lies
 outside the fitted range (by more than a factor of 1.5), whose method class or
 task the records lack, or whose descriptors lack a size variable gets no
-prediction, and the step’s own estimate stands. The parallel exponent comes from
+prediction, and the step’s own estimate stands. A step asks for its estimate
+with <a class="reference internal" href="api/seamm_exec.html#seamm_exec.timing_model.estimate" title="seamm_exec.timing_model.estimate"><code class="xref py py-func docutils literal notranslate"><span class="pre">seamm_exec.timing_model.estimate()</span></code></a>, giving its own formula as the
+fallback: it returns the seconds, where they came from (<code class="docutils literal notranslate"><span class="pre">model</span></code>, <code class="docutils literal notranslate"><span class="pre">formula</span></code>
+or <code class="docutils literal notranslate"><span class="pre">none</span></code>), which the step puts in the task’s <code class="docutils literal notranslate"><span class="pre">estimate_source</span></code> and the
+timing record keeps, and the reason the model was not used, which it logs once
+per process – as a warning when the step left out a size variable the model
+was fitted with, since then every estimate falls back to the formula. A step’s
+tests check that its estimate has every size variable its records have with
+<a class="reference internal" href="api/seamm_exec.html#seamm_exec.timing_model.missing_sizes" title="seamm_exec.timing_model.missing_sizes"><code class="xref py py-func docutils literal notranslate"><span class="pre">seamm_exec.timing_model.missing_sizes()</span></code></a>. The parallel exponent comes from
 <em>paired runs</em> when there are at least four: the same calculation (machine, method
 class, task, sizes and options) on several core counts, as the seed benchmark makes,
 with the start-up times removed. Production cannot show it, since its core counts
@@ -775,9 +783,10 @@ never seen widens a prediction’s upper quantiles. The fit’s report lists the
 learned factors and <em>possible cost drivers</em>: recorded values and options without
 a factor whose runs are still systematically off, the candidates for a new size
 variable, class or toggle ladder.</p>
-<p>A cost model is fitted to those rows with:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">timing_model</span> <span class="n">fit</span>            <span class="c1"># every program with records</span>
-<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">timing_model</span> <span class="n">fit</span> <span class="n">orca</span> <span class="n">vasp</span>
+<p>A cost model is fitted to those rows with <code class="docutils literal notranslate"><span class="pre">seamm-timing</span></code> (also
+<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">seamm_exec.timing_model</span></code>):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">seamm</span><span class="o">-</span><span class="n">timing</span> <span class="n">fit</span>            <span class="c1"># every program with records</span>
+<span class="n">seamm</span><span class="o">-</span><span class="n">timing</span> <span class="n">fit</span> <span class="n">orca</span> <span class="n">vasp</span>
 </pre></div>
 </div>
 <p>which writes <code class="docutils literal notranslate"><span class="pre">~/.seamm.d/timing/models/&lt;program&gt;.v&lt;N&gt;.json</span></code> (one file per version
@@ -790,7 +799,7 @@ method class, an offset per kind of task, a factor per contrasted option, a
 parallel exponent, and an offset per machine class – so rows from every machine
 improve it and a new machine needs only a few runs to be placed.</p>
 <p>A prediction is a <em>quantile</em> of the fitted spread, never a mean:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">timing_model</span> <span class="n">predict</span> <span class="n">orca</span> <span class="n">task</span><span class="o">=</span><span class="n">energy</span> \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">seamm</span><span class="o">-</span><span class="n">timing</span> <span class="n">predict</span> <span class="n">orca</span> <span class="n">task</span><span class="o">=</span><span class="n">energy</span> \
     <span class="n">method_class</span><span class="o">=</span><span class="s2">"global hybrid"</span> <span class="n">nbf</span><span class="o">=</span><span class="mi">240</span> <span class="o">--</span><span class="n">ntasks</span> <span class="mi">8</span> <span class="o">-</span><span class="n">q</span> <span class="mf">0.95</span>
 </pre></div>
 </div>
@@ -809,9 +818,9 @@ to refit on demand.</p>
 <p>Whether the estimates the tasks were given match their times is checked from the
 records themselves, which carry both (<code class="docutils literal notranslate"><span class="pre">estimated</span></code>, before a target’s
 <code class="docutils literal notranslate"><span class="pre">estimate_scale</span></code>, and <code class="docutils literal notranslate"><span class="pre">wall</span></code>):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">timing_model</span> <span class="n">check</span>                  <span class="c1"># every program, last day</span>
-<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">timing_model</span> <span class="n">check</span> <span class="n">orca</span> <span class="o">--</span><span class="n">since</span> <span class="mi">2</span><span class="n">h</span>
-<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">timing_model</span> <span class="n">check</span> <span class="n">orca</span> <span class="o">--</span><span class="n">since</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">16</span><span class="n">T10</span><span class="p">:</span><span class="mi">30</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">seamm</span><span class="o">-</span><span class="n">timing</span> <span class="n">check</span>                  <span class="c1"># every program, last day</span>
+<span class="n">seamm</span><span class="o">-</span><span class="n">timing</span> <span class="n">check</span> <span class="n">orca</span> <span class="o">--</span><span class="n">since</span> <span class="mi">2</span><span class="n">h</span>
+<span class="n">seamm</span><span class="o">-</span><span class="n">timing</span> <span class="n">check</span> <span class="n">orca</span> <span class="o">--</span><span class="n">since</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">16</span><span class="n">T10</span><span class="p">:</span><span class="mi">30</span>
 </pre></div>
 </div>
 <p>It prints, for each machine and calculation (method class, task, method, basis
@@ -820,7 +829,8 @@ mean time and estimate, and the geometric mean of estimate / time with its 10th
 and 90th percentiles. It flags a group whose estimates are further than a factor
 of two from the times (<code class="docutils literal notranslate"><span class="pre">--limit</span></code>), and a calculation estimated the same on
 machines whose times differ, the sign that the estimates came from a step’s
-fallback formula, which knows nothing of the machine, and not from the model.
+fallback formula, which knows nothing of the machine, and not from the model,
+and a group with estimates recorded as from the formula.
 <code class="docutils literal notranslate"><span class="pre">--since</span></code> takes a span (<code class="docutils literal notranslate"><span class="pre">90m</span></code>, <code class="docutils literal notranslate"><span class="pre">2h</span></code>, <code class="docutils literal notranslate"><span class="pre">1d</span></code>, the default) or a local date
 and time (the records’ dates are in UTC), or <code class="docutils literal notranslate"><span class="pre">all</span></code>; runs that timed out are
 left out. The exit status is 1 when a group is flagged. Run it after every

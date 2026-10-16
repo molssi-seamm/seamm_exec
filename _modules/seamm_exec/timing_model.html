@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.timing_model &#8212; SEAMM seamm-exec Plug-in 2026.10.16.1 documentation</title>
+    <title>seamm_exec.timing_model &#8212; SEAMM seamm-exec Plug-in 2026.10.16.2 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=136a9e07"></script>
+    <script src="../../_static/documentation_options.js?v=2492146d"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.16.1" />
+  <meta name="docsearch:version" content="2026.10.16.2" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -454,11 +454,11 @@
 <span class="sd">with numpy alone. The prediction is a *quantile* of the residual distribution</span>
 <span class="sd">(the 95th for a queue walltime), never the mean.</span>
 
-<span class="sd">Command line::</span>
+<span class="sd">Command line (``seamm-timing``, or ``python -m seamm_exec.timing_model``)::</span>
 
-<span class="sd">    python -m seamm_exec.timing_model fit [program ...] [--directory DIR]</span>
-<span class="sd">    python -m seamm_exec.timing_model predict orca task=energy nbf=240 ... [-q 0.95]</span>
-<span class="sd">    python -m seamm_exec.timing_model check [program ...] [--since 2h]</span>
+<span class="sd">    seamm-timing fit [program ...] [--directory DIR]</span>
+<span class="sd">    seamm-timing predict orca task=energy nbf=240 ... [-q 0.95]</span>
+<span class="sd">    seamm-timing check [program ...] [--since 2h]</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
@@ -1491,6 +1491,7 @@
     <span class="s2">"gpu_model"</span><span class="p">,</span> <span class="s2">"host"</span><span class="p">,</span> <span class="s2">"program"</span><span class="p">,</span> <span class="s2">"ntasks"</span><span class="p">,</span> <span class="s2">"cpus_per_task"</span><span class="p">,</span> <span class="s2">"mem_per_cpu"</span><span class="p">,</span>
     <span class="s2">"ngpus"</span><span class="p">,</span> <span class="s2">"nprocs"</span><span class="p">,</span> <span class="s2">"wall"</span><span class="p">,</span> <span class="s2">"estimated"</span><span class="p">,</span> <span class="s2">"state"</span><span class="p">,</span> <span class="s2">"timed_out"</span><span class="p">,</span> <span class="s2">"attempts"</span><span class="p">,</span>
     <span class="s2">"in_situ"</span><span class="p">,</span> <span class="s2">"code_seconds"</span><span class="p">,</span> <span class="s2">"terminated_normally"</span><span class="p">,</span> <span class="s2">"benchmark"</span><span class="p">,</span> <span class="s2">"model"</span><span class="p">,</span>
+    <span class="s2">"estimate_source"</span><span class="p">,</span>
 <span class="p">}</span>  <span class="c1"># fmt: skip</span>
 
 
@@ -1827,6 +1828,7 @@
     <span class="n">directory</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">refresh</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">why</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""The predicted wall time of a calculation.</span>
 
@@ -1851,6 +1853,10 @@
 <span class="sd">    refresh : bool</span>
 <span class="sd">        Refit the model first if its records have grown by a fifth or it is a</span>
 <span class="sd">        week old (:func:`refresh_if_stale`); a model given is used as it is.</span>
+<span class="sd">    why : list, optional</span>
+<span class="sd">        When there is no prediction, the reason is appended to it: no model, a</span>
+<span class="sd">        size variable missing (named), a size outside the fitted range, or a</span>
+<span class="sd">        regime, method class or task the records lack. See :func:`estimate`.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1865,7 +1871,7 @@
             <span class="n">refresh_if_stale</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">_no</span><span class="p">(</span><span class="n">why</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"no model of </span><span class="si">{</span><span class="n">program</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="n">sizes</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">model</span><span class="p">[</span><span class="s2">"features"</span><span class="p">]:</span>
         <span class="n">value</span> <span class="o">=</span> <span class="n">_num</span><span class="p">(</span><span class="n">descriptors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
@@ -1873,7 +1879,8 @@
             <span class="n">sizes</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sizes</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s2">"features"</span><span class="p">])</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">sizes</span><span class="p">:</span>
         <span class="c1"># Every size variable is needed: a mean in its place is a guess</span>
-        <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">model</span><span class="p">[</span><span class="s2">"features"</span><span class="p">]</span> <span class="k">if</span> <span class="n">n</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sizes</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">_no</span><span class="p">(</span><span class="n">why</span><span class="p">,</span> <span class="s2">"missing "</span> <span class="o">+</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span> <span class="ow">or</span> <span class="p">[</span><span class="s2">"every size variable"</span><span class="p">]))</span>
     <span class="n">margin</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">EXTRAPOLATION</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"feature_log_range"</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">sizes</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span>
@@ -1882,13 +1889,17 @@
             <span class="c1"># Outside what the records cover: a power law extrapolated by</span>
             <span class="c1"># orders of magnitude is not an estimate (a model fitted to small</span>
             <span class="c1"># molecules gave 20-atom QZ fragments 11 hours and 20 s)</span>
-            <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="n">_no</span><span class="p">(</span>
+                <span class="n">why</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">sizes</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> outside the records' "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">low</span><span class="p">)</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">high</span><span class="p">)</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+            <span class="p">)</span>
     <span class="n">group</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"slope_by"</span><span class="p">):</span>
         <span class="n">group</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">descriptors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s2">"slope_by"</span><span class="p">],</span> <span class="s2">""</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">group</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"slope_groups"</span><span class="p">,</span> <span class="p">[</span><span class="n">group</span><span class="p">]):</span>
             <span class="c1"># A regime the records have not seen</span>
-            <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="n">_no</span><span class="p">(</span><span class="n">why</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">model</span><span class="p">[</span><span class="s1">'slope_by'</span><span class="p">]</span><span class="si">}</span><span class="s2"> '</span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2">' not in the records"</span><span class="p">)</span>
     <span class="n">deltas</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"slope_deltas"</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="p">{})</span>
     <span class="n">coef</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s2">"coefficients"</span><span class="p">]</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">coef</span><span class="p">[</span><span class="s2">"intercept"</span><span class="p">]</span>
@@ -1909,7 +1920,7 @@
     <span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">" /"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">model</span><span class="p">[</span><span class="s2">"class_columns"</span><span class="p">]</span> <span class="ow">and</span> <span class="n">klass</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">model</span><span class="p">[</span><span class="s2">"classes"</span><span class="p">]:</span>
         <span class="c1"># A method class the records have not seen (or none given)</span>
-        <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">_no</span><span class="p">(</span><span class="n">why</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"method class '</span><span class="si">{</span><span class="n">klass</span><span class="si">}</span><span class="s2">' not in the records"</span><span class="p">)</span>
     <span class="n">y</span> <span class="o">+=</span> <span class="n">model</span><span class="p">[</span><span class="s2">"classes"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
     <span class="n">task</span> <span class="o">=</span> <span class="p">(</span>
         <span class="nb">str</span><span class="p">(</span><span class="n">descriptors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s2">"task_column"</span><span class="p">],</span> <span class="s2">""</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span>
@@ -1917,7 +1928,7 @@
         <span class="k">else</span> <span class="s2">""</span>
     <span class="p">)</span>
     <span class="k">if</span> <span class="n">model</span><span class="p">[</span><span class="s2">"task_column"</span><span class="p">]</span> <span class="ow">and</span> <span class="n">task</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">model</span><span class="p">[</span><span class="s2">"tasks"</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">_no</span><span class="p">(</span><span class="n">why</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"task '</span><span class="si">{</span><span class="n">task</span><span class="si">}</span><span class="s2">' not in the records"</span><span class="p">)</span>
     <span class="n">y</span> <span class="o">+=</span> <span class="n">model</span><span class="p">[</span><span class="s2">"tasks"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
     <span class="n">unknown</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">flag_spec</span> <span class="o">=</span> <span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"spec"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"flags"</span><span class="p">)</span>
@@ -1978,6 +1989,86 @@
         <span class="s2">"unknown_flags"</span><span class="p">:</span> <span class="n">unknown</span><span class="p">,</span>
         <span class="s2">"model"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"fitted"</span><span class="p">:</span> <span class="n">model</span><span class="p">[</span><span class="s2">"fitted"</span><span class="p">],</span> <span class="s2">"rows"</span><span class="p">:</span> <span class="n">model</span><span class="p">[</span><span class="s2">"rows"</span><span class="p">]},</span>
     <span class="p">}</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_no</span><span class="p">(</span><span class="n">why</span><span class="p">,</span> <span class="n">reason</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""No prediction, for ``reason`` (appended to ``why`` when given)."""</span>
+    <span class="k">if</span> <span class="n">why</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">why</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reason</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="c1">#: The reasons for no prediction already logged, per program, so each is logged</span>
+<span class="c1">#: once per process</span>
+<span class="n">_logged_reasons</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="estimate">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_model.estimate">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">estimate</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">descriptors</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A task's estimated time, and where it came from.</span>
+
+<span class="sd">    The fitted model's prediction (:func:`predict`, with ``kwargs``) when it can</span>
+<span class="sd">    make one, else ``fallback`` -- the step's own formula -- and the reason the</span>
+<span class="sd">    model could not be used, logged once per process and reason: as a warning</span>
+<span class="sd">    when the descriptors lack a size variable the model was fitted with, which</span>
+<span class="sd">    is a fault of the step (every estimate falls back to the formula without</span>
+<span class="sd">    it), else at the info level (no model yet, a calculation outside the</span>
+<span class="sd">    records).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    program : str</span>
+<span class="sd">    descriptors : dict</span>
+<span class="sd">        As for :func:`predict`.</span>
+<span class="sd">    fallback : float, optional</span>
+<span class="sd">        The step's own estimate, in seconds.</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        Passed to :func:`predict` (``ntasks``, ``quantile``, ...).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        ``seconds`` (None if there is neither), ``source`` -- ``"model"``,</span>
+<span class="sd">        ``"formula"`` or ``"none"``, for :attr:`seamm_exec.Task.estimate_source`</span>
+<span class="sd">        -- and ``reason`` (None when the model was used).</span>
+<span class="sd">    """</span>
+    <span class="n">why</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">predict</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">descriptors</span><span class="p">,</span> <span class="n">why</span><span class="o">=</span><span class="n">why</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># an estimate never stops a step</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">why</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"the model failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"seconds"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">"seconds"</span><span class="p">]),</span> <span class="s2">"source"</span><span class="p">:</span> <span class="s2">"model"</span><span class="p">,</span> <span class="s2">"reason"</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+    <span class="n">reason</span> <span class="o">=</span> <span class="n">why</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">why</span> <span class="k">else</span> <span class="s2">"no prediction"</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">reason</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_logged_reasons</span><span class="p">:</span>
+        <span class="n">_logged_reasons</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">program</span><span class="p">,</span> <span class="n">reason</span><span class="p">))</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"The </span><span class="si">{</span><span class="n">program</span><span class="si">}</span><span class="s2"> time estimate is not from the model: </span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s2">."</span>
+        <span class="k">if</span> <span class="n">reason</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"missing"</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">text</span> <span class="o">+</span> <span class="s2">" The step does not give it, so it is a bug."</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">fallback</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"seconds"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">"source"</span><span class="p">:</span> <span class="s2">"none"</span><span class="p">,</span> <span class="s2">"reason"</span><span class="p">:</span> <span class="n">reason</span><span class="p">}</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">"seconds"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">fallback</span><span class="p">),</span> <span class="s2">"source"</span><span class="p">:</span> <span class="s2">"formula"</span><span class="p">,</span> <span class="s2">"reason"</span><span class="p">:</span> <span class="n">reason</span><span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="missing_sizes">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_model.missing_sizes">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">missing_sizes</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">descriptors</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The size variables of ``spec`` that ``descriptors`` lack (or give as zero).</span>
+
+<span class="sd">    A step's tests check that the descriptors of its *estimate* have every size</span>
+<span class="sd">    variable of its ``TIMING_SPEC``: its records have them, so the model may be</span>
+<span class="sd">    fitted with any of them, and an estimate lacking one is never from the</span>
+<span class="sd">    model.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">spec</span> <span class="o">=</span> <span class="n">Spec</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">spec</span><span class="o">.</span><span class="n">size</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">_num</span><span class="p">(</span><span class="n">descriptors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">n</span><span class="p">))</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span></div>
 
 
 
@@ -2074,7 +2165,7 @@
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.timing_model.main">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
-        <span class="n">prog</span><span class="o">=</span><span class="s2">"python -m seamm_exec.timing_model"</span><span class="p">,</span>
+        <span class="n">prog</span><span class="o">=</span><span class="s2">"seamm-timing"</span><span class="p">,</span>
         <span class="n">description</span><span class="o">=</span><span class="s2">"Fit the cost models to the timing records, or predict a time."</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
