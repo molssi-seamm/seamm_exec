@@ -38,7 +38,15 @@ import sys
 import threading
 import time
 
-from .tasks import FAILED, FINISHED, LOST, QUEUED, RUNNING, TaskResult
+from .tasks import (
+    FAILED,
+    FINISHED,
+    LOST,
+    QUEUED,
+    RUNNING,
+    TaskResult,
+    bundle_request,
+)
 
 
 class _SharedCount:
@@ -817,11 +825,21 @@ class SchedulerBackend:
             if estimate > 0 or floor > 0:
                 # A retry after running out of time gets more (walltime_scale),
                 # within the bundle limit and the queue's longest walltime
-                walltime = walltime_scale * max(2.0 * estimate + 600.0, floor)
+                walltime = walltime_scale * bundle_request(estimate, floor)
                 if limit:
                     walltime = min(walltime, limit)
                 if self.max_walltime:
                     walltime = min(walltime, self.max_walltime)
+                if walltime < bundle_request(estimate, floor):
+                    # TaskSet packs bundles so that the margin fits, so this is a
+                    # task too long for the limits by itself
+                    logger.warning(
+                        f"A bundle estimated at {estimate:.0f} s gets {walltime:.0f} "
+                        f"s, less than the {bundle_request(estimate, floor):.0f} s "
+                        "it should have with the margin for estimates that are too "
+                        "low: the bundle walltime or the queue's longest walltime "
+                        "is too short for it."
+                    )
             else:
                 walltime = limit
         ntasks = largest("ntasks")

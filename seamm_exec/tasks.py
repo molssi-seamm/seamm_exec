@@ -393,6 +393,30 @@ def node_root(node):
         return None
 
 
+#: The margin added to twice a bundle's estimated time, seconds
+BUNDLE_MARGIN = 600.0
+
+
+def bundle_request(seconds, floor=0.0, timed=False):
+    """The walltime a bundle of tasks asks for, before any limits.
+
+    Parameters
+    ----------
+    seconds : float
+        The sum of the tasks' walltimes, or of their (scaled) estimates for the
+        tasks that give none.
+    floor : float
+        The sum of the least walltimes of the tasks that give none.
+    timed : bool
+        Whether every task gives its own walltime: then that sum is used as it is.
+        Otherwise twice the sum and ten minutes, for estimates that are too low,
+        and at least the floor.
+    """
+    if timed:
+        return seconds
+    return max(2.0 * seconds + BUNDLE_MARGIN, floor)
+
+
 class TaskSet:
     """What a step uses: add tasks, then iterate over their results.
 
@@ -439,8 +463,10 @@ class TaskSet:
         ``bundle_tasks``; else one bundle (one task per bundle on a queue
         without ``bundle_walltime``).
     bundle_walltime : float, optional
-        Start a new bundle when the tasks' walltimes (or estimates) would add
-        up to more than this many seconds. Default: the target's.
+        The longest walltime of a bundle, seconds: a new bundle starts when the
+        time the bundle would ask for (``bundle_request``: the tasks' walltimes,
+        or twice their estimates and ten minutes) would be more. Default: the
+        target's.
     max_attempts : int = 3
         Attempts per task over all runs.
     max_lost_retries : int = 2
@@ -538,7 +564,9 @@ class TaskSet:
         )
         self._bundle_index = 0
         self._bundle_count = 0
-        self._bundle_seconds = 0.0
+        self._bundle_seconds = 0.0  # the tasks' walltimes, or scaled estimates
+        self._bundle_floor = 0.0  # their least walltimes, for those estimated
+        self._bundle_timed = True  # whether every task gave its walltime
         self._held = []  # [(backend, bundle, [tasks])] waiting for room
         self._stop = threading.Event()  # set by cancel(), read by run()
         self._held_since = {}  # bundle -> when it was first held
@@ -627,25 +655,38 @@ class TaskSet:
                         f"Tasks '{other.key}' and '{task.key}' share the directory "
                         f"{task.directory}."
                     )
-        # A new bundle when this one is full, by count or by walltime
-        seconds = task.resources.walltime
-        if seconds is None:
-            seconds = max(
-                (self.estimate_scale or 1.0) * (task.estimated_seconds or 0.0),
-                self.min_task_walltime or 0.0,
-            )
+        # A new bundle when this one is full, by count or by walltime. The walltime
+        # is what the bundle would ask for with this task -- for estimated tasks
+        # twice the estimates and ten minutes, as the scheduler asks -- so a full
+        # bundle still has that margin within bundle_walltime.
+        timed = task.resources.walltime is not None
+        if timed:
+            seconds = task.resources.walltime
+            floor = 0.0
+        else:
+            seconds = (self.estimate_scale or 1.0) * (task.estimated_seconds or 0.0)
+            floor = self.min_task_walltime or 0.0
         if self._bundle_count > 0 and (
             (self.bundle_tasks and self._bundle_count >= self.bundle_tasks)
             or (
                 self.bundle_walltime
-                and self._bundle_seconds + seconds > self.bundle_walltime
+                and bundle_request(
+                    self._bundle_seconds + seconds,
+                    self._bundle_floor + floor,
+                    self._bundle_timed and timed,
+                )
+                > self.bundle_walltime
             )
         ):
             self._bundle_index += 1
             self._bundle_count = 0
             self._bundle_seconds = 0.0
+            self._bundle_floor = 0.0
+            self._bundle_timed = True
         self._bundle_count += 1
         self._bundle_seconds += seconds
+        self._bundle_floor += floor
+        self._bundle_timed = self._bundle_timed and timed
         bundle = f"bundle_{self._bundle_index:04d}"
         self.tasks[task.key] = task
         self._bundles[task.key] = bundle

@@ -1,6 +1,15 @@
 =======
 History
 =======
+2026.10.17 -- Bugfix: full bundles of tasks had no margin for slow tasks
+    * A bundle of tasks asks for twice their estimated time plus ten minutes, within
+      the target's bundle walltime. But tasks were packed until their estimates alone
+      reached the bundle walltime, so a full bundle got only about its estimate and ran
+      out of time whenever the tasks were a little slower; the retry was capped in the
+      same way. Tasks are now packed so that what the bundle asks for, margin
+      included, fits within the bundle walltime. A single task too long for the limit
+      with its margin is warned about.
+
 2026.10.16.3 -- Bugfix: finished tasks ran again after an evaluator was stopped
     * When a bundle of tasks finished, its task directories were packed into the
       bundle's archive and removed before the task manifest recorded the archive, and
