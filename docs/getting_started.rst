@@ -210,8 +210,12 @@ With ``tasks = queue`` the ``TaskSet`` submits them, in bundles, as batch jobs:
   estimates are too low on a machine, the target section can guard against
   them: ``estimate_scale`` multiplies each estimate, and ``min_task_walltime``
   (seconds, or a SLURM time such as ``30`` minutes) gives each task at least that
-  much. Tasks are packed into bundles with the same times, still within
-  ``bundle_walltime``.
+  much. A bundle is full when the time it would ask for -- twice the estimates and
+  ten minutes, or at least the tasks' least walltimes -- would be more than
+  ``bundle_walltime``, so even a full bundle keeps that margin. With
+  ``bundle_walltime = 08:00:00``, for example, tasks estimated at 1.5 h go two to a
+  bundle, which asks for 6 h 10 min; three would need 9 h 10 min. A single task too
+  long for the limit with its margin still runs, with a warning.
 - Tasks estimated to take less than ``inline_below`` seconds (default 60) run on
   the evaluator's machine when their program is installed there.
 - A task that carries its own ``config`` was configured for the evaluator's

@@ -9,6 +9,7 @@ inside the "allocation", and the DONE/FAILED markers, without SLURM.
 """
 
 import json
+import logging
 import os
 from pathlib import Path
 import secrets
@@ -528,31 +529,75 @@ def test_own_walltimes_grow_after_a_timeout(job):
 
 
 def test_bundles_by_walltime_with_a_least_task_time():
-    """Packing follows the guards: each task counts at least min_task_walltime."""
-    ts = TaskSet(manifest=False, backend=LocalPool(_executor()), bundle_walltime=100)
-    ts.min_task_walltime = 50
-    for i, seconds in enumerate([10, 10, 10, 80]):
+    """Packing follows the guards: a bundle asks for at least the tasks' least
+    walltimes."""
+    ts = TaskSet(manifest=False, backend=LocalPool(_executor()), bundle_walltime=3600)
+    ts.min_task_walltime = 1000
+    for i, seconds in enumerate([10, 10, 10, 1000]):
         ts.add(fake_task(f"t{i}", estimated_seconds=seconds))
     assert [ts._bundles[f"t{i}"] for i in range(4)] == [
-        "bundle_0000",  # 50
-        "bundle_0000",  # 100
-        "bundle_0001",  # 150 > 100
-        "bundle_0002",  # 50 + 80 > 100
+        "bundle_0000",  # max(2 * 10 + 600, 1000)
+        "bundle_0000",  # 2000
+        "bundle_0000",  # 3000
+        "bundle_0001",  # max(2 * 1030 + 600, 4000) > 3600
     ]
 
 
 def test_bundles_by_walltime():
-    ts = TaskSet(manifest=False, backend=LocalPool(_executor()), bundle_walltime=100)
-    for i, seconds in enumerate([40, 40, 40, 90, 5, 5]):
+    """A bundle is full when what it asks for -- twice the estimates and ten
+    minutes -- would be more than the bundle walltime."""
+    ts = TaskSet(manifest=False, backend=LocalPool(_executor()), bundle_walltime=3600)
+    for i, seconds in enumerate([600, 600, 600, 1500, 100, 100]):
         ts.add(fake_task(f"t{i}", estimated_seconds=seconds))
     assert [ts._bundles[f"t{i}"] for i in range(6)] == [
-        "bundle_0000",  # 40
-        "bundle_0000",  # 80
-        "bundle_0001",  # 120 > 100: a new bundle
-        "bundle_0002",  # 130 > 100
-        "bundle_0002",  # 95
-        "bundle_0002",  # 100, not more than the limit
+        "bundle_0000",  # 2 * 600 + 600 = 1800
+        "bundle_0000",  # 3000
+        "bundle_0001",  # 4200 > 3600: a new bundle
+        "bundle_0002",  # 2 * 2100 + 600 > 3600
+        "bundle_0003",  # 2 * 1600 + 600 > 3600
+        "bundle_0003",  # 2 * 200 + 600
     ]
+    # Tasks giving their own walltimes are packed by them as they are
+    timed = TaskSet(
+        manifest=False, backend=LocalPool(_executor()), bundle_walltime=3600
+    )
+    for i in range(3):
+        timed.add(fake_task(f"w{i}", resources=Resources(walltime=1500)))
+    assert [timed._bundles[f"w{i}"] for i in range(3)] == [
+        "bundle_0000",
+        "bundle_0000",
+        "bundle_0001",
+    ]
+
+
+def test_a_full_bundle_keeps_its_margin(job):
+    """mbe wave 2 (2026-10-16): FEC triples estimated at ~7400 s were packed three
+    to an 8 h bundle, whose request -- twice the estimates and ten minutes -- was
+    then cut to 8 h, leaving no margin. Each bundle must keep its margin."""
+    job, root = job
+    limit = 8 * 3600
+    backend = make_backend(FakeQueue(), job, root, bundle_walltime=limit)
+    ts = TaskSet(directory=job / "step", backend=backend, bundle_walltime=limit)
+    for i in range(6):
+        ts.add(fake_task(f"t{i}", estimated_seconds=7394))
+    bundles = {}
+    for key, bundle in ts._bundles.items():
+        bundles.setdefault(bundle, []).append(ts.tasks[key])
+    assert len(bundles) == 6
+    for tasks in bundles.values():
+        estimate = sum(t.estimated_seconds for t in tasks)
+        walltime = backend._bundle_resources(tasks)["walltime"]
+        assert walltime >= 2 * estimate + 600
+        assert walltime <= limit
+
+
+def test_a_task_too_long_for_the_limit_is_warned_about(job, caplog):
+    job, root = job
+    backend = make_backend(FakeQueue(), job, root, bundle_walltime=8 * 3600)
+    tasks = [fake_task("long", estimated_seconds=5 * 3600)]
+    with caplog.at_level(logging.WARNING):
+        assert backend._bundle_resources(tasks)["walltime"] == 8 * 3600
+    assert "too short for it" in caplog.text
 
 
 # ---- targets ---------------------------------------------------------------
