@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.16.3 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.17 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="_static/documentation_options.js?v=80ea9074"></script>
+    <script src="_static/documentation_options.js?v=fed69469"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.16.3" />
+  <meta name="docsearch:version" content="2026.10.17" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -636,8 +636,12 @@ The first four such timeouts do not use up any of the task’s attempts.</p></li
 estimates are too low on a machine, the target section can guard against
 them: <code class="docutils literal notranslate"><span class="pre">estimate_scale</span></code> multiplies each estimate, and <code class="docutils literal notranslate"><span class="pre">min_task_walltime</span></code>
 (seconds, or a SLURM time such as <code class="docutils literal notranslate"><span class="pre">30</span></code> minutes) gives each task at least that
-much. Tasks are packed into bundles with the same times, still within
-<code class="docutils literal notranslate"><span class="pre">bundle_walltime</span></code>.</p></li>
+much. A bundle is full when the time it would ask for – twice the estimates and
+ten minutes, or at least the tasks’ least walltimes – would be more than
+<code class="docutils literal notranslate"><span class="pre">bundle_walltime</span></code>, so even a full bundle keeps that margin. With
+<code class="docutils literal notranslate"><span class="pre">bundle_walltime</span> <span class="pre">=</span> <span class="pre">08:00:00</span></code>, for example, tasks estimated at 1.5 h go two to a
+bundle, which asks for 6 h 10 min; three would need 9 h 10 min. A single task too
+long for the limit with its margin still runs, with a warning.</p></li>
 <li><p>Tasks estimated to take less than <code class="docutils literal notranslate"><span class="pre">inline_below</span></code> seconds (default 60) run on
 the evaluator’s machine when their program is installed there.</p></li>
 <li><p>A task that carries its own <code class="docutils literal notranslate"><span class="pre">config</span></code> was configured for the evaluator’s
