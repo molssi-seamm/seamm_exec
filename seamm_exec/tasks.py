@@ -198,8 +198,10 @@ class TaskResult:
     stdout, stderr : str
     directory : Path or None
         Where the task's results are (for an archived task, where they were).
-    files : {str: str or bytes}
-        The returned files' contents.
+    files : {str: str}
+        The returned files: for each name, where it is, relative to
+        ``directory`` (``"@subdir+name"`` is ``subdir/name``). Their contents are
+        not kept -- use :meth:`path` or :meth:`read`.
     attempts : int
         How many times the task has been submitted, over all runs.
     history : [dict]
@@ -252,6 +254,47 @@ class TaskResult:
     def ok(self):
         return self.state == FINISHED
 
+    def path(self, name):
+        """Where a returned file is on disk, or None (missing, or archived)."""
+        location = self.files.get(name)
+        if location is None:
+            return None
+        location = Path(location)
+        if not location.is_absolute():
+            if self.archive is not None or self.directory is None:
+                return None
+            location = Path(self.directory) / location
+        return location if location.exists() else None
+
+    def read(self, name, binary=False):
+        """The contents of a returned file, read now, from disk or its archive.
+
+        Parameters
+        ----------
+        name : str
+            The name as returned, e.g. "orca.out" or "@2+md.trj".
+        binary : bool = False
+            Return bytes rather than text.
+
+        Returns
+        -------
+        str, bytes or None
+            None if there is no such file.
+        """
+        location = self.files.get(name)
+        if location is None:
+            return None
+        path = self.path(name)
+        if path is not None:
+            data = path.read_bytes()
+        elif self.archive is not None and not Path(location).is_absolute():
+            data = _read_tar_member(self.archive, f"{self.key}/{location}")
+        else:
+            data = None
+        if data is None or binary:
+            return data
+        return data.decode(errors="replace")
+
     @classmethod
     def from_raw(cls, key, raw, directory=None):
         """Make a result from the dictionary ``Base._run_task()`` returns."""
@@ -261,8 +304,8 @@ class TaskResult:
         files = {}
         for name in raw.get("files", []):
             entry = raw.get(name)
-            if isinstance(entry, dict):
-                files[name] = entry.get("data")
+            if isinstance(entry, dict) and entry.get("path") is not None:
+                files[name] = _location(entry["path"], directory)
         return cls(
             key=key,
             state=FINISHED if returncode in (None, 0) else FAILED,
@@ -1339,12 +1382,10 @@ class TaskSet:
             return None
         directory = self.task_directory(task)
         for name, text in task.success_text.items():
-            data = result.files.get(name)
+            data = result.read(name)
             if data is None and directory is not None:
                 path = directory / self._returned_path(name)
-                data = path.read_bytes() if path.exists() else None
-            if isinstance(data, bytes):
-                data = data.decode(errors="replace")
+                data = path.read_text(errors="replace") if path.exists() else None
             texts = [text] if isinstance(text, str) else list(text)
             if data is None:
                 return f"{name} is missing"
@@ -1419,13 +1460,7 @@ class TaskSet:
             # return_files: list them as Base.run() would have.
             done["files"] = self._list_returned(task, directory)
         for name in done.get("files", []):
-            relative = self._returned_path(name)
-            if archive is not None:
-                data = self._read_from_tar(archive, f"{task.key}/{relative}")
-            else:
-                path = directory / relative
-                data = path.read_bytes() if path.exists() else None
-            files[name] = _decode(data)
+            files[name] = self._returned_path(name)
         stdout = stderr = ""
         for name in ("stdout.txt", "stderr.txt"):
             if archive is not None:
@@ -1703,6 +1738,34 @@ def run_task(task, node=None, **kwargs):
     task_set.add(task)
     results = list(task_set.run())
     return results[0]
+
+
+def _location(path, directory):
+    """A returned file's location, relative to ``directory`` when it is inside."""
+    path = Path(path)
+    if directory is not None:
+        try:
+            return str(path.relative_to(Path(directory)))
+        except ValueError:
+            pass
+    return str(path)
+
+
+def _read_tar_member(archive, member):
+    """The bytes of one member of a tar archive, or None."""
+    try:
+        with tarfile.open(archive, "r") as tar:
+            # The last copy of a name wins, as on extraction.
+            info = None
+            for entry in tar.getmembers():
+                if entry.name == member:
+                    info = entry
+            if info is None:
+                return None
+            fd = tar.extractfile(info)
+            return None if fd is None else fd.read()
+    except (OSError, tarfile.TarError):
+        return None
 
 
 def _decode(data):

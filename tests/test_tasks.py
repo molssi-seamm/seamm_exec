@@ -20,6 +20,12 @@ from seamm_exec.base import Base
 from seamm_exec.local_pool import LocalPool, BINDING_ENV
 from seamm_exec.tasks import WORKER_SCRIPT, Resources, Task, TaskResult, TaskSet
 
+
+def _contents(result):
+    """A result's returned files and their contents."""
+    return {name: result.read(name) for name in result.files}
+
+
 GiB = 1024**3
 
 
@@ -50,6 +56,27 @@ def run_all(task_set):
 # ----------------------------------------------------------------------
 # Base.run() is unchanged
 # ----------------------------------------------------------------------
+def test_base_run_from_scratch_moves_the_files_back(tmp_path):
+    """Run in a scratch directory, the returned files are moved into the step's
+    directory -- "@subdir+name" into subdir/name -- not read, and scratch is gone."""
+    result = Local().run(
+        config={},
+        cmd=["echo big > big.trj; echo sub > @2+md.trj; touch junk.dat"],
+        directory=tmp_path,
+        return_files=["*.trj"],
+        shell=True,
+        in_situ=False,
+    )
+    assert result["returncode"] == 0 and result["in_situ"] is False
+    assert sorted(result["files"]) == ["@2+md.trj", "big.trj"]
+    assert result["big.trj"] == {"path": tmp_path / "big.trj", "exception": None}
+    assert result["@2+md.trj"]["path"] == tmp_path / "2" / "md.trj"
+    assert (tmp_path / "2" / "md.trj").read_text() == "sub\n"
+    assert all("data" not in result[name] for name in result["files"])
+    assert not (tmp_path / "junk.dat").exists()
+    assert not Path(result["directory"]).exists()
+
+
 def test_base_run_result_and_no_new_files(tmp_path):
     """The shim returns the old dictionary and writes no task bookkeeping."""
     result = Local().run(
@@ -65,7 +92,9 @@ def test_base_run_result_and_no_new_files(tmp_path):
     assert result["in_situ"] is True
     assert result["directory"] == str(tmp_path)
     assert result["files"] == ["out.txt"]
-    assert result["out.txt"] == {"data": "hello\n", "exception": None}
+    # The file is left where it is, not read
+    assert result["out.txt"] == {"path": tmp_path / "out.txt", "exception": None}
+    assert (tmp_path / "out.txt").read_text() == "hello\n"
     assert "listing" in result
     # In situ: files not returned are removed; stdout/stderr written.
     assert sorted(p.name for p in tmp_path.iterdir()) == [
@@ -134,7 +163,7 @@ def test_tasks_run_concurrently(tmp_path):
     for i in range(4):
         r = results[f"t{i}"]
         assert r.ok and r.returncode == 0 and r.attempts == 1
-        assert r.files["n.txt"] == "1\n"
+        assert r.read("n.txt") == "1\n"
         assert r.directory == tmp_path / "tasks" / f"t{i}"
         assert (tmp_path / "tasks" / f"t{i}" / "DONE").exists()
     manifest = json.loads((tmp_path / "tasks" / "manifest.json").read_text())
@@ -159,13 +188,12 @@ def test_slots_partition_the_pool(tmp_path):
         )
     results = run_all(ts)
     spans = [
-        (float(r.files["start.txt"]), float(r.files["end.txt"]))
-        for r in results.values()
+        (float(r.read("start.txt")), float(r.read("end.txt"))) for r in results.values()
     ]
     for start, _ in spans:
         overlap = sum(1 for s, e in spans if s <= start < e)
         assert overlap <= 2
-    assert all(r.files["ce.txt"] == f"2 {GiB}\n" for r in results.values())
+    assert all(r.read("ce.txt") == f"2 {GiB}\n" for r in results.values())
 
 
 def test_whole_pool_and_oversized_tasks(tmp_path):
@@ -173,8 +201,8 @@ def test_whole_pool_and_oversized_tasks(tmp_path):
     ts.add(shell_task("all", "echo {NTASKS} > n.txt"))  # ntasks=None
     ts.add(shell_task("big", "echo {NTASKS} > n.txt", resources=Resources(ntasks=64)))
     results = run_all(ts)
-    assert results["all"].files["n.txt"] == "4\n"
-    assert results["big"].files["n.txt"] == "4\n"  # clamped to the pool
+    assert results["all"].read("n.txt") == "4\n"
+    assert results["big"].read("n.txt") == "4\n"  # clamped to the pool
     assert ts.capacity() == {"cores": 4, "memory": 16 * GiB, "ngpus": 0}
 
 
@@ -182,14 +210,14 @@ def test_binding_disabled_only_when_concurrent(tmp_path):
     cmd = f"echo ${BINDING_ENV}:$OMP_NUM_THREADS > b.txt"
     one = TaskSet(directory=tmp_path / "one", backend=pool(), executor=Local())
     one.add(shell_task("a", cmd))
-    assert run_all(one)["a"].files["b.txt"] == ":\n"  # untouched
+    assert run_all(one)["a"].read("b.txt") == ":\n"  # untouched
 
     many = TaskSet(directory=tmp_path / "many", backend=pool(), executor=Local())
     many.add(shell_task("a", cmd, resources=Resources(1, cpus_per_task=2)))
     many.add(shell_task("b", cmd, env={BINDING_ENV: "core"}, resources=Resources(1)))
     results = run_all(many)
-    assert results["a"].files["b.txt"] == "none:2\n"
-    assert results["b"].files["b.txt"] == "core:1\n"  # the task's own setting wins
+    assert results["a"].read("b.txt") == "none:2\n"
+    assert results["b"].read("b.txt") == "core:1\n"  # the task's own setting wins
 
 
 def test_code_dir_placeholder(tmp_path):
@@ -197,7 +225,7 @@ def test_code_dir_placeholder(tmp_path):
     ts.add(
         shell_task("a", "echo {code_dir} > d.txt", config={"code": "/opt/orca/orca"})
     )
-    assert run_all(ts)["a"].files["d.txt"] == "/opt/orca\n"
+    assert run_all(ts)["a"].read("d.txt") == "/opt/orca\n"
 
 
 def test_config_from_ini(tmp_path):
@@ -216,7 +244,7 @@ def test_config_from_ini(tmp_path):
             return_files=["o.txt"],
         )
     )
-    assert run_all(ts)["a"].files["o.txt"] == "hi\n"
+    assert run_all(ts)["a"].read("o.txt") == "hi\n"
 
 
 # ----------------------------------------------------------------------
@@ -324,7 +352,7 @@ def test_finished_tasks_are_not_rerun(tmp_path):
     assert len(counter.read_text().split()) == 3  # nothing ran again
     for key, r in second.items():
         assert r.restored and r.ok
-        assert r.files == first[key].files
+        assert _contents(r) == _contents(first[key])
         assert r.attempts == 1
 
 
@@ -334,7 +362,7 @@ def test_changed_inputs_are_rerun(tmp_path, caplog):
     ts, counter = counting_tasks(tmp_path, command="echo {key} changed > r.txt")
     results = run_all(ts)
     assert len(counter.read_text().split()) == 6
-    assert results["t0"].files["r.txt"] == "t0 changed\n"
+    assert results["t0"].read("r.txt") == "t0 changed\n"
     assert "different inputs" in caplog.text
 
 
@@ -573,12 +601,12 @@ def test_archive_one_tar_per_bundle(tmp_path):
     with tarfile.open(tasks / "bundle_0000.tar") as tar:
         names = tar.getnames()
     assert "t0/DONE" in names and "t1/r.txt" in names
-    assert first["t4"].files["r.txt"] == "4\n"
+    assert first["t4"].read("r.txt") == "4\n"
 
     second = run_all(make())  # restored from the tars
     for i in range(5):
         r = second[f"t{i}"]
-        assert r.restored and r.files["r.txt"] == f"{i}\n"
+        assert r.restored and r.read("r.txt") == f"{i}\n"
         assert r.archive is not None
 
 
@@ -654,7 +682,7 @@ def test_a_manifest_without_the_archive_is_restored_from_the_bundle(tmp_path):
     second = run_all(make())
     for i in range(2):
         r = second[f"t{i}"]
-        assert r.restored and r.files["r.txt"] == f"{i}\n"
+        assert r.restored and r.read("r.txt") == f"{i}\n"
         assert r.archive == tasks / "bundle_0000.tar"
     assert (tmp_path / "ran").read_text() == ran  # nothing ran again
     data = json.loads((tasks / "manifest.json").read_text())
@@ -727,8 +755,8 @@ def test_inline_rule(tmp_path):
     )
     results = run_all(ts)
     assert sorted(remote.submitted) == ["absent", "huge", "unknown"]
-    assert results["tiny"].files == {"l.txt": "local\n"}
-    assert results["mopac"].files == {"m.txt": "m\n"}
+    assert _contents(results["tiny"]) == {"l.txt": "local\n"}
+    assert _contents(results["mopac"]) == {"m.txt": "m\n"}
     manifest = json.loads((tmp_path / "step" / "tasks" / "manifest.json").read_text())
     assert manifest["tasks"]["tiny"]["backend"] == "local"
     assert manifest["tasks"]["huge"]["backend"] == "fake-remote"
@@ -820,7 +848,7 @@ def test_run_task_with_a_node(tmp_path):
         return_files=["o.txt"],
     )
     result = run_task(task, node=node)
-    assert result.ok and result.files == {"o.txt": "hi\n"}
+    assert result.ok and _contents(result) == {"o.txt": "hi\n"}
     assert (tmp_path / "o.txt").exists()
     assert (tmp_path / "tasks" / "one" / "DONE").exists()
     assert run_task(task, node=node).restored
@@ -1247,8 +1275,8 @@ def test_inline_only_if_the_task_fits(tmp_path):
     ts.add(shell_task("any", "echo x > x.txt", estimated_seconds=0.1))
     results = run_all(ts)
     assert remote.submitted == ["four"]
-    assert results["one"].files == {"x.txt": "x\n"}
-    assert results["any"].files == {"x.txt": "x\n"}
+    assert _contents(results["one"]) == {"x.txt": "x\n"}
+    assert _contents(results["any"]) == {"x.txt": "x\n"}
 
 
 # ----------------------------------------------------------------------
