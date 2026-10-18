@@ -47,7 +47,7 @@ class FakeProvider:
     def analyze_task(
         cls, result, model_chemistry, configuration, *, properties, options
     ):
-        text = result.files.get("energy.txt")
+        text = result.read("energy.txt")
         data = {}
         if text:
             data["energy"] = float(text)

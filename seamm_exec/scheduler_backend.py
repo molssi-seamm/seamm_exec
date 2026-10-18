@@ -695,9 +695,9 @@ class SchedulerBackend:
             done = _read_json(entry.marker / "DONE") or {}
             files = {}
             for name in done.get("files", []):
-                data = _read_returned(entry.directory, name)
-                if data is not None:
-                    files[name] = data
+                relative = _returned_path(name)
+                if (Path(entry.directory) / relative).exists():
+                    files[name] = relative
             return TaskResult(
                 key=task.key,
                 state=FINISHED,
@@ -1150,21 +1150,13 @@ def _read_json(path):
         return None
 
 
-def _read_returned(directory, name):
-    """A returned file: ``@subdir+name`` lands in ``subdir/name``."""
+def _returned_path(name):
+    """Where a returned file lands, relative to the task's directory:
+    ``@subdir+name`` is ``subdir/name``."""
     if name.startswith("@") and "+" in name:
         subdir, fname = name[1:].split("+", 1)
-        path = Path(directory) / subdir / fname
-    else:
-        path = Path(directory) / name
-    try:
-        data = path.read_bytes()
-    except OSError:
-        return None
-    try:
-        return data.decode()
-    except UnicodeDecodeError:
-        return data
+        return f"{subdir}/{fname}"
+    return name
 
 
 __all__ = ["SchedulerBackend", "QueueFull", "parse_id", "remote_name"]

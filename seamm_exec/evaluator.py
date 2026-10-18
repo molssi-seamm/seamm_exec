@@ -34,7 +34,9 @@ others run as tasks. If there is no engine, or it cannot start here (a queue
 target with the code only on the cluster), that structure gets a failed result;
 so does one whose ``get_task`` raises. Neither stops the rest.
 
-``analyze_task`` raises :class:`AnalysisError` when a required property is
+``analyze_task`` reads the returned files with ``result.read(name)`` (they are on
+disk or in the task archive, not in the result). It raises :class:`AnalysisError` when
+a required property is
 missing; it never returns partial numbers. ``options`` passes what a consumer
 needs for a fragment: ``atom_indices``, ``ghost_atoms``, ``charge``,
 ``multiplicity``, an initial guess.

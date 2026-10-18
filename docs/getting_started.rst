@@ -22,7 +22,13 @@ The original interface, used by most steps:
         return_files=["output.txt", "*.log"],
         shell=True,
     )
-    output = result["output.txt"]["data"]
+    output = result["output.txt"]["path"].read_text()
+
+The returned files are left in the step's directory (``"@subdir+name"`` in
+``subdir/name``) and are not read: ``result[name]`` gives their ``"path"`` (and an
+``"exception"`` if one could not be put in place), so a step reads only what it needs
+-- an MD run's trajectories can be gigabytes. ``result["stdout"]`` and
+``result["stderr"]`` are text.
 
 ``in_situ`` chooses where the code runs: ``None`` (the default) runs in a scratch
 directory under a scheduler such as SLURM (``$TMPDIR``, so node-local storage) and
@@ -57,7 +63,7 @@ and run any number of them through a :class:`~seamm_exec.TaskSet`:
         )
     for result in tasks.run():
         if result.ok:
-            parse(result.files["orca.out"])
+            parse(result.read("orca.out"))    # read now, from disk or the archive
         else:
             print(f"{result.key} failed: {result.reason}")
 

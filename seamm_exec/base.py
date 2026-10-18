@@ -8,7 +8,6 @@ from pathlib import Path
 import platform
 import shutil
 import stat
-import sys
 import tempfile
 import threading
 import time
@@ -138,6 +137,16 @@ class Base(object):
             otherwise run in place, as before.
         ce : dict(str, str or int)
             Description of the computational enviroment
+
+        Returns
+        -------
+        dict
+            "stdout", "stderr", "returncode", "in_situ", "directory" (where it ran)
+            and "files", the names of the returned files; for each of those,
+            ``result[name] = {"path": Path, "exception": str or None}``. The
+            contents of the files are not read -- they can be gigabytes -- so a
+            caller reads what it needs from "path" (``"@subdir+name"`` is put in
+            ``subdir/name``).
 
         This is the original, blocking interface. It runs one task through a
         :class:`~seamm_exec.tasks.TaskSet` with a one-slot, synchronous
@@ -297,39 +306,17 @@ class Base(object):
             )
         result["listing"] = listing
 
-        # capture the requested files
+        # The requested files: their names. Their contents are not read -- they
+        # can be gigabytes (an MD run's trajectories) -- but are left on disk,
+        # and result[name]["path"] says where.
         result["files"] = []
         returned = []
         for pattern in return_files:
-            paths = sorted(tmpdir.glob(pattern))
-            for path in paths:
+            for path in sorted(tmpdir.glob(pattern)):
+                if path in returned or not path.is_file():
+                    continue
                 returned.append(path)
-                filename = path.name
-                data = None
-                exception = None
-                result["files"].append(filename)
-                try:
-                    with path.open(mode="r") as fd:
-                        data = fd.read()
-
-                except UnicodeDecodeError:
-                    with path.open(mode="rb") as fd:
-                        data = fd.read()
-
-                except IOError:
-                    exception = sys.exc_info()
-                    self.logger.warning(
-                        f"An I/O error occurred reading file '{filename}'",
-                        exc_info=exception,
-                    )
-                except Exception:
-                    exception = sys.exc_info()
-                    self.logger.warning(
-                        f"An unexpected error occured reading file '{filename}'",
-                        exc_info=exception,
-                    )
-                finally:
-                    result[filename] = {"exception": exception, "data": data}
+                result["files"].append(path.name)
 
         # Clean up the temporary directory
         if in_situ:
@@ -349,35 +336,31 @@ class Base(object):
                         if keep and _is_kept(dirname, keep):
                             continue
                         dirname.rmdir()
-            # And move any files the need to go in subdirectories
-            for filename in result["files"]:
-                if filename[0] == "@":
-                    subdir, fname = filename[1:].split("+")
-                    from_path = directory / filename
-                    subdir = directory / subdir
-                    subdir.mkdir(parents=True, exist_ok=True)
-                    from_path.rename(subdir / fname)
-        else:
+
+        # Put the returned files in place: "@subdir+name" goes to subdir/name.
+        # From a temporary directory they are moved, not copied through memory.
+        destination = directory if directory is not None else Path.cwd()
+        for filename in result["files"]:
+            if filename[0] == "@" and "+" in filename:
+                subdir, fname = filename[1:].split("+", 1)
+                final = destination / subdir / fname
+            else:
+                final = destination / filename
+            source = tmpdir / filename
+            exception = None
+            try:
+                if source != final:
+                    final.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.move(str(source), str(final))
+            except Exception as e:
+                exception = f"{type(e).__name__}: {e}"
+                self.logger.warning(
+                    f"Could not put the returned file '{filename}' in place: {e}"
+                )
+            result[filename] = {"path": final, "exception": exception}
+
+        if not in_situ:
             shutil.rmtree(tmpdir)
-
-            # And write the results locally
-            if directory is not None:
-                for filename in result["files"]:
-                    if filename[0] == "@":
-                        subdir, fname = filename[1:].split("+")
-                        subdir = directory / subdir
-                        subdir.mkdir(parents=True, exist_ok=True)
-                        path = subdir / fname
-                    else:
-                        path = directory / filename
-
-                    if result[filename]["data"] is not None:
-                        mode = "wb" if type(result[filename]["data"]) is bytes else "w"
-                        with path.open(mode=mode) as fd:
-                            fd.write(result[filename]["data"])
-                    else:
-                        with path.open(mode="w") as fd:
-                            fd.write(result[filename]["exception"])
 
         # Write any stdout and stderr
 

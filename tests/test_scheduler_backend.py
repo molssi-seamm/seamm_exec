@@ -198,9 +198,9 @@ def test_bundles_run_through_the_worker(job):
     assert all(r.ok for r in results.values())
     for i in range(5):
         r = results[f"t{i}"]
-        assert r.files["out.txt"].split()[0] == f"t{i}"
+        assert r.read("out.txt").split()[0] == f"t{i}"
         # The task's share of the "allocation": the code saw {NTASKS} = 1
-        assert r.files["out.txt"].split()[1] == "1"
+        assert r.read("out.txt").split()[1] == "1"
         # The TaskSet rewrote the worker's DONE in its own form
         done = json.loads((job / "step" / "tasks" / f"t{i}" / "DONE").read_text())
         assert done["files"] == ["out.txt"]
@@ -263,7 +263,7 @@ def test_input_files_and_success_text(job):
     ts.add(Task(key="rc", program="fake", cmd=["exit", "3"], shell=True))
     results = run_all(ts)
     assert results["good"].ok
-    assert results["good"].files["out.txt"] == "TERMINATED NORMALLY\n"
+    assert results["good"].read("out.txt") == "TERMINATED NORMALLY\n"
     assert results["bad"].state == "failed"
     assert "success check" in results["bad"].reason
     assert results["rc"].state == "failed"
@@ -287,7 +287,7 @@ def test_config_is_sent_only_to_a_local_transport(job):
     )
     backend = make_backend(queue, job, root, accepts_config=True)
     result = run_task(task, directory=job / "step", backend=backend)
-    assert result.ok and result.files["out.txt"] == "configured\n"
+    assert result.ok and result.read("out.txt") == "configured\n"
     assert len(queue.scripts) == 1
 
     # A remote target: the task stays on this machine.
@@ -770,7 +770,7 @@ def test_resolver_hook(tmp_path):
         Task(key="h", program="hooked", cmd=["x"], shell=True, return_files=["out.txt"])
     )
     (result,) = ts.run()
-    assert result.files["out.txt"] == "resolved 1\n"
+    assert result.read("out.txt") == "resolved 1\n"
 
 
 # ---- computational environment under PBS ---------------------------------
@@ -1001,7 +1001,7 @@ def test_changed_inputs_are_not_adopted(job):
     ts.add(new)
     (result,) = ts.run()
     assert len(queue.scripts) == 2
-    assert result.files["out.txt"].split()[0] == "NEW"
+    assert result.read("out.txt").split()[0] == "NEW"
     done = json.loads((job / "step" / "tasks" / "t0" / "DONE").read_text())
     assert done["fingerprint"] == new.digest()
 
@@ -1289,8 +1289,8 @@ def test_tasks_with_config_never_meet_a_resolver(tmp_path):
         )
     )
     results = {r.key: r for r in ts.run()}
-    assert results["given"].files["out.txt"] == "given\n"
-    assert results["bare"].files["out.txt"] == "resolved\n"
+    assert results["given"].read("out.txt") == "given\n"
+    assert results["bare"].read("out.txt") == "resolved\n"
     assert calls == [["echo", "bare", ">", "out.txt"]]
 
     # The bundle worker (SEAMM mode) follows the same rule
@@ -1455,7 +1455,7 @@ def test_bundles_through_the_taskserver(job, tmp_path):
         k: (r.state, r.reason) for k, r in results.items()
     }
     for i in range(5):
-        words = results[f"t{i}"].files["out.txt"].split()
+        words = results[f"t{i}"].read("out.txt").split()
         assert words == [f"t{i}", "1"]  # the task's share of the bundle's cores
     # The queue ran three bundles, as TaskServer jobs. A bundle's results are
     # back a moment before its runner records the job as completed, so wait for

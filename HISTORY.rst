@@ -1,6 +1,16 @@
 =======
 History
 =======
+2026.10.18 -- Returned files are no longer read into memory
+    * ``executor.run()`` read every returned file into memory, and the task layer kept
+      each file's contents in its results. An MD run returns gigabytes of trajectories,
+      so several runs at once could exhaust a machine. The files are now left on disk:
+      ``result[name]`` gives the ``"path"`` of each, not its ``"data"``, and a task's
+      ``result.files`` gives where each file is, with ``result.read(name)`` to read one
+      from disk or from the task archive. Files from a scratch directory are moved back
+      rather than copied through memory. Steps that used the contents must read the
+      files, and need this version.
+
 2026.10.17 -- Bugfix: full bundles of tasks had no margin for slow tasks
     * A bundle of tasks asks for twice their estimated time plus ten minutes, within
       the target's bundle walltime. But tasks were packed until their estimates alone

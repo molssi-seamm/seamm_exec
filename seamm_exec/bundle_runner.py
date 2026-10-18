@@ -121,7 +121,7 @@ def run_seamm_bundle(bundle):
             if result.state == "finished":
                 directory = Path(task.directory)
                 for name, text in (task.success_text or {}).items():
-                    data = result.files.get(name)
+                    data = result.read(name)
                     path = directory / name
                     # A file on disk counts only if this run wrote it
                     if (
