@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.17 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.18 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="_static/documentation_options.js?v=fed69469"></script>
+    <script src="_static/documentation_options.js?v=16cc37ab"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.17" />
+  <meta name="docsearch:version" content="2026.10.18" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -461,9 +461,14 @@ or a plain executable), where the program runs, and which files come back.</p>
     <span class="n">return_files</span><span class="o">=</span><span class="p">[</span><span class="s2">"output.txt"</span><span class="p">,</span> <span class="s2">"*.log"</span><span class="p">],</span>
     <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">output</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">"output.txt"</span><span class="p">][</span><span class="s2">"data"</span><span class="p">]</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">"output.txt"</span><span class="p">][</span><span class="s2">"path"</span><span class="p">]</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
 </pre></div>
 </div>
+<p>The returned files are left in the step’s directory (<code class="docutils literal notranslate"><span class="pre">&quot;&#64;subdir+name&quot;</span></code> in
+<code class="docutils literal notranslate"><span class="pre">subdir/name</span></code>) and are not read: <code class="docutils literal notranslate"><span class="pre">result[name]</span></code> gives their <code class="docutils literal notranslate"><span class="pre">&quot;path&quot;</span></code> (and an
+<code class="docutils literal notranslate"><span class="pre">&quot;exception&quot;</span></code> if one could not be put in place), so a step reads only what it needs
+– an MD run’s trajectories can be gigabytes. <code class="docutils literal notranslate"><span class="pre">result[&quot;stdout&quot;]</span></code> and
+<code class="docutils literal notranslate"><span class="pre">result[&quot;stderr&quot;]</span></code> are text.</p>
 <p><code class="docutils literal notranslate"><span class="pre">in_situ</span></code> chooses where the code runs: <code class="docutils literal notranslate"><span class="pre">None</span></code> (the default) runs in a scratch
 directory under a scheduler such as SLURM (<code class="docutils literal notranslate"><span class="pre">$TMPDIR</span></code>, so node-local storage) and
 in place otherwise; <code class="docutils literal notranslate"><span class="pre">True</span></code> always runs in place, so the output can be watched as
@@ -493,7 +498,7 @@ and run any number of them through a <code class="xref py py-class docutils lite
     <span class="p">)</span>
 <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">tasks</span><span class="o">.</span><span class="n">run</span><span class="p">():</span>
     <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
-        <span class="n">parse</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="s2">"orca.out"</span><span class="p">])</span>
+        <span class="n">parse</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">"orca.out"</span><span class="p">))</span>    <span class="c1"># read now, from disk or the archive</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">reason</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>

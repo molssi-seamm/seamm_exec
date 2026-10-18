@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.17 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.18 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=fed69469"></script>
+    <script src="../_static/documentation_options.js?v=16cc37ab"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.17" />
+  <meta name="docsearch:version" content="2026.10.18" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -527,17 +527,24 @@ SLURM), since the job directory there is typically NFS-mounted
 and unsafe for an MPI code’s scratch I/O (molssi-seamm/orca_step#20);
 otherwise run in place, as before.</p></li>
 <li><p><strong>ce</strong> (<em>dict</em><em>(</em><em>str</em><em>, </em><em>str</em><em> or </em><em>int</em><em>)</em>) – Description of the computational enviroment</p></li>
-<li><p><strong>original</strong> (<em>This is the</em>)</p></li>
-<li><p><strong>a</strong> (<em>blocking interface. It runs one task through</em>)</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>dict</em> – “stdout”, “stderr”, “returncode”, “in_situ”, “directory” (where it ran)
+and “files”, the names of the returned files; for each of those,
+<code class="docutils literal notranslate"><span class="pre">result[name]</span> <span class="pre">=</span> <span class="pre">{&quot;path&quot;:</span> <span class="pre">Path,</span> <span class="pre">&quot;exception&quot;:</span> <span class="pre">str</span> <span class="pre">or</span> <span class="pre">None}</span></code>. The
+contents of the files are not read – they can be gigabytes – so a
+caller reads what it needs from “path” (<code class="docutils literal notranslate"><span class="pre">&quot;&#64;subdir+name&quot;</span></code> is put in
+<code class="docutils literal notranslate"><span class="pre">subdir/name</span></code>).</p></li>
+<li><p><em>This is the original, blocking interface. It runs one task through a</em></p></li>
+<li><p><a class="reference internal" href="#seamm_exec.tasks.TaskSet" title="seamm_exec.tasks.TaskSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">TaskSet</span></code></a> with a one-slot, synchronous</p></li>
+<li><p><a class="reference internal" href="#seamm_exec.local_pool.LocalPool" title="seamm_exec.local_pool.LocalPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">LocalPool</span></code></a>, without a manifest, so its</p></li>
+<li><p><em>behaviour and the files it leaves are exactly as before.</em></p></li>
+</ul>
+</p>
+</dd>
 </dl>
-<p>:param <a class="reference internal" href="#seamm_exec.tasks.TaskSet" title="seamm_exec.tasks.TaskSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">TaskSet</span></code></a> with a one-slot:
-:param synchronous:
-:param <a class="reference internal" href="#seamm_exec.local_pool.LocalPool" title="seamm_exec.local_pool.LocalPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">LocalPool</span></code></a>:
-:param without a manifest:
-:param so its:
-:param behaviour and the files it leaves are exactly as before.:</p>
 </dd></dl>
 
 </dd></dl>
@@ -632,7 +639,9 @@ ORCA or MOPAC) goes to the program’s MDI engine, if it has one, even when the
 others run as tasks. If there is no engine, or it cannot start here (a queue
 target with the code only on the cluster), that structure gets a failed result;
 so does one whose <code class="docutils literal notranslate"><span class="pre">get_task</span></code> raises. Neither stops the rest.</p>
-<p><code class="docutils literal notranslate"><span class="pre">analyze_task</span></code> raises <a class="reference internal" href="#seamm_exec.evaluator.AnalysisError" title="seamm_exec.evaluator.AnalysisError"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisError</span></code></a> when a required property is
+<p><code class="docutils literal notranslate"><span class="pre">analyze_task</span></code> reads the returned files with <code class="docutils literal notranslate"><span class="pre">result.read(name)</span></code> (they are on
+disk or in the task archive, not in the result). It raises <a class="reference internal" href="#seamm_exec.evaluator.AnalysisError" title="seamm_exec.evaluator.AnalysisError"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisError</span></code></a> when
+a required property is
 missing; it never returns partial numbers. <code class="docutils literal notranslate"><span class="pre">options</span></code> passes what a consumer
 needs for a fragment: <code class="docutils literal notranslate"><span class="pre">atom_indices</span></code>, <code class="docutils literal notranslate"><span class="pre">ghost_atoms</span></code>, <code class="docutils literal notranslate"><span class="pre">charge</span></code>,
 <code class="docutils literal notranslate"><span class="pre">multiplicity</span></code>, an initial guess.</p>
@@ -2032,7 +2041,9 @@ it again, e.g. its process group).</p>
 <li><p><strong>returncode</strong> (<em>int</em><em> or </em><em>None</em>)</p></li>
 <li><p><strong>stderr</strong> (<a class="reference internal" href="#seamm_exec.tasks.TaskResult.stdout" title="seamm_exec.tasks.TaskResult.stdout"><em>stdout</em></a><em>,</em>)</p></li>
 <li><p><strong>directory</strong> (<em>Path</em><em> or </em><em>None</em>) – Where the task’s results are (for an archived task, where they were).</p></li>
-<li><p><strong>files</strong> (<em>{str: str</em><em> or </em><em>bytes}</em>) – The returned files’ contents.</p></li>
+<li><p><strong>files</strong> (<em>{str: str}</em>) – The returned files: for each name, where it is, relative to
+<code class="docutils literal notranslate"><span class="pre">directory</span></code> (<code class="docutils literal notranslate"><span class="pre">&quot;&#64;subdir+name&quot;</span></code> is <code class="docutils literal notranslate"><span class="pre">subdir/name</span></code>). Their contents are
+not kept – use <a class="reference internal" href="#seamm_exec.tasks.TaskResult.path" title="seamm_exec.tasks.TaskResult.path"><code class="xref py py-meth docutils literal notranslate"><span class="pre">path()</span></code></a> or <a class="reference internal" href="#seamm_exec.tasks.TaskResult.read" title="seamm_exec.tasks.TaskResult.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read()</span></code></a>.</p></li>
 <li><p><strong>attempts</strong> (<em>int</em>) – How many times the task has been submitted, over all runs.</p></li>
 <li><p><strong>history</strong> (<em>[</em><em>dict</em><em>]</em>) – One record per attempt.</p></li>
 <li><p><strong>in_situ</strong> (<em>bool</em><em> or </em><em>None</em>) – Whether it ran in place.</p></li>
@@ -2107,10 +2118,36 @@ wall time for the timing records; None when the back end cannot tell.</p></li>
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ok</span></span><a class="headerlink" href="#seamm_exec.tasks.TaskResult.ok" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskResult.path">
+<span class="sig-name descname"><span class="pre">path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#TaskResult.path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.TaskResult.path" title="Link to this definition">#</a></dt>
+<dd><p>Where a returned file is on disk, or None (missing, or archived).</p>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="seamm_exec.tasks.TaskResult.raw">
 <span class="sig-name descname"><span class="pre">raw</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#seamm_exec.tasks.TaskResult.raw" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.tasks.TaskResult.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/tasks.html#TaskResult.read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.tasks.TaskResult.read" title="Link to this definition">#</a></dt>
+<dd><p>The contents of a returned file, read now, from disk or its archive.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – The name as returned, e.g. “orca.out” or “&#64;2+md.trj”.</p></li>
+<li><p><strong>binary</strong> (<em>bool = False</em>) – Return bytes rather than text.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None if there is no such file.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str, bytes or None</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="seamm_exec.tasks.TaskResult.reason">
@@ -3663,7 +3700,9 @@ raises.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.in_situ"><code class="docutils literal notranslate"><span class="pre">TaskResult.in_situ</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.key"><code class="docutils literal notranslate"><span class="pre">TaskResult.key</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.ok"><code class="docutils literal notranslate"><span class="pre">TaskResult.ok</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.path"><code class="docutils literal notranslate"><span class="pre">TaskResult.path()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.raw"><code class="docutils literal notranslate"><span class="pre">TaskResult.raw</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.read"><code class="docutils literal notranslate"><span class="pre">TaskResult.read()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.reason"><code class="docutils literal notranslate"><span class="pre">TaskResult.reason</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.restored"><code class="docutils literal notranslate"><span class="pre">TaskResult.restored</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.tasks.TaskResult.returncode"><code class="docutils literal notranslate"><span class="pre">TaskResult.returncode</span></code></a></li>

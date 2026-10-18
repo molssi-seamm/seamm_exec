@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.evaluator &#8212; SEAMM seamm-exec Plug-in 2026.10.17 documentation</title>
+    <title>seamm_exec.evaluator &#8212; SEAMM seamm-exec Plug-in 2026.10.18 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=fed69469"></script>
+    <script src="../../_static/documentation_options.js?v=16cc37ab"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.17" />
+  <meta name="docsearch:version" content="2026.10.18" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -464,7 +464,9 @@
 <span class="sd">target with the code only on the cluster), that structure gets a failed result;</span>
 <span class="sd">so does one whose ``get_task`` raises. Neither stops the rest.</span>
 
-<span class="sd">``analyze_task`` raises :class:`AnalysisError` when a required property is</span>
+<span class="sd">``analyze_task`` reads the returned files with ``result.read(name)`` (they are on</span>
+<span class="sd">disk or in the task archive, not in the result). It raises :class:`AnalysisError` when</span>
+<span class="sd">a required property is</span>
 <span class="sd">missing; it never returns partial numbers. ``options`` passes what a consumer</span>
 <span class="sd">needs for a fragment: ``atom_indices``, ``ghost_atoms``, ``charge``,</span>
 <span class="sd">``multiplicity``, an initial guess.</span>
