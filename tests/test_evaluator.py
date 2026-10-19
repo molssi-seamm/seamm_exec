@@ -399,3 +399,75 @@ def test_batch_path_without_the_task_when_a_provider_forwards_kwargs(tmp_path):
     # Refused once, then called without the task for the rest
     assert calls[0] == ["options", "properties", "task"]
     assert calls[1:] == [["options", "properties"]] * (len(calls) - 1)
+
+
+# ---- a share of the job's cores for programs whose tasks use several ----------
+
+
+def _pool_task_set(cores, memory):
+    from seamm_exec.local_pool import LocalPool
+
+    pool = LocalPool(seamm_exec.Local(), ce={"NTASKS": cores, "MEM_PER_NODE": memory})
+    return types.SimpleNamespace(backend=pool)
+
+
+PARALLEL_MC = dict(MC, options={"mdi_capable": False, "parallel_tasks": True})
+
+
+@pytest.mark.parametrize(
+    "n, ntasks",
+    [(1, 8), (3, 2), (4, 2), (5, None), (8, None), (20, None)],
+)
+def test_tasks_share_the_jobs_cores(tmp_path, n, ntasks):
+    """Fewer structures than cores (an optimization evaluates one at a time)
+    share the job's cores and memory out; more keep the program's one core."""
+    evaluator = Evaluator(_node(tmp_path), PARALLEL_MC, path="batch")
+    resources = evaluator._task_resources(_pool_task_set(8, 16_000_000_000), n)
+    if ntasks is None:
+        assert resources is None
+    else:
+        assert resources.ntasks == ntasks
+        assert resources.mem_per_cpu == 2_000_000_000
+
+
+def test_only_programs_that_ask_share_the_cores(tmp_path):
+    evaluator = Evaluator(_node(tmp_path), MC, path="batch")
+    assert evaluator._task_resources(_pool_task_set(8, 16_000_000_000), 1) is None
+
+
+def test_tasks_sent_to_a_queue_keep_their_default(tmp_path):
+    evaluator = Evaluator(_node(tmp_path), PARALLEL_MC, path="batch")
+    task_set = types.SimpleNamespace(backend=object())
+    assert evaluator._task_resources(task_set, 1) is None
+
+
+def test_the_steps_resources_come_first(tmp_path):
+    resources = seamm_exec.Resources(ntasks=3)
+    evaluator = Evaluator(
+        _node(tmp_path), PARALLEL_MC, path="batch", resources=resources
+    )
+    assert evaluator._task_resources(_pool_task_set(8, 0), 1) is resources
+
+
+def test_a_shared_out_task_reaches_get_task(tmp_path, monkeypatch):
+    """One structure in a job with 6 cores: get_task is asked for 6 ranks."""
+    import seamm_exec.local_pool
+
+    monkeypatch.setattr(
+        seamm_exec.local_pool,
+        "computational_environment",
+        lambda: {"NTASKS": 6, "MEM_PER_NODE": 6_000_000_000},
+    )
+    seen = []
+
+    class Provider(FakeProvider):
+        @classmethod
+        def get_task(cls, configuration, model_chemistry, **kwargs):
+            seen.append(kwargs.pop("resources", None))
+            return FakeProvider.get_task(configuration, model_chemistry, **kwargs)
+
+    geometry = Geometry([8, 1, 1], [[0, 0, 0], [0.96, 0, 0], [-0.24, 0.93, 0]])
+    with Evaluator(_node(tmp_path, Provider), PARALLEL_MC, path="batch") as evaluator:
+        evaluator.submit(geometry, key="a")
+        assert [r.ok for r in evaluator.results()] == [True]
+    assert [(r.ntasks, r.mem_per_cpu) for r in seen] == [(6, 1_000_000_000)]
