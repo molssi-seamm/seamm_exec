@@ -558,6 +558,37 @@ class Evaluator:
     # ------------------------------------------------------------------
     # Batch
     # ------------------------------------------------------------------
+    def _task_resources(self, task_set, n):
+        """The resources of each of ``n`` tasks: the step's, else, for a program
+        whose tasks can use several cores, a share of the job's own.
+
+        A program's default is one core per calculation, for many structures run
+        side by side. Run in the job's own cores, fewer structures than cores
+        would leave cores idle -- an optimization evaluates one structure at a
+        time -- so each gets an equal share of the cores and memory. Tasks sent
+        to a queue keep the program's default.
+
+        Returns
+        -------
+        seamm_exec.Resources or None
+            None for the program's default.
+        """
+        if self.resources is not None:
+            return self.resources
+        if not self.options.get("parallel_tasks", False):
+            return None
+        from .local_pool import LocalPool
+        from .tasks import Resources
+
+        backend = task_set.backend
+        if not isinstance(backend, LocalPool) or backend.synchronous:
+            return None
+        ntasks = backend.cores // max(1, n)
+        if ntasks < 2:
+            return None
+        mem_per_cpu = backend.memory // backend.cores if backend.memory else None
+        return Resources(ntasks=ntasks, mem_per_cpu=mem_per_cpu)
+
     def _batch_results(self, pending):
         from .tasks import TaskSet
 
@@ -572,11 +603,12 @@ class Evaluator:
             task_set.cancel()
         refused = []
         tasks = {}
+        resources = self._task_resources(task_set, len(pending))
         for key, (configuration, options) in pending.items():
             try:
                 extra = {}
-                if self.resources is not None:
-                    extra["resources"] = self.resources
+                if resources is not None:
+                    extra["resources"] = resources
                 task = self.provider.get_task(
                     configuration,
                     self.model_chemistry,

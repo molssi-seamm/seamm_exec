@@ -1,6 +1,14 @@
 =======
 History
 =======
+2026.10.19 -- A calculation run alone in a job gets the job's cores
+    * Structures evaluated as tasks in a job's own cores, e.g. by the Energy step, ran
+      on one core each, which suits many structures side by side. An optimization or
+      scan evaluates one at a time, so the other cores stayed idle (ORCA ran serially
+      on 8 allocated cores). For a program whose tasks can use several cores, fewer
+      structures than cores now share the cores and memory out equally. Tasks sent to
+      a queue, and the resources a step sets, are unchanged.
+
 2026.10.18 -- Returned files are no longer read into memory
     * ``executor.run()`` read every returned file into memory, and the task layer kept
       each file's contents in its results. An MD run returns gigabytes of trajectories,
