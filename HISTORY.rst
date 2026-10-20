@@ -1,6 +1,17 @@
 =======
 History
 =======
+2026.10.20 -- Bugfix: a refused resume reran the job over its files
+    * When a job asked to resume could not, it ran again from the top in the same
+      directory, rewriting the finished steps' output and job.out. It now stops
+      without running anything, saying why, and leaves the job's files as they
+      were; the job ends in error, so the JobServer does not run it again. To run a
+      job again from the start, resubmit it without asking to resume.
+    * A run from the top in a directory that already holds a run now keeps that
+      run's job.out in previous/<time>/, with its database, instead of deleting it.
+    * Uses the resume check of seamm 2026.10.20 when it is installed, and works with
+      earlier versions of seamm.
+
 2026.10.19 -- A calculation run alone in a job gets the job's cores
     * Structures evaluated as tasks in a job's own cores, e.g. by the Energy step, ran
       on one core each, which suits many structures side by side. An optimization or

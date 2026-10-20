@@ -125,23 +125,25 @@ def test_rerun_without_resume_starts_over(failed_job):
 
 
 def test_resume_refused_for_other_command_line(failed_job):
+    """A resume that cannot be made stops, and does not rerun the job from the top
+    over its files (SEAMM job 5276, 2026-10-20)."""
     root, _ = failed_job
     flowchart = make_flowchart(root, "A", "B", "C")  # read again: new uuids
-    plan = execute(root, flowchart, {"SEAMM": {"resume": True}}, ["--n", "4"])
-    assert plan["resume"] is None
-    assert "command line" in plan["message"]
-    assert Step.runs == ["A", "B", "C"]
+    with pytest.raises(RuntimeError, match="command line"):
+        execute(root, flowchart, {"SEAMM": {"resume": True}}, ["--n", "4"])
+    assert Step.runs == []
+    assert systems(root) == ["A"]  # the job's database is untouched
+    assert not (root / "previous").exists()
 
 
-def test_resume_of_a_finished_job_starts_over(tmp_path):
+def test_resume_of_a_finished_job_is_refused(tmp_path):
     Step.failing = set()
     flowchart = make_flowchart(tmp_path, "A")
     execute(tmp_path, flowchart, {"SEAMM": {}})
     Step.runs = []
-    plan = execute(tmp_path, flowchart, {"SEAMM": {"resume": True}})
-    assert plan["resume"] is None
-    assert "finished" in plan["message"]
-    assert Step.runs == ["A"]
+    with pytest.raises(RuntimeError, match="finished"):
+        execute(tmp_path, flowchart, {"SEAMM": {"resume": True}})
+    assert Step.runs == []
 
 
 def test_no_checkpoint_for_a_read_only_database(tmp_path):
@@ -202,3 +204,15 @@ def test_exec_flowchart_plans_with_the_ids_set(failed_job, monkeypatch):
     finally:
         os.chdir(cwd)
     assert Step.runs == ["B", "C"]
+
+
+def test_previous_run_set_aside_together(tmp_path, monkeypatch):
+    """A run from the top sets aside the previous run's database and job.out in the
+    same previous/<time> directory (job.out was deleted before, 2026-10-20)."""
+    monkeypatch.setattr(ef, "_previous_stamp", {})
+    (tmp_path / "seamm.db").write_text("db")
+    first = ef.previous_directory(tmp_path)
+    assert ef.previous_directory(tmp_path) == first
+    moved = ef.archive_previous_database(tmp_path, {"SEAMM": {}})
+    assert moved == first
+    assert (first / "seamm.db").read_text() == "db"
