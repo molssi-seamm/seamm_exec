@@ -118,6 +118,11 @@ class ExecFlowchart(object):
             # The checkpoint's fingerprint uses the steps' ids
             self.flowchart.set_ids()
             plan = plan_start(root, options, self.flowchart, self.cmdline)
+        if plan.get("refused"):
+            # Stop before touching anything; run() records it as an error, so
+            # that the JobServer does not run the job again
+            printer.job(__(plan["message"], indent="", indent_initial=False))
+            raise RuntimeError(plan["message"])
         resume = plan["resume"]
         if resume is None:
             self._archive_previous_database(options, root)
@@ -506,14 +511,28 @@ def archive_previous_database(root, options):
     path = _job_database(options, root)
     if path is None or not path.exists():
         return None
-    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%SZ")
-    destination = root / "previous" / stamp
+    destination = previous_directory(root)
     destination.mkdir(parents=True, exist_ok=True)
     for name in _DATABASE_FILES:
         source = root / name
         if source.exists():
             shutil.move(str(source), str(destination / name))
     return destination
+
+
+#: The time stamp of this run's previous/<stamp> directory, once made
+_previous_stamp = {}
+
+
+def previous_directory(root):
+    """``<root>/previous/<UTC time>``, where this run sets aside what an earlier run
+    in the directory left: its job database and job.out. The same directory for
+    everything this run sets aside."""
+    root = Path(root)
+    key = str(root.resolve())
+    if key not in _previous_stamp:
+        _previous_stamp[key] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%SZ")
+    return root / "previous" / _previous_stamp[key]
 
 
 def resume_requested(options):
@@ -575,10 +594,14 @@ def plan_start(root, options, flowchart, cmdline):
         return {"resume": None, "checkpointing": False, "message": message}
 
     checkpoint = seamm.read_checkpoint(path)
+    # This version's fingerprint, and the one earlier versions of seamm wrote
+    fingerprints = getattr(seamm.checkpoint, "flowchart_fingerprints", None)
+    if fingerprints is not None:
+        digest = fingerprints(flowchart)
+    else:
+        digest = seamm.checkpoint.flowchart_fingerprint(flowchart)
     ok, why = seamm.checkpoint.resumable(
-        checkpoint,
-        seamm.checkpoint.flowchart_fingerprint(flowchart),
-        comparable_command_line(cmdline),
+        checkpoint, digest, comparable_command_line(cmdline)
     )
     if ok:
         where = seamm.checkpoint.describe_position(checkpoint)
@@ -616,10 +639,17 @@ def plan_start(root, options, flowchart, cmdline):
                     f"then: {versions}."
                 )
             return {"resume": checkpoint, "checkpointing": True, "message": message}
+        # Not from the top instead: that would rerun the finished steps in place,
+        # over their output (SEAMM job 5276, 2026-10-20).
         return {
             "resume": None,
             "checkpointing": True,
-            "message": f"Asked to resume, but cannot: {why}. Running from the top.",
+            "refused": True,
+            "message": (
+                f"Asked to resume, but cannot: {why}. Nothing was run, and the job's "
+                "files are as they were. To run the job again from the start, "
+                "resubmit it without asking to resume."
+            ),
         }
     message = None
     if ok:
@@ -883,16 +913,23 @@ def run(
     # First remove the job.out file if it exists so we start fresh, unless
     # resuming, which carries on after a banner.
     job_file = Path(wdir) / "job.out"
-    if resuming:
+    refused = plan.get("refused", False)
+    if resuming or refused:
+        what = "Resumed" if resuming else "Asked to resume, but refused"
         with job_file.open("a") as fd:
             fd.write(
                 "\n"
                 + 79 * "="
                 + "\n"
-                + f"Resumed {datetime.now(timezone.utc).isoformat()}\n"
+                + f"{what} {datetime.now(timezone.utc).isoformat()}\n"
                 + 79 * "="
                 + "\n\n"
             )
+    elif job_file.exists() and not os.environ.get(PARENT_JOB_ENVIRONMENT):
+        # A run from the top keeps the previous one's output, with its database
+        destination = previous_directory(wdir)
+        destination.mkdir(parents=True, exist_ok=True)
+        shutil.move(str(job_file), str(destination / "job.out"))
     else:
         job_file.unlink(missing_ok=True)
 
