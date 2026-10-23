@@ -34,7 +34,12 @@ The returned files are left in the step's directory (``"@subdir+name"`` in
 directory under a scheduler such as SLURM (``$TMPDIR``, so node-local storage) and
 in place otherwise; ``True`` always runs in place, so the output can be watched as
 it is written; ``False`` always uses scratch. Only the ``return_files`` come back to
-the step directory.
+the step directory. While a code runs in scratch, its ``return_files`` (each up to
+50 MB) are copied to the step directory every 10 minutes as ``<name>.partial``, and
+once more if the evaluator is stopped (SIGTERM, e.g. at a job's time limit), so a
+calculation stopped part way still leaves its output. A finished one removes the
+copies. The environment variable ``SEAMM_PARTIAL_INTERVAL`` sets the seconds between
+the copies; 0 leaves only the copy when stopped.
 
 Running codes as tasks
 ----------------------

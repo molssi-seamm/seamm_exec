@@ -1,6 +1,16 @@
 =======
 History
 =======
+2026.10.23 -- A calculation stopped part way leaves its output
+    * A calculation running in scratch (node-local storage under a scheduler) had
+      its files put in place only when it finished, so one stopped by the job's time
+      limit or a cancel lost them with the scratch -- e.g. the orca.out of large ORCA
+      calculations that timed out, which would have shown where the time went. While
+      it runs, its returned files (each up to 50 MB) are now copied to its directory
+      every 10 minutes as '<name>.partial', and once more when the evaluator is
+      stopped (SIGTERM). A calculation that finishes removes the copies.
+      SEAMM_PARTIAL_INTERVAL sets the seconds between the copies.
+
 2026.10.20 -- Bugfix: a refused resume reran the job over its files
     * When a job asked to resume could not, it ran again from the top in the same
       directory, rewriting the finished steps' output and job.out. It now stops

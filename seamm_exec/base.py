@@ -15,6 +15,8 @@ import time
 import humanize
 import pyuca
 
+from . import partial_outputs
+
 if platform.system() != "Windows":
     import grp
     import pwd
@@ -274,15 +276,24 @@ class Base(object):
         # Now execute the program in the temp directory
         self.logger.debug("about to run " + " ".join(cmd))
 
-        result = self.exec(
-            config,
-            cmd=cmd,
-            input_data=input_data,
-            env=env,
-            directory=tmpdir,
-            shell=shell,
-            ce=ce,
-        )
+        # Running away from the task directory, keep copies of the returned files
+        # there while it runs, so that a task stopped part way leaves them
+        copier = None
+        if not in_situ and directory is not None and return_files:
+            copier = partial_outputs.Copier(tmpdir, directory, return_files).start()
+        try:
+            result = self.exec(
+                config,
+                cmd=cmd,
+                input_data=input_data,
+                env=env,
+                directory=tmpdir,
+                shell=shell,
+                ce=ce,
+            )
+        finally:
+            if copier is not None:
+                copier.stop()
 
         # Record where the code actually ran, so callers can report it (e.g. to
         # job.out/step.out) -- important for diagnosing NFS-vs-scratch issues.
@@ -361,6 +372,9 @@ class Base(object):
 
         if not in_situ:
             shutil.rmtree(tmpdir)
+        if copier is not None:
+            # The files are in place: the copies are not needed
+            copier.remove()
 
         # Write any stdout and stderr
 

@@ -29,6 +29,7 @@ import weakref
 
 import psutil
 
+from . import partial_outputs
 from .computational_environment import computational_environment
 from .tasks import (
     CANCELLED,
@@ -618,6 +619,11 @@ def _release_handlers():
 
 
 def _on_signal(signum, frame):
+    # First keep what the running tasks have written so far (partial_outputs)
+    try:
+        partial_outputs.copy_all()
+    except Exception:
+        pass
     with _live_lock:
         groups = list(_live_groups)
     for pgid in groups:
