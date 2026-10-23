@@ -68,6 +68,14 @@ seamm\_exec.local\_pool module
    :show-inheritance:
    :undoc-members:
 
+seamm\_exec.partial\_outputs module
+-----------------------------------
+
+.. automodule:: seamm_exec.partial_outputs
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 seamm\_exec.resolve module
 --------------------------
 

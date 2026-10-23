@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.20 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.23 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=980f7468"></script>
+    <script src="../_static/documentation_options.js?v=aff7fe02"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.20" />
+  <meta name="docsearch:version" content="2026.10.23" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -1349,6 +1349,93 @@ networks leaves the leftovers alone, the safe direction.)</p>
 <dd><p>Make a <a class="reference internal" href="#seamm_exec.local_pool.LocalPool.wait" title="seamm_exec.local_pool.LocalPool.wait"><code class="xref py py-meth docutils literal notranslate"><span class="pre">wait()</span></code></a> return early (a TaskSet being cancelled).</p>
 </dd></dl>
 
+</dd></dl>
+
+</section>
+<section id="module-seamm_exec.partial_outputs">
+<span id="seamm-exec-partial-outputs-module"></span><h2>seamm_exec.partial_outputs module<a class="headerlink" href="#module-seamm_exec.partial_outputs" title="Link to this heading">#</a></h2>
+<p>Copies of a running task’s outputs in its task directory.</p>
+<p>A task that runs in a temporary directory – node-local scratch under a scheduler
+– has its returned files put in place only when it finishes. One stopped before
+then, by the job’s time limit or a cancel, loses them with the scratch: ten large
+ORCA calculations that timed out after 11-21 h left no <code class="docutils literal notranslate"><span class="pre">orca.out</span></code> to tell where
+the time went (MBE, 2026-10-23).</p>
+<p>So while such a task runs, its returned files are copied to the task directory
+every <a class="reference internal" href="#seamm_exec.partial_outputs.DEFAULT_INTERVAL" title="seamm_exec.partial_outputs.DEFAULT_INTERVAL"><code class="xref py py-data docutils literal notranslate"><span class="pre">DEFAULT_INTERVAL</span></code></a> seconds as <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;.partial</span></code>, and once more when
+the evaluator is told to stop (SIGTERM, see <code class="docutils literal notranslate"><span class="pre">local_pool._on_signal</span></code>). A task
+that finishes puts its files in place as before and removes the copies. Large
+files (over <a class="reference internal" href="#seamm_exec.partial_outputs.MAX_BYTES" title="seamm_exec.partial_outputs.MAX_BYTES"><code class="xref py py-data docutils literal notranslate"><span class="pre">MAX_BYTES</span></code></a>, e.g. MD trajectories) are not copied.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="seamm_exec.partial_outputs.Copier">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.partial_outputs.</span></span><span class="sig-name descname"><span class="pre">Copier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patterns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">every</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_bytes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50000000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/partial_outputs.html#Copier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.partial_outputs.Copier" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Copy a running task’s returned files to its task directory as they grow.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>str</em><em> or </em><em>pathlib.Path</em>) – Where the task runs.</p></li>
+<li><p><strong>destination</strong> (<em>str</em><em> or </em><em>pathlib.Path</em>) – The task directory.</p></li>
+<li><p><strong>patterns</strong> (<em>[</em><em>str</em><em>]</em>) – The task’s returned files (glob patterns).</p></li>
+<li><p><strong>every</strong> (<em>float</em><em> or </em><em>None</em>) – Seconds between copies; None for <a class="reference internal" href="#seamm_exec.partial_outputs.interval" title="seamm_exec.partial_outputs.interval"><code class="xref py py-func docutils literal notranslate"><span class="pre">interval()</span></code></a>, 0 for none.</p></li>
+<li><p><strong>max_bytes</strong> (<em>int</em>) – Larger files are not copied.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.partial_outputs.Copier.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/partial_outputs.html#Copier.copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.partial_outputs.Copier.copy" title="Link to this definition">#</a></dt>
+<dd><p>Copy the files that changed since the last copy; never raises.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.partial_outputs.Copier.remove">
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/partial_outputs.html#Copier.remove"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.partial_outputs.Copier.remove" title="Link to this definition">#</a></dt>
+<dd><p>Remove the copies, once the task’s own files are in place.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.partial_outputs.Copier.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/partial_outputs.html#Copier.start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.partial_outputs.Copier.start" title="Link to this definition">#</a></dt>
+<dd><p>Copy periodically until <a class="reference internal" href="#seamm_exec.partial_outputs.Copier.stop" title="seamm_exec.partial_outputs.Copier.stop"><code class="xref py py-meth docutils literal notranslate"><span class="pre">stop()</span></code></a>, and on <a class="reference internal" href="#seamm_exec.partial_outputs.copy_all" title="seamm_exec.partial_outputs.copy_all"><code class="xref py py-func docutils literal notranslate"><span class="pre">copy_all()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.partial_outputs.Copier.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/partial_outputs.html#Copier.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.partial_outputs.Copier.stop" title="Link to this definition">#</a></dt>
+<dd><p>Stop copying; the copies stay (see <a class="reference internal" href="#seamm_exec.partial_outputs.Copier.remove" title="seamm_exec.partial_outputs.Copier.remove"><code class="xref py py-meth docutils literal notranslate"><span class="pre">remove()</span></code></a>).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.partial_outputs.DEFAULT_INTERVAL">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.partial_outputs.</span></span><span class="sig-name descname"><span class="pre">DEFAULT_INTERVAL</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">600.0</span></span><a class="headerlink" href="#seamm_exec.partial_outputs.DEFAULT_INTERVAL" title="Link to this definition">#</a></dt>
+<dd><p>Seconds between copies; the environment variable SEAMM_PARTIAL_INTERVAL
+overrides it, and 0 turns the periodic copies off (the copy on SIGTERM stays).</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.partial_outputs.MAX_BYTES">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.partial_outputs.</span></span><span class="sig-name descname"><span class="pre">MAX_BYTES</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">50000000</span></span><a class="headerlink" href="#seamm_exec.partial_outputs.MAX_BYTES" title="Link to this definition">#</a></dt>
+<dd><p>Files larger than this are not copied</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.partial_outputs.SUFFIX">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.partial_outputs.</span></span><span class="sig-name descname"><span class="pre">SUFFIX</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'.partial'</span></span><a class="headerlink" href="#seamm_exec.partial_outputs.SUFFIX" title="Link to this definition">#</a></dt>
+<dd><p>Appended to the name of each copy</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.partial_outputs.copy_all">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.partial_outputs.</span></span><span class="sig-name descname"><span class="pre">copy_all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/partial_outputs.html#copy_all"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.partial_outputs.copy_all" title="Link to this definition">#</a></dt>
+<dd><p>Copy the outputs of every running task now, e.g. when told to stop.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.partial_outputs.interval">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.partial_outputs.</span></span><span class="sig-name descname"><span class="pre">interval</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/partial_outputs.html#interval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.partial_outputs.interval" title="Link to this definition">#</a></dt>
+<dd><p>Seconds between the copies, from SEAMM_PARTIAL_INTERVAL or the default.</p>
 </dd></dl>
 
 </section>
@@ -3595,6 +3682,21 @@ raises.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.local_pool.LocalPool.wake"><code class="docutils literal notranslate"><span class="pre">LocalPool.wake()</span></code></a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.partial_outputs">seamm_exec.partial_outputs module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.partial_outputs.Copier"><code class="docutils literal notranslate"><span class="pre">Copier</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.partial_outputs.Copier.copy"><code class="docutils literal notranslate"><span class="pre">Copier.copy()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.partial_outputs.Copier.remove"><code class="docutils literal notranslate"><span class="pre">Copier.remove()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.partial_outputs.Copier.start"><code class="docutils literal notranslate"><span class="pre">Copier.start()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.partial_outputs.Copier.stop"><code class="docutils literal notranslate"><span class="pre">Copier.stop()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.partial_outputs.DEFAULT_INTERVAL"><code class="docutils literal notranslate"><span class="pre">DEFAULT_INTERVAL</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.partial_outputs.MAX_BYTES"><code class="docutils literal notranslate"><span class="pre">MAX_BYTES</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.partial_outputs.SUFFIX"><code class="docutils literal notranslate"><span class="pre">SUFFIX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.partial_outputs.copy_all"><code class="docutils literal notranslate"><span class="pre">copy_all()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.partial_outputs.interval"><code class="docutils literal notranslate"><span class="pre">interval()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.resolve">seamm_exec.resolve module</a><ul class="pst-show_toc_level nav section-nav flex-column">
