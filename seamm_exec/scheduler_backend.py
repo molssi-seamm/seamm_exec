@@ -64,38 +64,50 @@ class _SharedCount:
         self.lock = threading.Lock()
         self.count = None
         self.counted_at = 0.0
+        # The names of the jobs, when the scheduler can list them
+        self.names = None
 
     def current(self, refresh, poll_interval):
         """The count, refreshed by ``refresh()`` when older than
-        ``poll_interval``; None when it cannot be known."""
+        ``poll_interval``; None when it cannot be known. ``refresh`` returns a
+        count, or a list of the jobs' names (kept in ``names``)."""
         with self.lock:
             now = time.time()
             if self.count is None or now - self.counted_at > poll_interval:
-                count = refresh()
-                if count is None:
+                found = refresh()
+                if found is None:
                     return None
-                self.count = count
+                if isinstance(found, (list, tuple)):
+                    self.names = list(found)
+                    self.count = len(found)
+                else:
+                    self.names = None
+                    self.count = found
                 self.counted_at = now
             return self.count
 
-    def bump(self, n=1):
+    def bump(self, n=1, name=None):
         with self.lock:
             if self.count is not None:
                 self.count += n
+            if self.names is not None and name is not None:
+                self.names.extend([name] * n)
 
 
 _shared_counts = {}
 _shared_counts_lock = threading.Lock()
 
 
-def shared_count_for(queue):
+def shared_count_for(queue, qos=None):
     """The :class:`_SharedCount` of the queue system ``queue`` submits to: the
-    scheduler's kind on the transport's host (``local`` for this machine)."""
+    scheduler's kind on the transport's host (``local`` for this machine), and
+    the QOS when the jobs are counted per QOS."""
     scheduler = getattr(queue, "scheduler", None)
     transport = getattr(queue, "transport", None)
     key = (
         type(scheduler).__name__ if scheduler is not None else type(queue).__name__,
         getattr(transport, "host", None) or "local",
+        qos,
     )
     with _shared_counts_lock:
         if key not in _shared_counts:
@@ -104,6 +116,34 @@ def shared_count_for(queue):
 
 
 logger = logging.getLogger("seamm-exec")
+
+
+def bundle_tag(name, prefix="seamm"):
+    """The job a bundle belongs to, from its queue name.
+
+    Bundles are named ``s<tag>.<bundle>-<random>``, e.g. ``s5396.12.1-2ff93c``:
+    the tag (the SEAMM job's id, else a short hash of its directory) first, so
+    that ``squeue``'s narrow name column shows whose bundle it is. Returns
+    ``"?"`` for a bundle named before tags (``seamm-bundle_...``; all such
+    count as one other job), and None for anything else, e.g. a job's own
+    evaluator.
+    """
+    if name.startswith(f"{prefix}-bundle"):
+        return "?"
+    m = _BUNDLE_NAME.match(name)
+    return m.group("tag") if m else None
+
+
+_BUNDLE_NAME = re.compile(r"^s(?P<tag>[0-9A-Za-z]+)\.[0-9.]+-[0-9a-f]+$")
+
+
+def bundle_name(tag, bundle_dir_name):
+    """The queue name of a bundle: ``s<tag>.<bundle>-<random>``."""
+    number = bundle_dir_name.removeprefix("bundle_").lstrip("0") or "0"
+    if number.startswith("."):
+        number = "0" + number
+    return f"s{tag}.{number}-{secrets.token_hex(3)}"
+
 
 #: sbatch's message when a QOS's per-user submit limit is reached
 _QUEUE_FULL = re.compile(
@@ -202,7 +242,12 @@ class SchedulerBackend:
         The least seconds a bundle gives each task whose walltime comes from
         its estimate.
     max_queued : int, optional
-        The most jobs this user may have queued and running at once.
+        The most jobs this user may have queued and running at once (in the
+        directives' QOS, where the scheduler can count per QOS). Each job with
+        bundles queued gets an equal share of it, so a job whose long bundles
+        fill the queue does not keep shorter jobs out.
+    max_queued_per_job : int, optional
+        The most bundles this job may have queued and running at once.
     poll_interval : float = 30
         Seconds between polls of the queue.
     """
@@ -226,6 +271,7 @@ class SchedulerBackend:
         accepts_config=True,
         bundle_walltime=None,
         max_queued=None,
+        max_queued_per_job=None,
         poll_interval=30.0,
         job_name_prefix="seamm",
         max_walltime=None,
@@ -256,8 +302,12 @@ class SchedulerBackend:
         self.estimate_scale = estimate_scale
         self.min_task_walltime = min_task_walltime
         self.max_queued = max_queued
+        self.max_queued_per_job = max_queued_per_job
         self.poll_interval = poll_interval
         self.job_name_prefix = job_name_prefix
+        # Identifies this job's bundles in the queue, for the fair shares and
+        # for people reading squeue: the SEAMM job's id when set (TaskSet does)
+        self.job_tag = hashlib.sha1(str(self.job_directory).encode()).hexdigest()[:6]
         self.abandon_timeout = 120.0
 
         self._entries = {}  # backend id -> _Entry
@@ -270,8 +320,10 @@ class SchedulerBackend:
         self._prepared = {}  # (bundle, keys) -> _Prepared, until it is queued
         self._resolved_at = 0.0
         self._polled_at = 0.0
-        # The user's job count, shared with every back end on this queue system
-        self._shared_count = shared_count_for(queue)
+        # The user's jobs, shared with every back end on this queue system (and
+        # QOS: sites limit a user's jobs per QOS)
+        self.count_qos = self.directives.get("qos") if self._lists_jobs() else None
+        self._shared_count = shared_count_for(queue, self.count_qos)
 
     # ------------------------------------------------------------------
     # Construction from a target section
@@ -362,14 +414,54 @@ class SchedulerBackend:
     # ------------------------------------------------------------------
     # The TaskBackend interface
     # ------------------------------------------------------------------
+    def _lists_jobs(self):
+        """Whether the queue can list its jobs' names (seamm-scheduler
+        2026.10.24 and later, with a scheduler that can)."""
+        scheduler = getattr(self.queue, "scheduler", None)
+        return (
+            hasattr(self.queue, "list_jobs")
+            and scheduler is not None
+            and hasattr(scheduler, "list_cmd")
+            and scheduler.list_cmd() is not None
+        )
+
+    def _count(self):
+        if self._lists_jobs():
+            return self.queue.list_jobs(getattr(self, "count_qos", None))
+        return self.queue.count_jobs()
+
     def room(self):
-        """How many more bundles may be submitted now, or None for no limit."""
-        if self.max_queued is None:
+        """How many more bundles may be submitted now, or None for no limit.
+
+        Within ``max_queued`` -- the user's jobs, however submitted -- this job
+        has an equal share with the other jobs that have bundles queued, so the
+        long bundles of one job cannot hold every slot while others wait
+        (2026-10-24: an atom-energy campaign held 590 of 600 slots for hours).
+        """
+        per_job_cap = getattr(self, "max_queued_per_job", None)
+        if self.max_queued is None and per_job_cap is None:
             return None
-        count = self._shared_count.current(self.queue.count_jobs, self.poll_interval)
+        count = self._shared_count.current(self._count, self.poll_interval)
         if count is None:
             return None
-        return self.max_queued - count
+        names = self._shared_count.names
+        room = None if self.max_queued is None else self.max_queued - count
+        mine = None
+        if names is not None:
+            groups = {}
+            for name in names:
+                tag = bundle_tag(name, self.job_name_prefix)
+                if tag is not None:
+                    groups[tag] = groups.get(tag, 0) + 1
+            tag = getattr(self, "job_tag", None)
+            mine = groups.get(tag, 0)
+            if self.max_queued is not None:
+                share = max(1, self.max_queued // len(set(groups) | {tag}))
+                room = min(room, share - mine)
+        if per_job_cap is not None and mine is not None:
+            per_job = per_job_cap - mine
+            room = per_job if room is None else min(room, per_job)
+        return room
 
     def submit(
         self,
@@ -469,7 +561,7 @@ class SchedulerBackend:
             del self._prepared[key]
             raise
         del self._prepared[key]
-        self._shared_count.bump()
+        self._shared_count.bump(name=prepared.job_name)
         logger.info(
             f"Submitted {prepared.bundle_dir.name} ({len(tasks)} tasks) as job "
             f"{job_id}"
@@ -531,7 +623,7 @@ class SchedulerBackend:
         )
         (bundle_dir / "run.sh").write_text(script)
         # Unique, so the queue can be asked whether it has this very bundle
-        job_name = f"{self.job_name_prefix}-{bundle_dir.name}-{secrets.token_hex(3)}"
+        job_name = bundle_name(self.job_tag, bundle_dir.name)
         return _Prepared(bundle_dir, job_name, script)
 
     def _register(self, tasks, directories, markers, bundle_dir, job_id):

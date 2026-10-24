@@ -1,6 +1,22 @@
 =======
 History
 =======
+2026.10.24 -- Jobs share a queue fairly, and bundles say whose they are
+    * A queue's max_queued_tasks is now shared equally between the jobs with
+      bundles queued, so one job's long bundles cannot hold every place while
+      another job waits (2026-10-24: an atom-energy campaign held 590 of 600
+      places for hours, and shorter labelling jobs got a trickle). A job alone may
+      use all of it.
+    * The count is of the jobs in the section's QOS, since sites limit a user's
+      jobs per QOS, so queues in different QOSes no longer hold each other back.
+    * Bundles are named s<job>.<bundle>-<random>, e.g. s5396.12.1-2ff93c for bundle
+      12 of SEAMM job 5396, so squeue's narrow name column shows whose each is
+      (they all showed as 'seamm-bundle'). Bundles already queued keep their names.
+    * A task set can limit its own bundles queued at once (max_queued), which a
+      Loop's new 'Queued at most' sets.
+    * Needs seamm-scheduler 2026.10.24 for the per-QOS count and the shares;
+      with an older one it counts all of the user's jobs, as before.
+
 2026.10.23 -- A calculation stopped part way leaves its output
     * A calculation running in scratch (node-local storage under a scheduler) had
       its files put in place only when it finished, so one stopped by the job's time

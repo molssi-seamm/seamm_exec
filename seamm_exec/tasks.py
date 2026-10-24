@@ -523,6 +523,9 @@ class TaskSet:
         here. Default: the target's ``inline_below``, else 60.
     poll_interval : float
         Seconds between status checks of a back end without ``wait()``.
+    max_queued : int, optional
+        The most bundles of this job queued and running at once on a queue
+        back end (the target's ``max_queued_tasks`` still applies).
     """
 
     def __init__(
@@ -544,8 +547,10 @@ class TaskSet:
         max_timeouts=4,
         inline_below=None,
         poll_interval=1.0,
+        max_queued=None,
     ):
         self.node = node
+        self.max_queued = max_queued
         self.target = target
         if directory is None and node is not None:
             directory = node.directory
@@ -669,6 +674,12 @@ class TaskSet:
                     root=self.root,
                     executor=executor,
                 )
+                self._backend.max_queued_per_job = self.max_queued
+                # One job, one tag: the job's id, else a hash of its root (which
+                # the evaluators of a parallel loop's iterations share)
+                tag = _job_tag(self.node)
+                if tag is not None:
+                    self._backend.job_tag = tag
             elif tasks == "taskserver":
                 raise NotImplementedError(
                     f"Target '{section.name}' sends tasks to a TaskServer, which "
@@ -1792,3 +1803,27 @@ __all__ = [
     "run_task",
     "WORKER_SCRIPT",
 ]
+
+
+def _job_tag(node):
+    """The tag of a node's job in its bundles' queue names: the SEAMM job's id
+    from ``job_data.json`` in the job's root, else a short hash of the root."""
+    if node is None:
+        return None
+    try:
+        import hashlib
+        import json
+
+        root = Path(node.flowchart.root_directory).resolve()
+    except Exception:
+        return None
+    try:
+        text = (root / "job_data.json").read_text()
+        if text.startswith("!"):
+            text = text.split("\n", 1)[1]
+        job_id = json.loads(text).get("id")
+        if job_id is not None and str(job_id).isalnum():
+            return str(job_id)
+    except Exception:
+        pass
+    return hashlib.sha1(str(root).encode()).hexdigest()[:6]
