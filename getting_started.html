@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.23 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.24 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="_static/documentation_options.js?v=aff7fe02"></script>
+    <script src="_static/documentation_options.js?v=647e6ecf"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.23" />
+  <meta name="docsearch:version" content="2026.10.24" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -714,7 +714,15 @@ cancelled. A step that runs several task sets at once can therefore stop the
 others when one fails.</p>
 <p>Several task sets submitting at once to the same cluster share one count of
 the user’s queued jobs, so the queue’s <code class="docutils literal notranslate"><span class="pre">max_queued_tasks</span></code> holds for them
-together rather than for each.</p>
+together rather than for each. The count is of the jobs in the section’s QOS,
+since sites limit a user’s jobs per QOS (with seamm-scheduler 2026.10.24 or
+later; otherwise all of the user’s jobs). Within it, each job with bundles in
+the queue has an equal share, so one job’s long bundles cannot hold every
+place while another job waits; a job alone may use all of it. A Loop’s
+“max queued” sets a lower limit for its own bundles.</p>
+<p>Bundles are named <code class="docutils literal notranslate"><span class="pre">s&lt;job&gt;.&lt;bundle&gt;-&lt;random&gt;</span></code>, e.g. <code class="docutils literal notranslate"><span class="pre">s5396.12.1-2ff93c</span></code> for
+bundle 12 of SEAMM job 5396 (a short hash of the job’s directory when it has
+no id), so <code class="docutils literal notranslate"><span class="pre">squeue</span></code>’s narrow name column shows whose each bundle is.</p>
 </section>
 <section id="parallel-loops">
 <h2>Parallel loops<a class="headerlink" href="#parallel-loops" title="Link to this heading">#</a></h2>
