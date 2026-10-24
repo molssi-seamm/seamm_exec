@@ -9,6 +9,7 @@ inside the "allocation", and the DONE/FAILED markers, without SLURM.
 """
 
 import json
+import re
 import logging
 import os
 from pathlib import Path
@@ -1114,7 +1115,8 @@ def test_death_between_sbatch_and_the_manifest_is_one_submission(job):
         "tasks"
     ]["t0"]
     assert record["state"] == "queued" and record["id"] is None
-    assert record["job_name"].startswith("seamm-bundle_0000.1-")
+    # Named with the job's tag, so the queue shows whose bundle it is
+    assert re.match(r"s[0-9a-f]{6}\.0\.1-[0-9a-f]{6}$", record["job_name"])
 
     # The job runs (and here even finishes) while no evaluator watches.
     (job_id,) = queue.jobs
@@ -1588,3 +1590,91 @@ def test_a_bundled_task_records_its_code(job):
     assert results["a"].code == "code: echo"
     done = json.loads((job / "step" / "tasks" / "a" / "DONE").read_text())
     assert done["code"] == "code: echo"
+
+
+def _listing_backend(names, max_queued=600, tag="aaaaaa", per_job=None, qos="q1"):
+    """A back end whose queue lists the given job names (in its QOS)."""
+    from types import SimpleNamespace
+
+    from seamm_exec.scheduler_backend import SchedulerBackend, shared_count_for
+
+    asked = []
+
+    def list_jobs(q=None):
+        asked.append(q)
+        return list(names)
+
+    queue = SimpleNamespace(
+        scheduler=SimpleNamespace(list_cmd=lambda qos=None: ["squeue"]),
+        transport=SimpleNamespace(host=f"cluster-{secrets.token_hex(3)}"),
+        list_jobs=list_jobs,
+        count_jobs=lambda: len(names),
+    )
+    backend = SchedulerBackend.__new__(SchedulerBackend)
+    backend.queue = queue
+    backend.max_queued = max_queued
+    backend.max_queued_per_job = per_job
+    backend.poll_interval = 60.0
+    backend.job_name_prefix = "seamm"
+    backend.job_tag = tag
+    backend.directives = {"qos": qos}
+    backend.count_qos = qos
+    backend._shared_count = shared_count_for(queue, qos)
+    return backend, asked
+
+
+def test_fair_share_between_jobs():
+    """2026-10-24: an atom-energy campaign's long bundles held 590 of the 600
+    slots, so the shorter AL jobs got a trickle. Each job with bundles queued now
+    has an equal share of the cap."""
+    from seamm_exec.scheduler_backend import bundle_tag
+
+    assert bundle_tag("s5396.12.1-2ff93c") == "5396"
+    assert bundle_tag("sabc123.0.1-ff00aa") == "abc123"
+    assert bundle_tag("seamm-bundle_0003.1-2ff93c") == "?"  # named before tags
+    assert bundle_tag("seamm-5394") is None  # an evaluator, not a bundle
+
+    hog = [f"sbbbbbb.{i}.1-000000" for i in range(590)]
+    parents = ["seamm-5396", "seamm-5399"]
+    # The newcomer gets up to half (2 jobs) -- but only the 8 free slots now
+    backend, asked = _listing_backend(hog + parents)
+    assert asked == [] and backend.room() == 8 and asked == ["q1"]
+    # As the hog's bundles end, it does not refill past its share; we do
+    names = hog[:250] + parents + [f"saaaaaa.{i}.1-0" for i in range(100)]
+    backend, _ = _listing_backend(names)
+    assert backend.room() == 600 // 2 - 100  # 248 free, but our share is 300
+    other, _ = _listing_backend(names, tag="bbbbbb")
+    assert other.room() == 600 // 2 - 250  # within its share
+    names = hog[:400] + parents + [f"saaaaaa.{i}.1-0" for i in range(100)]
+    other, _ = _listing_backend(names, tag="bbbbbb")
+    assert other.room() < 0  # over its share: submits nothing
+    # Alone, a job may use the whole cap
+    backend, _ = _listing_backend(parents)
+    assert backend.room() == 598
+
+
+def test_per_job_cap_and_bump():
+    names = [f"saaaaaa.{i}.1-0" for i in range(5)]
+    backend, _ = _listing_backend(names, max_queued=None, per_job=8)
+    assert backend.room() == 3
+    backend._shared_count.bump(name="saaaaaa.5.1-0")
+    assert backend.room() == 2
+    backend, _ = _listing_backend(names, max_queued=600, per_job=8)
+    assert backend.room() == 3
+
+
+def test_job_tag_is_the_seamm_job_id(tmp_path):
+    """Bundles are named s<job id>.<bundle>-..., so squeue's narrow name
+    column shows whose they are; without an id, a hash of the job's root."""
+    from types import SimpleNamespace
+
+    from seamm_exec.tasks import _job_tag
+
+    node = SimpleNamespace(flowchart=SimpleNamespace(root_directory=str(tmp_path)))
+    tag = _job_tag(node)
+    assert re.fullmatch(r"[0-9a-f]{6}", tag)
+    (tmp_path / "job_data.json").write_text(
+        '!MolSSI job_data 1.0\n{"id": 5396, "title": "x"}'
+    )
+    assert _job_tag(node) == "5396"
+    assert _job_tag(None) is None

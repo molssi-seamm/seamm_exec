@@ -293,7 +293,16 @@ others when one fails.
 
 Several task sets submitting at once to the same cluster share one count of
 the user's queued jobs, so the queue's ``max_queued_tasks`` holds for them
-together rather than for each.
+together rather than for each. The count is of the jobs in the section's QOS,
+since sites limit a user's jobs per QOS (with seamm-scheduler 2026.10.24 or
+later; otherwise all of the user's jobs). Within it, each job with bundles in
+the queue has an equal share, so one job's long bundles cannot hold every
+place while another job waits; a job alone may use all of it. A Loop's
+"max queued" sets a lower limit for its own bundles.
+
+Bundles are named ``s<job>.<bundle>-<random>``, e.g. ``s5396.12.1-2ff93c`` for
+bundle 12 of SEAMM job 5396 (a short hash of the job's directory when it has
+no id), so ``squeue``'s narrow name column shows whose each bundle is.
 
 Parallel loops
 --------------
