@@ -1624,34 +1624,51 @@ class TaskSet:
         for bundle, keys in bundles.items():
             if not all(k in self._results for k in keys):
                 continue
-            # Only directories under tasks/ are archived; a task given its own
-            # directory keeps it.
-            # Failed tasks stay as directories: they may run again.
-            to_pack = [
-                k
-                for k in keys
-                if self.tasks[k].directory is None
-                and self._results[k].ok
-                and not self._results[k].restored
-                and (self.tasks_directory / k).is_dir()
-            ]
-            if not to_pack:
-                continue
-            tar_path = self.tasks_directory / f"{bundle}.tar"
-            self._close_tars(tar_path)
-            with tarfile.open(tar_path, "a" if tar_path.exists() else "w") as tar:
-                for k in to_pack:
-                    tar.add(self.tasks_directory / k, arcname=k)
-            # The manifest names the archive, on disk, before the directories
-            # go: an evaluator stopped in between (scancel, or a stall before
-            # the next flush) otherwise left records with neither, and the
-            # finished tasks ran again on restart
+            # Archiving only tidies up: a failure must not stop the evaluator
+            # and cancel its bundles (an NFS rmtree killed a Li cell's
+            # evaluator, 2026-10-24). The directories stay, as they would
+            # without archiving, and the next pass tries again.
+            try:
+                self._archive_bundle(bundle, keys)
+            except Exception:
+                logger.exception(
+                    f"Could not archive bundle {bundle} in {self.tasks_directory}; "
+                    "its task directories are kept."
+                )
+
+    def _archive_bundle(self, bundle, keys):
+        """Tar one completed bundle's task directories and remove them."""
+        # Only directories under tasks/ are archived; a task given its own
+        # directory keeps it.
+        # Failed tasks stay as directories: they may run again.
+        # A task already archived is not packed again, even if its directory
+        # could not be removed.
+        to_pack = [
+            k
+            for k in keys
+            if self.tasks[k].directory is None
+            and self._results[k].ok
+            and not self._results[k].restored
+            and self._results[k].archive is None
+            and (self.tasks_directory / k).is_dir()
+        ]
+        if not to_pack:
+            return
+        tar_path = self.tasks_directory / f"{bundle}.tar"
+        self._close_tars(tar_path)
+        with tarfile.open(tar_path, "a" if tar_path.exists() else "w") as tar:
             for k in to_pack:
-                self.manifest.update(k, archive=tar_path.name)
-                self._results[k].archive = tar_path
-            self.manifest.save()
-            for k in to_pack:
-                shutil.rmtree(self.tasks_directory / k)
+                tar.add(self.tasks_directory / k, arcname=k)
+        # The manifest names the archive, on disk, before the directories
+        # go: an evaluator stopped in between (scancel, or a stall before
+        # the next flush) otherwise left records with neither, and the
+        # finished tasks ran again on restart
+        for k in to_pack:
+            self.manifest.update(k, archive=tar_path.name)
+            self._results[k].archive = tar_path
+        self.manifest.save()
+        for k in to_pack:
+            _remove_archived(self.tasks_directory / k)
 
     def _read_from_tar(self, path, member):
         """A member of an archive, opening each archive once per run."""
@@ -1760,6 +1777,33 @@ def _location(path, directory):
         except ValueError:
             pass
     return str(path)
+
+
+def _remove_archived(path, attempts=3, delay=2.0):
+    """Remove an archived task's directory, or leave it with a warning.
+
+    On NFS a file still open elsewhere is renamed to .nfsXXXX when deleted and
+    goes only when it is closed, so rmtree can find the directory not yet empty
+    (Errno 39). The archive and the manifest already hold the task, so a
+    directory that will not go is left rather than stopping the evaluator.
+    Returns True if the directory is gone.
+    """
+    path = Path(path)
+    for attempt in range(attempts):
+        try:
+            shutil.rmtree(path)
+            return True
+        except OSError as e:
+            if not path.exists():
+                return True
+            if attempt + 1 < attempts:
+                time.sleep(delay)
+                continue
+            logger.warning(
+                f"Could not remove the archived task directory {path}: {e}. "
+                "Its results are in the archive; the directory is left."
+            )
+    return False
 
 
 def _read_tar_member(archive, member):
