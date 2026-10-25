@@ -102,6 +102,9 @@ What this gives a step:
   a result file; ORCA exits 0 on an error termination, for example.
 * **Archiving.** With ``archive=True`` finished task directories are packed into one
   tar per bundle, so a step with thousands of tasks leaves a handful of files.
+  Archiving only tidies up: a directory that cannot be removed (on NFS a file still
+  open elsewhere can keep it briefly) is retried and then left, with a warning, and
+  a bundle that cannot be archived keeps its directories; neither stops the run.
 
 A step with a single calculation uses the same machinery through
 :func:`~seamm_exec.run_task`, which also keeps the output in the step directory, as

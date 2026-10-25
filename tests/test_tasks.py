@@ -647,6 +647,99 @@ def test_the_manifest_names_the_archive_before_the_directories_go(
         assert all(records[k].get("archive") == "bundle_0000.tar" for k in records)
 
 
+def _archiving_task_set(directory, n=2):
+    ts = TaskSet(
+        directory=directory,
+        backend=pool(),
+        executor=Local(),
+        archive=True,
+        bundle_tasks=2,
+    )
+    for i in range(n):
+        ts.add(shell_task(f"t{i}", f"echo {i} > r.txt", resources=Resources(1)))
+    return ts
+
+
+def test_a_directory_that_will_not_go_is_left(tmp_path, monkeypatch, caplog):
+    """rmtree of an archived task's directory failed with "Directory not
+    empty" (an NFS race) and the exception stopped a Li cell's evaluator, which
+    cancelled its bundles (2026-10-24). Now the directory is left, with a
+    warning, and is not packed again."""
+    import errno
+    import seamm_exec.tasks as tasks_module
+
+    real_rmtree = shutil.rmtree
+
+    def rmtree(path, *args, **kwargs):
+        if Path(path).parent == tmp_path / "tasks":  # only the archived tasks
+            raise OSError(errno.ENOTEMPTY, "Directory not empty", str(path))
+        return real_rmtree(path, *args, **kwargs)
+
+    monkeypatch.setattr(shutil, "rmtree", rmtree)
+    monkeypatch.setattr(tasks_module.time, "sleep", lambda s: None)
+    with caplog.at_level(logging.WARNING, logger="seamm-exec"):
+        results = run_all(_archiving_task_set(tmp_path))
+    monkeypatch.undo()
+
+    tasks = tmp_path / "tasks"
+    for i in range(2):
+        r = results[f"t{i}"]
+        assert r.state == "finished" and r.archive == tasks / "bundle_0000.tar"
+        assert (tasks / f"t{i}").is_dir()
+    assert "the directory is left" in caplog.text
+    with tarfile.open(tasks / "bundle_0000.tar") as tar:
+        names = tar.getnames()
+    assert names.count("t0/DONE") == 1 and names.count("t1/DONE") == 1
+
+    second = run_all(_archiving_task_set(tmp_path))  # restored from the tar
+    for i in range(2):
+        r = second[f"t{i}"]
+        assert r.restored and r.read("r.txt") == f"{i}\n"
+        assert r.archive == tasks / "bundle_0000.tar"
+
+
+def test_a_transient_rmtree_failure_is_retried(tmp_path, monkeypatch):
+    import errno
+    import seamm_exec.tasks as tasks_module
+
+    real_rmtree = shutil.rmtree
+    failed = set()
+
+    def rmtree(path, *args, **kwargs):
+        if Path(path).parent == tmp_path / "tasks" and path not in failed:
+            failed.add(path)
+            raise OSError(errno.ENOTEMPTY, "Directory not empty", str(path))
+        return real_rmtree(path, *args, **kwargs)
+
+    monkeypatch.setattr(shutil, "rmtree", rmtree)
+    monkeypatch.setattr(tasks_module.time, "sleep", lambda s: None)
+    results = run_all(_archiving_task_set(tmp_path))
+    monkeypatch.undo()
+
+    tasks = tmp_path / "tasks"
+    assert len(failed) == 2
+    for i in range(2):
+        assert results[f"t{i}"].state == "finished"
+        assert not (tasks / f"t{i}").exists()
+
+
+def test_an_archive_failure_does_not_stop_the_tasks(tmp_path, monkeypatch, caplog):
+    def broken(self, bundle, keys):
+        raise tarfile.TarError("disk full")
+
+    monkeypatch.setattr(TaskSet, "_archive_bundle", broken)
+    with caplog.at_level(logging.ERROR, logger="seamm-exec"):
+        results = run_all(_archiving_task_set(tmp_path))
+    monkeypatch.undo()
+
+    tasks = tmp_path / "tasks"
+    for i in range(2):
+        r = results[f"t{i}"]
+        assert r.state == "finished" and r.archive is None
+        assert (tasks / f"t{i}" / "r.txt").read_text() == f"{i}\n"
+    assert "Could not archive bundle bundle_0000" in caplog.text
+
+
 def test_a_manifest_without_the_archive_is_restored_from_the_bundle(tmp_path):
     """Manifests an older seamm-exec left without the archive's name: the
     bundle's tar is found from the record's bundle, and nothing reruns."""

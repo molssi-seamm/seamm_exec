@@ -1,6 +1,18 @@
 =======
 History
 =======
+2026.10.25 -- Bugfix: archiving can no longer stop an evaluator
+    * Removing a finished task's directory after packing it into its bundle's tar
+      could fail with "Directory not empty" on NFS (a file still open elsewhere),
+      and the error stopped the evaluator, which cancelled all of its running
+      bundles (a Li-salt MBE cell, 2026-10-24). The removal is now retried, and a
+      directory that still will not go is left with a warning: the tar and the
+      manifest already hold the task, and a restart reads it from the tar.
+    * A task already archived is not packed into the tar again, even when its
+      directory was left.
+    * Any other failure while archiving a bundle is logged and its task
+      directories are kept; the tasks and the run carry on.
+
 2026.10.24 -- Jobs share a queue fairly, and bundles say whose they are
     * A queue's max_queued_tasks is now shared equally between the jobs with
       bundles queued, so one job's long bundles cannot hold every place while
