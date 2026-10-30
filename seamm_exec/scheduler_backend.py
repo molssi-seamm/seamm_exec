@@ -37,6 +37,7 @@ import shlex
 import sys
 import threading
 import time
+import weakref
 
 from .tasks import (
     FAILED,
@@ -62,6 +63,28 @@ def _task_ce_memory():
     except (ValueError, AttributeError):
         return None
     return int(value) if value else None
+
+
+# The back ends that have queue jobs in flight, for the SIGTERM handler (see
+# seamm_exec.kill): a killed job cancels them.
+_watched = weakref.WeakSet()
+
+
+def _watch(backend):
+    _watched.add(backend)
+    from . import local_pool
+
+    local_pool._install_handlers()
+
+
+def cancel_for_kill():
+    """Cancel the queue jobs of every back end whose job was killed."""
+    for backend in list(_watched):
+        backend.cancel_for_kill()
+
+
+def has_jobs_in_flight():
+    return any(b._entries for b in list(_watched))
 
 
 class _SharedCount:
@@ -642,6 +665,7 @@ class SchedulerBackend:
         return _Prepared(bundle_dir, job_name, script)
 
     def _register(self, tasks, directories, markers, bundle_dir, job_id):
+        _watch(self)
         ids = []
         for task, directory, marker in zip(tasks, directories, markers):
             backend_id = f"{job_id}#{bundle_dir.name}#{task.key}"
@@ -651,6 +675,40 @@ class SchedulerBackend:
             ids.append(backend_id)
         self._jobs.setdefault(str(job_id), None)
         return ids
+
+    def cancel_for_kill(self):
+        """If this job was killed (see :mod:`seamm_exec.kill`): pass the marker
+        to the iterations' evaluators it runs, then cancel all its queue jobs.
+        Called from the SIGTERM handler, so it never raises."""
+        from .kill import KILL_MARKER, is_killed
+
+        if not self._entries or not is_killed(self.job_directory):
+            return
+        try:
+            markers = sorted(
+                {
+                    str(PurePosixPath(self.where(e.directory)) / KILL_MARKER)
+                    for e in self._entries.values()
+                    if getattr(e.task, "program", None) == "seamm"
+                }
+            )
+            if markers:
+                if self.shared:
+                    for path in markers:
+                        Path(path).touch()
+                else:
+                    self.queue.transport.run(["touch", *markers])
+            jobs = sorted(
+                {e.job_id for e in self._entries.values() if e.job_id is not None}
+            )
+            if jobs:
+                logger.warning(
+                    f"The job was killed: cancelling its {len(jobs)} queue jobs "
+                    f"({', '.join(jobs)})."
+                )
+                self.queue.cancel_many(jobs)
+        except Exception as e:
+            logger.warning(f"Could not cancel the killed job's queue jobs: {e}")
 
     def check(self, task, directory, marker):
         """Fail early, before anything is submitted, for a task this back end
@@ -683,6 +741,7 @@ class SchedulerBackend:
         if key != task.key:
             return None
         bundle_dir = Path(marker).parent / "_bundles" / bundle_name
+        _watch(self)
         if job_id.startswith("?"):
             self._entries[backend_id] = _Entry(
                 task, directory, marker, bundle_dir, None, job_name=job_id[1:]

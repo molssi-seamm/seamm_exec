@@ -1691,3 +1691,34 @@ def test_task_without_memory_gets_the_iterations(job, monkeypatch):
     assert backend._bundle_resources(tasks)["mem_per_cpu"] == 7
     tasks = [fake_task("a", resources=Resources(ntasks=4, mem_per_cpu=5))]
     assert backend._bundle_resources(tasks)["mem_per_cpu"] == 5
+
+
+def test_a_killed_job_cancels_its_queue_jobs(job):
+    """With the JobServer's kill marker in the job directory, the back end passes
+    the marker to the iterations' evaluators it runs and cancels its queue jobs
+    (Paul, 2026-10-30; ChemAI 5469 left 1327569 and 1327599 running)."""
+    from seamm_exec.kill import KILL_MARKER
+    from seamm_exec.scheduler_backend import _Entry
+
+    job, root = job
+    queue = FakeQueue(start=False)
+    backend = make_backend(queue, job, root)
+    evaluator = job / "3" / "iter_1" / "_evaluator"
+    evaluator.mkdir(parents=True)
+    seamm_task = Task(key="iteration_1", program="seamm", cmd=["true"])
+    other = fake_task("orca")
+    for key, task, directory, job_id in (
+        ("a", seamm_task, evaluator, "1001"),
+        ("b", other, job / "step", "1002"),
+    ):
+        backend._entries[key] = _Entry(
+            task, directory, directory / "marker", job / "_bundles" / key, job_id
+        )
+    queue.jobs.update({"1001": {"proc": None}, "1002": {"proc": None}})
+    backend.cancel_for_kill()  # not killed: an interruption keeps them
+    assert queue.cancelled == [] and not (evaluator / KILL_MARKER).exists()
+    (job / KILL_MARKER).touch()
+    backend.cancel_for_kill()
+    assert sorted(queue.cancelled) == ["1001", "1002"]
+    assert (evaluator / KILL_MARKER).exists()
+    assert not (job / "step" / KILL_MARKER).exists()
