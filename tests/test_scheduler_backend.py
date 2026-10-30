@@ -1678,3 +1678,16 @@ def test_job_tag_is_the_seamm_job_id(tmp_path):
     )
     assert _job_tag(node) == "5396"
     assert _job_tag(None) is None
+
+
+def test_task_without_memory_gets_the_iterations(job, monkeypatch):
+    """In the evaluator of a separate-tasks iteration a task that asks for no
+    memory gets the loop's memory per iteration, not the queue's default."""
+    job, root = job
+    backend = make_backend(FakeQueue(), job, root, bundle_walltime=3600)
+    tasks = [fake_task("a", resources=Resources(ntasks=4))]
+    assert backend._bundle_resources(tasks)["mem_per_cpu"] is None
+    monkeypatch.setenv("SEAMM_TASK_CE", json.dumps({"NTASKS": 4, "MEM_PER_CPU": 7}))
+    assert backend._bundle_resources(tasks)["mem_per_cpu"] == 7
+    tasks = [fake_task("a", resources=Resources(ntasks=4, mem_per_cpu=5))]
+    assert backend._bundle_resources(tasks)["mem_per_cpu"] == 5

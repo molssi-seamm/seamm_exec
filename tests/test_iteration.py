@@ -257,3 +257,34 @@ def test_iteration_time_is_an_estimate(tmp_path):
     assert task.estimated_seconds == 2700 and task.resources.walltime is None
     task = it.iteration_task("iteration_1", evaluator, job, estimated_seconds=1800)
     assert task.estimated_seconds == 1800 and task.resources.walltime is None
+
+
+def test_separate_iterations_size_their_tasks(tmp_path, monkeypatch):
+    """With separate tasks the evaluator is small, and the loop's cores and memory
+    per iteration are the size its codes plan with and its tasks get (Paul,
+    2026-10-30; ChemAI 5469: a 286 GB idle evaluator, 32 GB ORCA tasks)."""
+    job = tmp_path / "job"
+    evaluator = job / "3" / "iter_1" / it.EVALUATOR_DIRECTORY
+    evaluator.mkdir(parents=True)
+    task = it.iteration_task(
+        "iteration_1", evaluator, job, cores=4, memory=286 * 10**9, placement="separate"
+    )
+    assert task.resources.ntasks == 1
+    assert task.resources.mem_per_cpu == it.SEPARATE_EVALUATOR_MEMORY
+    task_ce = json.loads(task.env[it.TASK_CE_ENVIRONMENT])
+    assert task_ce == {
+        "NTASKS": 4,
+        "CPUS_PER_TASK": 1,
+        "MEM_PER_CPU": 286 * 10**9 // 4,
+        "MEM_PER_NODE": 286 * 10**9,
+    }
+    # In the evaluator, the codes see the tasks' size
+    monkeypatch.setenv(it.TASK_CE_ENVIRONMENT, task.env[it.TASK_CE_ENVIRONMENT])
+    monkeypatch.setenv(it.CE_ENVIRONMENT, json.dumps({"NTASKS": 1}))
+    ce = computational_environment()
+    assert ce["NTASKS"] == 4 and ce["MEM_PER_NODE"] == 286 * 10**9
+    # Inline iterations are unchanged
+    task = it.iteration_task(
+        "iteration_1", evaluator, job, cores=4, memory=8 * 10**9, placement="inline"
+    )
+    assert task.resources.ntasks == 4 and it.TASK_CE_ENVIRONMENT not in task.env

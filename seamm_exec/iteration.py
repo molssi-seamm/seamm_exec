@@ -41,6 +41,13 @@ EVALUATOR_DIRECTORY = "_evaluator"
 PARENT_JOB_ENVIRONMENT = "SEAMM_PARENT_JOB"
 #: The child's share of the machine, as JSON (see computational_environment)
 CE_ENVIRONMENT = "SEAMM_CE"
+#: For an iteration whose calculations run as separate tasks: the size of those
+#: tasks (the loop's cores and memory per iteration), as JSON. The codes plan with
+#: it (see computational_environment), and a task that asks for no memory gets it.
+TASK_CE_ENVIRONMENT = "SEAMM_TASK_CE"
+#: The evaluator of such an iteration only runs the flowchart and waits for its
+#: tasks: one core and this much memory (bytes)
+SEPARATE_EVALUATOR_MEMORY = 4 * 1024**3
 #: Where a child reads job-level files it has not written: the enclosing
 #: iterations' job directories, then the job's (os.pathsep-separated, relative to
 #: the child's directory)
@@ -196,15 +203,28 @@ def iteration_task(
             os.path.relpath(d, evaluator) for d in read_directories
         ),
     }
+    cores = max(1, int(cores))
+    mem_per_cpu = None if memory is None else max(1, int(memory) // cores)
     if placement == "inline":
         # No target: the child's codes run in its own pool, within its share
         env["SEAMM_TARGET"] = ""
+        resources = Resources(ntasks=cores, cpus_per_task=1, mem_per_cpu=mem_per_cpu)
     else:
         target = job_directory / "target.json"
         if target.exists():
             shutil.copy2(target, evaluator / "target.json")
-    cores = max(1, int(cores))
-    mem_per_cpu = None if memory is None else max(1, int(memory) // cores)
+        # The calculations go to the target as tasks of the iteration's size; the
+        # evaluator itself only runs the flowchart (Paul, 2026-10-30: the
+        # resources sized the idle evaluator, and the tasks got the queue's
+        # default memory, ChemAI 5469). Code run in the evaluator itself, e.g. an
+        # MDI engine, gets only its small share: Loop warns about such steps.
+        task_ce = {"NTASKS": cores, "CPUS_PER_TASK": 1}
+        if memory is not None:
+            task_ce.update(MEM_PER_CPU=mem_per_cpu, MEM_PER_NODE=int(memory))
+        env[TASK_CE_ENVIRONMENT] = json.dumps(task_ce)
+        resources = Resources(
+            ntasks=1, cpus_per_task=1, mem_per_cpu=SEPARATE_EVALUATOR_MEMORY
+        )
     return Task(
         key=key,
         program=PROGRAM,
@@ -214,7 +234,7 @@ def iteration_task(
         in_situ=True,
         shell=True,
         keep=["."],
-        resources=Resources(ntasks=cores, cpus_per_task=1, mem_per_cpu=mem_per_cpu),
+        resources=resources,
         estimated_seconds=(
             estimated_seconds if estimated_seconds is not None else walltime
         ),
