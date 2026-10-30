@@ -3,6 +3,8 @@
 """One iteration of a parallel Loop as a task, and its merge (phase 6)."""
 
 import json
+import sys
+import time
 import sqlite3
 
 import pytest
@@ -288,3 +290,50 @@ def test_separate_iterations_size_their_tasks(tmp_path, monkeypatch):
         "iteration_1", evaluator, job, cores=4, memory=8 * 10**9, placement="inline"
     )
     assert task.resources.ntasks == 4 and it.TASK_CE_ENVIRONMENT not in task.env
+
+
+def test_kill_marker():
+    from seamm_exec.kill import is_killed
+
+    assert not is_killed(None)
+
+
+def test_signal_spares_a_killed_evaluator_for_cleanup(tmp_path, monkeypatch):
+    """On SIGTERM a task group whose directory has the kill marker (an iteration's
+    evaluator of a killed job) gets SIGTERM, to cancel its own queue jobs; others
+    get SIGKILL as before."""
+    import signal
+    import subprocess
+
+    from seamm_exec import local_pool
+    from seamm_exec.kill import KILL_MARKER
+
+    killed = tmp_path / "killed"
+    killed.mkdir()
+    (killed / KILL_MARKER).touch()
+    script = (
+        "import signal, sys, time\n"
+        "signal.signal(signal.SIGTERM, lambda *a: (open('got_term', 'w').close(),"
+        " sys.exit(0)))\n"
+        "time.sleep(30)\n"
+    )
+    procs = {}
+    for name, directory in (("killed", killed), ("other", tmp_path)):
+        p = subprocess.Popen(
+            [sys.executable, "-c", script], cwd=directory, start_new_session=True
+        )
+        procs[name] = p
+        local_pool._register(p.pid, str(directory))
+    time.sleep(1.0)  # the handlers are installed
+    monkeypatch.setattr(local_pool, "KILL_GRACE", 10.0)
+    monkeypatch.setitem(local_pool._previous_handlers, signal.SIGTERM, lambda *a: None)
+    try:
+        local_pool._on_signal(signal.SIGTERM, None)
+        assert procs["killed"].wait(10) == 0
+        assert (killed / "got_term").exists()
+        assert procs["other"].wait(10) == -signal.SIGKILL
+    finally:
+        for p in procs.values():
+            local_pool._unregister(p.pid)
+            if p.poll() is None:
+                p.kill()

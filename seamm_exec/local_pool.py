@@ -500,7 +500,7 @@ class LocalPool:
             self._release(job)
 
     def _started(self, job, process):
-        _register(process.pid)
+        _register(process.pid, None if job.directory is None else str(job.directory))
         with self._condition:
             job.process = process
             cancelled = job.state == CANCELLED
@@ -562,20 +562,23 @@ def _state_of(raw):
 # reparented to init, and the SIGKILL that follows no longer finds it: a
 # cancelled job keeps running outside Slurm (ChemAI job 11842).
 # ----------------------------------------------------------------------
-_live_groups = set()
+_live_groups = {}  # pgid -> the task's directory (None if unknown)
 _live_lock = threading.Lock()
+#: How long a killed job gives the iteration evaluators it runs to cancel their
+#: own queue jobs (see seamm_exec.kill) before killing them, in seconds
+KILL_GRACE = 60.0
 _previous_handlers = {}
 _pools = weakref.WeakSet()  # pools that may have tasks queued or running
 
 
-def _register(pgid):
+def _register(pgid, directory=None):
     with _live_lock:
-        _live_groups.add(pgid)
+        _live_groups[pgid] = directory
 
 
 def _unregister(pgid):
     with _live_lock:
-        _live_groups.discard(pgid)
+        _live_groups.pop(pgid, None)
 
 
 def _install_handlers():
@@ -605,6 +608,10 @@ def _release_handlers():
     with _live_lock:
         if _live_groups:
             return
+    from . import scheduler_backend
+
+    if scheduler_backend.has_jobs_in_flight():
+        return
     for pool in list(_pools):
         if any(j.state in (QUEUED, RUNNING) for j in list(pool._jobs.values())):
             return
@@ -624,9 +631,31 @@ def _on_signal(signum, frame):
         partial_outputs.copy_all()
     except Exception:
         pass
+    # A killed job cancels the queue jobs it submitted (see seamm_exec.kill)
+    try:
+        from . import scheduler_backend
+
+        scheduler_backend.cancel_for_kill()
+    except Exception:
+        pass
     with _live_lock:
-        groups = list(_live_groups)
+        groups = dict(_live_groups)
+    # An iteration's evaluator marked killed gets SIGTERM and time to cancel its
+    # own queue jobs; everything else is killed at once, as before
+    from .kill import is_killed
+
+    graceful = [g for g, d in groups.items() if is_killed(d)]
     for pgid in groups:
+        try:
+            os.killpg(pgid, signal.SIGTERM if pgid in graceful else signal.SIGKILL)
+        except OSError:
+            pass
+    deadline = time.monotonic() + KILL_GRACE
+    while graceful and time.monotonic() < deadline:
+        graceful = [g for g in graceful if _alive(g)]
+        if graceful:
+            time.sleep(0.5)
+    for pgid in graceful:
         try:
             os.killpg(pgid, signal.SIGKILL)
         except OSError:

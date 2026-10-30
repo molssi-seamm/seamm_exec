@@ -1,6 +1,16 @@
 =======
 History
 =======
+2026.10.30.1 -- Bugfix: a killed job cancels the queue jobs it submitted
+    * A job killed through its JobServer left the queue jobs it had submitted running:
+      its task bundles, and the evaluators of a parallel loop's iterations with their
+      own bundles (on ARC's Owl, an evaluator and an ORCA calculation kept running
+      after the job was marked killed). The JobServer now leaves a kill marker in the
+      job's directory, and a job that is stopped and finds it passes the marker to its
+      iterations' evaluators and cancels its queue jobs; each evaluator, given time
+      to do so, cancels its own. Without the marker -- a walltime limit, a lost node --
+      the queue jobs keep running and the resumed job takes them back, as before.
+
 2026.10.30 -- Bugfix: separate-task iterations size their tasks, not an idle evaluator
     * In a parallel Loop whose calculations run as separate tasks, the cores and memory
       per iteration sized the iteration's own evaluator, which only waits for its
