@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.25 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.30 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=c006ead6"></script>
+    <script src="../_static/documentation_options.js?v=fcc0a42c"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.25" />
+  <meta name="docsearch:version" content="2026.10.30" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -1062,6 +1062,26 @@ the child’s directory)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Where a child reads job-level files it has not written</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.iteration.SEPARATE_EVALUATOR_MEMORY">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.iteration.</span></span><span class="sig-name descname"><span class="pre">SEPARATE_EVALUATOR_MEMORY</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4294967296</span></span><a class="headerlink" href="#seamm_exec.iteration.SEPARATE_EVALUATOR_MEMORY" title="Link to this definition">#</a></dt>
+<dd><p>The evaluator of such an iteration only runs the flowchart and waits for its
+tasks: one core and this much memory (bytes)</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.iteration.TASK_CE_ENVIRONMENT">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.iteration.</span></span><span class="sig-name descname"><span class="pre">TASK_CE_ENVIRONMENT</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SEAMM_TASK_CE'</span></span><a class="headerlink" href="#seamm_exec.iteration.TASK_CE_ENVIRONMENT" title="Link to this definition">#</a></dt>
+<dd><p>the size of those
+tasks (the loop’s cores and memory per iteration), as JSON. The codes plan with
+it (see computational_environment), and a task that asks for no memory gets it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>For an iteration whose calculations run as separate tasks</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3655,6 +3675,8 @@ raises.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.iteration.PARENT_JOB_ENVIRONMENT"><code class="docutils literal notranslate"><span class="pre">PARENT_JOB_ENVIRONMENT</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.iteration.PROGRAM"><code class="docutils literal notranslate"><span class="pre">PROGRAM</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.iteration.READ_ENVIRONMENT"><code class="docutils literal notranslate"><span class="pre">READ_ENVIRONMENT</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.iteration.SEPARATE_EVALUATOR_MEMORY"><code class="docutils literal notranslate"><span class="pre">SEPARATE_EVALUATOR_MEMORY</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.iteration.TASK_CE_ENVIRONMENT"><code class="docutils literal notranslate"><span class="pre">TASK_CE_ENVIRONMENT</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.iteration.decode_merge_state"><code class="docutils literal notranslate"><span class="pre">decode_merge_state()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.iteration.encode_merge_state"><code class="docutils literal notranslate"><span class="pre">encode_merge_state()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.iteration.export_path"><code class="docutils literal notranslate"><span class="pre">export_path()</span></code></a></li>

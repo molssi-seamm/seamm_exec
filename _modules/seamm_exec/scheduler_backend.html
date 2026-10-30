@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.scheduler_backend &#8212; SEAMM seamm-exec Plug-in 2026.10.25 documentation</title>
+    <title>seamm_exec.scheduler_backend &#8212; SEAMM seamm-exec Plug-in 2026.10.30 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=c006ead6"></script>
+    <script src="../../_static/documentation_options.js?v=fcc0a42c"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.25" />
+  <meta name="docsearch:version" content="2026.10.30" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -477,6 +477,21 @@
     <span class="n">TaskResult</span><span class="p">,</span>
     <span class="n">bundle_request</span><span class="p">,</span>
 <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_task_ce_memory</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""The memory per core a task gets when it asks for none, in the evaluator of</span>
+<span class="sd">    an iteration whose calculations run as separate tasks: the loop's memory per</span>
+<span class="sd">    iteration (see seamm_exec.iteration.TASK_CE_ENVIRONMENT), else None for the</span>
+<span class="sd">    queue's default."""</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"SEAMM_TASK_CE"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">text</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"MEM_PER_CPU"</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">if</span> <span class="n">value</span> <span class="k">else</span> <span class="kc">None</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">_SharedCount</span><span class="p">:</span>
@@ -1422,7 +1437,7 @@
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">"ntasks"</span><span class="p">:</span> <span class="n">ntasks</span><span class="p">,</span>
             <span class="s2">"cpus_per_task"</span><span class="p">:</span> <span class="n">largest</span><span class="p">(</span><span class="s2">"cpus_per_task"</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="s2">"mem_per_cpu"</span><span class="p">:</span> <span class="n">largest</span><span class="p">(</span><span class="s2">"mem_per_cpu"</span><span class="p">),</span>
+            <span class="s2">"mem_per_cpu"</span><span class="p">:</span> <span class="n">largest</span><span class="p">(</span><span class="s2">"mem_per_cpu"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">_task_ce_memory</span><span class="p">(),</span>
             <span class="s2">"ngpus"</span><span class="p">:</span> <span class="n">largest</span><span class="p">(</span><span class="s2">"ngpus"</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">,</span>
             <span class="s2">"walltime"</span><span class="p">:</span> <span class="n">walltime</span><span class="p">,</span>
             <span class="s2">"nodes"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>

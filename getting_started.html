@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.25 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.10.30 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="_static/documentation_options.js?v=c006ead6"></script>
+    <script src="_static/documentation_options.js?v=fcc0a42c"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.25" />
+  <meta name="docsearch:version" content="2026.10.30" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -740,7 +740,11 @@ puts them. The tasks go where any tasks go – the evaluator’s own pool, or bu
 into queue jobs when the job’s target sends tasks to a queue – and the Loop
 merges each iteration back in order when it is done. With “inline” placement an
 iteration’s own calculations run in its share (its <code class="docutils literal notranslate"><span class="pre">SEAMM_TARGET</span></code> is empty); with
-“separate tasks” (experimental) they go to the job’s target. The Loop’s user guide
+“separate tasks” they go to the job’s target as tasks of the Loop’s cores and
+memory per iteration, while the iteration itself runs in one core and 4 GB: its
+<code class="docutils literal notranslate"><span class="pre">SEAMM_TASK_CE</span></code> gives its codes the tasks’ size to plan with, and a task that
+asks for no memory gets the memory per iteration. Code that runs in the iteration
+itself, such as an MDI engine, has only the small share. The Loop’s user guide
 describes the options and the contract.</p>
 </section>
 <section id="timing-records-and-the-cost-model">
