@@ -49,6 +49,21 @@ from .tasks import (
 )
 
 
+def _task_ce_memory():
+    """The memory per core a task gets when it asks for none, in the evaluator of
+    an iteration whose calculations run as separate tasks: the loop's memory per
+    iteration (see seamm_exec.iteration.TASK_CE_ENVIRONMENT), else None for the
+    queue's default."""
+    text = os.environ.get("SEAMM_TASK_CE")
+    if not text:
+        return None
+    try:
+        value = json.loads(text).get("MEM_PER_CPU")
+    except (ValueError, AttributeError):
+        return None
+    return int(value) if value else None
+
+
 class _SharedCount:
     """The user's job count on one queue system, shared by every back end in
     this process that submits there.
@@ -942,7 +957,7 @@ class SchedulerBackend:
         return {
             "ntasks": ntasks,
             "cpus_per_task": largest("cpus_per_task") or 1,
-            "mem_per_cpu": largest("mem_per_cpu"),
+            "mem_per_cpu": largest("mem_per_cpu") or _task_ce_memory(),
             "ngpus": largest("ngpus") or 0,
             "walltime": walltime,
             "nodes": 1,

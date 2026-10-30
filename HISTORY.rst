@@ -1,6 +1,15 @@
 =======
 History
 =======
+2026.10.30 -- Bugfix: separate-task iterations size their tasks, not an idle evaluator
+    * In a parallel Loop whose calculations run as separate tasks, the cores and memory
+      per iteration sized the iteration's own evaluator, which only waits for its
+      tasks, while the tasks got the program's default -- on a queue, the queue's
+      default memory: 286 GB idle on ARC's Owl and 32 GB for an ORCA calculation that
+      needed 96 GB. Now the evaluator runs in one core and 4 GB, its codes plan with
+      the cores and memory per iteration, and a task that asks for no memory gets the
+      memory per iteration.
+
 2026.10.25 -- Bugfix: archiving can no longer stop an evaluator
     * Removing a finished task's directory after packing it into its bundle's tar
       could fail with "Directory not empty" on NFS (a file still open elsewhere),

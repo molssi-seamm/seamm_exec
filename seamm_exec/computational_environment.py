@@ -48,7 +48,12 @@ def computational_environment(limits={}):
     """
 
     scheduler = running_scheduler()
-    if os.environ.get("SEAMM_CE"):
+    if os.environ.get("SEAMM_TASK_CE"):
+        # The evaluator of an iteration whose calculations run as separate tasks:
+        # the codes plan for the tasks' size, not the evaluator's own allocation
+        # (see seamm_exec.iteration.TASK_CE_ENVIRONMENT)
+        ce = json.loads(os.environ["SEAMM_TASK_CE"])
+    elif os.environ.get("SEAMM_CE"):
         # An iteration of a parallel loop: its share of the machine
         ce = json.loads(os.environ["SEAMM_CE"])
     elif scheduler == "slurm":

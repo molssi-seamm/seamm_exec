@@ -321,7 +321,11 @@ puts them. The tasks go where any tasks go -- the evaluator's own pool, or bundl
 into queue jobs when the job's target sends tasks to a queue -- and the Loop
 merges each iteration back in order when it is done. With "inline" placement an
 iteration's own calculations run in its share (its ``SEAMM_TARGET`` is empty); with
-"separate tasks" (experimental) they go to the job's target. The Loop's user guide
+"separate tasks" they go to the job's target as tasks of the Loop's cores and
+memory per iteration, while the iteration itself runs in one core and 4 GB: its
+``SEAMM_TASK_CE`` gives its codes the tasks' size to plan with, and a task that
+asks for no memory gets the memory per iteration. Code that runs in the iteration
+itself, such as an MDI engine, has only the small share. The Loop's user guide
 describes the options and the contract.
 
 Timing records and the cost model
