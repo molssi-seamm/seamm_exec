@@ -52,6 +52,14 @@ seamm\_exec.iteration module
    :show-inheritance:
    :undoc-members:
 
+seamm\_exec.kill module
+-----------------------
+
+.. automodule:: seamm_exec.kill
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 seamm\_exec.local module
 ------------------------
 

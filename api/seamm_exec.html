@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.30 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.10.30.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=fcc0a42c"></script>
+    <script src="../_static/documentation_options.js?v=c9685da4"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.30" />
+  <meta name="docsearch:version" content="2026.10.30.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -1222,6 +1222,32 @@ own pool runs its codes within that share.</p>
 </dd></dl>
 
 </section>
+<section id="module-seamm_exec.kill">
+<span id="seamm-exec-kill-module"></span><h2>seamm_exec.kill module<a class="headerlink" href="#module-seamm_exec.kill" title="Link to this heading">#</a></h2>
+<p>Stopping what a killed job spawned.</p>
+<p>A job killed through its JobServer (<code class="docutils literal notranslate"><span class="pre">kill_job</span></code>, or a deleted job) gets a marker,
+<a class="reference internal" href="#seamm_exec.kill.KILL_MARKER" title="seamm_exec.kill.KILL_MARKER"><code class="xref py py-data docutils literal notranslate"><span class="pre">KILL_MARKER</span></code></a>, in its directory before it is stopped. A job that receives
+SIGTERM or SIGHUP and finds the marker cancels the queue jobs it submitted – its
+task bundles and the evaluators of a parallel loop’s iterations – after passing
+the marker down to each iteration’s evaluator, so a nested evaluator cancels its
+own bundles in turn. Without the marker a SIGTERM is an interruption (a walltime
+limit, a lost node): the bundles keep running, and the resumed job adopts them
+from its manifest (Paul, 2026-10-30; ChemAI 5469, whose killed job left its Owl
+evaluator 1327569 and ORCA bundle 1327599 running).</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.kill.KILL_MARKER">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.kill.</span></span><span class="sig-name descname"><span class="pre">KILL_MARKER</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'.seamm_killed'</span></span><a class="headerlink" href="#seamm_exec.kill.KILL_MARKER" title="Link to this definition">#</a></dt>
+<dd><p>The marker the JobServer writes in a job’s directory before stopping it; the
+same name is in seamm_jobserver</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.kill.is_killed">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.kill.</span></span><span class="sig-name descname"><span class="pre">is_killed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/kill.html#is_killed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.kill.is_killed" title="Link to this definition">#</a></dt>
+<dd><p>Whether the job or evaluator in <code class="docutils literal notranslate"><span class="pre">directory</span></code> was killed.</p>
+</dd></dl>
+
+</section>
 <section id="module-seamm_exec.local">
 <span id="seamm-exec-local-module"></span><h2>seamm_exec.local module<a class="headerlink" href="#module-seamm_exec.local" title="Link to this heading">#</a></h2>
 <p>The Local object does what it name implies: it executes, or
@@ -1275,6 +1301,13 @@ pool is clamped to it and runs alone.</p>
 <p>Each task runs through the executor’s <code class="docutils literal notranslate"><span class="pre">_run_task()</span></code> (the body of the original
 <code class="docutils literal notranslate"><span class="pre">Base.run()</span></code>), so the conda and modules handling, <code class="docutils literal notranslate"><span class="pre">in_situ</span></code> and the
 return-file contract are exactly those of <code class="docutils literal notranslate"><span class="pre">Base.run()</span></code>.</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.local_pool.KILL_GRACE">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.local_pool.</span></span><span class="sig-name descname"><span class="pre">KILL_GRACE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">60.0</span></span><a class="headerlink" href="#seamm_exec.local_pool.KILL_GRACE" title="Link to this definition">#</a></dt>
+<dd><p>How long a killed job gives the iteration evaluators it runs to cancel their
+own queue jobs (see seamm_exec.kill) before killing them, in seconds</p>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="seamm_exec.local_pool.LocalPool">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.local_pool.</span></span><span class="sig-name descname"><span class="pre">LocalPool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">executor</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synchronous</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_concurrent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolve_programs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/local_pool.html#LocalPool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.local_pool.LocalPool" title="Link to this definition">#</a></dt>
@@ -1627,6 +1660,14 @@ record. Returns its id, or None if the record is not one of ours.</p>
 <dt class="sig sig-object py" id="seamm_exec.scheduler_backend.SchedulerBackend.cancel">
 <span class="sig-name descname"><span class="pre">cancel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#SchedulerBackend.cancel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend.cancel" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.scheduler_backend.SchedulerBackend.cancel_for_kill">
+<span class="sig-name descname"><span class="pre">cancel_for_kill</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/scheduler_backend.html#SchedulerBackend.cancel_for_kill"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.scheduler_backend.SchedulerBackend.cancel_for_kill" title="Link to this definition">#</a></dt>
+<dd><p>If this job was killed (see <a class="reference internal" href="#module-seamm_exec.kill" title="seamm_exec.kill"><code class="xref py py-mod docutils literal notranslate"><span class="pre">seamm_exec.kill</span></code></a>): pass the marker
+to the iterations’ evaluators it runs, then cancel all its queue jobs.
+Called from the SIGTERM handler, so it never raises.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="seamm_exec.scheduler_backend.SchedulerBackend.check">
@@ -3691,6 +3732,11 @@ raises.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.iteration.run_flowchart_path"><code class="docutils literal notranslate"><span class="pre">run_flowchart_path()</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.kill">seamm_exec.kill module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.kill.KILL_MARKER"><code class="docutils literal notranslate"><span class="pre">KILL_MARKER</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.kill.is_killed"><code class="docutils literal notranslate"><span class="pre">is_killed()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.local">seamm_exec.local module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.local.Local"><code class="docutils literal notranslate"><span class="pre">Local</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.local.Local.exec"><code class="docutils literal notranslate"><span class="pre">Local.exec()</span></code></a></li>
@@ -3700,6 +3746,7 @@ raises.</p>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.local_pool">seamm_exec.local_pool module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.local_pool.KILL_GRACE"><code class="docutils literal notranslate"><span class="pre">KILL_GRACE</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.local_pool.LocalPool"><code class="docutils literal notranslate"><span class="pre">LocalPool</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.local_pool.LocalPool.cancel"><code class="docutils literal notranslate"><span class="pre">LocalPool.cancel()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.local_pool.LocalPool.capacity"><code class="docutils literal notranslate"><span class="pre">LocalPool.capacity()</span></code></a></li>
@@ -3747,6 +3794,7 @@ raises.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.SchedulerBackend.adopt"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.adopt()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.SchedulerBackend.bundles"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.bundles</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.SchedulerBackend.cancel"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.cancel()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.SchedulerBackend.cancel_for_kill"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.cancel_for_kill()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.SchedulerBackend.check"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.check()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.SchedulerBackend.fetch"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.fetch()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.scheduler_backend.SchedulerBackend.forget"><code class="docutils literal notranslate"><span class="pre">SchedulerBackend.forget()</span></code></a></li>
