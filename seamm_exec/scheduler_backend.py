@@ -1025,6 +1025,24 @@ class SchedulerBackend:
             "qos": first("qos"),
         }
 
+    def retry_gains_time(self, tasks, bundle_walltime=None, timeouts=1):
+        """Whether retrying tasks that ran out of time ``timeouts`` times would give
+        them more time than the attempt that ran out had.
+
+        Each retry asks for twice the time, but within the queue's longest walltime
+        and the bundle limit: once the attempt that ran out already had that, a
+        retry would only run out again (ChemAI 5581: two days at 667 GB, twice).
+        """
+        before = self._bundle_resources(
+            tasks, bundle_walltime=bundle_walltime, walltime_scale=2.0 ** (timeouts - 1)
+        )["walltime"]
+        after = self._bundle_resources(
+            tasks, bundle_walltime=bundle_walltime, walltime_scale=2.0**timeouts
+        )["walltime"]
+        if before is None or after is None:
+            return True
+        return after > before
+
     def _script(self, tasks, bundle_dir, bundle_walltime=None, walltime_scale=1.0):
         from seamm_scheduler import build_script
 

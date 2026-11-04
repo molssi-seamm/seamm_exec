@@ -1065,17 +1065,21 @@ class TaskSet:
                         del inflight[(backend, backend_id)]
                         if state == LOST:
                             n = lost_retries.get(task.key, 0)
+                            timed_out = False
+                            if hasattr(backend, "timed_out"):
+                                timed_out = backend.timed_out(backend_id)
                             if (
                                 n < self.max_lost_retries
                                 and record.get("attempts", 0) < self.max_attempts
+                                and not (
+                                    timed_out
+                                    and self._retry_is_futile(backend, task, record)
+                                )
                             ):
                                 lost_retries[task.key] = n + 1
                                 reason = "lost"
                                 if hasattr(backend, "reason"):
                                     reason = backend.reason(backend_id) or reason
-                                timed_out = False
-                                if hasattr(backend, "timed_out"):
-                                    timed_out = backend.timed_out(backend_id)
                                 self._finish_attempt(
                                     task.key,
                                     LOST,
@@ -1278,6 +1282,27 @@ class TaskSet:
                 backend.wait(ids, timeout=self.poll_interval * 10)
                 return
         self._stop.wait(self.poll_interval)
+
+    def _retry_is_futile(self, backend, task, record):
+        """Whether a task that just ran out of time would only run out again if
+        retried: its attempt already had the queue's longest walltime, so a retry
+        could get no more (ChemAI 5581 was retried with the same two days)."""
+        if not hasattr(backend, "retry_gains_time"):
+            return False
+        timeouts = 1 + sum(1 for h in record.get("history", []) if h.get("timed_out"))
+        try:
+            gains = backend.retry_gains_time(
+                [task], bundle_walltime=self.bundle_walltime, timeouts=timeouts
+            )
+        except Exception:
+            return False
+        if not gains:
+            logger.warning(
+                f"Task '{task.key}' ran out of time with the queue's longest walltime; "
+                "a retry would get no more time, so it is not retried. Give it more "
+                "cores or a queue with a longer walltime."
+            )
+        return not gains
 
     def _finish_attempt(
         self,

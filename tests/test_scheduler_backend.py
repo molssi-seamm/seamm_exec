@@ -1722,3 +1722,37 @@ def test_a_killed_job_cancels_its_queue_jobs(job):
     assert sorted(queue.cancelled) == ["1001", "1002"]
     assert (evaluator / KILL_MARKER).exists()
     assert not (job / "step" / KILL_MARKER).exists()
+
+
+def test_retry_gains_time(job):
+    """Doubling only helps below the queue's longest walltime."""
+    job, root = job
+    backend = make_backend(FakeQueue(), job, root, max_walltime=2 * 3600)
+    short = [fake_task("s", resources=Resources(walltime=1800))]
+    assert backend.retry_gains_time(short, timeouts=1)  # 0.5 h -> 1 h
+    assert backend.retry_gains_time(short, timeouts=2)  # 1 h -> 2 h
+    assert not backend.retry_gains_time(short, timeouts=3)  # 2 h -> still 2 h
+    at_max = [fake_task("m", resources=Resources(walltime=2 * 3600))]
+    assert not backend.retry_gains_time(at_max, timeouts=1)
+
+
+def test_a_task_out_of_time_at_the_longest_walltime_is_not_retried(job):
+    """ChemAI 5581: an ORCA task ran out of its two days, which were already the
+    queue's longest walltime, and was retried with the same two days (667 GB), each
+    retry uncounted. A retry that cannot get more time is now not made."""
+    job, root = job
+    queue = FakeQueue(hold=True)
+    backend = make_backend(queue, job, root, max_walltime=2 * 3600)
+    ts = TaskSet(directory=job / "step", backend=backend, bundle_walltime=2 * 3600)
+    ts.add(fake_task("big", resources=Resources(walltime=2 * 3600)))
+
+    def time_out():
+        while len(queue.jobs) < 1:
+            time.sleep(0.05)
+        queue.end(list(queue.jobs)[0], "TIMEOUT")
+        queue.hold = False
+
+    threading.Thread(target=time_out, daemon=True).start()
+    results = run_all(ts)
+    assert not results["big"].ok
+    assert len(queue.scripts) == 1  # submitted once, not again with the same time
