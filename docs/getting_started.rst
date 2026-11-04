@@ -94,8 +94,9 @@ What this gives a step:
   the evaluator stopped (killed, out of walltime), or because the step cancelled it,
   does not count as an attempt. Nor does a task running out of its own time, the
   first four times (``max_timeouts``): its estimate was too low, and each retry
-  gets twice the time. Later timeouts count, so a task that cannot finish in the
-  longest time the queue allows still stops. A
+  gets twice the time. A task that ran out of time with the longest time the queue
+  allows is not retried at all, since a retry could get no more; and later timeouts
+  count, so a task that cannot finish still stops. A
   process that a crashed run left behind is killed on the rerun, after checking it
   is the same process.
 * **Success beyond the exit code.** ``success_text`` names text that must appear in

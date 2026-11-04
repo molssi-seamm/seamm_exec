@@ -1,6 +1,14 @@
 =======
 History
 =======
+2026.11.4 -- Bugfix: a task out of time at the queue's longest walltime was retried
+    * A task that runs out of time is retried with twice the time, without using up an
+      attempt, up to four times. When its run already had the queue's longest walltime,
+      the retry got the same time and was sure to run out again: ChemAI job 5581's
+      ORCA task ran two days at 667 GB, timed out, and was started again with the same
+      two days. Such a task is now not retried; it fails with a message saying it ran
+      out of time at the queue's longest walltime.
+
 2026.10.30.1 -- Bugfix: a killed job cancels the queue jobs it submitted
     * A job killed through its JobServer left the queue jobs it had submitted running:
       its task bundles, and the evaluators of a parallel loop's iterations with their
