@@ -154,7 +154,7 @@ def test_engine_route_keeps_fd_on_engine(monkeypatch):
     """With the warm-engine route the finite differences run over the engine
     even when the program prefers batch (tasks), and the fingerprints are
     captured; automatic goes to tasks."""
-    import seamm_mdi
+    import sys
 
     calls = {}
 
@@ -168,7 +168,9 @@ def test_engine_route_keeps_fd_on_engine(monkeypatch):
         def __exit__(self, *a):
             return False
 
-    monkeypatch.setattr(seamm_mdi, "MDIEngine", Eng)
+    # seamm_mdi is not a dependency of seamm_exec (it is imported only when an
+    # engine starts), so stand in a module for it
+    monkeypatch.setitem(sys.modules, "seamm_mdi", types.SimpleNamespace(MDIEngine=Eng))
     evaluator = FakeEvaluator()
     driver = HessianDriver(make_node(MC, Provider()))
     c = Configuration()
