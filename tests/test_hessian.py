@@ -431,3 +431,30 @@ def test_module_environment(tmp_path):
     )
     with pytest.raises(RuntimeError, match=r"'module load ORCA' failed.*Lmod"):
         module_environment(config)
+
+
+def test_precision_only_to_engines_that_declare_it(monkeypatch):
+    """precision="tight" goes to an engine whose command names it, never
+    through **kwargs; otherwise the user is told."""
+    monkeypatch.setattr(
+        seamm_exec, "Evaluator", lambda *a, **k: FakeEvaluator(path="mdi")
+    )
+    said = []
+
+    class Tight(Provider):
+        def get_mdi_engine_command(self, *a, precision=None, **k):
+            return ["engine", str(precision)]
+
+    class Loose(Provider):
+        def get_mdi_engine_command(self, *a, **k):
+            assert "precision" not in k
+            return ["engine"]
+
+    mc = {**MC, "options": {"mdi_capable": True}}
+    for provider, expected in ((Tight(), ["engine", "tight"]), (Loose(), ["engine"])):
+        driver = HessianDriver(make_node(mc, provider), precision="tight")
+        monkeypatch.setattr(driver, "code_is_here", lambda step: True)
+        monkeypatch.setattr(driver, "say", said.append)
+        build_argv = driver.plan(Configuration())[1]
+        assert build_argv("localhost", 1) == expected
+    assert len(said) == 1 and "cannot be asked for tight convergence" in said[0]

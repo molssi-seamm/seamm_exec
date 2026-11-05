@@ -54,6 +54,17 @@ def _accepts_keyword(function, name):
     return any(p.kind == inspect.Parameter.VAR_KEYWORD for p in parameters.values())
 
 
+def _declares_keyword(function, name):
+    """Whether `function` names the keyword argument `name` itself (not just
+    **kwargs, which may pass it on to something that does not know it)."""
+    import inspect
+
+    try:
+        return name in inspect.signature(function).parameters
+    except (TypeError, ValueError):  # pragma: no cover
+        return False
+
+
 def parse_cpu_ids(text):
     """The CPU ids in a Slurm ``CPU_IDs=`` list such as ``16-31`` or
     ``0-3,8,10-11`` (``scontrol show job -d``), as a set of ints."""
@@ -386,6 +397,11 @@ class HessianDriver:
         Added to the message when there is no Model Chemistry.
     print_to : seamm_util.printing printer, optional
         Where notes for the user go. Default: seamm-exec's.
+    precision : str, optional
+        "tight" asks the MDI engine for tight convergence (e.g. for finite
+        differences of gradients), from programs whose
+        ``get_mdi_engine_command`` takes a ``precision`` argument. Default:
+        the program's own settings.
 
     Attributes
     ----------
@@ -405,8 +421,10 @@ class HessianDriver:
         who=None,
         hint="",
         print_to=None,
+        precision=None,
     ):
         self.node = node
+        self.precision = precision
         self._model_chemistry = model_chemistry
         self.route = route or "automatic"
         self.who = who or getattr(node, "title", None) or type(node).__name__
@@ -470,9 +488,18 @@ class HessianDriver:
         basis = options.get("mdi_basis_arg")
 
         ncores = self.engine_ncores()
-        takes_ncores = hasattr(step, "get_mdi_engine_command") and _accepts_keyword(
+        has_command = hasattr(step, "get_mdi_engine_command")
+        takes_ncores = has_command and _accepts_keyword(
             step.get_mdi_engine_command, "ncores"
         )
+        precision = self.precision
+        if precision and has_command:
+            if not _declares_keyword(step.get_mdi_engine_command, "precision"):
+                self.say(
+                    f"The {mc['level']} engine cannot be asked for {precision} "
+                    "convergence, so finite differences of its results may be noisy."
+                )
+                precision = None
 
         def build_argv(hostname, port):
             kwargs = {}
@@ -480,6 +507,8 @@ class HessianDriver:
                 kwargs["ncores"] = ncores
             if basis is not None:
                 kwargs["basis"] = basis
+            if precision:
+                kwargs["precision"] = precision
             return step.get_mdi_engine_command(
                 flowchart.executor,
                 self.node.global_options,
