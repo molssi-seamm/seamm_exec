@@ -1,6 +1,23 @@
 =======
 History
 =======
+2026.11.5 -- Shared Hessian driver, with a request for tight convergence
+    * New ``seamm_exec.hessian``: ``HessianDriver`` and ``EngineSession`` give steps the
+      energy, an optimization and the Hessian of a structure from the flowchart's model
+      chemistry, over the warm MDI engine or as tasks, choosing the route as the
+      Thermochemistry step did. Moved here from thermochemistry_step so that the
+      Thermochemistry, Normal Mode Sampling and Vibrational Analysis steps share one
+      copy.
+    * A session keeps one warm engine for a structure, so the Hessian and the Hessians
+      or gradients at displaced geometries come from the same engine and settings, as
+      anharmonic (VPT2) analyses need.
+    * ``precision="tight"`` asks for tight convergence for finite differences: it goes
+      to programs whose MDI engine command takes a ``precision`` argument, and to
+      tasks as an option. A warm-started engine at default convergence otherwise
+      leaves noise that depends on the previous geometry.
+    * ``evaluate()`` returns energies and gradients at many geometries through an
+      Evaluator, as tasks in parallel or over the warm engine.
+
 2026.11.4 -- Bugfix: a task out of time at the queue's longest walltime was retried
     * A task that runs out of time is retried with twice the time, without using up an
       attempt, up to four times. When its run already had the queue's longest walltime,

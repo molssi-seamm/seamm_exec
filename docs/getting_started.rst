@@ -151,7 +151,9 @@ same numbers. A structure the program cannot run as a task (a periodic system
 for ORCA or MOPAC) goes to its MDI engine; if there is none here it fails alone,
 with the reason. The batch path keeps the task layer's restart, so a rerun
 reuses finished structures. ``options`` on ``submit`` carries what a fragment
-needs: ``atom_indices``, ``ghost_atoms``, ``charge`` and ``multiplicity``.
+needs: ``atom_indices``, ``ghost_atoms``, ``charge`` and ``multiplicity``; and
+``precision="tight"`` asks a provider that knows it (ORCA) for tight convergence,
+for finite differences (see below). Providers ignore options they do not know.
 
 ``resources`` on the Evaluator (a :class:`~seamm_exec.Resources`: ranks, memory
 per rank) sets the size of each calculation on the batch path; the provider's
@@ -174,6 +176,63 @@ unchanged; a consumer converts it with that declaration and refuses a level
 that lacks it. The declaration covers both paths, batch and MDI, so a provider
 whose two paths would give opposite signs must make them agree. Pinning one convention for every provider later would be a
 documented change of this contract.
+
+Hessians, optimizations and one warm engine
+-------------------------------------------
+
+Steps that need the Hessian of a structure, or many Hessians or gradients
+around it, use :class:`~seamm_exec.hessian.HessianDriver` (shared since 2026.11.5
+by the Thermochemistry, Normal Mode Sampling and Vibrational Analysis steps):
+
+.. code-block:: python
+
+    from seamm_exec.hessian import HessianDriver
+
+    driver = HessianDriver(self, route="automatic", who="My Step")
+    E, H, how = driver.optimize_and_hessian(configuration)   # kJ/mol, E_h/bohr^2
+
+The driver chooses the route as the Evaluator chooses its path, plus what a
+Hessian needs:
+
+* on a queue target the finite difference runs as tasks there;
+* otherwise the analytic Hessian over the warm MDI engine when the program has
+  one (its engine advertises ``<HESSIAN``), else central differences of the
+  forces over the engine, or as tasks when the Evaluator chose that path;
+* with no MDI engine, the finite difference as tasks.
+
+``route="warm engine over MDI"`` or ``"separate tasks"`` overrides the choice.
+The engine gets the program's environment (its modules, ORCA's MPI runtime) and
+the job's physical cores; ``driver.fingerprints`` holds the engine's settings
+fingerprints afterwards.
+
+For more than one Hessian, :meth:`~seamm_exec.hessian.HessianDriver.session`
+keeps one warm engine for a structure, so that the optimization, its Hessian and
+the Hessians or gradients at displaced geometries all come from the same engine,
+settings and frame (anharmonic analyses need that consistency):
+
+.. code-block:: python
+
+    with driver.session(configuration) as session:
+        if session is None:                       # tasks: no engine here
+            evaluator = driver.last_plan[0]
+            results = driver.evaluate(evaluator, configuration, geometries)
+        else:
+            session.optimize(fmax=0.0005)          # eV/Å, ASE BFGS over the engine
+            H0, how = session.hessian()            # analytic, or differences of forces
+            H1, _ = session.hessian(displaced)     # at another geometry
+            g = session.gradient(displaced)        # E_h/bohr
+
+**Precision.** A warm engine starts each SCF from the previous geometry's
+wavefunction, and at a program's default convergence that leaves errors that
+depend on which geometry came before. Finite differences amplify them (third
+differences of gradients by 1/step^3), so a step that differentiates numerically
+passes ``precision="tight"``. The driver gives it to programs whose
+``get_mdi_engine_command`` names a ``precision`` argument (never through
+``**kwargs``), and as the ``precision`` option of every task; for others it
+tells the user that the differences may be noisy. Programs implement "tight" as
+they see fit: xTB accuracy 1e-4, MOPAC relative tolerance 0.001, ORCA
+VeryTightSCF (water VPT2 force-constant noise: from 92 to 0.12 cm^-1 with xTB,
+from 447 to 3.5 with MOPAC).
 
 Where things run
 ----------------
