@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.11.4 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.11.5 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="_static/documentation_options.js?v=4c137905"></script>
+    <script src="_static/documentation_options.js?v=e86bfd1c"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.4" />
+  <meta name="docsearch:version" content="2026.11.5" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -582,7 +582,9 @@ same numbers. A structure the program cannot run as a task (a periodic system
 for ORCA or MOPAC) goes to its MDI engine; if there is none here it fails alone,
 with the reason. The batch path keeps the task layer’s restart, so a rerun
 reuses finished structures. <code class="docutils literal notranslate"><span class="pre">options</span></code> on <code class="docutils literal notranslate"><span class="pre">submit</span></code> carries what a fragment
-needs: <code class="docutils literal notranslate"><span class="pre">atom_indices</span></code>, <code class="docutils literal notranslate"><span class="pre">ghost_atoms</span></code>, <code class="docutils literal notranslate"><span class="pre">charge</span></code> and <code class="docutils literal notranslate"><span class="pre">multiplicity</span></code>.</p>
+needs: <code class="docutils literal notranslate"><span class="pre">atom_indices</span></code>, <code class="docutils literal notranslate"><span class="pre">ghost_atoms</span></code>, <code class="docutils literal notranslate"><span class="pre">charge</span></code> and <code class="docutils literal notranslate"><span class="pre">multiplicity</span></code>; and
+<code class="docutils literal notranslate"><span class="pre">precision=&quot;tight&quot;</span></code> asks a provider that knows it (ORCA) for tight convergence,
+for finite differences (see below). Providers ignore options they do not know.</p>
 <p><code class="docutils literal notranslate"><span class="pre">resources</span></code> on the Evaluator (a <code class="xref py py-class docutils literal notranslate"><span class="pre">Resources</span></code>: ranks, memory
 per rank) sets the size of each calculation on the batch path; the provider’s
 <code class="docutils literal notranslate"><span class="pre">get_task</span></code> receives it. Without it the provider chooses.</p>
@@ -602,6 +604,57 @@ unchanged; a consumer converts it with that declaration and refuses a level
 that lacks it. The declaration covers both paths, batch and MDI, so a provider
 whose two paths would give opposite signs must make them agree. Pinning one convention for every provider later would be a
 documented change of this contract.</p>
+</section>
+<section id="hessians-optimizations-and-one-warm-engine">
+<h2>Hessians, optimizations and one warm engine<a class="headerlink" href="#hessians-optimizations-and-one-warm-engine" title="Link to this heading">#</a></h2>
+<p>Steps that need the Hessian of a structure, or many Hessians or gradients
+around it, use <a class="reference internal" href="api/seamm_exec.html#seamm_exec.hessian.HessianDriver" title="seamm_exec.hessian.HessianDriver"><code class="xref py py-class docutils literal notranslate"><span class="pre">HessianDriver</span></code></a> (shared since 2026.11.5
+by the Thermochemistry, Normal Mode Sampling and Vibrational Analysis steps):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">seamm_exec.hessian</span><span class="w"> </span><span class="kn">import</span> <span class="n">HessianDriver</span>
+
+<span class="n">driver</span> <span class="o">=</span> <span class="n">HessianDriver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">route</span><span class="o">=</span><span class="s2">"automatic"</span><span class="p">,</span> <span class="n">who</span><span class="o">=</span><span class="s2">"My Step"</span><span class="p">)</span>
+<span class="n">E</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">how</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">optimize_and_hessian</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>   <span class="c1"># kJ/mol, E_h/bohr^2</span>
+</pre></div>
+</div>
+<p>The driver chooses the route as the Evaluator chooses its path, plus what a
+Hessian needs:</p>
+<ul class="simple">
+<li><p>on a queue target the finite difference runs as tasks there;</p></li>
+<li><p>otherwise the analytic Hessian over the warm MDI engine when the program has
+one (its engine advertises <code class="docutils literal notranslate"><span class="pre">&lt;HESSIAN</span></code>), else central differences of the
+forces over the engine, or as tasks when the Evaluator chose that path;</p></li>
+<li><p>with no MDI engine, the finite difference as tasks.</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">route=&quot;warm</span> <span class="pre">engine</span> <span class="pre">over</span> <span class="pre">MDI&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;separate</span> <span class="pre">tasks&quot;</span></code> overrides the choice.
+The engine gets the program’s environment (its modules, ORCA’s MPI runtime) and
+the job’s physical cores; <code class="docutils literal notranslate"><span class="pre">driver.fingerprints</span></code> holds the engine’s settings
+fingerprints afterwards.</p>
+<p>For more than one Hessian, <a class="reference internal" href="api/seamm_exec.html#seamm_exec.hessian.HessianDriver.session" title="seamm_exec.hessian.HessianDriver.session"><code class="xref py py-meth docutils literal notranslate"><span class="pre">session()</span></code></a>
+keeps one warm engine for a structure, so that the optimization, its Hessian and
+the Hessians or gradients at displaced geometries all come from the same engine,
+settings and frame (anharmonic analyses need that consistency):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">driver</span><span class="o">.</span><span class="n">session</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>                       <span class="c1"># tasks: no engine here</span>
+        <span class="n">evaluator</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">last_plan</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">evaluator</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">geometries</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">session</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">fmax</span><span class="o">=</span><span class="mf">0.0005</span><span class="p">)</span>          <span class="c1"># eV/Å, ASE BFGS over the engine</span>
+        <span class="n">H0</span><span class="p">,</span> <span class="n">how</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">hessian</span><span class="p">()</span>            <span class="c1"># analytic, or differences of forces</span>
+        <span class="n">H1</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">hessian</span><span class="p">(</span><span class="n">displaced</span><span class="p">)</span>     <span class="c1"># at another geometry</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">displaced</span><span class="p">)</span>        <span class="c1"># E_h/bohr</span>
+</pre></div>
+</div>
+<p><strong>Precision.</strong> A warm engine starts each SCF from the previous geometry’s
+wavefunction, and at a program’s default convergence that leaves errors that
+depend on which geometry came before. Finite differences amplify them (third
+differences of gradients by 1/step^3), so a step that differentiates numerically
+passes <code class="docutils literal notranslate"><span class="pre">precision=&quot;tight&quot;</span></code>. The driver gives it to programs whose
+<code class="docutils literal notranslate"><span class="pre">get_mdi_engine_command</span></code> names a <code class="docutils literal notranslate"><span class="pre">precision</span></code> argument (never through
+<code class="docutils literal notranslate"><span class="pre">**kwargs</span></code>), and as the <code class="docutils literal notranslate"><span class="pre">precision</span></code> option of every task; for others it
+tells the user that the differences may be noisy. Programs implement “tight” as
+they see fit: xTB accuracy 1e-4, MOPAC relative tolerance 0.001, ORCA
+VeryTightSCF (water VPT2 force-constant noise: from 92 to 0.12 cm^-1 with xTB,
+from 447 to 3.5 with MOPAC).</p>
 </section>
 <section id="where-things-run">
 <h2>Where things run<a class="headerlink" href="#where-things-run" title="Link to this heading">#</a></h2>
@@ -937,6 +990,7 @@ the flowchart to run by hand or through a JobServer.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-a-code-executor-run">Running a code: <code class="docutils literal notranslate"><span class="pre">executor.run()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-codes-as-tasks">Running codes as tasks</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#many-structures-one-model-chemistry">Many structures, one model chemistry</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hessians-optimizations-and-one-warm-engine">Hessians, optimizations and one warm engine</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#where-things-run">Where things run</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resuming-a-job">Resuming a job</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stopping-a-task-set">Stopping a task set</a></li>

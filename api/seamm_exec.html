@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.11.4 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.11.5 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=4c137905"></script>
+    <script src="../_static/documentation_options.js?v=e86bfd1c"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.4" />
+  <meta name="docsearch:version" content="2026.11.5" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -1004,6 +1004,315 @@ starts from the top instead of failing on an unknown option.</p>
 <span class="sig-prename descclassname"><span class="pre">seamm_exec.exec_flowchart.</span></span><span class="sig-name descname"><span class="pre">run_from_jobserver</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/exec_flowchart.html#run_from_jobserver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.exec_flowchart.run_from_jobserver" title="Link to this definition">#</a></dt>
 <dd><p>Helper routine to run from the JobServer.</p>
 <p>Gets the arguments from the command line.</p>
+</dd></dl>
+
+</section>
+<section id="module-seamm_exec.hessian">
+<span id="seamm-exec-hessian-module"></span><h2>seamm_exec.hessian module<a class="headerlink" href="#module-seamm_exec.hessian" title="Link to this heading">#</a></h2>
+<p>Energies, optimizations and Hessians from a Model Chemistry, shared by steps.</p>
+<p>The Model Chemistry step upstream publishes <code class="docutils literal notranslate"><span class="pre">_model_chemistry</span></code>; the program
+behind it is driven through <code class="xref py py-class docutils literal notranslate"><span class="pre">seamm_exec.Evaluator</span></code>, either as a warm MDI
+engine (<code class="docutils literal notranslate"><span class="pre">seamm_mdi.MDIEngine</span></code>) or as separate calculations (tasks) where the
+job runs them. <a class="reference internal" href="#seamm_exec.hessian.HessianDriver" title="seamm_exec.hessian.HessianDriver"><code class="xref py py-class docutils literal notranslate"><span class="pre">HessianDriver</span></code></a> chooses the route (design of 2026-10-03,
+from the Normal Mode Sampling and Thermochemistry steps, which now share it):</p>
+<ul class="simple">
+<li><p>on a queue target the finite difference runs as tasks on the cluster, with
+no local engine started even to ask;</p></li>
+<li><p>otherwise the analytic Hessian over MDI when the program offers one (the
+engine advertises the custom <code class="docutils literal notranslate"><span class="pre">&lt;HESSIAN</span></code> command only when the method has
+a genuine analytic Hessian), else central finite differences of the forces
+over the warm engine, or as tasks when the evaluator chose that path;</p></li>
+<li><p>with no MDI engine, the finite difference as tasks.</p></li>
+</ul>
+<p>An <a class="reference internal" href="#seamm_exec.hessian.EngineSession" title="seamm_exec.hessian.EngineSession"><code class="xref py py-class docutils literal notranslate"><span class="pre">EngineSession</span></code></a> keeps one warm engine for a structure, so a step can
+optimize it, take its Hessian and then the Hessians at displaced geometries
+from the same engine and settings, as anharmonic (VPT2) analyses need.</p>
+<p>Moved here from thermochemistry_step.hessian (2026-11-05), where it was noted to
+belong in a shared library once a third consumer appeared: the Vibrational
+Analysis step.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="seamm_exec.hessian.EngineSession">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.hessian.</span></span><span class="sig-name descname"><span class="pre">EngineSession</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">driver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">configuration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evaluator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords_ang</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#EngineSession"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.EngineSession" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>One warm MDI engine for one structure (see <a class="reference internal" href="#seamm_exec.hessian.HessianDriver.session" title="seamm_exec.hessian.HessianDriver.session"><code class="xref py py-meth docutils literal notranslate"><span class="pre">HessianDriver.session()</span></code></a>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>engine</strong> (<em>seamm_mdi.MDIEngine</em>)</p></li>
+<li><p><strong>configuration</strong> (<em>molsystem._Configuration</em>) – Updated by <a class="reference internal" href="#seamm_exec.hessian.EngineSession.optimize" title="seamm_exec.hessian.EngineSession.optimize"><code class="xref py py-meth docutils literal notranslate"><span class="pre">optimize()</span></code></a>.</p></li>
+<li><p><strong>coordinates</strong> (<em>numpy.ndarray</em><em> (</em><em>N</em><em>, </em><em>3</em><em>)</em>) – The current reference coordinates, Å.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="seamm_exec.hessian.EngineSession.analytic">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">analytic</span></span><a class="headerlink" href="#seamm_exec.hessian.EngineSession.analytic" title="Link to this definition">#</a></dt>
+<dd><p>Whether the engine gives an analytic Hessian. It advertises the
+custom <code class="docutils literal notranslate"><span class="pre">&lt;HESSIAN</span></code> command only when the method has a genuine one.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.hessian.EngineSession.energy">
+<span class="sig-name descname"><span class="pre">energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coords_ang</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'kJ/mol'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#EngineSession.energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.EngineSession.energy" title="Link to this definition">#</a></dt>
+<dd><p>The energy at the reference (or the given) coordinates.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.hessian.EngineSession.fingerprints">
+<span class="sig-name descname"><span class="pre">fingerprints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#EngineSession.fingerprints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.EngineSession.fingerprints" title="Link to this definition">#</a></dt>
+<dd><p>The engine’s settings fingerprints, {“energy”: record, “hessian”:
+record} (seamm_mdi 2026.10.28, ORCA’s engine first), or None.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.hessian.EngineSession.gradient">
+<span class="sig-name descname"><span class="pre">gradient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coords_ang</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#EngineSession.gradient"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.EngineSession.gradient" title="Link to this definition">#</a></dt>
+<dd><p>The Cartesian gradient, E_h/bohr, (3N,), at the reference (or the
+given) coordinates.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.hessian.EngineSession.hessian">
+<span class="sig-name descname"><span class="pre">hessian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coords_ang</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta_bohr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">finite_differences</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#EngineSession.hessian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.EngineSession.hessian" title="Link to this definition">#</a></dt>
+<dd><p>The Cartesian Hessian (E_h/bohr², (3N, 3N)) at the reference (or the
+given) coordinates: analytic when the engine has it, else central
+differences of its forces. The engine is left at the reference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The Hessian, and “analytic” or “finite differences over MDI”.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(numpy.ndarray, str)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="seamm_exec.hessian.EngineSession.n_atoms">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">n_atoms</span></span><a class="headerlink" href="#seamm_exec.hessian.EngineSession.n_atoms" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.hessian.EngineSession.optimize">
+<span class="sig-name descname"><span class="pre">optimize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#EngineSession.optimize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.EngineSession.optimize" title="Link to this definition">#</a></dt>
+<dd><p>ASE BFGS over the warm engine; updates the configuration and the
+reference coordinates. fmax in eV/Å. Returns whether it converged.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="seamm_exec.hessian.HessianDriver">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.hessian.</span></span><span class="sig-name descname"><span class="pre">HessianDriver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_chemistry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">route</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'automatic'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">who</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">print_to</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precision</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#HessianDriver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.HessianDriver" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Energies, optimizations and Hessians from the flowchart’s Model Chemistry.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>node</strong> (<em>seamm.Node</em>) – The step: its flowchart (plug-ins, executor), options, indent and logger.</p></li>
+<li><p><strong>model_chemistry</strong> (<em>dict</em><em>, </em><em>optional</em>) – The <code class="docutils literal notranslate"><span class="pre">_model_chemistry</span></code> wrapper. Default: the node’s variable.</p></li>
+<li><p><strong>route</strong> (<em>str</em>) – “automatic”; “warm engine …” to insist on the MDI engine; “separate
+tasks …” to run the finite differences as tasks.</p></li>
+<li><p><strong>who</strong> (<em>str</em><em>, </em><em>optional</em>) – The step’s name for messages. Default: the node’s title.</p></li>
+<li><p><strong>hint</strong> (<em>str</em><em>, </em><em>optional</em>) – Added to the message when there is no Model Chemistry.</p></li>
+<li><p><strong>print_to</strong> (<em>seamm_util.printing printer</em><em>, </em><em>optional</em>) – Where notes for the user go. Default: seamm-exec’s.</p></li>
+<li><p><strong>precision</strong> (<em>str</em><em>, </em><em>optional</em>) – “tight” asks the MDI engine for tight convergence (e.g. for finite
+differences of gradients), from programs whose
+<code class="docutils literal notranslate"><span class="pre">get_mdi_engine_command</span></code> takes a <code class="docutils literal notranslate"><span class="pre">precision</span></code> argument. Default:
+the program’s own settings.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Variables<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>fingerprints</strong> (<em>dict</em><em> or </em><em>None</em>) – The engine’s settings fingerprints from the last engine session.</p></li>
+<li><p><strong>step</strong> (<em>seamm plug-in</em>) – The program’s step (<code class="docutils literal notranslate"><span class="pre">_model_chemistry[&quot;step&quot;]</span></code>), once a route is
+planned.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.hessian.HessianDriver.code_is_here">
+<span class="sig-name descname"><span class="pre">code_is_here</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#HessianDriver.code_is_here"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.HessianDriver.code_is_here" title="Link to this definition">#</a></dt>
+<dd><p>Whether the program is installed where this step runs.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.hessian.HessianDriver.energy">
+<span class="sig-name descname"><span class="pre">energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configuration</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#HessianDriver.energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.HessianDriver.energy" title="Link to this definition">#</a></dt>
+<dd><p>The energy (kJ/mol) of the configuration with the Model Chemistry.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.hessian.HessianDriver.energy_and_hessian">
+<span class="sig-name descname"><span class="pre">energy_and_hessian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configuration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta_bohr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#HessianDriver.energy_and_hessian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.HessianDriver.energy_and_hessian" title="Link to this definition">#</a></dt>
+<dd><p>The energy (kJ/mol), the Cartesian Hessian (hartree/bohr², (3N,
+3N)) and how it was obtained (“analytic”, “finite differences over
+MDI” or “finite differences as tasks”).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.hessian.HessianDriver.engine_environment">
+<span class="sig-name descname"><span class="pre">engine_environment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ncores</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#HessianDriver.engine_environment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.HessianDriver.engine_environment" title="Link to this definition">#</a></dt>
+<dd><p>The environment the MDI engine’s own runs need, set for the time
+the engine lives and restored afterwards: what the program’s step
+gives (<code class="docutils literal notranslate"><span class="pre">mdi_engine_environment(executor,</span> <span class="pre">options,</span> <span class="pre">ncores)</span></code> when it
+has one; for ORCA its <code class="docutils literal notranslate"><span class="pre">mpi_env</span></code>: the OpenMPI runtime matching its
+libraries, with its <code class="docutils literal notranslate"><span class="pre">mpirun</span></code> first on the PATH, and the transport
+settings), and no MPI core binding, since the ranks of several jobs
+on a node without cgroups would otherwise pile onto the same cores.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.hessian.HessianDriver.engine_ncores">
+<span class="sig-name descname"><span class="pre">engine_ncores</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#HessianDriver.engine_ncores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.HessianDriver.engine_ncores" title="Link to this definition">#</a></dt>
+<dd><p>The cores for the MDI engine: the job’s allocation under Slurm
+(<code class="docutils literal notranslate"><span class="pre">SLURM_CPUS_ON_NODE</span></code>, else <code class="docutils literal notranslate"><span class="pre">SLURM_NTASKS</span></code>, since without cgroups
+the affinity mask is the whole node), otherwise the CPUs this process
+may use; capped by the job’s <code class="docutils literal notranslate"><span class="pre">ncores</span></code> option when that is a number.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.hessian.HessianDriver.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">evaluator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">configuration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geometries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">what</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'the</span> <span class="pre">calculation'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#HessianDriver.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.HessianDriver.evaluate" title="Link to this definition">#</a></dt>
+<dd><p>Energies and gradients at many geometries through an Evaluator,
+whatever path it chose (warm MDI engine or tasks).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>evaluator</strong> (<em>seamm_exec.Evaluator</em>)</p></li>
+<li><p><strong>configuration</strong> (<em>molsystem._Configuration</em>) – For the elements, charge and multiplicity.</p></li>
+<li><p><strong>geometries</strong> (<em>{key: array</em><em> (</em><em>N</em><em>, </em><em>3</em><em>)</em><em>}</em>) – Coordinates in Å. Keys must be unique strings.</p></li>
+<li><p><strong>what</strong> (<em>str</em>) – For the message if one fails.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>{key</strong> – The energy, kJ/mol, and the gradient, E_h/bohr, (3N,).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(float, numpy.ndarray)}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.hessian.HessianDriver.fd_hessian_engine">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">fd_hessian_engine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">engine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords_ang</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta_bohr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#HessianDriver.fd_hessian_engine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.HessianDriver.fd_hessian_engine" title="Link to this definition">#</a></dt>
+<dd><p>Central-difference Hessian (hartree/bohr²) from MDI forces. The engine
+is left at the undisplaced structure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.hessian.HessianDriver.fd_hessian_tasks">
+<span class="sig-name descname"><span class="pre">fd_hessian_tasks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">evaluator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">configuration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords_ang</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta_bohr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#HessianDriver.fd_hessian_tasks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.HessianDriver.fd_hessian_tasks" title="Link to this definition">#</a></dt>
+<dd><p>The energy and the central-difference Hessian (hartree/bohr²) from
+the gradients of the 6N displaced structures, computed together as tasks
+(concurrently, or on the job’s queue; a rerun keeps the finished ones).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.hessian.HessianDriver.model_chemistry">
+<span class="sig-name descname"><span class="pre">model_chemistry</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#HessianDriver.model_chemistry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.HessianDriver.model_chemistry" title="Link to this definition">#</a></dt>
+<dd><p>The <code class="docutils literal notranslate"><span class="pre">_model_chemistry</span></code> wrapper, or None.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.hessian.HessianDriver.optimize_and_energy">
+<span class="sig-name descname"><span class="pre">optimize_and_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configuration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#HessianDriver.optimize_and_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.HessianDriver.optimize_and_energy" title="Link to this definition">#</a></dt>
+<dd><p>Optionally optimize the structure over the warm engine, then its
+energy (kJ/mol). With no engine (tasks) the energy only.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.hessian.HessianDriver.optimize_and_hessian">
+<span class="sig-name descname"><span class="pre">optimize_and_hessian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configuration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta_bohr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#HessianDriver.optimize_and_hessian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.HessianDriver.optimize_and_hessian" title="Link to this definition">#</a></dt>
+<dd><p>Optionally optimize the structure (ASE BFGS over the warm engine),
+then the energy and Hessian, in one engine session.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>As <a class="reference internal" href="#seamm_exec.hessian.HessianDriver.energy_and_hessian" title="seamm_exec.hessian.HessianDriver.energy_and_hessian"><code class="xref py py-meth docutils literal notranslate"><span class="pre">energy_and_hessian()</span></code></a>.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(float, numpy.ndarray, str)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.hessian.HessianDriver.plan">
+<span class="sig-name descname"><span class="pre">plan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configuration</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#HessianDriver.plan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.HessianDriver.plan" title="Link to this definition">#</a></dt>
+<dd><p>How to drive the Model Chemistry for this configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">build_argv</span></code> is None when the finite difference must run as
+tasks (no MDI engine, a queue target, or the program not here).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(evaluator, build_argv or None, elements, coords_ang)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.hessian.HessianDriver.say">
+<span class="sig-name descname"><span class="pre">say</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#HessianDriver.say"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.HessianDriver.say" title="Link to this definition">#</a></dt>
+<dd><p>A note for the user, indented under the step.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.hessian.HessianDriver.session">
+<span class="sig-name descname"><span class="pre">session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configuration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">announce</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#HessianDriver.session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.HessianDriver.session" title="Link to this definition">#</a></dt>
+<dd><p>A warm engine for the configuration, as an <a class="reference internal" href="#seamm_exec.hessian.EngineSession" title="seamm_exec.hessian.EngineSession"><code class="xref py py-class docutils literal notranslate"><span class="pre">EngineSession</span></code></a>,
+or None when the Model Chemistry must run as tasks.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.hessian.module_environment">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.hessian.</span></span><span class="sig-name descname"><span class="pre">module_environment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">environ</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#module_environment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.module_environment" title="Link to this definition">#</a></dt>
+<dd><p>The variables that <code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">load</span></code> changes, for a program whose
+executor config says <code class="docutils literal notranslate"><span class="pre">installation</span> <span class="pre">=</span> <span class="pre">modules</span></code>; {} otherwise.</p>
+<p>A normal run of the program gets them because seamm_exec puts
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">load</span></code> in front of the command, but the MDI engine is started
+directly, so without them a module-installed code cannot even load its
+own libraries (ORCA on TinkerCliffs: “liborca_tools_6_1_1_avx2.so.6:
+cannot open shared object file”). The modules are loaded in a child
+shell (<code class="docutils literal notranslate"><span class="pre">config[&quot;shell&quot;]</span></code>, default bash), sourcing the module system’s
+init script if the <code class="docutils literal notranslate"><span class="pre">module</span></code> function is not defined (it is not under
+<code class="docutils literal notranslate"><span class="pre">--export=NONE</span></code>), and its environment before and after the load is
+compared. Exported shell functions and the variables bash itself sets
+are left out.</p>
+<p>Raises RuntimeError naming the modules if they cannot be loaded.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.hessian.modules_to_load">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.hessian.</span></span><span class="sig-name descname"><span class="pre">modules_to_load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#modules_to_load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.modules_to_load" title="Link to this definition">#</a></dt>
+<dd><p>The modules for this run, by the rule seamm_exec’s Local.exec uses: the
+<code class="docutils literal notranslate"><span class="pre">gpu_modules</span></code> when the computational environment has GPUs and they are
+given, otherwise <code class="docutils literal notranslate"><span class="pre">modules</span></code>; ‘’ unless <code class="docutils literal notranslate"><span class="pre">installation</span> <span class="pre">=</span> <span class="pre">modules</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.hessian.parse_cpu_ids">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.hessian.</span></span><span class="sig-name descname"><span class="pre">parse_cpu_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#parse_cpu_ids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.parse_cpu_ids" title="Link to this definition">#</a></dt>
+<dd><p>The CPU ids in a Slurm <code class="docutils literal notranslate"><span class="pre">CPU_IDs=</span></code> list such as <code class="docutils literal notranslate"><span class="pre">16-31</span></code> or
+<code class="docutils literal notranslate"><span class="pre">0-3,8,10-11</span></code> (<code class="docutils literal notranslate"><span class="pre">scontrol</span> <span class="pre">show</span> <span class="pre">job</span> <span class="pre">-d</span></code>), as a set of ints.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.hessian.physical_cores_allowed">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.hessian.</span></span><span class="sig-name descname"><span class="pre">physical_cores_allowed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cpus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sysfs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/sys/devices/system/cpu'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#physical_cores_allowed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.physical_cores_allowed" title="Link to this definition">#</a></dt>
+<dd><p>The number of distinct physical cores among the CPUs (hardware
+threads) this process may run on, from the kernel’s topology; None where
+that is unknown (macOS, no sysfs).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.hessian.slurm_allocated_cpus">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.hessian.</span></span><span class="sig-name descname"><span class="pre">slurm_allocated_cpus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">environ</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#slurm_allocated_cpus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.slurm_allocated_cpus" title="Link to this definition">#</a></dt>
+<dd><p>The CPU ids Slurm allocated to this job on this node, from
+<code class="docutils literal notranslate"><span class="pre">scontrol</span> <span class="pre">show</span> <span class="pre">job</span> <span class="pre">-d</span></code>, or None outside Slurm or when unknown.</p>
 </dd></dl>
 
 </section>
@@ -3717,6 +4026,41 @@ raises.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.exec_flowchart.resume_requested"><code class="docutils literal notranslate"><span class="pre">resume_requested()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.exec_flowchart.run"><code class="docutils literal notranslate"><span class="pre">run()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.exec_flowchart.run_from_jobserver"><code class="docutils literal notranslate"><span class="pre">run_from_jobserver()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.hessian">seamm_exec.hessian module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.EngineSession"><code class="docutils literal notranslate"><span class="pre">EngineSession</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.EngineSession.analytic"><code class="docutils literal notranslate"><span class="pre">EngineSession.analytic</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.EngineSession.energy"><code class="docutils literal notranslate"><span class="pre">EngineSession.energy()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.EngineSession.fingerprints"><code class="docutils literal notranslate"><span class="pre">EngineSession.fingerprints()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.EngineSession.gradient"><code class="docutils literal notranslate"><span class="pre">EngineSession.gradient()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.EngineSession.hessian"><code class="docutils literal notranslate"><span class="pre">EngineSession.hessian()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.EngineSession.n_atoms"><code class="docutils literal notranslate"><span class="pre">EngineSession.n_atoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.EngineSession.optimize"><code class="docutils literal notranslate"><span class="pre">EngineSession.optimize()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver"><code class="docutils literal notranslate"><span class="pre">HessianDriver</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver.code_is_here"><code class="docutils literal notranslate"><span class="pre">HessianDriver.code_is_here()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver.energy"><code class="docutils literal notranslate"><span class="pre">HessianDriver.energy()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver.energy_and_hessian"><code class="docutils literal notranslate"><span class="pre">HessianDriver.energy_and_hessian()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver.engine_environment"><code class="docutils literal notranslate"><span class="pre">HessianDriver.engine_environment()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver.engine_ncores"><code class="docutils literal notranslate"><span class="pre">HessianDriver.engine_ncores()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver.evaluate"><code class="docutils literal notranslate"><span class="pre">HessianDriver.evaluate()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver.fd_hessian_engine"><code class="docutils literal notranslate"><span class="pre">HessianDriver.fd_hessian_engine()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver.fd_hessian_tasks"><code class="docutils literal notranslate"><span class="pre">HessianDriver.fd_hessian_tasks()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver.model_chemistry"><code class="docutils literal notranslate"><span class="pre">HessianDriver.model_chemistry()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver.optimize_and_energy"><code class="docutils literal notranslate"><span class="pre">HessianDriver.optimize_and_energy()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver.optimize_and_hessian"><code class="docutils literal notranslate"><span class="pre">HessianDriver.optimize_and_hessian()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver.plan"><code class="docutils literal notranslate"><span class="pre">HessianDriver.plan()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver.say"><code class="docutils literal notranslate"><span class="pre">HessianDriver.say()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver.session"><code class="docutils literal notranslate"><span class="pre">HessianDriver.session()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.module_environment"><code class="docutils literal notranslate"><span class="pre">module_environment()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.modules_to_load"><code class="docutils literal notranslate"><span class="pre">modules_to_load()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.parse_cpu_ids"><code class="docutils literal notranslate"><span class="pre">parse_cpu_ids()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.physical_cores_allowed"><code class="docutils literal notranslate"><span class="pre">physical_cores_allowed()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.slurm_allocated_cpus"><code class="docutils literal notranslate"><span class="pre">slurm_allocated_cpus()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.iteration">seamm_exec.iteration module</a><ul class="pst-show_toc_level nav section-nav flex-column">

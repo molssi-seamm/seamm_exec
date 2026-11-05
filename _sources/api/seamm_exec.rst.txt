@@ -44,6 +44,14 @@ seamm\_exec.exec\_flowchart module
    :show-inheritance:
    :undoc-members:
 
+seamm\_exec.hessian module
+--------------------------
+
+.. automodule:: seamm_exec.hessian
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 seamm\_exec.iteration module
 ----------------------------
 

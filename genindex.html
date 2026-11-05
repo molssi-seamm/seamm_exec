@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; SEAMM seamm-exec Plug-in 2026.11.4 documentation</title>
+    <title>Index &#8212; SEAMM seamm-exec Plug-in 2026.11.5 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="_static/documentation_options.js?v=4c137905"></script>
+    <script src="_static/documentation_options.js?v=e86bfd1c"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.4" />
+  <meta name="docsearch:version" content="2026.11.5" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -437,6 +437,8 @@
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.evaluator.AnalysisError">AnalysisError</a>
 </li>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.EngineSession.analytic">analytic (seamm_exec.hessian.EngineSession property)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/seamm_exec.html#seamm_exec.timing.append_timing">append_timing() (in module seamm_exec.timing)</a>
@@ -527,6 +529,8 @@
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.TaskResult.code">code (seamm_exec.tasks.TaskResult attribute)</a>
 </li>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.HessianDriver.code_is_here">code_is_here() (seamm_exec.hessian.HessianDriver method)</a>
+</li>
       <li><a href="api/seamm_exec.html#seamm_exec.timing.COMMON_COLUMNS">COMMON_COLUMNS (in module seamm_exec.timing)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.exec_flowchart.comparable_command_line">comparable_command_line() (in module seamm_exec.exec_flowchart)</a>
@@ -591,18 +595,34 @@
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.evaluator.EvaluatorResult.energy">energy (seamm_exec.evaluator.EvaluatorResult attribute)</a>
 </li>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.EngineSession.energy">energy() (seamm_exec.hessian.EngineSession method)</a>
+
+      <ul>
+        <li><a href="api/seamm_exec.html#seamm_exec.hessian.HessianDriver.energy">(seamm_exec.hessian.HessianDriver method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.HessianDriver.energy_and_hessian">energy_and_hessian() (seamm_exec.hessian.HessianDriver method)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.HessianDriver.engine_environment">engine_environment() (seamm_exec.hessian.HessianDriver method)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.HessianDriver.engine_ncores">engine_ncores() (seamm_exec.hessian.HessianDriver method)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.EngineSession">EngineSession (class in seamm_exec.hessian)</a>
+</li>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.Task.env">env (seamm_exec.tasks.Task attribute)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.timing_model.estimate">estimate() (in module seamm_exec.timing_model)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.Task.estimate_source">estimate_source (seamm_exec.tasks.Task attribute)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.Task.estimated_seconds">estimated_seconds (seamm_exec.tasks.Task attribute)</a>
 </li>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.HessianDriver.evaluate">evaluate() (seamm_exec.hessian.HessianDriver method)</a>
+</li>
       <li><a href="api/seamm_exec.html#seamm_exec.evaluator.Evaluator">Evaluator (class in seamm_exec.evaluator)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/seamm_exec.html#seamm_exec.iteration.EVALUATOR_DIRECTORY">EVALUATOR_DIRECTORY (in module seamm_exec.iteration)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.evaluator.EvaluatorResult">EvaluatorResult (class in seamm_exec.evaluator)</a>
@@ -631,6 +651,10 @@
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.timing_model.FALLBACK_SPECS">FALLBACK_SPECS (in module seamm_exec.timing_model)</a>
 </li>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.HessianDriver.fd_hessian_engine">fd_hessian_engine() (seamm_exec.hessian.HessianDriver static method)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.HessianDriver.fd_hessian_tasks">fd_hessian_tasks() (seamm_exec.hessian.HessianDriver method)</a>
+</li>
       <li><a href="api/seamm_exec.html#seamm_exec.local_pool.LocalPool.fetch">fetch() (seamm_exec.local_pool.LocalPool method)</a>
 
       <ul>
@@ -651,12 +675,14 @@
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.Task.fingerprint">fingerprint (seamm_exec.tasks.Task attribute)</a>
 </li>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.EngineSession.fingerprints">fingerprints() (seamm_exec.hessian.EngineSession method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.TaskResult.finished">finished (seamm_exec.tasks.TaskResult attribute)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.timing_model.fit">fit() (in module seamm_exec.timing_model)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/seamm_exec.html#seamm_exec.timing_model.FLAG_MIN_CONTRASTS">FLAG_MIN_CONTRASTS (in module seamm_exec.timing_model)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.timing_model.FLAG_MIN_ROWS">FLAG_MIN_ROWS (in module seamm_exec.timing_model)</a>
@@ -699,6 +725,8 @@
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.base.Base.get_mode_info">get_mode_info() (seamm_exec.base.Base method)</a>
 </li>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.EngineSession.gradient">gradient() (seamm_exec.hessian.EngineSession method)</a>
+</li>
       <li><a href="api/seamm_exec.html#seamm_exec.evaluator.EvaluatorResult.gradients">gradients (seamm_exec.evaluator.EvaluatorResult attribute)</a>
 </li>
   </ul></td>
@@ -709,9 +737,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/seamm_exec.html#seamm_exec.local_pool.LocalPool.has_program">has_program() (seamm_exec.local_pool.LocalPool method)</a>
 </li>
+      <li><a href="api/seamm_exec.html#seamm_exec.resolve.has_resolver">has_resolver() (in module seamm_exec.resolve)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/seamm_exec.html#seamm_exec.resolve.has_resolver">has_resolver() (in module seamm_exec.resolve)</a>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.EngineSession.hessian">hessian() (seamm_exec.hessian.EngineSession method)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.HessianDriver">HessianDriver (class in seamm_exec.hessian)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.tasks.TaskResult.history">history (seamm_exec.tasks.TaskResult attribute)</a>
 </li>
@@ -833,6 +865,8 @@
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.timing_model.missing_sizes">missing_sizes() (in module seamm_exec.timing_model)</a>
 </li>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.HessianDriver.model_chemistry">model_chemistry() (seamm_exec.hessian.HessianDriver method)</a>
+</li>
       <li><a href="api/seamm_exec.html#seamm_exec.timing_model.model_path">model_path() (in module seamm_exec.timing_model)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.timing_model.MODEL_VERSION">MODEL_VERSION (in module seamm_exec.timing_model)</a>
@@ -856,6 +890,8 @@
         <li><a href="api/seamm_exec.html#module-seamm_exec.evaluator">seamm_exec.evaluator</a>
 </li>
         <li><a href="api/seamm_exec.html#module-seamm_exec.exec_flowchart">seamm_exec.exec_flowchart</a>
+</li>
+        <li><a href="api/seamm_exec.html#module-seamm_exec.hessian">seamm_exec.hessian</a>
 </li>
         <li><a href="api/seamm_exec.html#module-seamm_exec.iteration">seamm_exec.iteration</a>
 </li>
@@ -892,6 +928,10 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.module_environment">module_environment() (in module seamm_exec.hessian)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.modules_to_load">modules_to_load() (in module seamm_exec.hessian)</a>
+</li>
       <li><a href="api/seamm_exec.html#seamm_exec.timing_model.Spec.multiplier">multiplier (seamm_exec.timing_model.Spec attribute)</a>
 </li>
   </ul></td>
@@ -901,7 +941,11 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/seamm_exec.html#seamm_exec.evaluator.Geometry.n_atoms">n_atoms (seamm_exec.evaluator.Geometry property)</a>
+
+      <ul>
+        <li><a href="api/seamm_exec.html#seamm_exec.hessian.EngineSession.n_atoms">(seamm_exec.hessian.EngineSession property)</a>
 </li>
+      </ul></li>
       <li><a href="api/seamm_exec.html#seamm_exec.base.Base.name">name (seamm_exec.base.Base property)</a>
 
       <ul>
@@ -938,9 +982,15 @@
         <li><a href="api/seamm_exec.html#seamm_exec.tasks.TaskResult.ok">(seamm_exec.tasks.TaskResult property)</a>
 </li>
       </ul></li>
+      <li><a href="api/seamm_exec.html#seamm_exec.exec_flowchart.open_datastore">open_datastore() (in module seamm_exec.exec_flowchart)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/seamm_exec.html#seamm_exec.exec_flowchart.open_datastore">open_datastore() (in module seamm_exec.exec_flowchart)</a>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.EngineSession.optimize">optimize() (seamm_exec.hessian.EngineSession method)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.HessianDriver.optimize_and_energy">optimize_and_energy() (seamm_exec.hessian.HessianDriver method)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.HessianDriver.optimize_and_hessian">optimize_and_hessian() (seamm_exec.hessian.HessianDriver method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -953,6 +1003,8 @@
       <li><a href="api/seamm_exec.html#seamm_exec.timing_model.PARALLEL_FRACTIONS">PARALLEL_FRACTIONS (in module seamm_exec.timing_model)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.iteration.PARENT_JOB_ENVIRONMENT">PARENT_JOB_ENVIRONMENT (in module seamm_exec.iteration)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.parse_cpu_ids">parse_cpu_ids() (in module seamm_exec.hessian)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.scheduler_backend.parse_id">parse_id() (in module seamm_exec.scheduler_backend)</a>
 </li>
@@ -971,6 +1023,10 @@
       <li><a href="api/seamm_exec.html#seamm_exec.timing.pending_paths">pending_paths() (in module seamm_exec.timing)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.timing_benchmark.performance_cores">performance_cores() (in module seamm_exec.timing_benchmark)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.physical_cores_allowed">physical_cores_allowed() (in module seamm_exec.hessian)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.HessianDriver.plan">plan() (seamm_exec.hessian.HessianDriver method)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.iteration.plan_citations">plan_citations() (in module seamm_exec.iteration)</a>
 </li>
@@ -1126,6 +1182,8 @@
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.timing_model.save_model">save_model() (in module seamm_exec.timing_model)</a>
 </li>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.HessianDriver.say">say() (seamm_exec.hessian.HessianDriver method)</a>
+</li>
       <li><a href="api/seamm_exec.html#seamm_exec.computational_environment.scheduler_job_variables">scheduler_job_variables() (in module seamm_exec.computational_environment)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend">SchedulerBackend (class in seamm_exec.scheduler_backend)</a>
@@ -1172,6 +1230,13 @@
 
       <ul>
         <li><a href="api/seamm_exec.html#module-seamm_exec.exec_flowchart">module</a>
+</li>
+      </ul></li>
+      <li>
+    seamm_exec.hessian
+
+      <ul>
+        <li><a href="api/seamm_exec.html#module-seamm_exec.hessian">module</a>
 </li>
       </ul></li>
       <li>
@@ -1244,6 +1309,8 @@
         <li><a href="api/seamm_exec.html#module-seamm_exec.task_worker">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     seamm_exec.tasks
 
@@ -1251,8 +1318,6 @@
         <li><a href="api/seamm_exec.html#module-seamm_exec.tasks">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     seamm_exec.testing
 
@@ -1290,6 +1355,8 @@
       </ul></li>
       <li><a href="api/seamm_exec.html#seamm_exec.iteration.SEPARATE_EVALUATOR_MEMORY">SEPARATE_EVALUATOR_MEMORY (in module seamm_exec.iteration)</a>
 </li>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.HessianDriver.session">session() (seamm_exec.hessian.HessianDriver method)</a>
+</li>
       <li><a href="api/seamm_exec.html#seamm_exec.timing_model.Spec.setup_by">setup_by (seamm_exec.timing_model.Spec attribute)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.timing_model.SETUP_CANDIDATES">SETUP_CANDIDATES (in module seamm_exec.timing_model)</a>
@@ -1301,6 +1368,8 @@
       <li><a href="api/seamm_exec.html#seamm_exec.timing_model.Spec.size">size (seamm_exec.timing_model.Spec attribute)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.timing_model.Spec.slope_by">slope_by (seamm_exec.timing_model.Spec attribute)</a>
+</li>
+      <li><a href="api/seamm_exec.html#seamm_exec.hessian.slurm_allocated_cpus">slurm_allocated_cpus() (in module seamm_exec.hessian)</a>
 </li>
       <li><a href="api/seamm_exec.html#seamm_exec.timing_model.Spec">Spec (class in seamm_exec.timing_model)</a>
 </li>
