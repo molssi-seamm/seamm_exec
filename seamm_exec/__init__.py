@@ -28,6 +28,7 @@ from .evaluator import (  # noqa: F401
     mdi_method_and_basis,
     structure_data,
 )
+from .hessian import HessianDriver, EngineSession  # noqa: F401
 from ._version import __version__  # noqa: F401
 
 # List of executors corresponding to imports above.
