@@ -231,8 +231,9 @@ def test_evaluate_converts_units():
         def __init__(self):
             self.submitted = {}
 
-        def submit(self, geometry, key):
+        def submit(self, geometry, key, options=None):
             self.submitted[key] = geometry
+            self.options = options
 
         def results(self):
             for key, geometry in self.submitted.items():
@@ -245,9 +246,16 @@ def test_evaluate_converts_units():
                 )
 
     driver = HessianDriver(make_node(MC))
-    out = driver.evaluate(Evaluator(), Configuration(), {"a": np.zeros((5, 3))})
+    evaluator = Evaluator()
+    out = driver.evaluate(evaluator, Configuration(), {"a": np.zeros((5, 3))})
     E, g = out["a"]
     assert E == -10.0 and np.allclose(g, 1.0) and g.shape == (15,)
+    assert evaluator.options is None
+    # The precision goes to the tasks as an option
+    driver = HessianDriver(make_node(MC), precision="tight")
+    evaluator = Evaluator()
+    driver.evaluate(evaluator, Configuration(), {"a": np.zeros((5, 3))})
+    assert evaluator.options == {"precision": "tight"}
 
 
 # --------------------------------------------------------------------------

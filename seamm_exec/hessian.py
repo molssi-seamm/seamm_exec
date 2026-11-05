@@ -845,6 +845,9 @@ class HessianDriver:
         from seamm_exec import Geometry
 
         elements = list(configuration.atoms.atomic_numbers)
+        # The requested precision goes to the tasks too (providers that know it,
+        # e.g. ORCA, tighten the SCF; others ignore the option)
+        options = {"precision": self.precision} if self.precision else None
         for key, x in geometries.items():
             evaluator.submit(
                 Geometry(
@@ -854,6 +857,7 @@ class HessianDriver:
                     configuration.spin_multiplicity,
                 ),
                 key=key,
+                options=options,
             )
         results = {}
         for result in evaluator.results():
