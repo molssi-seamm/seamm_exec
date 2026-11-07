@@ -24,10 +24,13 @@ The original interface, used by most steps:
     )
     output = result["output.txt"]["path"].read_text()
 
-The returned files are left in the step's directory (``"@subdir+name"`` in
-``subdir/name``) and are not read: ``result[name]`` gives their ``"path"`` (and an
-``"exception"`` if one could not be put in place), so a step reads only what it needs
--- an MD run's trajectories can be gigabytes. ``result["stdout"]`` and
+The returned files are left in the step's directory and are not read: ``result[name]``
+gives their ``"path"`` (and an ``"exception"`` if one could not be put in place), so a
+step reads only what it needs -- an MD run's trajectories can be gigabytes. A pattern
+may reach into a subdirectory the code makes, e.g. ``"logs/*.log"``: the file keeps its
+subdirectory and ``name`` is its path from the step's directory (``"logs/a.log"``). A
+file the code writes as ``"@subdir+name"`` lands in ``subdir/name``. In place, the new
+files and directories that are not returned are removed afterwards. ``result["stdout"]`` and
 ``result["stderr"]`` are text.
 
 ``in_situ`` chooses where the code runs: ``None`` (the default) runs in a scratch

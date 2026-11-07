@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.base &#8212; SEAMM seamm-exec Plug-in 2026.11.5 documentation</title>
+    <title>seamm_exec.base &#8212; SEAMM seamm-exec Plug-in 2026.11.7 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=e86bfd1c"></script>
+    <script src="../../_static/documentation_options.js?v=7bebf36f"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.5" />
+  <meta name="docsearch:version" content="2026.11.7" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -765,13 +765,17 @@
                 <span class="k">if</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">returned</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
                     <span class="k">continue</span>
                 <span class="n">returned</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-                <span class="n">result</span><span class="p">[</span><span class="s2">"files"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="c1"># The path relative to the task's directory: just the name for</span>
+                <span class="c1"># a file at the top, "logs/a.log" for one in a subdirectory.</span>
+                <span class="n">result</span><span class="p">[</span><span class="s2">"files"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span><span class="o">.</span><span class="n">as_posix</span><span class="p">())</span>
 
         <span class="c1"># Clean up the temporary directory</span>
         <span class="k">if</span> <span class="n">in_situ</span><span class="p">:</span>
             <span class="c1"># Remove any files not originally here, or requested to return.</span>
+            <span class="c1"># Bottom-up, so a new directory is removed only after its files,</span>
+            <span class="c1"># and only if nothing in it is kept or returned.</span>
             <span class="n">keep</span> <span class="o">=</span> <span class="p">[</span><span class="n">Path</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keep</span><span class="p">]</span>
-            <span class="k">for</span> <span class="n">dirpath</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">dirpath</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="n">topdown</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
                 <span class="n">dirpath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">dirpath</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">keep</span> <span class="ow">and</span> <span class="n">_is_kept</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">keep</span><span class="p">):</span>
                     <span class="k">continue</span>
@@ -779,12 +783,12 @@
                     <span class="n">filename</span> <span class="o">=</span> <span class="n">dirpath</span> <span class="o">/</span> <span class="n">name</span>
                     <span class="k">if</span> <span class="n">filename</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">existing</span> <span class="ow">and</span> <span class="n">filename</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">returned</span><span class="p">:</span>
                         <span class="n">filename</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
-                <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">dirs</span><span class="p">:</span>
-                    <span class="n">dirname</span> <span class="o">=</span> <span class="n">dirpath</span> <span class="o">/</span> <span class="n">name</span>
-                    <span class="k">if</span> <span class="n">dirname</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">existing_directories</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">keep</span> <span class="ow">and</span> <span class="n">_is_kept</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">keep</span><span class="p">):</span>
-                            <span class="k">continue</span>
-                        <span class="n">dirname</span><span class="o">.</span><span class="n">rmdir</span><span class="p">()</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">dirpath</span> <span class="o">!=</span> <span class="n">tmpdir</span>
+                    <span class="ow">and</span> <span class="n">dirpath</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">existing_directories</span>
+                    <span class="ow">and</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">dirpath</span><span class="o">.</span><span class="n">iterdir</span><span class="p">())</span>
+                <span class="p">):</span>
+                    <span class="n">dirpath</span><span class="o">.</span><span class="n">rmdir</span><span class="p">()</span>
 
         <span class="c1"># Put the returned files in place: "@subdir+name" goes to subdir/name.</span>
         <span class="c1"># From a temporary directory they are moved, not copied through memory.</span>

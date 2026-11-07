@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.11.5 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.11.7 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="_static/documentation_options.js?v=e86bfd1c"></script>
+    <script src="_static/documentation_options.js?v=7bebf36f"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.5" />
+  <meta name="docsearch:version" content="2026.11.7" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -464,10 +464,13 @@ or a plain executable), where the program runs, and which files come back.</p>
 <span class="n">output</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">"output.txt"</span><span class="p">][</span><span class="s2">"path"</span><span class="p">]</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>The returned files are left in the step’s directory (<code class="docutils literal notranslate"><span class="pre">&quot;&#64;subdir+name&quot;</span></code> in
-<code class="docutils literal notranslate"><span class="pre">subdir/name</span></code>) and are not read: <code class="docutils literal notranslate"><span class="pre">result[name]</span></code> gives their <code class="docutils literal notranslate"><span class="pre">&quot;path&quot;</span></code> (and an
-<code class="docutils literal notranslate"><span class="pre">&quot;exception&quot;</span></code> if one could not be put in place), so a step reads only what it needs
-– an MD run’s trajectories can be gigabytes. <code class="docutils literal notranslate"><span class="pre">result[&quot;stdout&quot;]</span></code> and
+<p>The returned files are left in the step’s directory and are not read: <code class="docutils literal notranslate"><span class="pre">result[name]</span></code>
+gives their <code class="docutils literal notranslate"><span class="pre">&quot;path&quot;</span></code> (and an <code class="docutils literal notranslate"><span class="pre">&quot;exception&quot;</span></code> if one could not be put in place), so a
+step reads only what it needs – an MD run’s trajectories can be gigabytes. A pattern
+may reach into a subdirectory the code makes, e.g. <code class="docutils literal notranslate"><span class="pre">&quot;logs/*.log&quot;</span></code>: the file keeps its
+subdirectory and <code class="docutils literal notranslate"><span class="pre">name</span></code> is its path from the step’s directory (<code class="docutils literal notranslate"><span class="pre">&quot;logs/a.log&quot;</span></code>). A
+file the code writes as <code class="docutils literal notranslate"><span class="pre">&quot;&#64;subdir+name&quot;</span></code> lands in <code class="docutils literal notranslate"><span class="pre">subdir/name</span></code>. In place, the new
+files and directories that are not returned are removed afterwards. <code class="docutils literal notranslate"><span class="pre">result[&quot;stdout&quot;]</span></code> and
 <code class="docutils literal notranslate"><span class="pre">result[&quot;stderr&quot;]</span></code> are text.</p>
 <p><code class="docutils literal notranslate"><span class="pre">in_situ</span></code> chooses where the code runs: <code class="docutils literal notranslate"><span class="pre">None</span></code> (the default) runs in a scratch
 directory under a scheduler such as SLURM (<code class="docutils literal notranslate"><span class="pre">$TMPDIR</span></code>, so node-local storage) and
