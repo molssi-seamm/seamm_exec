@@ -327,13 +327,17 @@ class Base(object):
                 if path in returned or not path.is_file():
                     continue
                 returned.append(path)
-                result["files"].append(path.name)
+                # The path relative to the task's directory: just the name for
+                # a file at the top, "logs/a.log" for one in a subdirectory.
+                result["files"].append(path.relative_to(tmpdir).as_posix())
 
         # Clean up the temporary directory
         if in_situ:
             # Remove any files not originally here, or requested to return.
+            # Bottom-up, so a new directory is removed only after its files,
+            # and only if nothing in it is kept or returned.
             keep = [Path(k) for k in keep]
-            for dirpath, dirs, files in os.walk(tmpdir):
+            for dirpath, dirs, files in os.walk(tmpdir, topdown=False):
                 dirpath = Path(dirpath)
                 if keep and _is_kept(dirpath, keep):
                     continue
@@ -341,12 +345,12 @@ class Base(object):
                     filename = dirpath / name
                     if filename not in existing and filename not in returned:
                         filename.unlink()
-                for name in dirs:
-                    dirname = dirpath / name
-                    if dirname not in existing_directories:
-                        if keep and _is_kept(dirname, keep):
-                            continue
-                        dirname.rmdir()
+                if (
+                    dirpath != tmpdir
+                    and dirpath not in existing_directories
+                    and not any(dirpath.iterdir())
+                ):
+                    dirpath.rmdir()
 
         # Put the returned files in place: "@subdir+name" goes to subdir/name.
         # From a temporary directory they are moved, not copied through memory.

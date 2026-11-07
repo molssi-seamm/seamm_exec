@@ -1,6 +1,16 @@
 =======
 History
 =======
+2026.11.7 -- Bugfix: returning files from a subdirectory the code makes
+    * A step running a code in place stopped with "Directory not empty" when it asked
+      for files in a subdirectory the code made, e.g. ``logs/*.log``: the clean-up
+      removed new directories before the files in them. It now removes only new
+      directories that are left empty.
+    * A returned file in a subdirectory keeps its subdirectory, and its name in the
+      result is its path from the step's directory (``logs/a.log``). Before, it was
+      looked for at the top of the directory, so its path was wrong and, from a scratch
+      directory, it was not brought back.
+
 2026.11.5 -- Shared Hessian driver, with a request for tight convergence
     * New ``seamm_exec.hessian``: ``HessianDriver`` and ``EngineSession`` give steps the
       energy, an optimization and the Hessian of a structure from the flowchart's model
