@@ -1735,8 +1735,9 @@ class TaskSet:
         names = []
         for pattern in task.return_files:
             for path in sorted(Path(directory).glob(pattern)):
-                if path.is_file() and path.name not in names:
-                    names.append(path.name)
+                name = path.relative_to(directory).as_posix()
+                if path.is_file() and name not in names:
+                    names.append(name)
         return names
 
     @staticmethod

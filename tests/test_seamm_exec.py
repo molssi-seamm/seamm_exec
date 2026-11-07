@@ -134,3 +134,63 @@ def test_explicit_in_situ_overrides_auto_detection(monkeypatch, tmp_path):
         in_situ=True,
     )
     assert executor.ran_in == tmp_path
+
+
+class _SubdirExecutor(_FakeExecutor):
+    """Writes files in new subdirectories, like a code that keeps per-task logs."""
+
+    def exec(
+        self,
+        config,
+        cmd=[],
+        directory=None,
+        input_data=None,
+        env={},
+        shell=False,
+        ce={},
+    ):
+        here = Path(directory)
+        (here / "logs").mkdir()
+        (here / "logs" / "a.log").write_text("log a")
+        (here / "logs" / "scratch.tmp").write_text("not returned")
+        (here / "work" / "deep").mkdir(parents=True)
+        (here / "work" / "deep" / "x.tmp").write_text("not returned")
+        (here / "empty").mkdir()
+        (here / "results.txt").write_text("results")
+        return {"returncode": 0, "stdout": "", "stderr": ""}
+
+
+def test_in_situ_returns_files_in_new_subdirectory(tmp_path):
+    """A returned file in a new subdirectory stays, with its directory; the
+    rest of the new files and directories are removed (interaction_eda_step:
+    'Directory not empty' on logs/)."""
+    (tmp_path / "old").mkdir()  # existing directories are left alone
+    result = _SubdirExecutor().run(
+        config={},
+        cmd=["true"],
+        directory=tmp_path,
+        return_files=["results.txt", "logs/*.log"],
+        in_situ=True,
+    )
+    assert result["files"] == ["results.txt", "logs/a.log"]
+    assert result["logs/a.log"]["path"] == tmp_path / "logs" / "a.log"
+    assert (tmp_path / "logs" / "a.log").read_text() == "log a"
+    assert not (tmp_path / "logs" / "scratch.tmp").exists()
+    assert not (tmp_path / "work").exists() and not (tmp_path / "empty").exists()
+    assert (tmp_path / "old").is_dir()
+
+
+def test_temporary_directory_returns_files_in_subdirectory(monkeypatch, tmp_path):
+    """From a temporary directory, a returned file keeps its subdirectory."""
+    result = _SubdirExecutor().run(
+        config={},
+        cmd=["true"],
+        directory=tmp_path,
+        return_files=["results.txt", "logs/*.log"],
+        in_situ=False,
+    )
+    assert result["files"] == ["results.txt", "logs/a.log"]
+    assert (tmp_path / "logs" / "a.log").read_text() == "log a"
+    assert (tmp_path / "results.txt").read_text() == "results"
+    assert not (tmp_path / "work").exists()
+    assert result["logs/a.log"]["exception"] is None
