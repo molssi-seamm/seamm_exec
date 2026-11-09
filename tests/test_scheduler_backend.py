@@ -517,6 +517,39 @@ def test_bundle_walltime_guards(job):
     assert floor._bundle_resources(mixed)["walltime"] == max(2 * 200 + 600, 1800)
 
 
+def test_a_task_too_long_to_share_a_bundle_is_not_capped(job, caplog):
+    """A task estimated beyond bundle_walltime gets a bundle of its own with the
+    time it needs (bundle_walltime is the packing target), and its retries get
+    more; only the queue's longest walltime caps it, with a warning."""
+    job, root = job
+    long = [fake_task("qz", estimated_seconds=3 * 3600)]
+    backend = make_backend(
+        FakeQueue(), job, root, bundle_walltime=3600, max_walltime=7 * 86400
+    )
+    assert backend._bundle_resources(long)["walltime"] == 2 * 3 * 3600 + 600
+    assert backend._bundle_resources(long, walltime_scale=2)["walltime"] == 2 * (
+        2 * 3 * 3600 + 600
+    )
+    assert backend.retry_gains_time(long, timeouts=1)
+    # Several tasks are still held to the packing target
+    several = [fake_task(k, estimated_seconds=3 * 3600) for k in "ab"]
+    assert backend._bundle_resources(several)["walltime"] == 3600
+    # The queue's longest walltime caps even a lone task, and says so
+    capped = make_backend(
+        FakeQueue(), job, root, bundle_walltime=3600, max_walltime=4 * 3600
+    )
+    assert capped._bundle_resources(long)["walltime"] == 4 * 3600
+    assert "too short for it" in caplog.text
+    # Without a max_walltime the section's time is the ceiling
+    timed = make_backend(FakeQueue(), job, root, bundle_walltime=3600)
+    timed.directives = {**(timed.directives or {}), "time": "1-00:00:00"}
+    assert timed._bundle_resources(long)["walltime"] == 2 * 3 * 3600 + 600
+    timed.directives["time"] = "4:00:00"
+    assert timed._bundle_resources(long)["walltime"] == 4 * 3600
+    timed.directives["time"] = "240"  # SLURM: a bare number is minutes
+    assert timed._bundle_resources(long)["walltime"] == 4 * 3600
+
+
 def test_own_walltimes_grow_after_a_timeout(job):
     """A task's own walltime is used as given -- but a retry after running out
     of time gets more, or it would only time out again (DMC pilot smoke test),

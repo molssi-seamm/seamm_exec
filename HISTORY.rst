@@ -1,6 +1,15 @@
 =======
 History
 =======
+2026.11.8.1 -- Bugfix: a task too long to share a bundle is no longer cut to the bundle limit
+    * A task sent to a queue whose estimate alone exceeded the section's
+      ``bundle_walltime`` got a bundle of its own but only ``bundle_walltime`` of time,
+      and so did its retries, so a long calculation could never finish. A bundle of one
+      task now gets the time it needs, within the queue's ``max_walltime``, else the
+      section's ``time`` (``bundle_walltime`` only when neither is set), with a warning
+      when even that is too short. ``bundle_walltime`` stays the target for packing
+      several tasks.
+
 2026.11.8 -- Queued tasks sized by their queue section
     * Tasks a step sends to a queue (``tasks = queue``) take their size from the
       section's ``task_ntasks`` and ``task_mem_per_cpu`` (seamm-scheduler 2026.11.8):
