@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.evaluator &#8212; SEAMM seamm-exec Plug-in 2026.11.7 documentation</title>
+    <title>seamm_exec.evaluator &#8212; SEAMM seamm-exec Plug-in 2026.11.8 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=7bebf36f"></script>
+    <script src="../../_static/documentation_options.js?v=93f150ad"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.7" />
+  <meta name="docsearch:version" content="2026.11.8" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1024,14 +1024,17 @@
     <span class="c1"># Batch</span>
     <span class="c1"># ------------------------------------------------------------------</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_task_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_set</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""The resources of each of ``n`` tasks: the step's, else, for a program</span>
-<span class="sd">        whose tasks can use several cores, a share of the job's own.</span>
+<span class="w">        </span><span class="sd">"""The resources of each of ``n`` tasks: the step's, else the queue</span>
+<span class="sd">        section's, else, for a program whose tasks can use several cores, a</span>
+<span class="sd">        share of the job's own.</span>
 
 <span class="sd">        A program's default is one core per calculation, for many structures run</span>
 <span class="sd">        side by side. Run in the job's own cores, fewer structures than cores</span>
 <span class="sd">        would leave cores idle -- an optimization evaluates one structure at a</span>
 <span class="sd">        time -- so each gets an equal share of the cores and memory. Tasks sent</span>
-<span class="sd">        to a queue keep the program's default.</span>
+<span class="sd">        to a queue get the section's ``task_ntasks`` and ``task_mem_per_cpu``</span>
+<span class="sd">        (the ranks only for a program whose tasks can use several cores), else</span>
+<span class="sd">        the program's default.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1040,10 +1043,20 @@
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">resources</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">resources</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.tasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">Resources</span>
+
+        <span class="n">section</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">task_set</span><span class="p">,</span> <span class="s2">"target_section"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">section</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="s2">"tasks"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"queue"</span><span class="p">:</span>
+            <span class="n">ntasks</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="s2">"task_ntasks"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">mem_per_cpu</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="s2">"task_mem_per_cpu"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">ntasks</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">mem_per_cpu</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"parallel_tasks"</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">ntasks</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="n">Resources</span><span class="p">(</span><span class="n">ntasks</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">ntasks</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">),</span> <span class="n">mem_per_cpu</span><span class="o">=</span><span class="n">mem_per_cpu</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"parallel_tasks"</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">.local_pool</span><span class="w"> </span><span class="kn">import</span> <span class="n">LocalPool</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">.tasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">Resources</span>
 
         <span class="n">backend</span> <span class="o">=</span> <span class="n">task_set</span><span class="o">.</span><span class="n">backend</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">LocalPool</span><span class="p">)</span> <span class="ow">or</span> <span class="n">backend</span><span class="o">.</span><span class="n">synchronous</span><span class="p">:</span>
