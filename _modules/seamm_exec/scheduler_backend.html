@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.scheduler_backend &#8212; SEAMM seamm-exec Plug-in 2026.11.8 documentation</title>
+    <title>seamm_exec.scheduler_backend &#8212; SEAMM seamm-exec Plug-in 2026.11.8.1 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=93f150ad"></script>
+    <script src="../../_static/documentation_options.js?v=5120ad9a"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.8" />
+  <meta name="docsearch:version" content="2026.11.8.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1429,6 +1429,14 @@
 <span class="sd">        its allocation, so it is always one node: a task's ranks must share the</span>
 <span class="sd">        node, and its node-local scratch (seamm_exec#37). Tasks spanning nodes</span>
 <span class="sd">        are not supported.</span>
+
+<span class="sd">        The walltime is the tasks' own walltimes, else their estimates with a</span>
+<span class="sd">        margin, within ``bundle_walltime`` for a bundle of several tasks (the</span>
+<span class="sd">        packing target) and within the queue's ``max_walltime``. A bundle of</span>
+<span class="sd">        one task is held instead to the queue's ``max_walltime``, else the</span>
+<span class="sd">        section's ``time`` (``bundle_walltime`` only when neither is set): a</span>
+<span class="sd">        task too long to share a bundle gets the time it needs, and a warning</span>
+<span class="sd">        says so when the limit is too short for it.</span>
 <span class="sd">        """</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">largest</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
@@ -1473,10 +1481,19 @@
             <span class="p">)</span>
             <span class="k">if</span> <span class="n">estimate</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">floor</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="c1"># A retry after running out of time gets more (walltime_scale),</span>
-                <span class="c1"># within the bundle limit and the queue's longest walltime</span>
+                <span class="c1"># within the bundle limit and the queue's longest walltime. The</span>
+                <span class="c1"># bundle limit is the target for packing several tasks: a bundle</span>
+                <span class="c1"># of one task -- one too long to share, or retried alone -- gets</span>
+                <span class="c1"># what the task needs, within the queue's longest walltime only.</span>
                 <span class="n">walltime</span> <span class="o">=</span> <span class="n">walltime_scale</span> <span class="o">*</span> <span class="n">bundle_request</span><span class="p">(</span><span class="n">estimate</span><span class="p">,</span> <span class="n">floor</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">limit</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">limit</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">tasks</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="n">walltime</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">walltime</span><span class="p">,</span> <span class="n">limit</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">limit</span><span class="p">:</span>
+                    <span class="c1"># A lone task: the queue's longest walltime, else the</span>
+                    <span class="c1"># section's own time, caps it; the packing target only when</span>
+                    <span class="c1"># neither is known (it may be the queue's limit then)</span>
+                    <span class="n">ceiling</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_walltime</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_section_time</span><span class="p">()</span>
+                    <span class="n">walltime</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">walltime</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="n">ceiling</span> <span class="ow">or</span> <span class="n">limit</span><span class="p">))</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_walltime</span><span class="p">:</span>
                     <span class="n">walltime</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">walltime</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_walltime</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">walltime</span> <span class="o">&lt;</span> <span class="n">bundle_request</span><span class="p">(</span><span class="n">estimate</span><span class="p">,</span> <span class="n">floor</span><span class="p">):</span>
@@ -1507,6 +1524,18 @@
             <span class="s2">"account"</span><span class="p">:</span> <span class="n">first</span><span class="p">(</span><span class="s2">"account"</span><span class="p">),</span>
             <span class="s2">"qos"</span><span class="p">:</span> <span class="n">first</span><span class="p">(</span><span class="s2">"qos"</span><span class="p">),</span>
         <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_section_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The section's ``time`` directive in seconds, or None."""</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directives</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"time"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_scheduler.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">_parse_time</span>  <span class="c1"># SLURM's forms</span>
+
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">_parse_time</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)))</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="SchedulerBackend.retry_gains_time">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.scheduler_backend.SchedulerBackend.retry_gains_time">[docs]</a>
