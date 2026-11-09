@@ -946,6 +946,14 @@ class SchedulerBackend:
         its allocation, so it is always one node: a task's ranks must share the
         node, and its node-local scratch (seamm_exec#37). Tasks spanning nodes
         are not supported.
+
+        The walltime is the tasks' own walltimes, else their estimates with a
+        margin, within ``bundle_walltime`` for a bundle of several tasks (the
+        packing target) and within the queue's ``max_walltime``. A bundle of
+        one task is held instead to the queue's ``max_walltime``, else the
+        section's ``time`` (``bundle_walltime`` only when neither is set): a
+        task too long to share a bundle gets the time it needs, and a warning
+        says so when the limit is too short for it.
         """
 
         def largest(name):
@@ -990,10 +998,19 @@ class SchedulerBackend:
             )
             if estimate > 0 or floor > 0:
                 # A retry after running out of time gets more (walltime_scale),
-                # within the bundle limit and the queue's longest walltime
+                # within the bundle limit and the queue's longest walltime. The
+                # bundle limit is the target for packing several tasks: a bundle
+                # of one task -- one too long to share, or retried alone -- gets
+                # what the task needs, within the queue's longest walltime only.
                 walltime = walltime_scale * bundle_request(estimate, floor)
-                if limit:
+                if limit and len(tasks) > 1:
                     walltime = min(walltime, limit)
+                elif limit:
+                    # A lone task: the queue's longest walltime, else the
+                    # section's own time, caps it; the packing target only when
+                    # neither is known (it may be the queue's limit then)
+                    ceiling = self.max_walltime or self._section_time()
+                    walltime = min(walltime, max(limit, ceiling or limit))
                 if self.max_walltime:
                     walltime = min(walltime, self.max_walltime)
                 if walltime < bundle_request(estimate, floor):
@@ -1024,6 +1041,18 @@ class SchedulerBackend:
             "account": first("account"),
             "qos": first("qos"),
         }
+
+    def _section_time(self):
+        """The section's ``time`` directive in seconds, or None."""
+        value = (self.directives or {}).get("time")
+        if not value:
+            return None
+        try:
+            from seamm_scheduler.config import _parse_time  # SLURM's forms
+
+            return float(_parse_time(str(value)))
+        except Exception:
+            return None
 
     def retry_gains_time(self, tasks, bundle_walltime=None, timeouts=1):
         """Whether retrying tasks that ran out of time ``timeouts`` times would give
