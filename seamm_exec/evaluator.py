@@ -559,14 +559,17 @@ class Evaluator:
     # Batch
     # ------------------------------------------------------------------
     def _task_resources(self, task_set, n):
-        """The resources of each of ``n`` tasks: the step's, else, for a program
-        whose tasks can use several cores, a share of the job's own.
+        """The resources of each of ``n`` tasks: the step's, else the queue
+        section's, else, for a program whose tasks can use several cores, a
+        share of the job's own.
 
         A program's default is one core per calculation, for many structures run
         side by side. Run in the job's own cores, fewer structures than cores
         would leave cores idle -- an optimization evaluates one structure at a
         time -- so each gets an equal share of the cores and memory. Tasks sent
-        to a queue keep the program's default.
+        to a queue get the section's ``task_ntasks`` and ``task_mem_per_cpu``
+        (the ranks only for a program whose tasks can use several cores), else
+        the program's default.
 
         Returns
         -------
@@ -575,10 +578,20 @@ class Evaluator:
         """
         if self.resources is not None:
             return self.resources
+        from .tasks import Resources
+
+        section = getattr(task_set, "target_section", None)
+        if section is not None and getattr(section, "tasks", None) == "queue":
+            ntasks = getattr(section, "task_ntasks", None)
+            mem_per_cpu = getattr(section, "task_mem_per_cpu", None)
+            if not ntasks and not mem_per_cpu:
+                return None
+            if not self.options.get("parallel_tasks", False):
+                ntasks = 1
+            return Resources(ntasks=int(ntasks or 1), mem_per_cpu=mem_per_cpu)
         if not self.options.get("parallel_tasks", False):
             return None
         from .local_pool import LocalPool
-        from .tasks import Resources
 
         backend = task_set.backend
         if not isinstance(backend, LocalPool) or backend.synchronous:

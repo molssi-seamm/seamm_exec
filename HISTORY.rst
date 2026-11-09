@@ -1,6 +1,13 @@
 =======
 History
 =======
+2026.11.8 -- Queued tasks sized by their queue section
+    * Tasks a step sends to a queue (``tasks = queue``) take their size from the
+      section's ``task_ntasks`` and ``task_mem_per_cpu`` (seamm-scheduler 2026.11.8):
+      the ranks for programs whose tasks can use several cores, such as ORCA, and the
+      memory for any. A step that gives its tasks resources of its own keeps them, and
+      tasks run in the job's own cores still share them out as before.
+
 2026.11.7 -- Bugfix: returning files from a subdirectory the code makes
     * A step running a code in place stopped with "Directory not empty" when it asked
       for files in a subdirectory the code made, e.g. ``logs/*.log``: the clean-up

@@ -441,6 +441,30 @@ def test_tasks_sent_to_a_queue_keep_their_default(tmp_path):
     assert evaluator._task_resources(task_set, 1) is None
 
 
+def _queue_task_set(**sizes):
+    section = types.SimpleNamespace(tasks="queue", **sizes)
+    return types.SimpleNamespace(backend=object(), target_section=section)
+
+
+def test_the_queue_section_sizes_its_tasks(tmp_path):
+    """A queue section's task_ntasks and task_mem_per_cpu size the tasks sent
+    to it; a program whose tasks use one core gets only the memory."""
+    evaluator = Evaluator(_node(tmp_path), PARALLEL_MC, path="batch")
+    task_set = _queue_task_set(task_ntasks=4, task_mem_per_cpu=8 * 1024**3)
+    resources = evaluator._task_resources(task_set, 50)
+    assert resources.ntasks == 4 and resources.mem_per_cpu == 8 * 1024**3
+    serial = Evaluator(_node(tmp_path), MC, path="batch")
+    resources = serial._task_resources(task_set, 50)
+    assert resources.ntasks == 1 and resources.mem_per_cpu == 8 * 1024**3
+    # Without the settings: the program's default
+    unset = _queue_task_set(task_ntasks=None, task_mem_per_cpu=None)
+    assert evaluator._task_resources(unset, 1) is None
+    # The step's own resources still come first
+    own = seamm_exec.Resources(ntasks=2)
+    evaluator = Evaluator(_node(tmp_path), PARALLEL_MC, path="batch", resources=own)
+    assert evaluator._task_resources(task_set, 1) is own
+
+
 def test_the_steps_resources_come_first(tmp_path):
     resources = seamm_exec.Resources(ntasks=3)
     evaluator = Evaluator(
