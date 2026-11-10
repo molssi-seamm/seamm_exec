@@ -78,7 +78,8 @@ and run any number of them through a :class:`~seamm_exec.TaskSet`:
 What this gives a step:
 
 * **Concurrency.** The tasks run through a pool sized to the machine or to the
-  SLURM allocation, each in its own process group; a task's ``Resources`` say how
+  SLURM allocation -- all its cores, ``--ntasks`` × ``--cpus-per-task``, and its
+  memory -- each in its own process group; a task's ``Resources`` say how
   many cores and how much memory it needs, and ``ntasks=None`` means all of it.
   ``tasks.capacity()`` reports the pool's size, for a step that sizes its input
   (ORCA's ``%pal``) before writing it.
