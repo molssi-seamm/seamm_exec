@@ -206,6 +206,46 @@ def test_whole_pool_and_oversized_tasks(tmp_path):
     assert ts.capacity() == {"cores": 4, "memory": 16 * GiB, "ngpus": 0}
 
 
+@pytest.mark.parametrize(
+    "ce, cores",
+    [
+        ({"NTASKS": 4}, 4),
+        ({"NTASKS": 1, "CPUS_PER_TASK": 8}, 8),
+        ({"NTASKS": 2, "CPUS_PER_TASK": 16}, 32),
+        ({"NTASKS": 4, "CPUS_PER_TASK": 1}, 4),
+        ({}, 1),
+    ],
+)
+def test_pool_cores_count_cpus_per_task(ce, cores):
+    from seamm_exec.local_pool import pool_cores
+
+    assert pool_cores(ce) == cores
+    assert LocalPool(Local(), ce={**ce, "MEM_PER_NODE": GiB}).cores == cores
+
+
+def test_bundle_allocation_threads_and_memory(tmp_path, monkeypatch):
+    """A bundle's allocation, ``--ntasks=1 --cpus-per-task=8 --mem-per-cpu=1193M``,
+    is 8 cores: a threaded task gets all 8 and their memory (SEAMM 5680/5681 ran
+    Psi4 on one thread with one core's memory)."""
+    for name in [n for n in os.environ if n.startswith(("SLURM_", "SBATCH_"))]:
+        monkeypatch.delenv(name)
+    monkeypatch.setenv("SLURM_JOB_ID", "8571112")
+    monkeypatch.setenv("SLURM_NTASKS", "1")
+    monkeypatch.setenv("SLURM_CPUS_PER_TASK", "8")
+    monkeypatch.setenv("SLURM_MEM_PER_CPU", "1193")
+    monkeypatch.setenv("SLURM_NNODES", "1")
+    MiB = 1024**2
+
+    backend = LocalPool(Local())
+    assert backend.capacity() == {"cores": 8, "memory": 8 * 1193 * MiB, "ngpus": 0}
+
+    ts = TaskSet(directory=tmp_path, backend=backend, executor=Local())
+    cmd = "echo {NTASKS} {CPUS_PER_TASK} {MEM_PER_CPU} > ce.txt"
+    ts.add(shell_task("threaded", cmd, resources=Resources(1, cpus_per_task=8)))
+    results = run_all(ts)
+    assert results["threaded"].read("ce.txt") == f"1 8 {1193 * MiB}\n"
+
+
 def test_binding_disabled_only_when_concurrent(tmp_path):
     cmd = f"echo ${BINDING_ENV}:$OMP_NUM_THREADS > b.txt"
     one = TaskSet(directory=tmp_path / "one", backend=pool(), executor=Local())

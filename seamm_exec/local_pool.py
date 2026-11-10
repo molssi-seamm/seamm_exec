@@ -50,6 +50,19 @@ logger = logging.getLogger("seamm-exec")
 BINDING_ENV = "OMPI_MCA_hwloc_base_binding_policy"
 
 
+def pool_cores(ce):
+    """The cores a computational environment holds: ``NTASKS × CPUS_PER_TASK``.
+
+    A SLURM job submitted with ``--ntasks=1 --cpus-per-task=32`` (how a bundle of
+    threaded tasks asks for a node) has ``NTASKS`` 1 but 32 cores. Counting
+    ``NTASKS`` alone gave such a pool one core, so every task ran on one thread
+    with one core's share of the memory.
+    """
+    ntasks = int(ce.get("NTASKS", 1) or 1)
+    cpus_per_task = int(ce.get("CPUS_PER_TASK", 1) or 1)
+    return max(1, ntasks * cpus_per_task)
+
+
 class _Job:
     """The pool's record of one submitted task."""
 
@@ -136,7 +149,7 @@ class LocalPool:
             self.ngpus = 0
         else:
             self.ce = dict(ce) if ce else computational_environment()
-            self.cores = max(1, int(self.ce.get("NTASKS", 1) or 1))
+            self.cores = pool_cores(self.ce)
             self.memory = int(self.ce.get("MEM_PER_NODE", 0) or 0)
             self.ngpus = int(self.ce.get("NGPUS", 0) or 0)
 

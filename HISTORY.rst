@@ -1,6 +1,15 @@
 =======
 History
 =======
+2026.11.10 -- Bugfix: threaded tasks in a bundle get all of the bundle's cores
+    * A bundle asks SLURM for one task with several cores (``--ntasks=1
+      --cpus-per-task=8``), but its pool counted only ``--ntasks`` as its cores. So
+      every threaded task in a bundle ran on a single thread, with one core's share of
+      the memory, and large calculations ran out of time on every attempt. The pool
+      now counts ``--ntasks`` × ``--cpus-per-task``, and a task gets the threads and
+      memory it asked for. A Psi4 EDA pair that took 37 minutes on one thread now
+      takes under 6 on eight, with the same energies.
+
 2026.11.8.1 -- Bugfix: a task too long to share a bundle is no longer cut to the bundle limit
     * A task sent to a queue whose estimate alone exceeded the section's
       ``bundle_walltime`` got a bundle of its own but only ``bundle_walltime`` of time,
