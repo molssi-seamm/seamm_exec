@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.local_pool &#8212; SEAMM seamm-exec Plug-in 2026.11.8.1 documentation</title>
+    <title>seamm_exec.local_pool &#8212; SEAMM seamm-exec Plug-in 2026.11.10 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=5120ad9a"></script>
+    <script src="../../_static/documentation_options.js?v=279938be"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.8.1" />
+  <meta name="docsearch:version" content="2026.11.10" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -480,6 +480,22 @@
 <span class="n">BINDING_ENV</span> <span class="o">=</span> <span class="s2">"OMPI_MCA_hwloc_base_binding_policy"</span>
 
 
+<div class="viewcode-block" id="pool_cores">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.local_pool.pool_cores">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">pool_cores</span><span class="p">(</span><span class="n">ce</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The cores a computational environment holds: ``NTASKS × CPUS_PER_TASK``.</span>
+
+<span class="sd">    A SLURM job submitted with ``--ntasks=1 --cpus-per-task=32`` (how a bundle of</span>
+<span class="sd">    threaded tasks asks for a node) has ``NTASKS`` 1 but 32 cores. Counting</span>
+<span class="sd">    ``NTASKS`` alone gave such a pool one core, so every task ran on one thread</span>
+<span class="sd">    with one core's share of the memory.</span>
+<span class="sd">    """</span>
+    <span class="n">ntasks</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"NTASKS"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">cpus_per_task</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"CPUS_PER_TASK"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ntasks</span> <span class="o">*</span> <span class="n">cpus_per_task</span><span class="p">)</span></div>
+
+
+
 <span class="k">class</span><span class="w"> </span><span class="nc">_Job</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""The pool's record of one submitted task."""</span>
 
@@ -568,7 +584,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">ngpus</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ce</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span> <span class="k">if</span> <span class="n">ce</span> <span class="k">else</span> <span class="n">computational_environment</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cores</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ce</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"NTASKS"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cores</span> <span class="o">=</span> <span class="n">pool_cores</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ce</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">memory</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ce</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"MEM_PER_NODE"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ngpus</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ce</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"NGPUS"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
 

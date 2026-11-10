@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.11.8.1 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.11.10 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="_static/documentation_options.js?v=5120ad9a"></script>
+    <script src="_static/documentation_options.js?v=279938be"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.8.1" />
+  <meta name="docsearch:version" content="2026.11.10" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -514,7 +514,8 @@ and run any number of them through a <code class="xref py py-class docutils lite
 <p>What this gives a step:</p>
 <ul class="simple">
 <li><p><strong>Concurrency.</strong> The tasks run through a pool sized to the machine or to the
-SLURM allocation, each in its own process group; a task’s <code class="docutils literal notranslate"><span class="pre">Resources</span></code> say how
+SLURM allocation – all its cores, <code class="docutils literal notranslate"><span class="pre">--ntasks</span></code> × <code class="docutils literal notranslate"><span class="pre">--cpus-per-task</span></code>, and its
+memory – each in its own process group; a task’s <code class="docutils literal notranslate"><span class="pre">Resources</span></code> say how
 many cores and how much memory it needs, and <code class="docutils literal notranslate"><span class="pre">ntasks=None</span></code> means all of it.
 <code class="docutils literal notranslate"><span class="pre">tasks.capacity()</span></code> reports the pool’s size, for a step that sizes its input
 (ORCA’s <code class="docutils literal notranslate"><span class="pre">%pal</span></code>) before writing it.</p></li>

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.11.8.1 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.11.10 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=5120ad9a"></script>
+    <script src="../_static/documentation_options.js?v=279938be"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.8.1" />
+  <meta name="docsearch:version" content="2026.11.10" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -1711,6 +1711,16 @@ networks leaves the leftovers alone, the safe direction.)</p>
 <dd><p>Make a <a class="reference internal" href="#seamm_exec.local_pool.LocalPool.wait" title="seamm_exec.local_pool.LocalPool.wait"><code class="xref py py-meth docutils literal notranslate"><span class="pre">wait()</span></code></a> return early (a TaskSet being cancelled).</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.local_pool.pool_cores">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.local_pool.</span></span><span class="sig-name descname"><span class="pre">pool_cores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/local_pool.html#pool_cores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.local_pool.pool_cores" title="Link to this definition">#</a></dt>
+<dd><p>The cores a computational environment holds: <code class="docutils literal notranslate"><span class="pre">NTASKS</span> <span class="pre">×</span> <span class="pre">CPUS_PER_TASK</span></code>.</p>
+<p>A SLURM job submitted with <code class="docutils literal notranslate"><span class="pre">--ntasks=1</span> <span class="pre">--cpus-per-task=32</span></code> (how a bundle of
+threaded tasks asks for a node) has <code class="docutils literal notranslate"><span class="pre">NTASKS</span></code> 1 but 32 cores. Counting
+<code class="docutils literal notranslate"><span class="pre">NTASKS</span></code> alone gave such a pool one core, so every task ran on one thread
+with one core’s share of the memory.</p>
 </dd></dl>
 
 </section>
@@ -4115,6 +4125,7 @@ raises.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.local_pool.LocalPool.wake"><code class="docutils literal notranslate"><span class="pre">LocalPool.wake()</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.local_pool.pool_cores"><code class="docutils literal notranslate"><span class="pre">pool_cores()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-seamm_exec.partial_outputs">seamm_exec.partial_outputs module</a><ul class="pst-show_toc_level nav section-nav flex-column">
