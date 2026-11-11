@@ -4,6 +4,7 @@
 thermochemistry_step 2026-11-05, with its tests)."""
 
 import contextlib
+import json
 import os
 import types
 
@@ -266,7 +267,7 @@ def test_evaluate_converts_units():
 def test_engine_ncores(monkeypatch):
     # No physical-core cap here: the test machine's topology is not the point
     monkeypatch.setattr(H, "physical_cores_allowed", lambda *a, **k: None)
-    for variable in ("SLURM_CPUS_ON_NODE", "SLURM_NTASKS"):
+    for variable in ("SLURM_CPUS_ON_NODE", "SLURM_NTASKS", "SEAMM_CE"):
         monkeypatch.delenv(variable, raising=False)
     n_here = (
         len(os.sched_getaffinity(0))
@@ -285,9 +286,37 @@ def test_engine_ncores(monkeypatch):
 
 def test_engine_ncores_uses_physical_cores(monkeypatch):
     """16 allowed hardware threads on 8 cores give 8 engine ranks."""
+    monkeypatch.delenv("SEAMM_CE", raising=False)
     monkeypatch.setenv("SLURM_CPUS_ON_NODE", "16")
     monkeypatch.setattr(H, "physical_cores_allowed", lambda *a, **k: 8)
     assert HessianDriver(make_node(MC)).engine_ncores() == 8
+
+
+def test_engine_ncores_in_a_parallel_iteration(monkeypatch):
+    """An iteration of a parallel loop inherits the job's Slurm variables; its
+    engine gets the iteration's share (SEAMM_CE), not the whole job (ChemAI
+    5687: 6 iterations of 4 cores each ran 24 ranks in a 24-core job)."""
+    monkeypatch.setattr(H, "physical_cores_allowed", lambda *a, **k: 24)
+    monkeypatch.setenv("SLURM_CPUS_ON_NODE", "24")
+    monkeypatch.setenv("SLURM_NTASKS", "24")
+    monkeypatch.setenv(
+        "SEAMM_CE",
+        json.dumps(
+            {"type": "slurm", "NTASKS": 4, "CPUS_PER_TASK": 1, "CPUS_ON_NODE": 24}
+        ),
+    )
+    node = make_node(MC)
+    node.global_options = {"ncores": "available"}
+    assert HessianDriver(node).engine_ncores() == 4
+    # A threaded share counts its threads
+    monkeypatch.setenv("SEAMM_CE", json.dumps({"NTASKS": 1, "CPUS_PER_TASK": 8}))
+    assert HessianDriver(node).engine_ncores() == 8
+    # Unreadable: back to the job's allocation
+    monkeypatch.setenv("SEAMM_CE", "not json")
+    assert HessianDriver(node).engine_ncores() == 24
+    # Outside a loop: the job's allocation, as before
+    monkeypatch.delenv("SEAMM_CE")
+    assert HessianDriver(node).engine_ncores() == 24
 
 
 def test_engine_environment(tmp_path, monkeypatch):

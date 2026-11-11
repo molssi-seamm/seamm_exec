@@ -1,6 +1,14 @@
 =======
 History
 =======
+2026.11.10.1 -- Bugfix: an MDI engine in a parallel loop uses its iteration's cores
+    * In an iteration of a parallel loop, the warm MDI engine (e.g. ORCA for the
+      Thermochemistry step's Hessians) took the whole job's cores from the Slurm
+      variables the iteration inherits, instead of the iteration's share. Six
+      iterations of 4 cores in a 24-core job each started 24 ORCA ranks, 144 ranks
+      on 24 cores, and barely progressed. The engine now uses the iteration's share
+      (cores per iteration); outside a parallel loop nothing changes.
+
 2026.11.10 -- Bugfix: threaded tasks in a bundle get all of the bundle's cores
     * A bundle asks SLURM for one task with several cores (``--ntasks=1
       --cpus-per-task=8``), but its pool counted only ``--ntasks`` as its cores. So
