@@ -27,6 +27,12 @@ The program's contract (classmethods beside ``get_model_chemistry_options``)::
     analyze_task(result, model_chemistry, configuration, *, properties, options)
         -> {"energy": kJ/mol, "gradients": (n, 3) kJ/mol/Å, "stress": GPa, ...}
     can_run_task(configuration, model_chemistry, *, options) -> bool   (optional)
+    expected_fingerprints(configuration, model_chemistry, *, kind, properties,
+                          options, version) -> [str]                   (optional)
+
+``expected_fingerprints`` predicts, without running anything, the settings
+fingerprints that a calculation of the structure would record (see
+:meth:`Evaluator.expected_fingerprints`).
 
 A structure for which ``can_run_task`` is False (e.g. a periodic system for
 ORCA or MOPAC) goes to the program's MDI engine, if it has one, even when the
@@ -243,6 +249,50 @@ def choose_path(model_chemistry, provider, target=None):
     )
 
 
+def expected_fingerprints(
+    provider,
+    model_chemistry,
+    configuration,
+    *,
+    kind="energy",
+    properties=("energy",),
+    options=None,
+    version=None,
+):
+    """The settings fingerprints a calculation of a structure would record, from
+    the program's ``expected_fingerprints``, or None if it has none or it fails.
+    See :meth:`Evaluator.expected_fingerprints`; this form is for callers that
+    drive the program otherwise (e.g. over their own MDI engine).
+
+    Parameters
+    ----------
+    provider : class
+        The program's step class (``plugin_manager.get(model_chemistry["step"])``).
+    model_chemistry : dict
+        The ``_model_chemistry`` wrapper.
+    """
+    predict = getattr(provider, "expected_fingerprints", None)
+    if predict is None:
+        return None
+    try:
+        return list(
+            predict(
+                configuration,
+                model_chemistry,
+                kind=kind,
+                properties=tuple(properties),
+                options=dict(options or {}),
+                version=version,
+            )
+        )
+    except Exception as e:
+        # A consumer falls back to its own rule; never fail on a prediction
+        logger.warning(
+            f"expected_fingerprints of '{model_chemistry.get('step')}' failed: {e}"
+        )
+        return None
+
+
 class Evaluator:
     """Evaluate a model chemistry at many structures.
 
@@ -382,6 +432,49 @@ class Evaluator:
             for result in iterator:
                 self._done.add(result.key)
                 yield result
+
+    def expected_fingerprints(
+        self, configuration, *, kind="energy", options=None, version=None
+    ):
+        """The settings fingerprints a calculation of this structure would
+        record, predicted by the program without running anything; or None if
+        the program cannot predict them.
+
+        A program's settings can depend on the structure, not only on the model
+        chemistry: ORCA uses exact exchange (``NoCOSX``) for some elements and
+        for lone atoms, so the species of one model chemistry have different
+        fingerprints. A consumer that looks up stored results by fingerprint
+        (the thermochemistry step's fragment store) asks for each structure's
+        own, rather than reusing another structure's.
+
+        Parameters
+        ----------
+        configuration : molsystem configuration or :class:`Geometry`
+            The structure.
+        kind : str
+            "energy" (this evaluator's properties) or "hessian".
+        options : dict, optional
+            The options the structure would be submitted with.
+        version : str, optional
+            The program's version, which is hashed in the fingerprint: take it
+            from the calculation record of a structure already computed.
+
+        Returns
+        -------
+        [str] or None
+            The fingerprints the result's record may carry (any one of them),
+            or None when the program has no ``expected_fingerprints`` or it
+            fails.
+        """
+        return expected_fingerprints(
+            self.provider,
+            self.model_chemistry,
+            configuration,
+            kind=kind,
+            properties=self.properties,
+            options=options,
+            version=version,
+        )
 
     @property
     def mdi_capable(self):

@@ -165,7 +165,11 @@ per rank) sets the size of each calculation on the batch path; the provider's
 
 A program offers the batch path through three classmethods beside
 ``get_model_chemistry_options``: ``get_task``, ``analyze_task`` and, optionally,
-``can_run_task``; see :mod:`seamm_exec.evaluator`. An ``analyze_task`` that
+``can_run_task``, and optionally ``expected_fingerprints``, which predicts the
+settings fingerprints a calculation of a structure would record without running
+it (``Evaluator.expected_fingerprints``, or ``seamm_exec.expected_fingerprints``
+for a caller that drives the program otherwise); see :mod:`seamm_exec.evaluator`.
+An ``analyze_task`` that
 takes ``task=`` is given the task that produced the result, so that it can
 append the run's timing record (see below); one that does not is called
 without it.
