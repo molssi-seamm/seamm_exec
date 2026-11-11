@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.11.10 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.11.10.1 documentation</title>
   
   
   
@@ -31,7 +31,7 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
   
   <!-- So that users can add custom icons -->
@@ -40,12 +40,12 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="_static/documentation_options.js?v=279938be"></script>
+    <script src="_static/documentation_options.js?v=73a6b10a"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
-    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="_static/design-tabs.js?v=fcb327ea"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'getting_started';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.10" />
+  <meta name="docsearch:version" content="2026.11.10.1" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -802,7 +802,10 @@ iteration’s own calculations run in its share (its <code class="docutils liter
 memory per iteration, while the iteration itself runs in one core and 4 GB: its
 <code class="docutils literal notranslate"><span class="pre">SEAMM_TASK_CE</span></code> gives its codes the tasks’ size to plan with, and a task that
 asks for no memory gets the memory per iteration. Code that runs in the iteration
-itself, such as an MDI engine, has only the small share. The Loop’s user guide
+itself, such as an MDI engine, has only the iteration’s own share: with “inline”
+placement the Loop’s cores per iteration, with “separate tasks” the small share. An
+MDI engine reads it from <code class="docutils literal notranslate"><span class="pre">SEAMM_CE</span></code> (<code class="docutils literal notranslate"><span class="pre">NTASKS</span></code> × <code class="docutils literal notranslate"><span class="pre">CPUS_PER_TASK</span></code>), not from the
+job’s <code class="docutils literal notranslate"><span class="pre">SLURM_*</span></code> variables, which the iteration inherits. The Loop’s user guide
 describes the options and the contract.</p>
 </section>
 <section id="timing-records-and-the-cost-model">

@@ -389,7 +389,10 @@ iteration's own calculations run in its share (its ``SEAMM_TARGET`` is empty); w
 memory per iteration, while the iteration itself runs in one core and 4 GB: its
 ``SEAMM_TASK_CE`` gives its codes the tasks' size to plan with, and a task that
 asks for no memory gets the memory per iteration. Code that runs in the iteration
-itself, such as an MDI engine, has only the small share. The Loop's user guide
+itself, such as an MDI engine, has only the iteration's own share: with "inline"
+placement the Loop's cores per iteration, with "separate tasks" the small share. An
+MDI engine reads it from ``SEAMM_CE`` (``NTASKS`` × ``CPUS_PER_TASK``), not from the
+job's ``SLURM_*`` variables, which the iteration inherits. The Loop's user guide
 describes the options and the contract.
 
 Timing records and the cost model
