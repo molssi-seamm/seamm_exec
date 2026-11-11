@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.evaluator &#8212; SEAMM seamm-exec Plug-in 2026.11.10.1 documentation</title>
+    <title>seamm_exec.evaluator &#8212; SEAMM seamm-exec Plug-in 2026.11.11 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=73a6b10a"></script>
+    <script src="../../_static/documentation_options.js?v=83e1bca7"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.10.1" />
+  <meta name="docsearch:version" content="2026.11.11" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -457,6 +457,12 @@
 <span class="sd">    analyze_task(result, model_chemistry, configuration, *, properties, options)</span>
 <span class="sd">        -&gt; {"energy": kJ/mol, "gradients": (n, 3) kJ/mol/Å, "stress": GPa, ...}</span>
 <span class="sd">    can_run_task(configuration, model_chemistry, *, options) -&gt; bool   (optional)</span>
+<span class="sd">    expected_fingerprints(configuration, model_chemistry, *, kind, properties,</span>
+<span class="sd">                          options, version) -&gt; [str]                   (optional)</span>
+
+<span class="sd">``expected_fingerprints`` predicts, without running anything, the settings</span>
+<span class="sd">fingerprints that a calculation of the structure would record (see</span>
+<span class="sd">:meth:`Evaluator.expected_fingerprints`).</span>
 
 <span class="sd">A structure for which ``can_run_task`` is False (e.g. a periodic system for</span>
 <span class="sd">ORCA or MOPAC) goes to the program's MDI engine, if it has one, even when the</span>
@@ -691,6 +697,53 @@
 
 
 
+<div class="viewcode-block" id="expected_fingerprints">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.evaluator.expected_fingerprints">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">expected_fingerprints</span><span class="p">(</span>
+    <span class="n">provider</span><span class="p">,</span>
+    <span class="n">model_chemistry</span><span class="p">,</span>
+    <span class="n">configuration</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">kind</span><span class="o">=</span><span class="s2">"energy"</span><span class="p">,</span>
+    <span class="n">properties</span><span class="o">=</span><span class="p">(</span><span class="s2">"energy"</span><span class="p">,),</span>
+    <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">version</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The settings fingerprints a calculation of a structure would record, from</span>
+<span class="sd">    the program's ``expected_fingerprints``, or None if it has none or it fails.</span>
+<span class="sd">    See :meth:`Evaluator.expected_fingerprints`; this form is for callers that</span>
+<span class="sd">    drive the program otherwise (e.g. over their own MDI engine).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    provider : class</span>
+<span class="sd">        The program's step class (``plugin_manager.get(model_chemistry["step"])``).</span>
+<span class="sd">    model_chemistry : dict</span>
+<span class="sd">        The ``_model_chemistry`` wrapper.</span>
+<span class="sd">    """</span>
+    <span class="n">predict</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">provider</span><span class="p">,</span> <span class="s2">"expected_fingerprints"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">predict</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="n">predict</span><span class="p">(</span>
+                <span class="n">configuration</span><span class="p">,</span>
+                <span class="n">model_chemistry</span><span class="p">,</span>
+                <span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">,</span>
+                <span class="n">properties</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">properties</span><span class="p">),</span>
+                <span class="n">options</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">options</span> <span class="ow">or</span> <span class="p">{}),</span>
+                <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="c1"># A consumer falls back to its own rule; never fail on a prediction</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"expected_fingerprints of '</span><span class="si">{</span><span class="n">model_chemistry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'step'</span><span class="p">)</span><span class="si">}</span><span class="s2">' failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
 <div class="viewcode-block" id="Evaluator">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.evaluator.Evaluator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Evaluator</span><span class="p">:</span>
@@ -843,6 +896,52 @@
             <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_done</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
                 <span class="k">yield</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="Evaluator.expected_fingerprints">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.evaluator.Evaluator.expected_fingerprints">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">expected_fingerprints</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"energy"</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The settings fingerprints a calculation of this structure would</span>
+<span class="sd">        record, predicted by the program without running anything; or None if</span>
+<span class="sd">        the program cannot predict them.</span>
+
+<span class="sd">        A program's settings can depend on the structure, not only on the model</span>
+<span class="sd">        chemistry: ORCA uses exact exchange (``NoCOSX``) for some elements and</span>
+<span class="sd">        for lone atoms, so the species of one model chemistry have different</span>
+<span class="sd">        fingerprints. A consumer that looks up stored results by fingerprint</span>
+<span class="sd">        (the thermochemistry step's fragment store) asks for each structure's</span>
+<span class="sd">        own, rather than reusing another structure's.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        configuration : molsystem configuration or :class:`Geometry`</span>
+<span class="sd">            The structure.</span>
+<span class="sd">        kind : str</span>
+<span class="sd">            "energy" (this evaluator's properties) or "hessian".</span>
+<span class="sd">        options : dict, optional</span>
+<span class="sd">            The options the structure would be submitted with.</span>
+<span class="sd">        version : str, optional</span>
+<span class="sd">            The program's version, which is hashed in the fingerprint: take it</span>
+<span class="sd">            from the calculation record of a structure already computed.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        [str] or None</span>
+<span class="sd">            The fingerprints the result's record may carry (any one of them),</span>
+<span class="sd">            or None when the program has no ``expected_fingerprints`` or it</span>
+<span class="sd">            fails.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">expected_fingerprints</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">provider</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model_chemistry</span><span class="p">,</span>
+            <span class="n">configuration</span><span class="p">,</span>
+            <span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">,</span>
+            <span class="n">properties</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="p">,</span>
+            <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
+            <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
