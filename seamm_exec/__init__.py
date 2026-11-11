@@ -25,6 +25,7 @@ from .evaluator import (  # noqa: F401
     Geometry,
     check_properties,
     choose_path,
+    expected_fingerprints,
     mdi_method_and_basis,
     structure_data,
 )

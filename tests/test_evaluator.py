@@ -495,3 +495,48 @@ def test_a_shared_out_task_reaches_get_task(tmp_path, monkeypatch):
         evaluator.submit(geometry, key="a")
         assert [r.ok for r in evaluator.results()] == [True]
     assert [(r.ntasks, r.mem_per_cpu) for r in seen] == [(6, 1_000_000_000)]
+
+
+# ---- expected fingerprints ----------------------------------------------------
+
+
+class Predicting(FakeProvider):
+    """A program whose fingerprint depends on the structure's elements."""
+
+    seen = []
+
+    @classmethod
+    def expected_fingerprints(
+        cls, configuration, model_chemistry, *, kind, properties, options, version
+    ):
+        cls.seen.append((kind, tuple(properties), dict(options), version))
+        numbers = structure_data(configuration)["atomic_numbers"]
+        return [f"fp:{kind}:{version}:{'B' if 5 in numbers else 'plain'}"]
+
+
+class Broken(FakeProvider):
+    @classmethod
+    def expected_fingerprints(cls, *args, **kwargs):
+        raise RuntimeError("no idea")
+
+
+def test_expected_fingerprints(tmp_path):
+    from seamm_exec import expected_fingerprints
+
+    water = Geometry([8, 1, 1], [[0, 0, 0], [0, 0.76, 0.5], [0, -0.76, 0.5]])
+    borane = Geometry([5, 1, 1, 1], [[0, 0, 0], [1.2, 0, 0], [0, 1.2, 0], [0, 0, 1.2]])
+    ev = Evaluator(
+        _node(tmp_path, Predicting), MC, properties=("energy",), path="batch"
+    )
+    assert ev.expected_fingerprints(water, version="6.1.1") == ["fp:energy:6.1.1:plain"]
+    assert ev.expected_fingerprints(borane, kind="hessian", options={"a": 1}) == [
+        "fp:hessian:None:B"
+    ]
+    assert Predicting.seen[-1] == ("hessian", ("energy",), {"a": 1}, None)
+    # The module function, for callers without an Evaluator
+    assert expected_fingerprints(Predicting, MC, borane, version="1") == [
+        "fp:energy:1:B"
+    ]
+    # A program that cannot predict, or fails: None, never an exception
+    assert expected_fingerprints(FakeProvider, MC, water) is None
+    assert expected_fingerprints(Broken, MC, water) is None

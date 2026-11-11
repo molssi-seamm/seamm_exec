@@ -1,6 +1,17 @@
 =======
 History
 =======
+2026.11.11 -- The fingerprints of a calculation, predicted before it runs
+    * ``Evaluator.expected_fingerprints(configuration)`` and
+      ``seamm_exec.expected_fingerprints(provider, model_chemistry, configuration)``
+      ask the program which settings fingerprints a calculation of the structure
+      would record, without running it, through the optional
+      ``expected_fingerprints`` of the program's batch contract (ORCA has it). A
+      program whose settings depend on the structure (ORCA's exact exchange for
+      some elements) gives its species different fingerprints at one level, so a
+      consumer that looks up stored results asks for each structure's own. Programs
+      without it, or a failing prediction, give None.
+
 2026.11.10.1 -- Bugfix: an MDI engine in a parallel loop uses its iteration's cores
     * In an iteration of a parallel loop, the warm MDI engine (e.g. ORCA for the
       Thermochemistry step's Hessians) took the whole job's cores from the Slurm
