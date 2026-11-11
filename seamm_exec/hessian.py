@@ -26,6 +26,7 @@ Analysis step.
 """
 
 import contextlib
+import json
 import logging
 import os
 from pathlib import Path
@@ -653,20 +654,37 @@ class HessianDriver:
             os.environ.update(saved)
 
     def engine_ncores(self):
-        """The cores for the MDI engine: the job's allocation under Slurm
-        (``SLURM_CPUS_ON_NODE``, else ``SLURM_NTASKS``, since without cgroups
-        the affinity mask is the whole node), otherwise the CPUs this process
-        may use; capped by the job's ``ncores`` option when that is a number.
+        """The cores for the MDI engine: in an iteration of a parallel loop its
+        share of the job (``SEAMM_CE``, ``NTASKS`` × ``CPUS_PER_TASK``), else the
+        job's allocation under Slurm (``SLURM_CPUS_ON_NODE``, else
+        ``SLURM_NTASKS``, since without cgroups the affinity mask is the whole
+        node), otherwise the CPUs this process may use; capped by the job's
+        ``ncores`` option when that is a number.
+
+        The iteration inherits the job's Slurm variables, so reading them there
+        gave every iteration's engine all of the job's cores: six iterations of
+        4 cores in a 24-core job ran 6 × 24 ranks on 24 cores (ChemAI 5687).
         """
         n = None
-        for variable in ("SLURM_CPUS_ON_NODE", "SLURM_NTASKS"):
-            value = os.environ.get(variable)
-            if value:
-                try:
-                    n = int(value)
-                    break
-                except ValueError:
-                    pass
+        from seamm_exec.iteration import CE_ENVIRONMENT
+        from seamm_exec.local_pool import pool_cores
+
+        share = os.environ.get(CE_ENVIRONMENT)
+        if share:
+            try:
+
+                n = pool_cores(json.loads(share))
+            except (TypeError, ValueError):
+                n = None
+        if n is None:
+            for variable in ("SLURM_CPUS_ON_NODE", "SLURM_NTASKS"):
+                value = os.environ.get(variable)
+                if value:
+                    try:
+                        n = int(value)
+                        break
+                    except ValueError:
+                        pass
         if n is None:
             try:
                 n = len(os.sched_getaffinity(0))
