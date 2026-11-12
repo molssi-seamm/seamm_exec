@@ -29,6 +29,12 @@ The program's contract (classmethods beside ``get_model_chemistry_options``)::
     can_run_task(configuration, model_chemistry, *, options) -> bool   (optional)
     expected_fingerprints(configuration, model_chemistry, *, kind, properties,
                           options, version) -> [str]                   (optional)
+    make_evaluator(node, model_chemistry, **evaluator_arguments)
+        -> an evaluator, or None for this class                       (optional)
+
+``make_evaluator`` lets a program evaluate a model chemistry its own way while
+consumers still create an ``Evaluator``: the Composite step runs a recipe that
+combines several calculations as one ordinary Evaluator per component.
 
 ``expected_fingerprints`` predicts, without running anything, the settings
 fingerprints that a calculation of the structure would record (see
@@ -293,6 +299,25 @@ def expected_fingerprints(
         return None
 
 
+def _provider_evaluator(node, model_chemistry, kwargs):
+    """The program's own evaluator for this model chemistry, or None."""
+    if model_chemistry is None:
+        try:
+            if not node.variable_exists("_model_chemistry"):
+                return None
+            model_chemistry = node.get_variable("_model_chemistry")
+        except Exception:
+            return None
+    try:
+        provider = node.flowchart.plugin_manager.get(model_chemistry["step"])
+    except Exception:
+        return None
+    make = getattr(provider, "make_evaluator", None)
+    if make is None:
+        return None
+    return make(node, model_chemistry, **kwargs)
+
+
 class Evaluator:
     """Evaluate a model chemistry at many structures.
 
@@ -319,6 +344,20 @@ class Evaluator:
     name : str
         A name for the MDI engine.
     """
+
+    def __new__(cls, node=None, model_chemistry=None, **kwargs):
+        """A program may evaluate its model chemistries itself: when the program's
+        step class has ``make_evaluator(node, model_chemistry, **kwargs)`` and it
+        returns an object (not None), that object is the evaluator. It must offer
+        this class's interface (``submit``, ``results``, ``expected_fingerprints``,
+        ``cancel``, use as a context manager). The Composite step does this for
+        recipes that combine several calculations, each run by an ordinary
+        Evaluator of its own program; consumers need not know."""
+        if cls is Evaluator and node is not None:
+            other = _provider_evaluator(node, model_chemistry, kwargs)
+            if other is not None:
+                return other
+        return super().__new__(cls)
 
     def __init__(
         self,

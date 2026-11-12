@@ -540,3 +540,57 @@ def test_expected_fingerprints(tmp_path):
     # A program that cannot predict, or fails: None, never an exception
     assert expected_fingerprints(FakeProvider, MC, water) is None
     assert expected_fingerprints(Broken, MC, water) is None
+
+
+# ---- a program's own evaluator (make_evaluator) ------------------------------
+
+
+class _OwnEvaluator:
+    def __init__(self, node, model_chemistry, **kwargs):
+        self.node = node
+        self.model_chemistry = model_chemistry
+        self.kwargs = kwargs
+
+
+class OwnProvider(FakeProvider):
+    """Evaluates 'own' model chemistries itself; the others as tasks."""
+
+    @classmethod
+    def make_evaluator(cls, node, model_chemistry, **kwargs):
+        if model_chemistry.get("method") != "own":
+            return None
+        return _OwnEvaluator(node, model_chemistry, **kwargs)
+
+
+def test_make_evaluator_replaces_the_evaluator(tmp_path):
+    mc = dict(MC, method="own")
+    ev = Evaluator(_node(tmp_path, OwnProvider), mc, properties=("energy",), name="X")
+    assert isinstance(ev, _OwnEvaluator)
+    assert ev.model_chemistry is mc
+    assert ev.kwargs == {"properties": ("energy",), "name": "X"}
+
+
+def test_make_evaluator_returning_none_keeps_the_evaluator(tmp_path):
+    ev = Evaluator(_node(tmp_path, OwnProvider), MC, path="batch")
+    assert isinstance(ev, Evaluator)
+    ev.submit(Geometry([1], [[1.0, 2.0, 3.0]]), key="a")
+    (result,) = ev.results()
+    assert result.ok and result.energy == pytest.approx(6.0)
+
+
+def test_make_evaluator_from_the_node_variable(tmp_path):
+    node = _node(tmp_path, OwnProvider)
+    mc = dict(MC, method="own")
+    node.variable_exists = lambda name: name == "_model_chemistry"
+    node.get_variable = lambda name: mc
+    assert isinstance(Evaluator(node), _OwnEvaluator)
+
+
+def test_make_evaluator_errors_reach_the_consumer(tmp_path):
+    class Refuses(FakeProvider):
+        @classmethod
+        def make_evaluator(cls, node, model_chemistry, **kwargs):
+            raise ValueError("no gradients for this one")
+
+    with pytest.raises(ValueError, match="no gradients"):
+        Evaluator(_node(tmp_path, Refuses), MC, properties=("energy", "gradients"))
