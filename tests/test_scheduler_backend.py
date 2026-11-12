@@ -666,6 +666,21 @@ def test_target_json_round_trip_and_precedence(tmp_path, monkeypatch):
     assert find_target(job_directory=tmp_path) is None
 
 
+def test_inline_iteration_ignores_the_parents_target(tmp_path, monkeypatch):
+    """An inline iteration (SEAMM_TARGET="") runs its calculations in its own
+    allocation, although its root is the parent job's directory, which has the
+    parent's target.json."""
+    section = TargetSection(
+        name="owl_tasks", transport="ssh", host="owl", type="slurm", tasks="queue"
+    )
+    write_target(section, tmp_path)
+    assert find_target(job_directory=tmp_path) == section
+    monkeypatch.setenv("SEAMM_TARGET", "")
+    assert find_target(job_directory=tmp_path) is None
+    # An explicit target still wins
+    assert find_target(section, job_directory=tmp_path) is section
+
+
 def test_taskset_takes_bundling_and_inline_from_the_target(tmp_path):
     section = TargetSection(
         name="q",

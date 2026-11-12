@@ -14,6 +14,14 @@ A target is a section of the JobServer's ``<root>/<jobserver-name>.ini`` (see
    runs by hand with ``run_flowchart``;
 4. none: tasks run in the evaluator's own ``LocalPool``, as before targets
    existed.
+
+An empty ``SEAMM_TARGET`` means "no target" and comes before ``target.json``: the
+Loop sets it for an iteration that runs inline, as a task of its own size, so that
+the iteration's calculations run in that task's own pool. The iteration's flowchart
+has the parent job's directory as its root, so it would otherwise find the parent's
+``target.json`` and send every calculation back to the queue as a new task with
+the queue's default size, while the iteration's own cores sat idle (tier-A
+composite energies on Owl, 2026-11-12).
 """
 
 import json
@@ -49,6 +57,10 @@ def find_target(target=None, *, job_directory=None, root=None):
         return target
     if target is not None:
         return _from_ini(str(target), root, os.environ.get("SEAMM_TARGETS"))
+
+    # An inline iteration of a parallel Loop: its codes run in its own allocation
+    if os.environ.get("SEAMM_TARGET") == "":
+        return None
 
     directory = Path(job_directory) if job_directory is not None else Path.cwd()
     path = directory / TARGET_FILE

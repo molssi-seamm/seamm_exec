@@ -1,6 +1,14 @@
 =======
 History
 =======
+2026.11.12.1 -- Bugfix: inline iterations of a parallel loop ran their calculations as queue tasks
+    * An iteration of a parallel loop placed "inline" runs as a task of the loop's
+      cores and memory, and its calculations should run inside it. Calculations run
+      through an evaluator (for example the parts of a composite model chemistry)
+      instead found the parent job's target and went back to the queue as new tasks
+      of the queue's default size, one core and a few GB, while the iteration's own
+      cores sat idle. An inline iteration now runs them in its own allocation.
+
 2026.11.12 -- A program may supply its own evaluator
     * A program's step class may provide ``make_evaluator``. When it returns an
       evaluator for a model chemistry, ``seamm_exec.Evaluator(...)`` returns that
