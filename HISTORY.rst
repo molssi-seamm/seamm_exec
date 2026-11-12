@@ -1,6 +1,12 @@
 =======
 History
 =======
+2026.11.12 -- A program may supply its own evaluator
+    * A program's step class may provide ``make_evaluator``. When it returns an
+      evaluator for a model chemistry, ``seamm_exec.Evaluator(...)`` returns that
+      instead, so the steps that use an Evaluator need no change. The Composite step
+      uses it to run recipes that combine several calculations.
+
 2026.11.11 -- The fingerprints of a calculation, predicted before it runs
     * ``Evaluator.expected_fingerprints(configuration)`` and
       ``seamm_exec.expected_fingerprints(provider, model_chemistry, configuration)``

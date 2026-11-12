@@ -174,6 +174,16 @@ takes ``task=`` is given the task that produced the result, so that it can
 append the run's timing record (see below); one that does not is called
 without it.
 
+A program may also evaluate its model chemistries its own way. If its step class
+has ``make_evaluator(node, model_chemistry, **arguments)`` and that returns an
+object, ``Evaluator(...)`` returns that object instead, so consumers do not
+change. It must offer the Evaluator's interface: ``submit``, ``results``,
+``expected_fingerprints``, ``cancel``, and use as a context manager. Returning
+None keeps the ordinary Evaluator. The Composite step uses this for recipes that
+combine several calculations: each component runs as an ordinary Evaluator of
+its own program, and the composite energies come back as one result per
+structure.
+
 **The sign of the stress.** The stress comes back as the program gives it, in
 GPa, and programs differ in its sign. A provider that returns a stress must
 therefore declare its convention in its ``get_model_chemistry_options`` entry:
