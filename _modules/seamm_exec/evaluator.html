@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.evaluator &#8212; SEAMM seamm-exec Plug-in 2026.11.11 documentation</title>
+    <title>seamm_exec.evaluator &#8212; SEAMM seamm-exec Plug-in 2026.11.12 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=83e1bca7"></script>
+    <script src="../../_static/documentation_options.js?v=b41936cd"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.11" />
+  <meta name="docsearch:version" content="2026.11.12" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -459,6 +459,12 @@
 <span class="sd">    can_run_task(configuration, model_chemistry, *, options) -&gt; bool   (optional)</span>
 <span class="sd">    expected_fingerprints(configuration, model_chemistry, *, kind, properties,</span>
 <span class="sd">                          options, version) -&gt; [str]                   (optional)</span>
+<span class="sd">    make_evaluator(node, model_chemistry, **evaluator_arguments)</span>
+<span class="sd">        -&gt; an evaluator, or None for this class                       (optional)</span>
+
+<span class="sd">``make_evaluator`` lets a program evaluate a model chemistry its own way while</span>
+<span class="sd">consumers still create an ``Evaluator``: the Composite step runs a recipe that</span>
+<span class="sd">combines several calculations as one ordinary Evaluator per component.</span>
 
 <span class="sd">``expected_fingerprints`` predicts, without running anything, the settings</span>
 <span class="sd">fingerprints that a calculation of the structure would record (see</span>
@@ -744,6 +750,25 @@
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_provider_evaluator</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">model_chemistry</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The program's own evaluator for this model chemistry, or None."""</span>
+    <span class="k">if</span> <span class="n">model_chemistry</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">node</span><span class="o">.</span><span class="n">variable_exists</span><span class="p">(</span><span class="s2">"_model_chemistry"</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="n">model_chemistry</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"_model_chemistry"</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">provider</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">plugin_manager</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">model_chemistry</span><span class="p">[</span><span class="s2">"step"</span><span class="p">])</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">make</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">provider</span><span class="p">,</span> <span class="s2">"make_evaluator"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">make</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">make</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">model_chemistry</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="Evaluator">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.evaluator.Evaluator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Evaluator</span><span class="p">:</span>
@@ -772,6 +797,20 @@
 <span class="sd">    name : str</span>
 <span class="sd">        A name for the MDI engine.</span>
 <span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">model_chemistry</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""A program may evaluate its model chemistries itself: when the program's</span>
+<span class="sd">        step class has ``make_evaluator(node, model_chemistry, **kwargs)`` and it</span>
+<span class="sd">        returns an object (not None), that object is the evaluator. It must offer</span>
+<span class="sd">        this class's interface (``submit``, ``results``, ``expected_fingerprints``,</span>
+<span class="sd">        ``cancel``, use as a context manager). The Composite step does this for</span>
+<span class="sd">        recipes that combine several calculations, each run by an ordinary</span>
+<span class="sd">        Evaluator of its own program; consumers need not know."""</span>
+        <span class="k">if</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="n">Evaluator</span> <span class="ow">and</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">other</span> <span class="o">=</span> <span class="n">_provider_evaluator</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">model_chemistry</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">other</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">other</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>

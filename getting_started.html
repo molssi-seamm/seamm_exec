@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.11.11 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.11.12 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="_static/documentation_options.js?v=83e1bca7"></script>
+    <script src="_static/documentation_options.js?v=b41936cd"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.11" />
+  <meta name="docsearch:version" content="2026.11.12" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -602,6 +602,15 @@ An <code class="docutils literal notranslate"><span class="pre">analyze_task</sp
 takes <code class="docutils literal notranslate"><span class="pre">task=</span></code> is given the task that produced the result, so that it can
 append the run’s timing record (see below); one that does not is called
 without it.</p>
+<p>A program may also evaluate its model chemistries its own way. If its step class
+has <code class="docutils literal notranslate"><span class="pre">make_evaluator(node,</span> <span class="pre">model_chemistry,</span> <span class="pre">**arguments)</span></code> and that returns an
+object, <code class="docutils literal notranslate"><span class="pre">Evaluator(...)</span></code> returns that object instead, so consumers do not
+change. It must offer the Evaluator’s interface: <code class="docutils literal notranslate"><span class="pre">submit</span></code>, <code class="docutils literal notranslate"><span class="pre">results</span></code>,
+<code class="docutils literal notranslate"><span class="pre">expected_fingerprints</span></code>, <code class="docutils literal notranslate"><span class="pre">cancel</span></code>, and use as a context manager. Returning
+None keeps the ordinary Evaluator. The Composite step uses this for recipes that
+combine several calculations: each component runs as an ordinary Evaluator of
+its own program, and the composite energies come back as one result per
+structure.</p>
 <p><strong>The sign of the stress.</strong> The stress comes back as the program gives it, in
 GPa, and programs differ in its sign. A provider that returns a stress must
 therefore declare its convention in its <code class="docutils literal notranslate"><span class="pre">get_model_chemistry_options</span></code> entry:

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.11.11 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.11.12 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=83e1bca7"></script>
+    <script src="../_static/documentation_options.js?v=b41936cd"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.11" />
+  <meta name="docsearch:version" content="2026.11.12" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -627,15 +627,20 @@ engine, unless it prefers the batch path (<code class="docutils literal notransl
 ORCA, whose engine runs a subprocess per structure); else the batch path in the
 local pool. Both paths return the same numbers for the same model chemistry.</p>
 <p>The program’s contract (classmethods beside <code class="docutils literal notranslate"><span class="pre">get_model_chemistry_options</span></code>):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_task</span><span class="p">(</span><span class="n">configuration</span><span class="p">,</span> <span class="n">model_chemistry</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">resources</span><span class="p">)</span>
-    <span class="o">-&gt;</span> <span class="n">seamm_exec</span><span class="o">.</span><span class="n">Task</span>
-<span class="n">analyze_task</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">model_chemistry</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
-    <span class="o">-&gt;</span> <span class="p">{</span><span class="s2">"energy"</span><span class="p">:</span> <span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">,</span> <span class="s2">"gradients"</span><span class="p">:</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="o">/</span><span class="n">Å</span><span class="p">,</span> <span class="s2">"stress"</span><span class="p">:</span> <span class="n">GPa</span><span class="p">,</span> <span class="o">...</span><span class="p">}</span>
-<span class="n">can_run_task</span><span class="p">(</span><span class="n">configuration</span><span class="p">,</span> <span class="n">model_chemistry</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>   <span class="p">(</span><span class="n">optional</span><span class="p">)</span>
-<span class="n">expected_fingerprints</span><span class="p">(</span><span class="n">configuration</span><span class="p">,</span> <span class="n">model_chemistry</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">kind</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span>
-                      <span class="n">options</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="nb">str</span><span class="p">]</span>                   <span class="p">(</span><span class="n">optional</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>get_task(configuration, model_chemistry, *, key, properties, options, resources)
+    -&gt; seamm_exec.Task
+analyze_task(result, model_chemistry, configuration, *, properties, options)
+    -&gt; {"energy": kJ/mol, "gradients": (n, 3) kJ/mol/Å, "stress": GPa, ...}
+can_run_task(configuration, model_chemistry, *, options) -&gt; bool   (optional)
+expected_fingerprints(configuration, model_chemistry, *, kind, properties,
+                      options, version) -&gt; [str]                   (optional)
+make_evaluator(node, model_chemistry, **evaluator_arguments)
+    -&gt; an evaluator, or None for this class                       (optional)
 </pre></div>
 </div>
+<p><code class="docutils literal notranslate"><span class="pre">make_evaluator</span></code> lets a program evaluate a model chemistry its own way while
+consumers still create an <code class="docutils literal notranslate"><span class="pre">Evaluator</span></code>: the Composite step runs a recipe that
+combines several calculations as one ordinary Evaluator per component.</p>
 <p><code class="docutils literal notranslate"><span class="pre">expected_fingerprints</span></code> predicts, without running anything, the settings
 fingerprints that a calculation of the structure would record (see
 <a class="reference internal" href="#seamm_exec.evaluator.Evaluator.expected_fingerprints" title="seamm_exec.evaluator.Evaluator.expected_fingerprints"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Evaluator.expected_fingerprints()</span></code></a>).</p>
@@ -659,7 +664,7 @@ needs for a fragment: <code class="docutils literal notranslate"><span class="pr
 
 <dl class="py class">
 <dt class="sig sig-object py" id="seamm_exec.evaluator.Evaluator">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.evaluator.</span></span><span class="sig-name descname"><span class="pre">Evaluator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_chemistry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">properties</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('energy',</span> <span class="pre">'gradients')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_set_options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resources</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'SEAMM'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/evaluator.html#Evaluator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.evaluator.Evaluator" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.evaluator.</span></span><span class="sig-name descname"><span class="pre">Evaluator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_chemistry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/evaluator.html#Evaluator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.evaluator.Evaluator" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Evaluate a model chemistry at many structures.</p>
 <dl class="field-list simple">
