@@ -240,6 +240,10 @@ settings and frame (anharmonic analyses need that consistency):
             H1, _ = session.hessian(displaced)     # at another geometry
             g = session.gradient(displaced)        # E_h/bohr
 
+After an optimization, ``driver.last_optimization`` says whether it converged
+(``converged``, ``evaluations``, ``max steps``, ``fmax``), so a step can continue it
+from where it stopped or flag the structure; it is None when nothing was optimized.
+
 **An engine that dies.** If the engine's process dies during a session -- MOPAC's
 library, for one, aborts at random in some open-shell calculations -- the driver
 starts a new engine, gives it the current coordinates and repeats the calculation,

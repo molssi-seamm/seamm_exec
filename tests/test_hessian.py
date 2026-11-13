@@ -599,3 +599,25 @@ def test_the_session_restarts_its_engine(monkeypatch, dying):
     with driver.session(Configuration(), announce=False) as session:
         assert session.energy([[0.5, 0.5, 0.5]], units="hartree") == 1.5
     assert len(dying.started) == 2 and all(e.closed for e in dying.started)
+
+
+def test_the_optimization_reports_whether_it_converged():
+    """driver.last_optimization says whether the last optimization converged, so
+    a step can continue it or flag the structure."""
+    driver = HessianDriver(make_node(MC))
+    x0 = np.full((5, 3), 0.1)
+    session = EngineSession(
+        driver,
+        HarmonicEngine(analytic=False),
+        Configuration(),
+        None,
+        [6, 1, 1, 1, 1],
+        x0,
+    )
+    assert driver.last_optimization is None
+    assert session.optimize(fmax=1e-6, max_steps=1) is False
+    assert driver.last_optimization["converged"] is False
+    assert driver.last_optimization["max steps"] == 1
+    assert session.optimize(fmax=1e-3, max_steps=500) is True
+    assert driver.last_optimization["converged"] is True
+    assert driver.last_optimization["evaluations"] >= 1

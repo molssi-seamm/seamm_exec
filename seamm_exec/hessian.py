@@ -396,12 +396,19 @@ class EngineSession:
         from ase.optimize import BFGS
 
         if self.n_atoms < 2:
+            self.driver.last_optimization = {"converged": True, "evaluations": 0}
             return True
         atoms = Atoms(numbers=self.elements, positions=self.coordinates)
         atoms.calc = _MDICalculator(self.engine)
         converged = BFGS(atoms, logfile=None).run(fmax=fmax, steps=max_steps)
         self.coordinates = np.asarray(atoms.positions, dtype=float)
         self.configuration.atoms.set_coordinates(self.coordinates, fractionals=False)
+        self.driver.last_optimization = {
+            "converged": bool(converged),
+            "evaluations": atoms.calc.n_calls,
+            "max steps": max_steps,
+            "fmax": fmax,
+        }
         self.driver.say(
             f"The structure was optimized in {atoms.calc.n_calls} energy evaluations"
             + ("." if converged else f" without converging in {max_steps} steps.")
@@ -491,6 +498,10 @@ class HessianDriver:
     engine_restarts : int
         How many times an engine that dies in a session is started again and
         the calculation repeated (2).
+    last_optimization : dict or None
+        The last optimization over an engine: ``converged`` (bool),
+        ``evaluations``, ``max steps`` and ``fmax`` (eV/Å). None when the last
+        call optimized nothing.
     step : seamm plug-in
         The program's step (``_model_chemistry["step"]``), once a route is
         planned.
@@ -516,6 +527,7 @@ class HessianDriver:
         self.printer = print_to or printer
         self.fingerprints = None
         self.engine_restarts = 2
+        self.last_optimization = None
         self.step = None
         self.last_plan = None
 
@@ -853,6 +865,7 @@ class HessianDriver:
         """Optionally optimize the structure over the warm engine, then its
         energy (kJ/mol). With no engine (tasks) the energy only."""
         self.fingerprints = None
+        self.last_optimization = None
         if not optimize or configuration.n_atoms == 1:
             return self.energy(configuration)
         with self.session(configuration, announce=False) as session:
@@ -879,6 +892,7 @@ class HessianDriver:
             As :meth:`energy_and_hessian`.
         """
         self.fingerprints = None
+        self.last_optimization = None
         with self.session(configuration) as session:
             if session is None:
                 if optimize:
