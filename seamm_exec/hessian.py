@@ -279,6 +279,86 @@ class _MDICalculator:
         )
 
 
+class _RestartingEngine:
+    """A warm MDI engine that is started again when it dies.
+
+    An engine process can die in the middle of a session -- MOPAC's library
+    aborts at random in some open-shell calculations, for one -- and the driver
+    sees only a broken connection ("MDI_Recv failed"). Then a new engine is
+    started, given the last coordinates, and asked again, at most
+    ``restarts`` times per session; a calculation that fails on a fresh engine
+    too is a real failure and is raised. Everything else is passed to the
+    engine.
+
+    Parameters
+    ----------
+    make : callable() -> engine
+        A new, not yet started engine (a context manager, as
+        ``seamm_mdi.MDIEngine`` is).
+    restarts : int
+        How many times the engine may be started again in this session.
+    say : callable(str), optional
+        Where to tell the user.
+    """
+
+    #: The engine's calls that run a calculation, retried on a new engine
+    _CALCULATIONS = ("energy", "forces", "hessian", "stress")
+
+    def __init__(self, make, restarts=2, say=None):
+        self._make = make
+        self.restarts = restarts
+        self.n_restarts = 0
+        self._say = say
+        self._coordinates = None
+        self.engine = make().__enter__()
+
+    def close(self):
+        engine, self.engine = self.engine, None
+        if engine is not None:
+            engine.__exit__(None, None, None)
+
+    def set_coordinates(self, xyz, units=None):
+        self._coordinates = (np.array(xyz, dtype=float), units)
+        if units is None:
+            return self.engine.set_coordinates(xyz)
+        return self.engine.set_coordinates(xyz, units=units)
+
+    def __getattr__(self, name):
+        attribute = getattr(self.engine, name)
+        if name not in self._CALCULATIONS or not callable(attribute):
+            return attribute
+
+        def calculation(*args, **kwargs):
+            while True:
+                try:
+                    return getattr(self.engine, name)(*args, **kwargs)
+                except Exception as e:
+                    if self.n_restarts >= self.restarts:
+                        raise
+                    self._restart(e)
+
+        return calculation
+
+    def _restart(self, error):
+        self.n_restarts += 1
+        message = (
+            f"The MDI engine stopped ({error}); it was started again and the "
+            f"calculation repeated ({self.n_restarts} of at most {self.restarts} "
+            "restarts)."
+        )
+        logger.warning(message)
+        if self._say is not None:
+            self._say(message)
+        try:
+            self.close()
+        except Exception as e:  # the old engine is gone; nothing to tidy up
+            logger.debug(f"Closing the stopped MDI engine: {e}")
+        self.engine = self._make().__enter__()
+        if self._coordinates is not None:
+            xyz, units = self._coordinates
+            self.set_coordinates(xyz, units)
+
+
 class EngineSession:
     """One warm MDI engine for one structure (see :meth:`HessianDriver.session`).
 
@@ -316,12 +396,19 @@ class EngineSession:
         from ase.optimize import BFGS
 
         if self.n_atoms < 2:
+            self.driver.last_optimization = {"converged": True, "evaluations": 0}
             return True
         atoms = Atoms(numbers=self.elements, positions=self.coordinates)
         atoms.calc = _MDICalculator(self.engine)
         converged = BFGS(atoms, logfile=None).run(fmax=fmax, steps=max_steps)
         self.coordinates = np.asarray(atoms.positions, dtype=float)
         self.configuration.atoms.set_coordinates(self.coordinates, fractionals=False)
+        self.driver.last_optimization = {
+            "converged": bool(converged),
+            "evaluations": atoms.calc.n_calls,
+            "max steps": max_steps,
+            "fmax": fmax,
+        }
         self.driver.say(
             f"The structure was optimized in {atoms.calc.n_calls} energy evaluations"
             + ("." if converged else f" without converging in {max_steps} steps.")
@@ -408,6 +495,13 @@ class HessianDriver:
     ----------
     fingerprints : dict or None
         The engine's settings fingerprints from the last engine session.
+    engine_restarts : int
+        How many times an engine that dies in a session is started again and
+        the calculation repeated (2).
+    last_optimization : dict or None
+        The last optimization over an engine: ``converged`` (bool),
+        ``evaluations``, ``max steps`` and ``fmax`` (eV/Å). None when the last
+        call optimized nothing.
     step : seamm plug-in
         The program's step (``_model_chemistry["step"]``), once a route is
         planned.
@@ -432,6 +526,8 @@ class HessianDriver:
         self.hint = hint
         self.printer = print_to or printer
         self.fingerprints = None
+        self.engine_restarts = 2
+        self.last_optimization = None
         self.step = None
         self.last_plan = None
 
@@ -728,19 +824,24 @@ class HessianDriver:
                 f"The {mc['level']} engine runs on {ncores} core"
                 + ("s." if ncores != 1 else ".")
             )
-        with (
-            self.engine_environment(ncores),
-            MDIEngine(
-                build_argv, elements, name="SEAMM", logger=self.node.logger
-            ) as eng,
-        ):
-            session = EngineSession(
-                self, eng, configuration, evaluator, elements, coords_ang
+        with self.engine_environment(ncores):
+            eng = _RestartingEngine(
+                lambda: MDIEngine(
+                    build_argv, elements, name="SEAMM", logger=self.node.logger
+                ),
+                restarts=self.engine_restarts,
+                say=self.say,
             )
             try:
-                yield session
+                session = EngineSession(
+                    self, eng, configuration, evaluator, elements, coords_ang
+                )
+                try:
+                    yield session
+                finally:
+                    self.fingerprints = session.fingerprints()
             finally:
-                self.fingerprints = session.fingerprints()
+                eng.close()
 
     # ------------------------------------------------------------------
     def energy(self, configuration):
@@ -764,6 +865,7 @@ class HessianDriver:
         """Optionally optimize the structure over the warm engine, then its
         energy (kJ/mol). With no engine (tasks) the energy only."""
         self.fingerprints = None
+        self.last_optimization = None
         if not optimize or configuration.n_atoms == 1:
             return self.energy(configuration)
         with self.session(configuration, announce=False) as session:
@@ -790,6 +892,7 @@ class HessianDriver:
             As :meth:`energy_and_hessian`.
         """
         self.fingerprints = None
+        self.last_optimization = None
         with self.session(configuration) as session:
             if session is None:
                 if optimize:

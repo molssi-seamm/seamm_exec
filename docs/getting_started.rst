@@ -240,6 +240,17 @@ settings and frame (anharmonic analyses need that consistency):
             H1, _ = session.hessian(displaced)     # at another geometry
             g = session.gradient(displaced)        # E_h/bohr
 
+After an optimization, ``driver.last_optimization`` says whether it converged
+(``converged``, ``evaluations``, ``max steps``, ``fmax``), so a step can continue it
+from where it stopped or flag the structure; it is None when nothing was optimized.
+
+**An engine that dies.** If the engine's process dies during a session -- MOPAC's
+library, for one, aborts at random in some open-shell calculations -- the driver
+starts a new engine, gives it the current coordinates and repeats the calculation,
+and says so in the output. It does this at most ``driver.engine_restarts`` times
+(2) per session; a calculation that also fails on a new engine is a real failure
+and is raised.
+
 **Precision.** A warm engine starts each SCF from the previous geometry's
 wavefunction, and at a program's default convergence that leaves errors that
 depend on which geometry came before. Finite differences amplify them (third

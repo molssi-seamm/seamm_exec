@@ -497,3 +497,128 @@ def test_precision_only_to_engines_that_declare_it(monkeypatch):
         build_argv = driver.plan(Configuration())[1]
         assert build_argv("localhost", 1) == expected
     assert len(said) == 1 and "cannot be asked for tight convergence" in said[0]
+
+
+# --------------------------------------------------------------------------
+# An engine that dies is started again
+# --------------------------------------------------------------------------
+class DyingEngine:
+    """An engine whose process 'dies' (raises like a broken MDI connection) on
+    the calls listed in `deaths`, counted over all engines."""
+
+    started = []
+    calls = 0
+    deaths = ()
+
+    def __init__(self):
+        self.x = None
+        self.closed = False
+
+    def __enter__(self):
+        DyingEngine.started.append(self)
+        return self
+
+    def __exit__(self, *args):
+        self.closed = True
+        return False
+
+    def set_coordinates(self, xyz, units=None):
+        self.x = (np.asarray(xyz).copy(), units)
+
+    def energy(self, units=None):
+        DyingEngine.calls += 1
+        if DyingEngine.calls in DyingEngine.deaths:
+            raise RuntimeError("MDI Error: MDI_Recv failed")
+        assert self.x is not None, "a new engine must be given the coordinates"
+        return float(np.sum(self.x[0]))
+
+    def supports(self, command):
+        return False
+
+
+@pytest.fixture()
+def dying():
+    DyingEngine.started = []
+    DyingEngine.calls = 0
+    DyingEngine.deaths = ()
+    return DyingEngine
+
+
+def test_a_dead_engine_is_restarted(dying):
+    from seamm_exec.hessian import _RestartingEngine
+
+    said = []
+    dying.deaths = (2,)
+    engine = _RestartingEngine(dying, restarts=2, say=said.append)
+    engine.set_coordinates([[1.0, 2.0, 3.0]], units="Å")
+    assert engine.energy() == 6.0
+    engine.set_coordinates([[1.0, 1.0, 1.0]], units="Å")
+    # The engine dies; a new one gets the last coordinates and answers
+    assert engine.energy(units="eV") == 3.0
+    assert len(dying.started) == 2 and dying.started[0].closed
+    assert dying.started[1].x[1] == "Å"
+    assert engine.n_restarts == 1 and "started again" in said[0]
+    # Other calls pass straight through
+    assert engine.supports("<HESSIAN") is False
+    engine.close()
+    assert dying.started[1].closed
+
+
+def test_restarts_are_limited(dying):
+    from seamm_exec.hessian import _RestartingEngine
+
+    dying.deaths = (1, 2, 3)
+    engine = _RestartingEngine(dying, restarts=2)
+    engine.set_coordinates([[0.0, 0.0, 1.0]])
+    with pytest.raises(RuntimeError, match="MDI_Recv failed"):
+        engine.energy()
+    assert engine.n_restarts == 2 and len(dying.started) == 3
+
+
+def test_the_session_restarts_its_engine(monkeypatch, dying):
+    """An engine that dies in an optimization's session is replaced, and the
+    session carries on."""
+    import sys
+
+    monkeypatch.setitem(
+        sys.modules,
+        "seamm_mdi",
+        types.SimpleNamespace(MDIEngine=lambda *a, **k: dying()),
+    )
+    driver = HessianDriver(make_node(MC, Provider()))
+    monkeypatch.setattr(
+        driver,
+        "plan",
+        lambda c: (None, lambda h, p: ["x"], [1], np.zeros((1, 3))),
+    )
+    monkeypatch.setattr(driver, "engine_ncores", lambda: 1)
+    monkeypatch.setattr(
+        driver, "engine_environment", lambda n: contextlib.nullcontext()
+    )
+    dying.deaths = (1,)
+    with driver.session(Configuration(), announce=False) as session:
+        assert session.energy([[0.5, 0.5, 0.5]], units="hartree") == 1.5
+    assert len(dying.started) == 2 and all(e.closed for e in dying.started)
+
+
+def test_the_optimization_reports_whether_it_converged():
+    """driver.last_optimization says whether the last optimization converged, so
+    a step can continue it or flag the structure."""
+    pytest.importorskip("ase")  # the optimizer; not a dependency of seamm_exec
+    driver = HessianDriver(make_node(MC))
+    x0 = np.full((5, 3), 0.1)
+    session = EngineSession(
+        driver,
+        HarmonicEngine(analytic=False),
+        Configuration(),
+        None,
+        [6, 1, 1, 1, 1],
+        x0,
+    )
+    assert driver.last_optimization is None
+    assert session.optimize(fmax=1e-6, max_steps=1) is False
+    assert driver.last_optimization["converged"] is False
+    assert driver.last_optimization["max steps"] == 1
+    assert session.optimize(fmax=1e-3, max_steps=500) is True
+    assert driver.last_optimization["converged"] is True
+    assert driver.last_optimization["evaluations"] >= 1

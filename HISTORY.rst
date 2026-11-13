@@ -1,6 +1,16 @@
 =======
 History
 =======
+2026.11.13 -- A warm MDI engine that dies is started again; optimizations report convergence
+    * When the process of a warm MDI engine dies during an optimization or Hessian
+      (MOPAC's library aborts at random in some open-shell calculations), a new
+      engine is started with the current coordinates and the calculation is
+      repeated, at most twice per structure, instead of the structure failing with
+      "MDI_Recv failed". The output says when this happens.
+    * The driver now records whether the last optimization over its engine
+      converged (``last_optimization``), so a step can continue it or flag the
+      structure.
+
 2026.11.12.1 -- Bugfix: inline iterations of a parallel loop ran their calculations as queue tasks
     * An iteration of a parallel loop placed "inline" runs as a task of the loop's
       cores and memory, and its calculations should run inside it. Calculations run
