@@ -604,6 +604,7 @@ def test_the_session_restarts_its_engine(monkeypatch, dying):
 def test_the_optimization_reports_whether_it_converged():
     """driver.last_optimization says whether the last optimization converged, so
     a step can continue it or flag the structure."""
+    pytest.importorskip("ase")  # the optimizer; not a dependency of seamm_exec
     driver = HessianDriver(make_node(MC))
     x0 = np.full((5, 3), 0.1)
     session = EngineSession(
