@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.11.12.1 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.11.13 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=900c25b8"></script>
+    <script src="../_static/documentation_options.js?v=1061b2d4"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.12.1" />
+  <meta name="docsearch:version" content="2026.11.13" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -1185,6 +1185,11 @@ the program’s own settings.</p></li>
 <dt class="field-even">Variables<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><strong>fingerprints</strong> (<em>dict</em><em> or </em><em>None</em>) – The engine’s settings fingerprints from the last engine session.</p></li>
+<li><p><strong>engine_restarts</strong> (<em>int</em>) – How many times an engine that dies in a session is started again and
+the calculation repeated (2).</p></li>
+<li><p><strong>last_optimization</strong> (<em>dict</em><em> or </em><em>None</em>) – The last optimization over an engine: <code class="docutils literal notranslate"><span class="pre">converged</span></code> (bool),
+<code class="docutils literal notranslate"><span class="pre">evaluations</span></code>, <code class="docutils literal notranslate"><span class="pre">max</span> <span class="pre">steps</span></code> and <code class="docutils literal notranslate"><span class="pre">fmax</span></code> (eV/Å). None when the last
+call optimized nothing.</p></li>
 <li><p><strong>step</strong> (<em>seamm plug-in</em>) – The program’s step (<code class="docutils literal notranslate"><span class="pre">_model_chemistry[&quot;step&quot;]</span></code>), once a route is
 planned.</p></li>
 </ul>

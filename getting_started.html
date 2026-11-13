@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.11.12.1 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.11.13 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="_static/documentation_options.js?v=900c25b8"></script>
+    <script src="_static/documentation_options.js?v=1061b2d4"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.12.1" />
+  <meta name="docsearch:version" content="2026.11.13" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -661,6 +661,15 @@ settings and frame (anharmonic analyses need that consistency):</p>
         <span class="n">g</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">displaced</span><span class="p">)</span>        <span class="c1"># E_h/bohr</span>
 </pre></div>
 </div>
+<p>After an optimization, <code class="docutils literal notranslate"><span class="pre">driver.last_optimization</span></code> says whether it converged
+(<code class="docutils literal notranslate"><span class="pre">converged</span></code>, <code class="docutils literal notranslate"><span class="pre">evaluations</span></code>, <code class="docutils literal notranslate"><span class="pre">max</span> <span class="pre">steps</span></code>, <code class="docutils literal notranslate"><span class="pre">fmax</span></code>), so a step can continue it
+from where it stopped or flag the structure; it is None when nothing was optimized.</p>
+<p><strong>An engine that dies.</strong> If the engine’s process dies during a session – MOPAC’s
+library, for one, aborts at random in some open-shell calculations – the driver
+starts a new engine, gives it the current coordinates and repeats the calculation,
+and says so in the output. It does this at most <code class="docutils literal notranslate"><span class="pre">driver.engine_restarts</span></code> times
+(2) per session; a calculation that also fails on a new engine is a real failure
+and is raised.</p>
 <p><strong>Precision.</strong> A warm engine starts each SCF from the previous geometry’s
 wavefunction, and at a program’s default convergence that leaves errors that
 depend on which geometry came before. Finite differences amplify them (third

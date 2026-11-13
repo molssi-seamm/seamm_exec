@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.hessian &#8212; SEAMM seamm-exec Plug-in 2026.11.12.1 documentation</title>
+    <title>seamm_exec.hessian &#8212; SEAMM seamm-exec Plug-in 2026.11.13 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=900c25b8"></script>
+    <script src="../../_static/documentation_options.js?v=1061b2d4"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.12.1" />
+  <meta name="docsearch:version" content="2026.11.13" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -724,6 +724,86 @@
         <span class="p">)</span>
 
 
+<span class="k">class</span><span class="w"> </span><span class="nc">_RestartingEngine</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A warm MDI engine that is started again when it dies.</span>
+
+<span class="sd">    An engine process can die in the middle of a session -- MOPAC's library</span>
+<span class="sd">    aborts at random in some open-shell calculations, for one -- and the driver</span>
+<span class="sd">    sees only a broken connection ("MDI_Recv failed"). Then a new engine is</span>
+<span class="sd">    started, given the last coordinates, and asked again, at most</span>
+<span class="sd">    ``restarts`` times per session; a calculation that fails on a fresh engine</span>
+<span class="sd">    too is a real failure and is raised. Everything else is passed to the</span>
+<span class="sd">    engine.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    make : callable() -&gt; engine</span>
+<span class="sd">        A new, not yet started engine (a context manager, as</span>
+<span class="sd">        ``seamm_mdi.MDIEngine`` is).</span>
+<span class="sd">    restarts : int</span>
+<span class="sd">        How many times the engine may be started again in this session.</span>
+<span class="sd">    say : callable(str), optional</span>
+<span class="sd">        Where to tell the user.</span>
+<span class="sd">    """</span>
+
+    <span class="c1">#: The engine's calls that run a calculation, retried on a new engine</span>
+    <span class="n">_CALCULATIONS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"energy"</span><span class="p">,</span> <span class="s2">"forces"</span><span class="p">,</span> <span class="s2">"hessian"</span><span class="p">,</span> <span class="s2">"stress"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">make</span><span class="p">,</span> <span class="n">restarts</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">say</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_make</span> <span class="o">=</span> <span class="n">make</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">restarts</span> <span class="o">=</span> <span class="n">restarts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_restarts</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_say</span> <span class="o">=</span> <span class="n">say</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_coordinates</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">make</span><span class="p">()</span><span class="o">.</span><span class="fm">__enter__</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">engine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">engine</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">engine</span><span class="o">.</span><span class="fm">__exit__</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xyz</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_coordinates</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="n">units</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">set_coordinates</span><span class="p">(</span><span class="n">xyz</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">set_coordinates</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="n">attribute</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_CALCULATIONS</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">attribute</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">attribute</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">calculation</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">,</span> <span class="n">name</span><span class="p">)(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_restarts</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">restarts</span><span class="p">:</span>
+                        <span class="k">raise</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_restart</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">calculation</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_restart</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_restarts</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"The MDI engine stopped (</span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">); it was started again and the "</span>
+            <span class="sa">f</span><span class="s2">"calculation repeated (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_restarts</span><span class="si">}</span><span class="s2"> of at most </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">restarts</span><span class="si">}</span><span class="s2"> "</span>
+            <span class="s2">"restarts)."</span>
+        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_say</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_say</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># the old engine is gone; nothing to tidy up</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Closing the stopped MDI engine: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make</span><span class="p">()</span><span class="o">.</span><span class="fm">__enter__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coordinates</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">xyz</span><span class="p">,</span> <span class="n">units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coordinates</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_coordinates</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="EngineSession">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.hessian.EngineSession">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EngineSession</span><span class="p">:</span>
@@ -765,12 +845,19 @@
         <span class="kn">from</span><span class="w"> </span><span class="nn">ase.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">BFGS</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">last_optimization</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"converged"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"evaluations"</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="n">atoms</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="n">numbers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">,</span> <span class="n">positions</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span><span class="p">)</span>
         <span class="n">atoms</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">_MDICalculator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span>
         <span class="n">converged</span> <span class="o">=</span> <span class="n">BFGS</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">logfile</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">fmax</span><span class="o">=</span><span class="n">fmax</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="n">max_steps</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">set_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">fractionals</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">last_optimization</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"converged"</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="n">converged</span><span class="p">),</span>
+            <span class="s2">"evaluations"</span><span class="p">:</span> <span class="n">atoms</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">n_calls</span><span class="p">,</span>
+            <span class="s2">"max steps"</span><span class="p">:</span> <span class="n">max_steps</span><span class="p">,</span>
+            <span class="s2">"fmax"</span><span class="p">:</span> <span class="n">fmax</span><span class="p">,</span>
+        <span class="p">}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">say</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">"The structure was optimized in </span><span class="si">{</span><span class="n">atoms</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">n_calls</span><span class="si">}</span><span class="s2"> energy evaluations"</span>
             <span class="o">+</span> <span class="p">(</span><span class="s2">"."</span> <span class="k">if</span> <span class="n">converged</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">" without converging in </span><span class="si">{</span><span class="n">max_steps</span><span class="si">}</span><span class="s2"> steps."</span><span class="p">)</span>
@@ -873,6 +960,13 @@
 <span class="sd">    ----------</span>
 <span class="sd">    fingerprints : dict or None</span>
 <span class="sd">        The engine's settings fingerprints from the last engine session.</span>
+<span class="sd">    engine_restarts : int</span>
+<span class="sd">        How many times an engine that dies in a session is started again and</span>
+<span class="sd">        the calculation repeated (2).</span>
+<span class="sd">    last_optimization : dict or None</span>
+<span class="sd">        The last optimization over an engine: ``converged`` (bool),</span>
+<span class="sd">        ``evaluations``, ``max steps`` and ``fmax`` (eV/Å). None when the last</span>
+<span class="sd">        call optimized nothing.</span>
 <span class="sd">    step : seamm plug-in</span>
 <span class="sd">        The program's step (``_model_chemistry["step"]``), once a route is</span>
 <span class="sd">        planned.</span>
@@ -897,6 +991,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">hint</span> <span class="o">=</span> <span class="n">hint</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">printer</span> <span class="o">=</span> <span class="n">print_to</span> <span class="ow">or</span> <span class="n">printer</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fingerprints</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine_restarts</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_optimization</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">step</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">last_plan</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -1213,19 +1309,24 @@
                 <span class="sa">f</span><span class="s2">"The </span><span class="si">{</span><span class="n">mc</span><span class="p">[</span><span class="s1">'level'</span><span class="p">]</span><span class="si">}</span><span class="s2"> engine runs on </span><span class="si">{</span><span class="n">ncores</span><span class="si">}</span><span class="s2"> core"</span>
                 <span class="o">+</span> <span class="p">(</span><span class="s2">"s."</span> <span class="k">if</span> <span class="n">ncores</span> <span class="o">!=</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">"."</span><span class="p">)</span>
             <span class="p">)</span>
-        <span class="k">with</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">engine_environment</span><span class="p">(</span><span class="n">ncores</span><span class="p">),</span>
-            <span class="n">MDIEngine</span><span class="p">(</span>
-                <span class="n">build_argv</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"SEAMM"</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">logger</span>
-            <span class="p">)</span> <span class="k">as</span> <span class="n">eng</span><span class="p">,</span>
-        <span class="p">):</span>
-            <span class="n">session</span> <span class="o">=</span> <span class="n">EngineSession</span><span class="p">(</span>
-                <span class="bp">self</span><span class="p">,</span> <span class="n">eng</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">evaluator</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span> <span class="n">coords_ang</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine_environment</span><span class="p">(</span><span class="n">ncores</span><span class="p">):</span>
+            <span class="n">eng</span> <span class="o">=</span> <span class="n">_RestartingEngine</span><span class="p">(</span>
+                <span class="k">lambda</span><span class="p">:</span> <span class="n">MDIEngine</span><span class="p">(</span>
+                    <span class="n">build_argv</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"SEAMM"</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">logger</span>
+                <span class="p">),</span>
+                <span class="n">restarts</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">engine_restarts</span><span class="p">,</span>
+                <span class="n">say</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">say</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="n">session</span>
+                <span class="n">session</span> <span class="o">=</span> <span class="n">EngineSession</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="p">,</span> <span class="n">eng</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">evaluator</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span> <span class="n">coords_ang</span>
+                <span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">session</span>
+                <span class="k">finally</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">fingerprints</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">fingerprints</span><span class="p">()</span>
             <span class="k">finally</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">fingerprints</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">fingerprints</span><span class="p">()</span></div>
+                <span class="n">eng</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
     <span class="c1"># ------------------------------------------------------------------</span>
@@ -1255,6 +1356,7 @@
 <span class="w">        </span><span class="sd">"""Optionally optimize the structure over the warm engine, then its</span>
 <span class="sd">        energy (kJ/mol). With no engine (tasks) the energy only."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fingerprints</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_optimization</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">optimize</span> <span class="ow">or</span> <span class="n">configuration</span><span class="o">.</span><span class="n">n_atoms</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">(</span><span class="n">configuration</span><span class="p">,</span> <span class="n">announce</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
@@ -1287,6 +1389,7 @@
 <span class="sd">            As :meth:`energy_and_hessian`.</span>
 <span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fingerprints</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_optimization</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">optimize</span><span class="p">:</span>
