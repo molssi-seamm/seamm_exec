@@ -1159,6 +1159,53 @@ def test_lost_tasks_are_retried_within_a_run(tmp_path):
     assert r.state == "lost" and remote.counts["a"] == 3  # 1 + 2 retries
 
 
+def test_lost_tasks_are_reported_in_job_out(tmp_path, monkeypatch):
+    """Each retry of a lost task, and giving up, is a line in job.out, so its
+    cost is visible without the queue's accounting."""
+    from seamm_exec import tasks as tasks_module
+
+    lines = []
+    monkeypatch.setattr(tasks_module, "_job_line", lines.append)
+    remote = FlakyRemote(losses=5)
+    ts = TaskSet(
+        directory=tmp_path, backend=remote, executor=Local(), poll_interval=0.01
+    )
+    ts.add(shell_task("a", "true"))
+    run_all(ts)
+    assert len(lines) == 3
+    assert "Task 'a' was lost" in lines[0]
+    assert "Retrying it (1 of at most 2)" in lines[0]
+    assert "Retrying it (2 of at most 2)" in lines[1]
+    assert lines[2].endswith("It is not retried.")
+    assert "after it was submitted" in lines[0] or "it ran" in lines[0]
+
+
+def test_a_lost_task_line_gives_time_and_core_hours(tmp_path, monkeypatch):
+    from seamm_exec import tasks as tasks_module
+    from seamm_exec.tasks import Resources
+
+    lines = []
+    monkeypatch.setattr(tasks_module, "_job_line", lines.append)
+    ts = TaskSet(directory=tmp_path, backend=FakeRemote(), executor=Local())
+    task = shell_task("big", "true")
+    task.resources = Resources(ntasks=12)
+    history = [
+        {
+            "reason": "job 16111 ended (TIMEOUT) before the task finished; "
+            "its log ends: something long",
+            "started": 1000.0,
+            "finished": 1000.0 + 3028,
+            "timed_out": True,
+        }
+    ]
+    ts._report_lost(task, history, retry=(1, 2))
+    (line,) = lines
+    assert "job 16111 ended (TIMEOUT) before the task finished" in line
+    assert "its log ends" not in line
+    assert "it ran 0:50:28 on 12 cores (10.1 core-h)" in line
+    assert line.endswith("Retrying it (1 of at most 2) with twice the time.")
+
+
 def test_reattach_kills_only_the_recorded_process(tmp_path):
     import psutil
 

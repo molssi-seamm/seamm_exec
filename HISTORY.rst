@@ -1,6 +1,13 @@
 =======
 History
 =======
+2026.11.14 -- Retries of lost tasks are reported in job.out
+    * When a task is lost (for example its bundle job reached its time limit before
+      the task finished), the job's ``job.out`` now has a line saying why, how long
+      the attempt ran (and its core-hours, when the task's cores are known), and
+      whether the task is retried, e.g. "Retrying it (1 of at most 2) with twice the
+      time". The cost of retries was visible only in the queue's accounting.
+
 2026.11.13 -- A warm MDI engine that dies is started again; optimizations report convergence
     * When the process of a warm MDI engine dies during an optimization or Hessian
       (MOPAC's library aborts at random in some open-shell calculations), a new
