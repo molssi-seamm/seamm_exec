@@ -100,7 +100,12 @@ What this gives a step:
   first four times (``max_timeouts``): its estimate was too low, and each retry
   gets twice the time. A task that ran out of time with the longest time the queue
   allows is not retried at all, since a retry could get no more; and later timeouts
-  count, so a task that cannot finish still stops. A
+  count, so a task that cannot finish still stops. A task that is lost (its queue
+  job ended before it finished) is retried within the run, at most twice
+  (``max_lost_retries``). Each lost task is a line in the job's ``job.out``, with
+  why it was lost, the time the attempt used (and core-hours, when the task's
+  cores are known), and whether it is retried, so the cost of retries can be seen
+  without the queue's accounting. A
   process that a crashed run left behind is killed on the rerun, after checking it
   is the same process.
 * **Success beyond the exit code.** ``success_text`` names text that must appear in

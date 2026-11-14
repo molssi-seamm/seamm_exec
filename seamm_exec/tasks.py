@@ -409,6 +409,25 @@ def _now():
     return time.time()
 
 
+def _hms(seconds):
+    """A duration as h:mm:ss."""
+    seconds = int(round(max(0.0, seconds)))
+    return f"{seconds // 3600}:{seconds % 3600 // 60:02d}:{seconds % 60:02d}"
+
+
+def _job_line(text):
+    """Write a line to the job's output (job.out), which the job's log mirrors.
+
+    Outside a job the printer has no job.out, and the line goes to stderr.
+    """
+    try:
+        from seamm_util import printing
+
+        printing.getPrinter().job(text)
+    except Exception:
+        logger.warning(text.strip())
+
+
 def node_root(node):
     """The SEAMM root for a step's tasks, holding the ``<program>.ini`` files.
 
@@ -1080,18 +1099,25 @@ class TaskSet:
                                 reason = "lost"
                                 if hasattr(backend, "reason"):
                                     reason = backend.reason(backend_id) or reason
-                                self._finish_attempt(
+                                history = self._finish_attempt(
                                     task.key,
                                     LOST,
                                     None,
                                     reason=reason,
                                     timed_out=timed_out,
                                 )
+                                self._report_lost(
+                                    task,
+                                    history,
+                                    retry=(n + 1, self.max_lost_retries),
+                                )
                                 if hasattr(backend, "forget"):
                                     backend.forget(backend_id)
                                 resubmit.append(task)
                                 continue
                         result = self._collect(task, backend, backend_id, state)
+                        if state == LOST and result.state == LOST:
+                            self._report_lost(task, result.history)
                         self._results[task.key] = result
                         yield result
                         self._archive_completed_bundles()
@@ -1303,6 +1329,53 @@ class TaskSet:
                 "cores or a queue with a longer walltime."
             )
         return not gains
+
+    def _report_lost(self, task, history, retry=None):
+        """Write a line to the job's output about a task that was lost (its job
+        ended before it finished, e.g. out of time), and whether it is retried.
+
+        Retries spend compute that is otherwise visible only in the queue's
+        accounting; this puts each one, with the time the attempt used, where
+        whoever watches the job's cost can see it.
+
+        Parameters
+        ----------
+        task : Task
+            The task.
+        history : list of dict
+            The task's attempts, the last being the one that was lost.
+        retry : (int, int), optional
+            (this retry, the most retries) if it is retried; None if not.
+        """
+        entry = history[-1] if history else {}
+        reason = str(entry.get("reason") or "lost").split("; its log ends")[0]
+        if len(reason) > 200:
+            reason = reason[:197] + "..."
+        finished = entry.get("finished")
+        if entry.get("started") is not None and finished is not None:
+            used = f"it ran {_hms(finished - entry['started'])}"
+            seconds = finished - entry["started"]
+        elif entry.get("submitted") is not None and finished is not None:
+            used = f"{_hms(finished - entry['submitted'])} after it was submitted"
+            seconds = None
+        else:
+            used = None
+            seconds = None
+        r = task.resources
+        if seconds is not None and r.ntasks:
+            cores = r.ntasks * (r.cpus_per_task or 1)
+            used += f" on {cores} cores ({cores * seconds / 3600:.1f} core-h)"
+        text = f"    Task '{task.key}' was lost: {reason}"
+        if used:
+            text += f"; {used}"
+        if retry is None:
+            text += ". It is not retried."
+        else:
+            text += f". Retrying it ({retry[0]} of at most {retry[1]})"
+            if entry.get("timed_out"):
+                text += " with twice the time"
+            text += "."
+        _job_line(text)
 
     def _finish_attempt(
         self,
