@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.tasks &#8212; SEAMM seamm-exec Plug-in 2026.11.13 documentation</title>
+    <title>seamm_exec.tasks &#8212; SEAMM seamm-exec Plug-in 2026.11.14 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=1061b2d4"></script>
+    <script src="../../_static/documentation_options.js?v=dbe82219"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.13" />
+  <meta name="docsearch:version" content="2026.11.14" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -890,6 +890,25 @@
     <span class="k">return</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_hms</span><span class="p">(</span><span class="n">seconds</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A duration as h:mm:ss."""</span>
+    <span class="n">seconds</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">seconds</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">seconds</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="mi">3600</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">seconds</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">3600</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="mi">60</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">seconds</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">60</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_job_line</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Write a line to the job's output (job.out), which the job's log mirrors.</span>
+
+<span class="sd">    Outside a job the printer has no job.out, and the line goes to stderr.</span>
+<span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_util</span><span class="w"> </span><span class="kn">import</span> <span class="n">printing</span>
+
+        <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">()</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">node_root</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""The SEAMM root for a step's tasks, holding the ``&lt;program&gt;.ini`` files.</span>
 
@@ -1583,18 +1602,25 @@
                                 <span class="n">reason</span> <span class="o">=</span> <span class="s2">"lost"</span>
                                 <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="s2">"reason"</span><span class="p">):</span>
                                     <span class="n">reason</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">reason</span><span class="p">(</span><span class="n">backend_id</span><span class="p">)</span> <span class="ow">or</span> <span class="n">reason</span>
-                                <span class="bp">self</span><span class="o">.</span><span class="n">_finish_attempt</span><span class="p">(</span>
+                                <span class="n">history</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_finish_attempt</span><span class="p">(</span>
                                     <span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
                                     <span class="n">LOST</span><span class="p">,</span>
                                     <span class="kc">None</span><span class="p">,</span>
                                     <span class="n">reason</span><span class="o">=</span><span class="n">reason</span><span class="p">,</span>
                                     <span class="n">timed_out</span><span class="o">=</span><span class="n">timed_out</span><span class="p">,</span>
                                 <span class="p">)</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">_report_lost</span><span class="p">(</span>
+                                    <span class="n">task</span><span class="p">,</span>
+                                    <span class="n">history</span><span class="p">,</span>
+                                    <span class="n">retry</span><span class="o">=</span><span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_lost_retries</span><span class="p">),</span>
+                                <span class="p">)</span>
                                 <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="s2">"forget"</span><span class="p">):</span>
                                     <span class="n">backend</span><span class="o">.</span><span class="n">forget</span><span class="p">(</span><span class="n">backend_id</span><span class="p">)</span>
                                 <span class="n">resubmit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
                                 <span class="k">continue</span>
                         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collect</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">backend</span><span class="p">,</span> <span class="n">backend_id</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">state</span> <span class="o">==</span> <span class="n">LOST</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">LOST</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_report_lost</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">history</span><span class="p">)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_results</span><span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
                         <span class="k">yield</span> <span class="n">result</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_archive_completed_bundles</span><span class="p">()</span>
@@ -1807,6 +1833,53 @@
                 <span class="s2">"cores or a queue with a longer walltime."</span>
             <span class="p">)</span>
         <span class="k">return</span> <span class="ow">not</span> <span class="n">gains</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_report_lost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">retry</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Write a line to the job's output about a task that was lost (its job</span>
+<span class="sd">        ended before it finished, e.g. out of time), and whether it is retried.</span>
+
+<span class="sd">        Retries spend compute that is otherwise visible only in the queue's</span>
+<span class="sd">        accounting; this puts each one, with the time the attempt used, where</span>
+<span class="sd">        whoever watches the job's cost can see it.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        task : Task</span>
+<span class="sd">            The task.</span>
+<span class="sd">        history : list of dict</span>
+<span class="sd">            The task's attempts, the last being the one that was lost.</span>
+<span class="sd">        retry : (int, int), optional</span>
+<span class="sd">            (this retry, the most retries) if it is retried; None if not.</span>
+<span class="sd">        """</span>
+        <span class="n">entry</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">history</span> <span class="k">else</span> <span class="p">{}</span>
+        <span class="n">reason</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"reason"</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"lost"</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"; its log ends"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">reason</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="n">reason</span> <span class="o">=</span> <span class="n">reason</span><span class="p">[:</span><span class="mi">197</span><span class="p">]</span> <span class="o">+</span> <span class="s2">"..."</span>
+        <span class="n">finished</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"finished"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"started"</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">finished</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">used</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"it ran </span><span class="si">{</span><span class="n">_hms</span><span class="p">(</span><span class="n">finished</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">entry</span><span class="p">[</span><span class="s1">'started'</span><span class="p">])</span><span class="si">}</span><span class="s2">"</span>
+            <span class="n">seconds</span> <span class="o">=</span> <span class="n">finished</span> <span class="o">-</span> <span class="n">entry</span><span class="p">[</span><span class="s2">"started"</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"submitted"</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">finished</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">used</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_hms</span><span class="p">(</span><span class="n">finished</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">entry</span><span class="p">[</span><span class="s1">'submitted'</span><span class="p">])</span><span class="si">}</span><span class="s2"> after it was submitted"</span>
+            <span class="n">seconds</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">used</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">seconds</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">resources</span>
+        <span class="k">if</span> <span class="n">seconds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">r</span><span class="o">.</span><span class="n">ntasks</span><span class="p">:</span>
+            <span class="n">cores</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">ntasks</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">cpus_per_task</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">used</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">" on </span><span class="si">{</span><span class="n">cores</span><span class="si">}</span><span class="s2"> cores (</span><span class="si">{</span><span class="n">cores</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">seconds</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">3600</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> core-h)"</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"    Task '</span><span class="si">{</span><span class="n">task</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s2">' was lost: </span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s2">"</span>
+        <span class="k">if</span> <span class="n">used</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"; </span><span class="si">{</span><span class="n">used</span><span class="si">}</span><span class="s2">"</span>
+        <span class="k">if</span> <span class="n">retry</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">". It is not retried."</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">". Retrying it (</span><span class="si">{</span><span class="n">retry</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> of at most </span><span class="si">{</span><span class="n">retry</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">)"</span>
+            <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"timed_out"</span><span class="p">):</span>
+                <span class="n">text</span> <span class="o">+=</span> <span class="s2">" with twice the time"</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">"."</span>
+        <span class="n">_job_line</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_finish_attempt</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>

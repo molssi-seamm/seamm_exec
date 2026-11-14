@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.11.13 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.11.14 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="_static/documentation_options.js?v=1061b2d4"></script>
+    <script src="_static/documentation_options.js?v=dbe82219"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.13" />
+  <meta name="docsearch:version" content="2026.11.14" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -536,7 +536,12 @@ does not count as an attempt. Nor does a task running out of its own time, the
 first four times (<code class="docutils literal notranslate"><span class="pre">max_timeouts</span></code>): its estimate was too low, and each retry
 gets twice the time. A task that ran out of time with the longest time the queue
 allows is not retried at all, since a retry could get no more; and later timeouts
-count, so a task that cannot finish still stops. A
+count, so a task that cannot finish still stops. A task that is lost (its queue
+job ended before it finished) is retried within the run, at most twice
+(<code class="docutils literal notranslate"><span class="pre">max_lost_retries</span></code>). Each lost task is a line in the job’s <code class="docutils literal notranslate"><span class="pre">job.out</span></code>, with
+why it was lost, the time the attempt used (and core-hours, when the task’s
+cores are known), and whether it is retried, so the cost of retries can be seen
+without the queue’s accounting. A
 process that a crashed run left behind is killed on the rerun, after checking it
 is the same process.</p></li>
 <li><p><strong>Success beyond the exit code.</strong> <code class="docutils literal notranslate"><span class="pre">success_text</span></code> names text that must appear in
