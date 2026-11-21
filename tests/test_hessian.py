@@ -622,3 +622,83 @@ def test_the_optimization_reports_whether_it_converged():
     assert session.optimize(fmax=1e-3, max_steps=500) is True
     assert driver.last_optimization["converged"] is True
     assert driver.last_optimization["evaluations"] >= 1
+
+
+class CountingEngine(HarmonicEngine):
+    """Counts the analytic Hessians it computes."""
+
+    def __init__(self):
+        super().__init__(analytic=True)
+        self.n_hessians = 0
+
+    def hessian(self):
+        self.n_hessians += 1
+        return super().hessian()
+
+
+@pytest.mark.parametrize(
+    "blocks, continuations, converged",
+    [
+        ([True], 1, True),  # converged in the first block
+        ([False, True], 1, True),  # continued once, then converged
+        ([False, False], 1, False),  # still not converged after continuing
+        ([False], 0, False),  # no continuations: as before
+    ],
+)
+@pytest.mark.parametrize("method", ["optimize_and_hessian", "optimize_and_energy"])
+def test_continuations_run_in_one_session(
+    monkeypatch, blocks, continuations, converged, method
+):
+    """An optimization continued over the same warm engine: one session, one
+    Hessian at the final structure however many blocks it took, and
+    last_optimization summing the blocks (Thermochemistry 5874, 2026-11-21: a
+    second call computed a Hessian at the unconverged structure)."""
+    driver = HessianDriver(make_node(MC))
+    engine = CountingEngine()
+    sessions = []
+    script = list(blocks)
+    said = []
+
+    @contextlib.contextmanager
+    def session(configuration, announce=True):
+        s = EngineSession(
+            driver, engine, configuration, None, [6, 1, 1, 1, 1], np.zeros((5, 3))
+        )
+
+        def optimize(fmax=0.005, max_steps=200):
+            ok = script.pop(0)
+            # Each block moves the structure; the final one is where it ends
+            s.coordinates = s.coordinates + 0.01
+            driver.last_optimization = {
+                "converged": ok,
+                "evaluations": 10,
+                "max steps": max_steps,
+            }
+            return ok
+
+        s.optimize = optimize
+        sessions.append(s)
+        yield s
+
+    monkeypatch.setattr(driver, "session", session)
+    result = getattr(driver, method)(
+        Configuration(),
+        optimize=True,
+        max_steps=200,
+        continuations=continuations,
+        on_continue=said.append,
+    )
+    assert script == [] and len(sessions) == 1
+    assert driver.last_optimization["converged"] is converged
+    assert driver.last_optimization["blocks"] == len(blocks)
+    assert driver.last_optimization["evaluations"] == 10 * len(blocks)
+    assert said == [200] * (len(blocks) - 1)
+    final = 0.01 * len(blocks)
+    E_final = 0.5 * np.full(15, final / BOHR) @ K @ np.full(15, final / BOHR)
+    if method == "optimize_and_hessian":
+        E0, Hess, how = result
+        assert engine.n_hessians == 1 and how == "analytic"
+        assert E0 == pytest.approx(E_final * 2625.4996394799)
+    else:
+        assert engine.n_hessians == 0
+        assert result == pytest.approx(E_final * 2625.4996394799)

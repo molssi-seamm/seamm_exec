@@ -246,8 +246,25 @@ settings and frame (anharmonic analyses need that consistency):
             g = session.gradient(displaced)        # E_h/bohr
 
 After an optimization, ``driver.last_optimization`` says whether it converged
-(``converged``, ``evaluations``, ``max steps``, ``fmax``), so a step can continue it
-from where it stopped or flag the structure; it is None when nothing was optimized.
+(``converged``, ``evaluations``, ``max steps``, ``fmax``), so a step can flag the
+structure; it is None when nothing was optimized. To continue an optimization that
+has not converged, ask for it in the same call rather than calling again, which
+would start a new engine and, for ``optimize_and_hessian``, compute a Hessian at the
+unconverged structure first:
+
+.. code-block:: python
+
+    E, H, how = driver.optimize_and_hessian(
+        configuration,
+        max_steps=200,
+        continuations=1,                          # 200 more steps if needed
+        on_continue=lambda n: print(f"continuing for {n} more steps"),
+    )
+
+Each continuation is a fresh BFGS from where the last block stopped, over the same
+warm engine, and the energy and Hessian are computed once, at the final structure;
+``last_optimization`` then sums the ``evaluations`` of the ``blocks``.
+``optimize_and_energy`` takes the same arguments.
 
 **An engine that dies.** If the engine's process dies during a session -- MOPAC's
 library, for one, aborts at random in some open-shell calculations -- the driver
