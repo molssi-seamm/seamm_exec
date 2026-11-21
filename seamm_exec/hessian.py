@@ -859,11 +859,43 @@ class HessianDriver:
                 return float(result.energy)
         raise RuntimeError("No energy was returned by the Model Chemistry")
 
+    def optimize_in_blocks(
+        self, session, fmax=0.005, max_steps=200, continuations=0, on_continue=None
+    ):
+        """Optimize over the session's warm engine in blocks of `max_steps`:
+        when a block does not converge, up to `continuations` more, each a fresh
+        BFGS from where the last stopped. ``on_continue(max_steps)`` is called
+        before each continuation (e.g. to say so). Everything after the
+        optimization -- the energy, the Hessian -- is then done once, at the
+        final structure. ``last_optimization`` covers all the blocks: the
+        ``evaluations`` summed and the number of ``blocks``. Returns whether it
+        converged."""
+        evaluations = 0
+        blocks = 0
+        while True:
+            converged = session.optimize(fmax, max_steps)
+            blocks += 1
+            evaluations += (self.last_optimization or {}).get("evaluations", 0)
+            if converged or blocks > continuations:
+                break
+            if on_continue is not None:
+                on_continue(max_steps)
+        if self.last_optimization is not None:
+            self.last_optimization.update(evaluations=evaluations, blocks=blocks)
+        return converged
+
     def optimize_and_energy(
-        self, configuration, optimize=True, fmax=0.005, max_steps=200
+        self,
+        configuration,
+        optimize=True,
+        fmax=0.005,
+        max_steps=200,
+        continuations=0,
+        on_continue=None,
     ):
         """Optionally optimize the structure over the warm engine, then its
-        energy (kJ/mol). With no engine (tasks) the energy only."""
+        energy (kJ/mol). With no engine (tasks) the energy only.
+        `continuations` and `on_continue` are as in :meth:`optimize_in_blocks`."""
         self.fingerprints = None
         self.last_optimization = None
         if not optimize or configuration.n_atoms == 1:
@@ -871,7 +903,9 @@ class HessianDriver:
         with self.session(configuration, announce=False) as session:
             if session is None:
                 return self.energy(configuration)
-            session.optimize(fmax, max_steps)
+            self.optimize_in_blocks(
+                session, fmax, max_steps, continuations, on_continue
+            )
             return session.energy(units="kJ/mol")
 
     def energy_and_hessian(self, configuration, delta_bohr=0.01):
@@ -881,10 +915,20 @@ class HessianDriver:
         return self.optimize_and_hessian(configuration, delta_bohr, optimize=False)
 
     def optimize_and_hessian(
-        self, configuration, delta_bohr=0.01, optimize=True, fmax=0.005, max_steps=200
+        self,
+        configuration,
+        delta_bohr=0.01,
+        optimize=True,
+        fmax=0.005,
+        max_steps=200,
+        continuations=0,
+        on_continue=None,
     ):
         """Optionally optimize the structure (ASE BFGS over the warm engine),
-        then the energy and Hessian, in one engine session.
+        then the energy and Hessian, in one engine session. With
+        `continuations` an optimization that does not converge in `max_steps`
+        continues in the same session (see :meth:`optimize_in_blocks`), so the
+        Hessian is computed once, at the final structure.
 
         Returns
         -------
@@ -905,7 +949,9 @@ class HessianDriver:
                     evaluator, configuration, coords_ang, delta_bohr
                 )
             if optimize and session.n_atoms > 1:
-                session.optimize(fmax, max_steps)
+                self.optimize_in_blocks(
+                    session, fmax, max_steps, continuations, on_continue
+                )
             E0 = session.energy(units="kJ/mol")
             if session.analytic:
                 H, how = session.hessian()

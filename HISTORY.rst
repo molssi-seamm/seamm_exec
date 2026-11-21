@@ -1,6 +1,16 @@
 =======
 History
 =======
+2026.11.21 -- Optimizations can continue in the same engine session
+    * ``HessianDriver.optimize_and_hessian`` and ``optimize_and_energy`` take
+      ``continuations`` (and ``on_continue``): an optimization that has not converged
+      in ``max_steps`` continues, as a fresh BFGS from where it stopped, over the
+      same warm engine, and the energy and Hessian are then computed once, at the
+      final structure. Calling them again instead computed a Hessian at the
+      unconverged structure and threw it away, which cost the Thermochemistry step
+      up to an hour per large species. ``last_optimization`` sums the evaluations of
+      all the blocks and gives their number.
+
 2026.11.14 -- Retries of lost tasks are reported in job.out
     * When a task is lost (for example its bundle job reached its time limit before
       the task finished), the job's ``job.out`` now has a line saying why, how long
