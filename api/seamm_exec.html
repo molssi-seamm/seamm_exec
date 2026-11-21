@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.11.14 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.11.21 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=dbe82219"></script>
+    <script src="../_static/documentation_options.js?v=2eb1cc6b"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.14" />
+  <meta name="docsearch:version" content="2026.11.21" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -1287,16 +1287,20 @@ the gradients of the 6N displaced structures, computed together as tasks
 
 <dl class="py method">
 <dt class="sig sig-object py" id="seamm_exec.hessian.HessianDriver.optimize_and_energy">
-<span class="sig-name descname"><span class="pre">optimize_and_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configuration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#HessianDriver.optimize_and_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.HessianDriver.optimize_and_energy" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">optimize_and_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configuration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_continue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#HessianDriver.optimize_and_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.HessianDriver.optimize_and_energy" title="Link to this definition">#</a></dt>
 <dd><p>Optionally optimize the structure over the warm engine, then its
-energy (kJ/mol). With no engine (tasks) the energy only.</p>
+energy (kJ/mol). With no engine (tasks) the energy only.
+<cite>continuations</cite> and <cite>on_continue</cite> are as in <a class="reference internal" href="#seamm_exec.hessian.HessianDriver.optimize_in_blocks" title="seamm_exec.hessian.HessianDriver.optimize_in_blocks"><code class="xref py py-meth docutils literal notranslate"><span class="pre">optimize_in_blocks()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="seamm_exec.hessian.HessianDriver.optimize_and_hessian">
-<span class="sig-name descname"><span class="pre">optimize_and_hessian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configuration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta_bohr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#HessianDriver.optimize_and_hessian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.HessianDriver.optimize_and_hessian" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">optimize_and_hessian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configuration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta_bohr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_continue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#HessianDriver.optimize_and_hessian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.HessianDriver.optimize_and_hessian" title="Link to this definition">#</a></dt>
 <dd><p>Optionally optimize the structure (ASE BFGS over the warm engine),
-then the energy and Hessian, in one engine session.</p>
+then the energy and Hessian, in one engine session. With
+<cite>continuations</cite> an optimization that does not converge in <cite>max_steps</cite>
+continues in the same session (see <a class="reference internal" href="#seamm_exec.hessian.HessianDriver.optimize_in_blocks" title="seamm_exec.hessian.HessianDriver.optimize_in_blocks"><code class="xref py py-meth docutils literal notranslate"><span class="pre">optimize_in_blocks()</span></code></a>), so the
+Hessian is computed once, at the final structure.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>As <a class="reference internal" href="#seamm_exec.hessian.HessianDriver.energy_and_hessian" title="seamm_exec.hessian.HessianDriver.energy_and_hessian"><code class="xref py py-meth docutils literal notranslate"><span class="pre">energy_and_hessian()</span></code></a>.</p>
@@ -1305,6 +1309,19 @@ then the energy and Hessian, in one engine session.</p>
 <dd class="field-even"><p>(float, numpy.ndarray, str)</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.hessian.HessianDriver.optimize_in_blocks">
+<span class="sig-name descname"><span class="pre">optimize_in_blocks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_continue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#HessianDriver.optimize_in_blocks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.HessianDriver.optimize_in_blocks" title="Link to this definition">#</a></dt>
+<dd><p>Optimize over the session’s warm engine in blocks of <cite>max_steps</cite>:
+when a block does not converge, up to <cite>continuations</cite> more, each a fresh
+BFGS from where the last stopped. <code class="docutils literal notranslate"><span class="pre">on_continue(max_steps)</span></code> is called
+before each continuation (e.g. to say so). Everything after the
+optimization – the energy, the Hessian – is then done once, at the
+final structure. <code class="docutils literal notranslate"><span class="pre">last_optimization</span></code> covers all the blocks: the
+<code class="docutils literal notranslate"><span class="pre">evaluations</span></code> summed and the number of <code class="docutils literal notranslate"><span class="pre">blocks</span></code>. Returns whether it
+converged.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -4140,6 +4157,7 @@ raises.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver.model_chemistry"><code class="docutils literal notranslate"><span class="pre">HessianDriver.model_chemistry()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver.optimize_and_energy"><code class="docutils literal notranslate"><span class="pre">HessianDriver.optimize_and_energy()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver.optimize_and_hessian"><code class="docutils literal notranslate"><span class="pre">HessianDriver.optimize_and_hessian()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver.optimize_in_blocks"><code class="docutils literal notranslate"><span class="pre">HessianDriver.optimize_in_blocks()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver.plan"><code class="docutils literal notranslate"><span class="pre">HessianDriver.plan()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver.say"><code class="docutils literal notranslate"><span class="pre">HessianDriver.say()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver.session"><code class="docutils literal notranslate"><span class="pre">HessianDriver.session()</span></code></a></li>

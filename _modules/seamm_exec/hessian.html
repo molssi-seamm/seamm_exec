@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.hessian &#8212; SEAMM seamm-exec Plug-in 2026.11.14 documentation</title>
+    <title>seamm_exec.hessian &#8212; SEAMM seamm-exec Plug-in 2026.11.21 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=dbe82219"></script>
+    <script src="../../_static/documentation_options.js?v=2eb1cc6b"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.14" />
+  <meta name="docsearch:version" content="2026.11.21" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1348,13 +1348,48 @@
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"No energy was returned by the Model Chemistry"</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="HessianDriver.optimize_in_blocks">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.hessian.HessianDriver.optimize_in_blocks">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">optimize_in_blocks</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">fmax</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">max_steps</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">continuations</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">on_continue</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Optimize over the session's warm engine in blocks of `max_steps`:</span>
+<span class="sd">        when a block does not converge, up to `continuations` more, each a fresh</span>
+<span class="sd">        BFGS from where the last stopped. ``on_continue(max_steps)`` is called</span>
+<span class="sd">        before each continuation (e.g. to say so). Everything after the</span>
+<span class="sd">        optimization -- the energy, the Hessian -- is then done once, at the</span>
+<span class="sd">        final structure. ``last_optimization`` covers all the blocks: the</span>
+<span class="sd">        ``evaluations`` summed and the number of ``blocks``. Returns whether it</span>
+<span class="sd">        converged."""</span>
+        <span class="n">evaluations</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">blocks</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">converged</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">fmax</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">)</span>
+            <span class="n">blocks</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">evaluations</span> <span class="o">+=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last_optimization</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"evaluations"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">converged</span> <span class="ow">or</span> <span class="n">blocks</span> <span class="o">&gt;</span> <span class="n">continuations</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="n">on_continue</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">on_continue</span><span class="p">(</span><span class="n">max_steps</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_optimization</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_optimization</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">evaluations</span><span class="o">=</span><span class="n">evaluations</span><span class="p">,</span> <span class="n">blocks</span><span class="o">=</span><span class="n">blocks</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">converged</span></div>
+
+
 <div class="viewcode-block" id="HessianDriver.optimize_and_energy">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.hessian.HessianDriver.optimize_and_energy">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">optimize_and_energy</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fmax</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">max_steps</span><span class="o">=</span><span class="mi">200</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">configuration</span><span class="p">,</span>
+        <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">fmax</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span>
+        <span class="n">max_steps</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+        <span class="n">continuations</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">on_continue</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Optionally optimize the structure over the warm engine, then its</span>
-<span class="sd">        energy (kJ/mol). With no engine (tasks) the energy only."""</span>
+<span class="sd">        energy (kJ/mol). With no engine (tasks) the energy only.</span>
+<span class="sd">        `continuations` and `on_continue` are as in :meth:`optimize_in_blocks`."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fingerprints</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">last_optimization</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">optimize</span> <span class="ow">or</span> <span class="n">configuration</span><span class="o">.</span><span class="n">n_atoms</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -1362,7 +1397,9 @@
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">(</span><span class="n">configuration</span><span class="p">,</span> <span class="n">announce</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
-            <span class="n">session</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">fmax</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimize_in_blocks</span><span class="p">(</span>
+                <span class="n">session</span><span class="p">,</span> <span class="n">fmax</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">,</span> <span class="n">continuations</span><span class="p">,</span> <span class="n">on_continue</span>
+            <span class="p">)</span>
             <span class="k">return</span> <span class="n">session</span><span class="o">.</span><span class="n">energy</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"kJ/mol"</span><span class="p">)</span></div>
 
 
@@ -1378,10 +1415,20 @@
 <div class="viewcode-block" id="HessianDriver.optimize_and_hessian">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.hessian.HessianDriver.optimize_and_hessian">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">optimize_and_hessian</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">delta_bohr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fmax</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">max_steps</span><span class="o">=</span><span class="mi">200</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">configuration</span><span class="p">,</span>
+        <span class="n">delta_bohr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+        <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">fmax</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span>
+        <span class="n">max_steps</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+        <span class="n">continuations</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">on_continue</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Optionally optimize the structure (ASE BFGS over the warm engine),</span>
-<span class="sd">        then the energy and Hessian, in one engine session.</span>
+<span class="sd">        then the energy and Hessian, in one engine session. With</span>
+<span class="sd">        `continuations` an optimization that does not converge in `max_steps`</span>
+<span class="sd">        continues in the same session (see :meth:`optimize_in_blocks`), so the</span>
+<span class="sd">        Hessian is computed once, at the final structure.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1402,7 +1449,9 @@
                     <span class="n">evaluator</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">coords_ang</span><span class="p">,</span> <span class="n">delta_bohr</span>
                 <span class="p">)</span>
             <span class="k">if</span> <span class="n">optimize</span> <span class="ow">and</span> <span class="n">session</span><span class="o">.</span><span class="n">n_atoms</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">session</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">fmax</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">optimize_in_blocks</span><span class="p">(</span>
+                    <span class="n">session</span><span class="p">,</span> <span class="n">fmax</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">,</span> <span class="n">continuations</span><span class="p">,</span> <span class="n">on_continue</span>
+                <span class="p">)</span>
             <span class="n">E0</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">energy</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"kJ/mol"</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">session</span><span class="o">.</span><span class="n">analytic</span><span class="p">:</span>
                 <span class="n">H</span><span class="p">,</span> <span class="n">how</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">hessian</span><span class="p">()</span>

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.11.14 documentation</title>
+    <title>Getting Started &#8212; SEAMM seamm-exec Plug-in 2026.11.21 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="_static/documentation_options.js?v=dbe82219"></script>
+    <script src="_static/documentation_options.js?v=2eb1cc6b"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.14" />
+  <meta name="docsearch:version" content="2026.11.21" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -667,8 +667,23 @@ settings and frame (anharmonic analyses need that consistency):</p>
 </pre></div>
 </div>
 <p>After an optimization, <code class="docutils literal notranslate"><span class="pre">driver.last_optimization</span></code> says whether it converged
-(<code class="docutils literal notranslate"><span class="pre">converged</span></code>, <code class="docutils literal notranslate"><span class="pre">evaluations</span></code>, <code class="docutils literal notranslate"><span class="pre">max</span> <span class="pre">steps</span></code>, <code class="docutils literal notranslate"><span class="pre">fmax</span></code>), so a step can continue it
-from where it stopped or flag the structure; it is None when nothing was optimized.</p>
+(<code class="docutils literal notranslate"><span class="pre">converged</span></code>, <code class="docutils literal notranslate"><span class="pre">evaluations</span></code>, <code class="docutils literal notranslate"><span class="pre">max</span> <span class="pre">steps</span></code>, <code class="docutils literal notranslate"><span class="pre">fmax</span></code>), so a step can flag the
+structure; it is None when nothing was optimized. To continue an optimization that
+has not converged, ask for it in the same call rather than calling again, which
+would start a new engine and, for <code class="docutils literal notranslate"><span class="pre">optimize_and_hessian</span></code>, compute a Hessian at the
+unconverged structure first:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">E</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">how</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">optimize_and_hessian</span><span class="p">(</span>
+    <span class="n">configuration</span><span class="p">,</span>
+    <span class="n">max_steps</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+    <span class="n">continuations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>                          <span class="c1"># 200 more steps if needed</span>
+    <span class="n">on_continue</span><span class="o">=</span><span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"continuing for </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> more steps"</span><span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Each continuation is a fresh BFGS from where the last block stopped, over the same
+warm engine, and the energy and Hessian are computed once, at the final structure;
+<code class="docutils literal notranslate"><span class="pre">last_optimization</span></code> then sums the <code class="docutils literal notranslate"><span class="pre">evaluations</span></code> of the <code class="docutils literal notranslate"><span class="pre">blocks</span></code>.
+<code class="docutils literal notranslate"><span class="pre">optimize_and_energy</span></code> takes the same arguments.</p>
 <p><strong>An engine that dies.</strong> If the engine’s process dies during a session – MOPAC’s
 library, for one, aborts at random in some open-shell calculations – the driver
 starts a new engine, gives it the current coordinates and repeats the calculation,
