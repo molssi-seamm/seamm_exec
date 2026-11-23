@@ -702,3 +702,85 @@ def test_continuations_run_in_one_session(
     else:
         assert engine.n_hessians == 0
         assert result == pytest.approx(E_final * 2625.4996394799)
+
+
+# <S**2> from the warm engine (CHNO-as-CBH open-shell records, science 2026-11-23)
+class SpinEngine:
+    """A stand-in MDIEngine that reports (<S**2>, S(S+1)) for the last geometry it
+    was sent, so a test can tell which geometry the value came from."""
+
+    def __init__(self, values=(0.7556, 0.75), fail=False):
+        self.values = values
+        self.fail = fail
+        self.geometries = []
+        self.closed = False
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.closed = True
+
+    def set_coordinates(self, xyz, units=None):
+        self.geometries.append(np.array(xyz, dtype=float))
+
+    def spin(self):
+        if self.fail:
+            raise RuntimeError("no spin")
+        return self.values
+
+    def fingerprints(self):
+        return None
+
+
+def test_session_spin_from_the_engine():
+    driver = HessianDriver(make_node(MC))
+    session = EngineSession(
+        driver, SpinEngine(), None, None, [6, 1, 1, 1], np.zeros((4, 3))
+    )
+    assert session.spin() == (0.7556, 0.75)
+    session.engine = types.SimpleNamespace()  # an engine without <SPIN
+    assert session.spin() is None
+    session.engine = SpinEngine(fail=True)
+    assert session.spin() is None
+
+
+def test_spin_is_taken_at_the_end_of_the_optimization():
+    """optimize_in_blocks keeps <S**2> of the final structure, before anything
+    else (a finite-difference Hessian) moves the engine."""
+    driver = HessianDriver(make_node(MC))
+    engine = SpinEngine()
+    session = EngineSession(driver, engine, None, None, [6, 1, 1, 1], np.zeros((4, 3)))
+    assert session.final_spin is None
+
+    def optimize(fmax=0.005, max_steps=200):
+        driver.last_optimization = {"converged": True, "evaluations": 3}
+        return True
+
+    session.optimize = optimize
+    assert driver.optimize_in_blocks(session) is True
+    assert session.final_spin == (0.7556, 0.75)
+
+
+def test_the_driver_keeps_the_final_spin(monkeypatch):
+    """HessianDriver.session leaves the final <S**2> of its optimization in
+    driver.spin, and a new call starts from None."""
+    driver = HessianDriver(make_node(MC))
+    engine = SpinEngine(values=(2.01, 2.0))
+    monkeypatch.setattr(
+        driver, "plan", lambda c: (None, "argv", [6, 1, 1, 1], np.zeros((4, 3)))
+    )
+    monkeypatch.setattr(driver, "engine_ncores", lambda: 1)
+    monkeypatch.setattr(
+        driver, "engine_environment", lambda ncores: contextlib.nullcontext()
+    )
+    import seamm_mdi
+
+    monkeypatch.setattr(seamm_mdi, "MDIEngine", lambda *a, **k: engine)
+    with driver.session(None, announce=False) as session:
+        session.final_spin = session.spin()
+    assert driver.spin == (2.01, 2.0)
+    assert engine.closed
+    with driver.session(None, announce=False):
+        pass  # no optimization: nothing to keep
+    assert driver.spin is None
