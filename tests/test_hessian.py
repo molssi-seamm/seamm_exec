@@ -6,6 +6,7 @@ thermochemistry_step 2026-11-05, with its tests)."""
 import contextlib
 import json
 import os
+import sys
 import types
 
 import numpy as np
@@ -774,9 +775,12 @@ def test_the_driver_keeps_the_final_spin(monkeypatch):
     monkeypatch.setattr(
         driver, "engine_environment", lambda ncores: contextlib.nullcontext()
     )
-    import seamm_mdi
-
-    monkeypatch.setattr(seamm_mdi, "MDIEngine", lambda *a, **k: engine)
+    # seamm_mdi is not a dependency of seamm_exec: stand in for it, as above
+    monkeypatch.setitem(
+        sys.modules,
+        "seamm_mdi",
+        types.SimpleNamespace(MDIEngine=lambda *a, **k: engine),
+    )
     with driver.session(None, announce=False) as session:
         session.final_spin = session.spin()
     assert driver.spin == (2.01, 2.0)
