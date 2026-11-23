@@ -378,6 +378,8 @@ class EngineSession:
         self.evaluator = evaluator
         self.elements = list(elements)
         self.coordinates = np.asarray(coords_ang, dtype=float).reshape(-1, 3)
+        # (<S**2>, S(S+1)) at the end of an optimization (see optimize_in_blocks)
+        self.final_spin = None
 
     @property
     def n_atoms(self):
@@ -454,6 +456,19 @@ class EngineSession:
         finally:
             self.engine.set_coordinates(self.coordinates, units="Å")
 
+    def spin(self):
+        """(<S**2>, S(S+1)) of the engine's last energy/gradient, (None, None) for a
+        closed shell, or None when the engine does not give them (seamm_mdi
+        2026.11.23, ORCA's engine first)."""
+        get = getattr(self.engine, "spin", None)
+        if get is None:
+            return None
+        try:
+            return get()
+        except Exception as e:  # pragma: no cover
+            logger.warning(f"The engine gave no <S**2>: {e}")
+            return None
+
     def fingerprints(self):
         """The engine's settings fingerprints, {"energy": record, "hessian":
         record} (seamm_mdi 2026.10.28, ORCA's engine first), or None."""
@@ -526,6 +541,8 @@ class HessianDriver:
         self.hint = hint
         self.printer = print_to or printer
         self.fingerprints = None
+        # (<S**2>, S(S+1)) at the end of the last optimization over a warm engine
+        self.spin = None
         self.engine_restarts = 2
         self.last_optimization = None
         self.step = None
@@ -809,6 +826,7 @@ class HessianDriver:
         """A warm engine for the configuration, as an :class:`EngineSession`,
         or None when the Model Chemistry must run as tasks."""
         self.fingerprints = None
+        self.spin = None
         self.last_plan = self.plan(configuration)
         evaluator, build_argv, elements, coords_ang = self.last_plan
         if build_argv is None:
@@ -840,6 +858,7 @@ class HessianDriver:
                     yield session
                 finally:
                     self.fingerprints = session.fingerprints()
+                    self.spin = session.final_spin
             finally:
                 eng.close()
 
@@ -882,6 +901,9 @@ class HessianDriver:
                 on_continue(max_steps)
         if self.last_optimization is not None:
             self.last_optimization.update(evaluations=evaluations, blocks=blocks)
+        # <S**2> at the final structure, now, before a finite-difference Hessian
+        # moves the engine to displaced ones; no extra calculation
+        session.final_spin = session.spin()
         return converged
 
     def optimize_and_energy(
@@ -897,6 +919,7 @@ class HessianDriver:
         energy (kJ/mol). With no engine (tasks) the energy only.
         `continuations` and `on_continue` are as in :meth:`optimize_in_blocks`."""
         self.fingerprints = None
+        self.spin = None
         self.last_optimization = None
         if not optimize or configuration.n_atoms == 1:
             return self.energy(configuration)
@@ -936,6 +959,7 @@ class HessianDriver:
             As :meth:`energy_and_hessian`.
         """
         self.fingerprints = None
+        self.spin = None
         self.last_optimization = None
         with self.session(configuration) as session:
             if session is None:

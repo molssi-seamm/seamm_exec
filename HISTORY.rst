@@ -1,7 +1,15 @@
 =======
 History
 =======
-2026.11.21 -- Optimizations can continue in the same engine session
+2026.11.23 -- The spin contamination at the end of an optimization
+    * After an optimization over a warm MDI engine, ``HessianDriver.spin`` holds
+      <S**2> and its ideal value S(S+1) at the final structure, when the engine gives
+      them (seamm-mdi 2026.11.23, ORCA's engine), so a step can store the spin
+      contamination of an open-shell species. It is read before a finite-difference
+      Hessian moves the engine, and costs no extra calculation. It is None when the
+      engine gives nothing, and (None, None) for a closed shell.
+
+2026.11.21 --Optimizations can continue in the same engine session
     * ``HessianDriver.optimize_and_hessian`` and ``optimize_and_energy`` take
       ``continuations`` (and ``on_continue``): an optimization that has not converged
       in ``max_steps`` continues, as a fresh BFGS from where it stopped, over the
