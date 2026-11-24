@@ -788,3 +788,108 @@ def test_the_driver_keeps_the_final_spin(monkeypatch):
     with driver.session(None, announce=False):
         pass  # no optimization: nothing to keep
     assert driver.spin is None
+
+
+# --------------------------------------------------------------------------
+# The SEAMM optimizer over the warm engine (seamm_optimizer)
+# --------------------------------------------------------------------------
+class SpringEngine:
+    """A rotation-invariant model of methane: C-H and H-H springs, in eV and Å,
+    with units as the MDI engine gives them."""
+
+    def __init__(self):
+        self.x = None
+        self.n_calls = 0
+        self.pairs = [(0, i, 1.09, 30.0) for i in range(1, 5)] + [
+            (i, j, 1.78, 3.0) for i in range(1, 5) for j in range(i + 1, 5)
+        ]
+
+    def set_coordinates(self, x, units="Å"):
+        x = np.asarray(x, dtype=float).reshape(-1, 3)
+        self.x = x if units == "Å" else x * BOHR
+
+    def _eg(self):
+        e, g = 0.0, np.zeros_like(self.x)
+        for i, j, r0, k in self.pairs:
+            d = self.x[i] - self.x[j]
+            r = np.linalg.norm(d)
+            e += 0.5 * k * (r - r0) ** 2
+            g[i] += k * (r - r0) * d / r
+            g[j] -= k * (r - r0) * d / r
+        return e, g
+
+    def energy(self, units="eV"):
+        self.n_calls += 1
+        e, _ = self._eg()
+        return e if units == "eV" else e / 27.211386245988
+
+    def forces(self, units="eV/Å"):
+        _, g = self._eg()
+        if units == "eV/Å":
+            return -g
+        return -g * BOHR / 27.211386245988  # hartree/bohr
+
+    def supports(self, command):
+        return False
+
+    def fingerprints(self):
+        return {"energy": None, "hessian": None}
+
+
+def _seamm_session():
+    pytest.importorskip("seamm_optimizer")
+    driver = HessianDriver(make_node(MC))
+    driver.say = lambda text: None
+    engine = SpringEngine()
+    x0 = Configuration().atoms.get_coordinates() * 1.08  # stretched methane
+    x0[1] += [0.05, -0.03, 0.02]
+    session = EngineSession(driver, engine, Configuration(), None, [6, 1, 1, 1, 1], x0)
+    return driver, engine, session
+
+
+def test_the_seamm_optimizer_runs_over_the_engine():
+    driver, engine, session = _seamm_session()
+    assert session.optimize(fmax=0.0015, max_steps=200, optimizer="SEAMM")
+    last = driver.last_optimization
+    assert last["optimizer"] == "SEAMM" and last["converged"]
+    assert last["evaluations"] == engine.n_calls
+    engine.set_coordinates(session.coordinates)
+    _, g = engine._eg()
+    assert np.max(np.linalg.norm(g, axis=1)) <= 0.0015
+    r = np.linalg.norm(session.coordinates[1:] - session.coordinates[0], axis=1)
+    assert np.allclose(r, 1.09, atol=0.01)
+
+
+def test_the_seamm_optimizer_takes_hessians_from_a_cheap_session():
+    driver, engine, session = _seamm_session()
+
+    class Cheap:
+        n = 0
+
+        def hessian(self, coords_ang=None):
+            # the springs' Hessian by central differences, in hartree/bohr^2
+            self.n += 1
+            e = SpringEngine()
+            x0 = np.asarray(coords_ang, float).reshape(-1)
+            h = 1.0e-4
+            H = np.zeros((15, 15))
+            for k in range(15):
+                xp, xm = x0.copy(), x0.copy()
+                xp[k] += h
+                xm[k] -= h
+                e.set_coordinates(xp)
+                gp = e._eg()[1].reshape(-1)
+                e.set_coordinates(xm)
+                gm = e._eg()[1].reshape(-1)
+                H[k] = (gp - gm) / (2 * h)
+            return H * BOHR**2 / 27.211386245988, "analytic"
+
+    cheap = Cheap()
+    assert session.optimize(fmax=0.0015, optimizer="SEAMM", cheap=cheap)
+    assert cheap.n >= 1 and driver.last_optimization["cheap hessians"] == cheap.n
+
+
+def test_ase_bfgs_stays_the_default():
+    driver, engine, session = _seamm_session()
+    assert session.optimize(fmax=0.0015, max_steps=500)
+    assert "optimizer" not in driver.last_optimization

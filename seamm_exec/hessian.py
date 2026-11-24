@@ -242,6 +242,27 @@ def module_environment(config, ce=None, environ=None):
     }
 
 
+def model_chemistry_for(level, data_path=None, periodic=False):
+    """The ``_model_chemistry`` wrapper for a level string, e.g.
+    ``xTB:SQM@GFN2-xTB`` or ``MOPAC:SQM@PM7``, as the Model Chemistry step would
+    publish it: for a second, cheap level next to the flowchart's own (the
+    optimizer's cheap Hessians)."""
+    from model_chemistry_step.model_chemistry import (
+        discover_model_chemistries,
+        match_model_chemistry,
+        renamed_level,
+    )
+
+    level = renamed_level(level) or level
+    available = discover_model_chemistries(periodic_only=periodic, data_path=data_path)
+    if level in available:
+        return available[level]
+    mc = match_model_chemistry(level, available)
+    if mc is None:
+        raise ValueError(f"The model chemistry '{level}' is not available here.")
+    return mc
+
+
 class _MDICalculator:
     """A minimal ASE calculator over a warm MDI engine, for the optimization."""
 
@@ -391,9 +412,23 @@ class EngineSession:
         custom ``<HESSIAN`` command only when the method has a genuine one."""
         return bool(self.engine.supports("<HESSIAN"))
 
-    def optimize(self, fmax=0.005, max_steps=200):
-        """ASE BFGS over the warm engine; updates the configuration and the
-        reference coordinates. fmax in eV/Å. Returns whether it converged."""
+    def optimize(
+        self,
+        fmax=0.005,
+        max_steps=200,
+        optimizer="ASE BFGS",
+        optimizer_options=None,
+        cheap=None,
+    ):
+        """Optimize over the warm engine; updates the configuration and the
+        reference coordinates. fmax in eV/Å. Returns whether it converged.
+
+        optimizer: "ASE BFGS" (the default) or "SEAMM" (seamm_optimizer: internal
+        coordinates, a model or cheap-level Hessian, a minimum check); with
+        "SEAMM", `optimizer_options` go to seamm_optimizer.Optimizer and `cheap`,
+        an EngineSession at a cheap level, gives its Hessians."""
+        if optimizer == "SEAMM" and self.n_atoms >= 2:
+            return self._optimize_seamm(fmax, max_steps, optimizer_options or {}, cheap)
         from ase import Atoms
         from ase.optimize import BFGS
 
@@ -416,6 +451,76 @@ class EngineSession:
             + ("." if converged else f" without converging in {max_steps} steps.")
         )
         return bool(converged)
+
+    def _optimize_seamm(self, fmax, max_steps, options, cheap):
+        """seamm_optimizer over the warm engine (see :meth:`optimize`)."""
+        try:
+            from seamm_optimizer import Optimizer
+        except ImportError:
+            raise RuntimeError(
+                "The SEAMM optimizer needs the seamm_optimizer package."
+            ) from None
+        from ase.data import chemical_symbols
+
+        calls = [0]
+
+        def engine(xyz):
+            calls[0] += 1
+            self.engine.set_coordinates(np.asarray(xyz, dtype=float), units="Å")
+            energy = self.engine.energy(units="eV")
+            forces = np.asarray(self.engine.forces(units="eV/Å"), dtype=float)
+            return energy, -forces.reshape(-1, 3)
+
+        cheap_hessian = None
+        if cheap is not None:
+            factor = Q_(1.0, "E_h/bohr^2").m_as("eV/Å^2")
+
+            def _cheap_hessian(xyz):
+                H, _ = cheap.hessian(coords_ang=np.asarray(xyz, dtype=float))
+                return np.asarray(H) * factor
+
+            cheap_hessian = _cheap_hessian
+
+        options = dict(options)
+        options.setdefault("hessian", "cheap" if cheap is not None else "lindh")
+        options.setdefault("check_minimum", False)
+        symbols = [chemical_symbols[z] for z in self.elements]
+        result = Optimizer(
+            engine,
+            symbols,
+            self.coordinates,
+            fmax=fmax,
+            max_steps=max_steps,
+            cheap_hessian_engine=cheap_hessian,
+            **options,
+        ).run()
+        self.coordinates = np.asarray(result.xyz, dtype=float)
+        self.configuration.atoms.set_coordinates(self.coordinates, fractionals=False)
+        self.driver.last_optimization = {
+            "converged": bool(result.converged),
+            "evaluations": calls[0],
+            "max steps": max_steps,
+            "fmax": fmax,
+            "optimizer": "SEAMM",
+            "coordinates": result.coordinates,
+            "cheap hessians": result.n_cheap_hessians,
+            "refreshes": result.n_refreshes,
+            "fallbacks": result.n_fallbacks,
+            "minimum": result.minimum,
+            "lowest frequency": result.lowest_frequency,
+            "escapes": len(result.escapes),
+        }
+        self.driver.say(
+            f"The structure was optimized (SEAMM optimizer, {result.coordinates}) in "
+            f"{calls[0]} energy evaluations"
+            + (f" and {result.n_cheap_hessians} cheap-level Hessians" if cheap else "")
+            + (
+                "."
+                if result.converged
+                else f" without converging in {max_steps} steps."
+            )
+        )
+        return bool(result.converged)
 
     def energy(self, coords_ang=None, units="kJ/mol"):
         """The energy at the reference (or the given) coordinates."""
@@ -862,6 +967,21 @@ class HessianDriver:
             finally:
                 eng.close()
 
+    @contextlib.contextmanager
+    def cheap_session(self, configuration, level):
+        """A warm engine at a second, cheap level (a level string such as
+        ``xTB:SQM@GFN2-xTB``) for the same configuration, for the optimizer's
+        Hessians; None when that level cannot run as a warm engine here."""
+        data_path = getattr(self.node, "data_path", None)
+        cheap = HessianDriver(
+            self.node,
+            model_chemistry_for(level, data_path=data_path),
+            who=f"{self.who} (cheap level {level})",
+            print_to=self.printer,
+        )
+        with cheap.session(configuration, announce=False) as session:
+            yield session
+
     # ------------------------------------------------------------------
     def energy(self, configuration):
         """The energy (kJ/mol) of the configuration with the Model Chemistry."""
@@ -879,7 +999,15 @@ class HessianDriver:
         raise RuntimeError("No energy was returned by the Model Chemistry")
 
     def optimize_in_blocks(
-        self, session, fmax=0.005, max_steps=200, continuations=0, on_continue=None
+        self,
+        session,
+        fmax=0.005,
+        max_steps=200,
+        continuations=0,
+        on_continue=None,
+        optimizer="ASE BFGS",
+        optimizer_options=None,
+        cheap_level=None,
     ):
         """Optimize over the session's warm engine in blocks of `max_steps`:
         when a block does not converge, up to `continuations` more, each a fresh
@@ -888,11 +1016,57 @@ class HessianDriver:
         optimization -- the energy, the Hessian -- is then done once, at the
         final structure. ``last_optimization`` covers all the blocks: the
         ``evaluations`` summed and the number of ``blocks``. Returns whether it
-        converged."""
+        converged. `optimizer`, `optimizer_options` and `cheap_level` (a level
+        string for the SEAMM optimizer's Hessians) are as in
+        :meth:`EngineSession.optimize`."""
+        if optimizer == "SEAMM" and cheap_level:
+            with self.cheap_session(session.configuration, cheap_level) as cheap:
+                return self._optimize_blocks(
+                    session,
+                    fmax,
+                    max_steps,
+                    continuations,
+                    on_continue,
+                    optimizer,
+                    optimizer_options,
+                    cheap,
+                )
+        return self._optimize_blocks(
+            session,
+            fmax,
+            max_steps,
+            continuations,
+            on_continue,
+            optimizer,
+            optimizer_options,
+            None,
+        )
+
+    def _optimize_blocks(
+        self,
+        session,
+        fmax,
+        max_steps,
+        continuations,
+        on_continue,
+        optimizer,
+        optimizer_options,
+        cheap,
+    ):
         evaluations = 0
         blocks = 0
         while True:
-            converged = session.optimize(fmax, max_steps)
+            if optimizer == "ASE BFGS" and not optimizer_options and cheap is None:
+                # the long-standing call, so sessions with the old signature work
+                converged = session.optimize(fmax, max_steps)
+            else:
+                converged = session.optimize(
+                    fmax,
+                    max_steps,
+                    optimizer=optimizer,
+                    optimizer_options=optimizer_options,
+                    cheap=cheap,
+                )
             blocks += 1
             evaluations += (self.last_optimization or {}).get("evaluations", 0)
             if converged or blocks > continuations:
@@ -914,6 +1088,9 @@ class HessianDriver:
         max_steps=200,
         continuations=0,
         on_continue=None,
+        optimizer="ASE BFGS",
+        optimizer_options=None,
+        cheap_level=None,
     ):
         """Optionally optimize the structure over the warm engine, then its
         energy (kJ/mol). With no engine (tasks) the energy only.
@@ -927,7 +1104,14 @@ class HessianDriver:
             if session is None:
                 return self.energy(configuration)
             self.optimize_in_blocks(
-                session, fmax, max_steps, continuations, on_continue
+                session,
+                fmax,
+                max_steps,
+                continuations,
+                on_continue,
+                optimizer,
+                optimizer_options,
+                cheap_level,
             )
             return session.energy(units="kJ/mol")
 
@@ -946,9 +1130,12 @@ class HessianDriver:
         max_steps=200,
         continuations=0,
         on_continue=None,
+        optimizer="ASE BFGS",
+        optimizer_options=None,
+        cheap_level=None,
     ):
-        """Optionally optimize the structure (ASE BFGS over the warm engine),
-        then the energy and Hessian, in one engine session. With
+        """Optionally optimize the structure (ASE BFGS, or the SEAMM optimizer, over
+        the warm engine), then the energy and Hessian, in one engine session. With
         `continuations` an optimization that does not converge in `max_steps`
         continues in the same session (see :meth:`optimize_in_blocks`), so the
         Hessian is computed once, at the final structure.
@@ -974,7 +1161,14 @@ class HessianDriver:
                 )
             if optimize and session.n_atoms > 1:
                 self.optimize_in_blocks(
-                    session, fmax, max_steps, continuations, on_continue
+                    session,
+                    fmax,
+                    max_steps,
+                    continuations,
+                    on_continue,
+                    optimizer,
+                    optimizer_options,
+                    cheap_level,
                 )
             E0 = session.energy(units="kJ/mol")
             if session.analytic:
