@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.hessian &#8212; SEAMM seamm-exec Plug-in 2026.11.21 documentation</title>
+    <title>seamm_exec.hessian &#8212; SEAMM seamm-exec Plug-in 2026.11.23 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=2eb1cc6b"></script>
+    <script src="../../_static/documentation_options.js?v=bd31c218"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.21" />
+  <meta name="docsearch:version" content="2026.11.23" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -825,6 +825,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">evaluator</span> <span class="o">=</span> <span class="n">evaluator</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">elements</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">elements</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coords_ang</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="c1"># (&lt;S**2&gt;, S(S+1)) at the end of an optimization (see optimize_in_blocks)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">final_spin</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">n_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -913,6 +915,22 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">set_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"Å"</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="EngineSession.spin">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.hessian.EngineSession.spin">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">spin</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""(&lt;S**2&gt;, S(S+1)) of the engine's last energy/gradient, (None, None) for a</span>
+<span class="sd">        closed shell, or None when the engine does not give them (seamm_mdi</span>
+<span class="sd">        2026.11.23, ORCA's engine first)."""</span>
+        <span class="n">get</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">,</span> <span class="s2">"spin"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">get</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">get</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The engine gave no &lt;S**2&gt;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+
 <div class="viewcode-block" id="EngineSession.fingerprints">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.hessian.EngineSession.fingerprints">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fingerprints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -991,6 +1009,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">hint</span> <span class="o">=</span> <span class="n">hint</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">printer</span> <span class="o">=</span> <span class="n">print_to</span> <span class="ow">or</span> <span class="n">printer</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fingerprints</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># (&lt;S**2&gt;, S(S+1)) at the end of the last optimization over a warm engine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spin</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">engine_restarts</span> <span class="o">=</span> <span class="mi">2</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">last_optimization</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">step</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1294,6 +1314,7 @@
 <span class="w">        </span><span class="sd">"""A warm engine for the configuration, as an :class:`EngineSession`,</span>
 <span class="sd">        or None when the Model Chemistry must run as tasks."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fingerprints</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spin</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">last_plan</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plan</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
         <span class="n">evaluator</span><span class="p">,</span> <span class="n">build_argv</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span> <span class="n">coords_ang</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_plan</span>
         <span class="k">if</span> <span class="n">build_argv</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1325,6 +1346,7 @@
                     <span class="k">yield</span> <span class="n">session</span>
                 <span class="k">finally</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">fingerprints</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">fingerprints</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">spin</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">final_spin</span>
             <span class="k">finally</span><span class="p">:</span>
                 <span class="n">eng</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
@@ -1373,6 +1395,9 @@
                 <span class="n">on_continue</span><span class="p">(</span><span class="n">max_steps</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_optimization</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">last_optimization</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">evaluations</span><span class="o">=</span><span class="n">evaluations</span><span class="p">,</span> <span class="n">blocks</span><span class="o">=</span><span class="n">blocks</span><span class="p">)</span>
+        <span class="c1"># &lt;S**2&gt; at the final structure, now, before a finite-difference Hessian</span>
+        <span class="c1"># moves the engine to displaced ones; no extra calculation</span>
+        <span class="n">session</span><span class="o">.</span><span class="n">final_spin</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">spin</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">converged</span></div>
 
 
@@ -1391,6 +1416,7 @@
 <span class="sd">        energy (kJ/mol). With no engine (tasks) the energy only.</span>
 <span class="sd">        `continuations` and `on_continue` are as in :meth:`optimize_in_blocks`."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fingerprints</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spin</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">last_optimization</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">optimize</span> <span class="ow">or</span> <span class="n">configuration</span><span class="o">.</span><span class="n">n_atoms</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
@@ -1436,6 +1462,7 @@
 <span class="sd">            As :meth:`energy_and_hessian`.</span>
 <span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fingerprints</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spin</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">last_optimization</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>

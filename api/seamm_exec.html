@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.11.21 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.11.23 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=2eb1cc6b"></script>
+    <script src="../_static/documentation_options.js?v=bd31c218"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.21" />
+  <meta name="docsearch:version" content="2026.11.23" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -1157,6 +1157,14 @@ differences of its forces. The engine is left at the reference.</p>
 <span class="sig-name descname"><span class="pre">optimize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#EngineSession.optimize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.EngineSession.optimize" title="Link to this definition">#</a></dt>
 <dd><p>ASE BFGS over the warm engine; updates the configuration and the
 reference coordinates. fmax in eV/Å. Returns whether it converged.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="seamm_exec.hessian.EngineSession.spin">
+<span class="sig-name descname"><span class="pre">spin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#EngineSession.spin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.EngineSession.spin" title="Link to this definition">#</a></dt>
+<dd><p>(&lt;S**2&gt;, S(S+1)) of the engine’s last energy/gradient, (None, None) for a
+closed shell, or None when the engine does not give them (seamm_mdi
+2026.11.23, ORCA’s engine first).</p>
 </dd></dl>
 
 </dd></dl>
@@ -4143,6 +4151,7 @@ raises.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.EngineSession.hessian"><code class="docutils literal notranslate"><span class="pre">EngineSession.hessian()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.EngineSession.n_atoms"><code class="docutils literal notranslate"><span class="pre">EngineSession.n_atoms</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.EngineSession.optimize"><code class="docutils literal notranslate"><span class="pre">EngineSession.optimize()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.EngineSession.spin"><code class="docutils literal notranslate"><span class="pre">EngineSession.spin()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver"><code class="docutils literal notranslate"><span class="pre">HessianDriver</span></code></a><ul class="nav section-nav flex-column">
