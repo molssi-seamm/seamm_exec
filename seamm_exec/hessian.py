@@ -511,6 +511,10 @@ class EngineSession:
             "escapes": len(result.escapes),
             "energy (eV)": float(result.energy),
             "max force (eV/Å)": float(result.max_force),
+            "rms force (eV/Å)": float(
+                np.sqrt(np.mean(np.sum(np.asarray(result.gradient) ** 2, axis=1)))
+            ),
+            "max step (Å)": float(result.last_step),
         }
         self.driver.say(
             f"The structure was optimized (SEAMM optimizer, {result.coordinates}) in "
