@@ -1,6 +1,17 @@
 =======
 History
 =======
+2026.11.24 -- The SEAMM optimizer as an option over the warm MDI engine
+    * ``EngineSession.optimize`` (and ``optimize_in_blocks``, ``optimize_and_energy``,
+      ``optimize_and_hessian``) can use the SEAMM optimizer (seamm_optimizer: internal
+      coordinates, a model or cheap-level Hessian, a minimum check) instead of ASE's
+      BFGS, which stays the default and is called as before.
+    * A second, cheap level (e.g. ``xTB:SQM@GFN2-xTB``) can give the optimizer's
+      Hessians, as its own warm engine (``HessianDriver.cheap_session``,
+      ``model_chemistry_for``). Needs seamm-mdi 2026.11.24 (several live engines).
+    * The optimization reports the evaluations, cheap Hessians, final energy, forces
+      and last step.
+
 2026.11.23 -- The spin contamination at the end of an optimization
     * After an optimization over a warm MDI engine, ``HessianDriver.spin`` holds
       <S**2> and its ideal value S(S+1) at the final structure, when the engine gives
