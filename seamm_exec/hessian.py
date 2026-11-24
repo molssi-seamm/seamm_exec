@@ -509,6 +509,8 @@ class EngineSession:
             "minimum": result.minimum,
             "lowest frequency": result.lowest_frequency,
             "escapes": len(result.escapes),
+            "energy (eV)": float(result.energy),
+            "max force (eV/Å)": float(result.max_force),
         }
         self.driver.say(
             f"The structure was optimized (SEAMM optimizer, {result.coordinates}) in "
