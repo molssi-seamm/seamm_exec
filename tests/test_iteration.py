@@ -160,19 +160,90 @@ def citations(path, rows):
     db.close()
 
 
-class FakeReferences:
-    def __init__(self):
-        self.cited = []
-
-    def cite(self, raw=None, alias=None, module=None, level=1, note=None):
-        self.cited.append((alias, module))
-
-
 def test_citations_merged_but_not_seamm(tmp_path):
+    import reference_handler
+
     citations(tmp_path / "references.db", [("SEAMM", "seamm", 1), ("mopac", "m", 2)])
-    references = FakeReferences()
-    assert it.merge_citations(tmp_path, references) == 2
-    assert references.cited == [("mopac", "m"), ("mopac", "m")]
+    job = reference_handler.Reference_Handler(str(tmp_path / "job.db"))
+    assert it.merge_citations(tmp_path, job) == 2
+    rows = job.conn.execute(
+        "SELECT c.alias, x.module, x.count FROM citation c "
+        "JOIN context x ON x.reference_id = c.id"
+    ).fetchall()
+    assert rows == [("mopac", "m", 2)]
+
+
+def _cite_each_use(evaluator, references):
+    """The merge as it was: one ``cite()``, and one commit, per use."""
+    for alias, raw, module, note, level, count in it._citation_rows(evaluator):
+        for _ in range(max(1, int(count or 1))):
+            references.cite(raw=raw, alias=alias, module=module, level=level, note=note)
+
+
+def _dump(path):
+    db = sqlite3.connect(str(path))
+    try:
+        return {
+            table: db.execute(f"SELECT * FROM {table} ORDER BY id").fetchall()
+            for table in ("citation", "context")
+        }
+    finally:
+        db.close()
+
+
+def test_citation_merge_same_as_citing_each_use(tmp_path):
+    """Merging many iterations' citations gives the job the same references as
+    citing each use, with one commit per iteration once the job has them all."""
+    import reference_handler
+
+    # Iterations as a parallel loop's: the same citations, many uses each, and one
+    # a later iteration adds; one also changes its text (a newer program version).
+    evaluators = []
+    for k in range(1, 5):
+        evaluator = tmp_path / f"iter_{k}"
+        evaluator.mkdir()
+        it_refs = reference_handler.Reference_Handler(str(evaluator / "references.db"))
+        it_refs.cite(raw=bib("SEAMM"), alias="SEAMM", module="seamm", note="n")
+        for _ in range(30 + k):
+            it_refs.cite(raw=bib("xtb"), alias="xtb", module="xtb_step", note="n")
+            it_refs.cite(raw=bib("GFN2"), alias="GFN2", module="xtb_step", note="m")
+            it_refs.cite(
+                raw=bib("GFN2"), alias="GFN2", module="xtb_step", note="m", level=2
+            )
+        if k >= 3:
+            for _ in range(k):
+                it_refs.cite(raw=bib("D4"), alias="D4", module="xtb_step", note="n")
+        program = bib("program") + (" v2" if k == 4 else "")
+        it_refs.cite(raw=program, alias="program", module="p", note="n")
+        it_refs.conn.close()
+        evaluators.append(evaluator)
+
+    results = {}
+    for name, merge in (("each use", _cite_each_use), ("merged", it.merge_citations)):
+        path = tmp_path / f"{name}.db"
+        job = reference_handler.Reference_Handler(str(path))
+        job.cite(raw=bib("SEAMM"), alias="SEAMM", module="seamm", note="n")
+        job.cite(raw=bib("xtb"), alias="xtb", module="xtb_step", note="n")
+        commits = []
+        for evaluator in evaluators:
+            statements = []
+            job.conn.set_trace_callback(statements.append)
+            merge(evaluator, job)
+            job.conn.set_trace_callback(None)
+            commits.append(sum(s.strip().upper() == "COMMIT" for s in statements))
+        job.conn.close()
+        results[name] = (_dump(path), commits)
+
+    assert results["merged"][0] == results["each use"][0]
+    counts = {
+        (row[1], row[2], row[3], row[5]): row[4]
+        for row in results["merged"][0]["context"]
+    }
+    assert counts[(1, "seamm", "n", 1)] == 1
+    assert counts[(2, "xtb_step", "n", 1)] == 1 + 31 + 32 + 33 + 34
+    # The citations the job already has cost a single commit, not one per use
+    assert results["merged"][1][1] == 1
+    assert results["each use"][1][1] == 3 * 32 + 1
 
 
 def test_merge_state_round_trip():
