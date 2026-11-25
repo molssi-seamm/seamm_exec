@@ -509,6 +509,7 @@ class EngineSession:
             "minimum": result.minimum,
             "lowest frequency": result.lowest_frequency,
             "escapes": len(result.escapes),
+            "confirmations": len(getattr(result, "confirmations", []) or []),
             "energy (eV)": float(result.energy),
             "max force (eV/Å)": float(result.max_force),
             "rms force (eV/Å)": float(
