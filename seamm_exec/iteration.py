@@ -483,30 +483,76 @@ def merge_citations(evaluator, references, before=None):
     """
     if references is None:
         return 0
+    conn = references.conn
     n = 0
-    for alias, raw, module, note, level, count in _citation_rows(evaluator):
-        try:
-            references.cite(raw=raw, alias=alias, module=module, level=level, note=note)
-        except Exception as e:
-            logger.warning(f"Could not cite '{alias}' from {evaluator}: {e}")
-            continue
-        count = max(1, int(count or 1))
-        if before is not None:
-            total = before.get(_context_key(alias, module, note, level), 0) + count
-            references.conn.execute(
-                "UPDATE context SET count = ? WHERE module = ? AND note = ? AND "
-                "level = ? AND reference_id = (SELECT id FROM citation WHERE "
-                "alias = ?)",
-                (total, module, note, level, alias),
-            )
-            references.conn.commit()
-        else:
-            for _ in range(count - 1):
+    try:
+        for alias, raw, module, note, level, count in _citation_rows(evaluator):
+            count = max(1, int(count or 1))
+            if before is None:
+                # Cited already in the job: each of the iteration's citations adds
+                # one to the count, as cite() would, without a commit for each. A
+                # commit per citation was the time of the merge: ~10 citations per
+                # structure, 60-75 ms each on a busy file system.
+                context = _job_context(conn, raw, module, note, level)
+                if context is not None:
+                    _add_to_count(conn, context, count)
+                    n += count
+                    continue
+            try:
                 references.cite(
                     raw=raw, alias=alias, module=module, level=level, note=note
                 )
-        n += count
+            except Exception as e:
+                logger.warning(f"Could not cite '{alias}' from {evaluator}: {e}")
+                continue
+            if before is not None:
+                total = before.get(_context_key(alias, module, note, level), 0) + count
+                conn.execute(
+                    "UPDATE context SET count = ? WHERE module = ? AND note = ? AND "
+                    "level = ? AND reference_id = (SELECT id FROM citation WHERE "
+                    "alias = ?)",
+                    (total, module, note, level, alias),
+                )
+                conn.commit()
+            elif count > 1:
+                context = _job_context(conn, raw, module, note, level)
+                if context is not None:
+                    _add_to_count(conn, context, count - 1)
+                else:
+                    for _ in range(count - 1):
+                        references.cite(
+                            raw=raw, alias=alias, module=module, level=level, note=note
+                        )
+            n += count
+        # All of the iteration's counts at once
+        conn.commit()
+    except Exception:
+        # Never hold the lock of the job's references open
+        conn.rollback()
+        raise
     return n
+
+
+def _job_context(conn, raw, module, note, level):
+    """The job's context of a citation, found as ``cite()`` finds it, or None.
+
+    Only a citation with the same text: one the job has under another text (an
+    older version of a program) is left to ``cite()``, which brings it up to date.
+    """
+    row = conn.execute("SELECT id FROM citation WHERE raw = ?", (raw,)).fetchone()
+    if row is None:
+        return None
+    row = conn.execute(
+        "SELECT id FROM context WHERE reference_id = ? AND module = ? AND note = ? "
+        "AND level = ?",
+        (row[0], module, note, level),
+    ).fetchone()
+    return None if row is None else row[0]
+
+
+def _add_to_count(conn, context, count):
+    """Add ``count`` citations to a context of the job's, in the open transaction."""
+    conn.execute("UPDATE context SET count = count + ? WHERE id = ?", (count, context))
 
 
 def export_path(filename, evaluator, job_directory):
