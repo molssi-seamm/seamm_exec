@@ -967,3 +967,71 @@ def test_ase_bfgs_stays_the_default():
     driver, engine, session = _seamm_session()
     assert session.optimize(fmax=0.0015, max_steps=500)
     assert "optimizer" not in driver.last_optimization
+
+
+# --------------------------------------------------------------------------- #
+# What the engine runs on, in the output (2026-11-25: MOPAC's single-threaded
+# engine was reported as running on the job's 4 cores)
+# --------------------------------------------------------------------------- #
+@pytest.mark.parametrize(
+    "takes_ncores, argv, declared, expected",
+    [
+        (True, ["orca"], None, "runs on 4 cores."),  # ORCA: the job's cores
+        (False, ["OMP_NUM_THREADS=2", "MKL_NUM_THREADS=2", "py"], None, "on 2 cores."),
+        (False, ["OMP_NUM_THREADS=1", "py"], None, "runs on 1 core."),
+        (False, ["conda", "run"], 1, "runs on 1 core (it is single-threaded)."),
+        (False, ["conda", "run"], 3, "runs on 3 cores."),
+        (False, ["conda", "run"], None, "sets its own threads; the job has 4 cores."),
+        # an OMP_NUM_THREADS after the program is an argument, not the prefix
+        (False, ["py", "OMP_NUM_THREADS=8"], None, "the job has 4 cores."),
+    ],
+)
+def test_engine_cores_text(takes_ncores, argv, declared, expected):
+    import types
+
+    driver = HessianDriver(make_node(MC))
+    driver.engine_takes_ncores = takes_ncores
+    driver.step = types.SimpleNamespace(mdi_engine_threads=declared)
+    text = driver.engine_cores_text(argv, 4)
+    assert text.startswith("The ") and text.endswith(expected), text
+
+
+def test_the_cores_are_announced_once_from_the_launch_command(monkeypatch):
+    import sys
+    import types
+
+    said = []
+
+    class Eng(HarmonicEngine):
+        def __init__(self, build_argv, *a, **k):
+            super().__init__(analytic=True)
+            build_argv("localhost", 1234)  # as MDIEngine does when it starts
+            build_argv("localhost", 1235)  # and again on a restart
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    monkeypatch.setitem(sys.modules, "seamm_mdi", types.SimpleNamespace(MDIEngine=Eng))
+    driver = HessianDriver(make_node(MC, Provider()))
+    monkeypatch.setattr(driver, "say", said.append)
+    monkeypatch.setattr(
+        driver,
+        "plan",
+        lambda c: (
+            FakeEvaluator(),
+            lambda h, p: ["OMP_NUM_THREADS=1", "mopac"],
+            [6, 1, 1, 1, 1],
+            np.zeros((5, 3)),
+        ),
+    )
+    monkeypatch.setattr(driver, "engine_ncores", lambda: 4)
+    monkeypatch.setattr(
+        driver, "engine_environment", lambda n: contextlib.nullcontext()
+    )
+    with driver.session(Configuration()) as session:
+        assert session is not None
+    cores = [s for s in said if "engine runs on" in s]
+    assert len(cores) == 1 and cores[0].endswith("runs on 1 core.")
