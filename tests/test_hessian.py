@@ -889,6 +889,39 @@ def test_the_seamm_optimizer_takes_hessians_from_a_cheap_session():
     assert cheap.n >= 1 and driver.last_optimization["cheap hessians"] == cheap.n
 
 
+def test_the_minimum_check_is_recorded():
+    """The minimum check's verdict, lowest frequency, escapes and confirmations
+    are in the record the Structure step reports (Design 2026-11-25)."""
+    driver, engine, session = _seamm_session()
+
+    class Cheap:
+        def hessian(self, coords_ang=None):
+            e = SpringEngine()
+            x0 = np.asarray(coords_ang, float).reshape(-1)
+            h = 1.0e-4
+            H = np.zeros((15, 15))
+            for k in range(15):
+                xp, xm = x0.copy(), x0.copy()
+                xp[k] += h
+                xm[k] -= h
+                e.set_coordinates(xp)
+                gp = e._eg()[1].reshape(-1)
+                e.set_coordinates(xm)
+                gm = e._eg()[1].reshape(-1)
+                H[k] = (gp - gm) / (2 * h)
+            return H * BOHR**2 / 27.211386245988, "analytic"
+
+    assert session.optimize(
+        fmax=0.0015,
+        optimizer="SEAMM",
+        optimizer_options={"check_minimum": True},
+        cheap=Cheap(),
+    )
+    last = driver.last_optimization
+    assert last["minimum"] is True and last["lowest frequency"] > 0
+    assert last["escapes"] == 0 and last["confirmations"] == 0
+
+
 def test_ase_bfgs_stays_the_default():
     driver, engine, session = _seamm_session()
     assert session.optimize(fmax=0.0015, max_steps=500)
