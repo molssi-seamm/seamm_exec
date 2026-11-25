@@ -718,6 +718,8 @@ class HessianDriver:
         takes_ncores = has_command and _accepts_keyword(
             step.get_mdi_engine_command, "ncores"
         )
+        # for the announcement of the engine's cores (see engine_cores_text)
+        self.engine_takes_ncores = takes_ncores
         precision = self.precision
         if precision and has_command:
             if not _declares_keyword(step.get_mdi_engine_command, "precision"):
@@ -878,6 +880,34 @@ class HessianDriver:
             os.environ.clear()
             os.environ.update(saved)
 
+    def engine_cores_text(self, argv, ncores):
+        """What the engine runs on, for the output: the job's cores when its
+        launch command takes a core count (ORCA); else the OpenMP threads its
+        command sets (``OMP_NUM_THREADS=n``, as xTB and xnn do); else the count
+        its step declares (``mdi_engine_threads``; MOPAC's engine is
+        single-threaded); else that the program sets its own threads."""
+        level = (self.model_chemistry() or {}).get("level", "model chemistry")
+
+        def cores(n):
+            return f"{n} core" + ("s" if n != 1 else "")
+
+        if getattr(self, "engine_takes_ncores", False):
+            return f"The {level} engine runs on {cores(ncores)}."
+        for token in argv or []:
+            name, equals, value = str(token).partition("=")
+            if not equals or not name.replace("_", "").isalnum():
+                break  # past the VAR=value prefix
+            if name == "OMP_NUM_THREADS" and value.isdigit():
+                return f"The {level} engine runs on {cores(int(value))}."
+        declared = getattr(getattr(self, "step", None), "mdi_engine_threads", None)
+        if isinstance(declared, int) and declared > 0:
+            return f"The {level} engine runs on {cores(declared)}" + (
+                " (it is single-threaded)." if declared == 1 else "."
+            )
+        return (
+            f"The {level} engine sets its own threads; the job has " f"{cores(ncores)}."
+        )
+
     def engine_ncores(self):
         """The cores for the MDI engine: in an iteration of a parallel loop its
         share of the job (``SEAMM_CE``, ``NTASKS`` × ``CPUS_PER_TASK``), else the
@@ -948,16 +978,21 @@ class HessianDriver:
         from seamm_mdi import MDIEngine  # only for the MDI routes
 
         ncores = self.engine_ncores()
-        if announce:
-            mc = self.model_chemistry()
-            self.say(
-                f"The {mc['level']} engine runs on {ncores} core"
-                + ("s." if ncores != 1 else ".")
-            )
+        # Say how many cores the engine really uses, from its launch command, the
+        # first time it starts (not again on a restart)
+        announced = [] if announce else [True]
+
+        def launch(hostname, port):
+            argv = build_argv(hostname, port)
+            if not announced:
+                announced.append(True)
+                self.say(self.engine_cores_text(argv, ncores))
+            return argv
+
         with self.engine_environment(ncores):
             eng = _RestartingEngine(
                 lambda: MDIEngine(
-                    build_argv, elements, name="SEAMM", logger=self.node.logger
+                    launch, elements, name="SEAMM", logger=self.node.logger
                 ),
                 restarts=self.engine_restarts,
                 say=self.say,

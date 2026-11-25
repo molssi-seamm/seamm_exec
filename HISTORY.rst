@@ -1,6 +1,16 @@
 =======
 History
 =======
+2026.11.25.2 -- Bugfix: the engine's cores are reported as it uses them
+    * The output said an MDI engine ran on the job's cores even when it does not
+      take a core count, e.g. "The MOPAC:SQM@PM7 engine runs on 4 cores" for MOPAC's
+      single-threaded engine. It now reports the job's cores only for an engine that
+      takes them (ORCA), the threads the engine's launch command sets (xTB, xnn), or
+      the count its step declares (``mdi_engine_threads``; MOPAC: 1), and otherwise
+      that the program sets its own threads. Nothing changes in how engines run.
+    * The message is given once, when the engine first starts, not again on a
+      restart.
+
 2026.11.25.1 -- Finite-difference Hessians on request
     * ``HessianDriver.optimize_and_hessian`` takes ``finite_differences``: the
       Hessian is then central differences of the engine's forces even when the
