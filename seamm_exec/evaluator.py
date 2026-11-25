@@ -92,6 +92,26 @@ class AnalysisError(RuntimeError):
     """A task's results lack a requested property."""
 
 
+def _engine_spin(engine):
+    """{"S**2": <S**2>, "S(S+1)": ideal} of the engine's last energy/gradient when
+    it gives them (seamm_mdi's ``spin()``, the custom ``<SPIN``; ORCA's engine),
+    else None; None also for a closed-shell (spin-restricted) calculation."""
+    get = getattr(engine, "spin", None)
+    if get is None:
+        return None
+    try:
+        value = get()
+    except Exception as e:  # pragma: no cover
+        logger.warning(f"The engine gave no <S**2>: {e}")
+        return None
+    if not value or value[0] is None or value[1] is None:
+        return None
+    s2, ideal = float(value[0]), float(value[1])
+    if not (np.isfinite(s2) and np.isfinite(ideal)):
+        return None
+    return {"S**2": s2, "S(S+1)": ideal}
+
+
 @dataclass
 class EvaluatorResult:
     """One structure's results.
@@ -113,7 +133,8 @@ class EvaluatorResult:
     path : str
         "mdi" or "batch"
     data : dict
-        Everything the program returned.
+        Everything the program returned; "spin" ({"S**2", "S(S+1)"}) for an
+        open-shell calculation when the program gives it.
     elapsed : float
         Seconds spent on it in this run (0 if restored).
     """
@@ -643,6 +664,9 @@ class Evaluator:
                             engine.stress(units=S_UNITS), dtype=float
                         ).tolist()
                         data["stress"] = stress
+                    spin = _engine_spin(engine)
+                    if spin is not None:
+                        data["spin"] = spin
                     yield EvaluatorResult(
                         key=key,
                         ok=True,
