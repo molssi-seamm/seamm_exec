@@ -1,6 +1,11 @@
 =======
 History
 =======
+2026.11.25 -- The SEAMM optimizer's record includes the confirmations
+    * The record of a SEAMM-optimizer run (``last_optimization``) now gives how many
+      cheap-level imaginary modes the minimum check confirmed with expensive
+      gradients, alongside the verdict, lowest frequency and escapes.
+
 2026.11.24.1 -- Faster merging of a parallel loop's iterations
     * The driver merges each finished iteration's citations with one commit to the
       job's references database instead of one per use of each citation. With
