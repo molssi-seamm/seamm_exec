@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.hessian &#8212; SEAMM seamm-exec Plug-in 2026.11.25.1 documentation</title>
+    <title>seamm_exec.hessian &#8212; SEAMM seamm-exec Plug-in 2026.11.25.2 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=291d9058"></script>
+    <script src="../../_static/documentation_options.js?v=1ee51a32"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.25.1" />
+  <meta name="docsearch:version" content="2026.11.25.2" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1197,6 +1197,8 @@
         <span class="n">takes_ncores</span> <span class="o">=</span> <span class="n">has_command</span> <span class="ow">and</span> <span class="n">_accepts_keyword</span><span class="p">(</span>
             <span class="n">step</span><span class="o">.</span><span class="n">get_mdi_engine_command</span><span class="p">,</span> <span class="s2">"ncores"</span>
         <span class="p">)</span>
+        <span class="c1"># for the announcement of the engine's cores (see engine_cores_text)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine_takes_ncores</span> <span class="o">=</span> <span class="n">takes_ncores</span>
         <span class="n">precision</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">precision</span>
         <span class="k">if</span> <span class="n">precision</span> <span class="ow">and</span> <span class="n">has_command</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">_declares_keyword</span><span class="p">(</span><span class="n">step</span><span class="o">.</span><span class="n">get_mdi_engine_command</span><span class="p">,</span> <span class="s2">"precision"</span><span class="p">):</span>
@@ -1364,6 +1366,37 @@
             <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">saved</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="HessianDriver.engine_cores_text">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.hessian.HessianDriver.engine_cores_text">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">engine_cores_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">,</span> <span class="n">ncores</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""What the engine runs on, for the output: the job's cores when its</span>
+<span class="sd">        launch command takes a core count (ORCA); else the OpenMP threads its</span>
+<span class="sd">        command sets (``OMP_NUM_THREADS=n``, as xTB and xnn do); else the count</span>
+<span class="sd">        its step declares (``mdi_engine_threads``; MOPAC's engine is</span>
+<span class="sd">        single-threaded); else that the program sets its own threads."""</span>
+        <span class="n">level</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_chemistry</span><span class="p">()</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"level"</span><span class="p">,</span> <span class="s2">"model chemistry"</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">cores</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> core"</span> <span class="o">+</span> <span class="p">(</span><span class="s2">"s"</span> <span class="k">if</span> <span class="n">n</span> <span class="o">!=</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">""</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"engine_takes_ncores"</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">"The </span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2"> engine runs on </span><span class="si">{</span><span class="n">cores</span><span class="p">(</span><span class="n">ncores</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+        <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">argv</span> <span class="ow">or</span> <span class="p">[]:</span>
+            <span class="n">name</span><span class="p">,</span> <span class="n">equals</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">token</span><span class="p">)</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">"="</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">equals</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"_"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">isalnum</span><span class="p">():</span>
+                <span class="k">break</span>  <span class="c1"># past the VAR=value prefix</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">"OMP_NUM_THREADS"</span> <span class="ow">and</span> <span class="n">value</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s2">"The </span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2"> engine runs on </span><span class="si">{</span><span class="n">cores</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">))</span><span class="si">}</span><span class="s2">."</span>
+        <span class="n">declared</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"step"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="s2">"mdi_engine_threads"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">declared</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">declared</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">"The </span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2"> engine runs on </span><span class="si">{</span><span class="n">cores</span><span class="p">(</span><span class="n">declared</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span> <span class="o">+</span> <span class="p">(</span>
+                <span class="s2">" (it is single-threaded)."</span> <span class="k">if</span> <span class="n">declared</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">"."</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"The </span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2"> engine sets its own threads; the job has "</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">cores</span><span class="p">(</span><span class="n">ncores</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+        <span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="HessianDriver.engine_ncores">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.hessian.HessianDriver.engine_ncores">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">engine_ncores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1439,16 +1472,21 @@
         <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_mdi</span><span class="w"> </span><span class="kn">import</span> <span class="n">MDIEngine</span>  <span class="c1"># only for the MDI routes</span>
 
         <span class="n">ncores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine_ncores</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">announce</span><span class="p">:</span>
-            <span class="n">mc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_chemistry</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">say</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">"The </span><span class="si">{</span><span class="n">mc</span><span class="p">[</span><span class="s1">'level'</span><span class="p">]</span><span class="si">}</span><span class="s2"> engine runs on </span><span class="si">{</span><span class="n">ncores</span><span class="si">}</span><span class="s2"> core"</span>
-                <span class="o">+</span> <span class="p">(</span><span class="s2">"s."</span> <span class="k">if</span> <span class="n">ncores</span> <span class="o">!=</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">"."</span><span class="p">)</span>
-            <span class="p">)</span>
+        <span class="c1"># Say how many cores the engine really uses, from its launch command, the</span>
+        <span class="c1"># first time it starts (not again on a restart)</span>
+        <span class="n">announced</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">announce</span> <span class="k">else</span> <span class="p">[</span><span class="kc">True</span><span class="p">]</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">launch</span><span class="p">(</span><span class="n">hostname</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
+            <span class="n">argv</span> <span class="o">=</span> <span class="n">build_argv</span><span class="p">(</span><span class="n">hostname</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">announced</span><span class="p">:</span>
+                <span class="n">announced</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">say</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine_cores_text</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span> <span class="n">ncores</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">argv</span>
+
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine_environment</span><span class="p">(</span><span class="n">ncores</span><span class="p">):</span>
             <span class="n">eng</span> <span class="o">=</span> <span class="n">_RestartingEngine</span><span class="p">(</span>
                 <span class="k">lambda</span><span class="p">:</span> <span class="n">MDIEngine</span><span class="p">(</span>
-                    <span class="n">build_argv</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"SEAMM"</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">logger</span>
+                    <span class="n">launch</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"SEAMM"</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">logger</span>
                 <span class="p">),</span>
                 <span class="n">restarts</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">engine_restarts</span><span class="p">,</span>
                 <span class="n">say</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">say</span><span class="p">,</span>
