@@ -1,6 +1,16 @@
 =======
 History
 =======
+2026.11.24.1 -- Faster merging of a parallel loop's iterations
+    * The driver merges each finished iteration's citations with one commit to the
+      job's references database instead of one per use of each citation. With
+      ~10 uses per candidate and 60-75 ms per commit on a networked filesystem this
+      was ~0.7 s per candidate, so a loop over many candidates merged far more slowly
+      than its iterations finished. It now takes milliseconds per iteration, with the
+      same references and counts.
+    * The Unicode collator that sorts a task's file listing is made once, not for
+      every task (~0.2 s each).
+
 2026.11.24 -- The SEAMM optimizer as an option over the warm MDI engine
     * ``EngineSession.optimize`` (and ``optimize_in_blocks``, ``optimize_and_energy``,
       ``optimize_and_hessian``) can use the SEAMM optimizer (seamm_optimizer: internal
