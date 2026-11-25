@@ -1,6 +1,13 @@
 =======
 History
 =======
+2026.11.25.1 -- Finite-difference Hessians on request
+    * ``HessianDriver.optimize_and_hessian`` takes ``finite_differences``: the
+      Hessian is then central differences of the engine's forces even when the
+      engine has an analytic Hessian. Used to replace a broken analytic Hessian
+      (ORCA 6.1.1's UKS r2SCAN-3c analytic Hessian of 4-hydroxy-TEMPO has
+      frequencies of -3e7 cm^-1, reproducibly).
+
 2026.11.25 -- The SEAMM optimizer's record includes the confirmations
     * The record of a SEAMM-optimizer run (``last_optimization``) now gives how many
       cheap-level imaginary modes the minimum check confirmed with expensive

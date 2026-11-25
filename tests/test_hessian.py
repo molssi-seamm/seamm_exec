@@ -200,6 +200,47 @@ def test_engine_route_keeps_fd_on_engine(monkeypatch):
     assert how == "tasks" and "tasks" in calls
 
 
+def test_finite_differences_on_request_over_an_analytic_engine(monkeypatch):
+    """finite_differences=True gives central differences of the forces even when
+    the engine has an analytic Hessian (to check or replace a broken analytic
+    one: Thermochemistry 6043, 2026-11-25); by default the analytic one."""
+    import sys
+    import types
+
+    class Eng(HarmonicEngine):
+        def __init__(self, *a, **k):
+            super().__init__(analytic=True)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    monkeypatch.setitem(sys.modules, "seamm_mdi", types.SimpleNamespace(MDIEngine=Eng))
+    evaluator = FakeEvaluator()
+    driver = HessianDriver(make_node(MC, Provider()))
+    c = Configuration()
+    monkeypatch.setattr(
+        driver,
+        "plan",
+        lambda c: (evaluator, lambda h, p: ["x"], [6, 1, 1, 1, 1], np.zeros((5, 3))),
+    )
+    monkeypatch.setattr(driver, "engine_ncores", lambda: 1)
+    monkeypatch.setattr(
+        driver, "engine_environment", lambda n: contextlib.nullcontext()
+    )
+    driver.route = "warm engine over MDI"
+    E0, H_analytic, how = driver.optimize_and_hessian(c, optimize=False)
+    assert how == "analytic"
+    E1, H_fd, how = driver.optimize_and_hessian(
+        c, optimize=False, finite_differences=True
+    )
+    assert how == "finite differences over MDI"
+    assert E1 == pytest.approx(E0)
+    assert np.allclose(H_fd, H_analytic, atol=1e-8)
+
+
 # --------------------------------------------------------------------------
 # The engine session
 # --------------------------------------------------------------------------

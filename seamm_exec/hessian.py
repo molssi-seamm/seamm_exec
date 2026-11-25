@@ -1140,12 +1140,16 @@ class HessianDriver:
         optimizer="ASE BFGS",
         optimizer_options=None,
         cheap_level=None,
+        finite_differences=False,
     ):
         """Optionally optimize the structure (ASE BFGS, or the SEAMM optimizer, over
         the warm engine), then the energy and Hessian, in one engine session. With
         `continuations` an optimization that does not converge in `max_steps`
         continues in the same session (see :meth:`optimize_in_blocks`), so the
-        Hessian is computed once, at the final structure.
+        Hessian is computed once, at the final structure. With
+        `finite_differences` the Hessian is central differences of the engine's
+        forces even when the engine has an analytic one (e.g. to check or replace
+        a broken analytic Hessian).
 
         Returns
         -------
@@ -1178,15 +1182,17 @@ class HessianDriver:
                     cheap_level,
                 )
             E0 = session.energy(units="kJ/mol")
-            if session.analytic:
+            if session.analytic and not finite_differences:
                 H, how = session.hessian()
                 return E0, H, how
-            if session.evaluator.path != "batch" or self.route.startswith(
-                "warm engine"
+            if (
+                finite_differences
+                or session.evaluator.path != "batch"
+                or self.route.startswith("warm engine")
             ):
                 # The engine was asked for: the finite differences run over it
                 # too (its fingerprints then describe the Hessian as well)
-                H, how = session.hessian(delta_bohr=delta_bohr)
+                H, how = session.hessian(delta_bohr=delta_bohr, finite_differences=True)
                 return E0, H, how
             evaluator, coords_ang = session.evaluator, session.coordinates
         return self.fd_hessian_tasks(evaluator, configuration, coords_ang, delta_bohr)
