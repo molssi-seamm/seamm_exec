@@ -2,6 +2,7 @@
 
 """Virtual base class for the Exec classes."""
 
+import functools
 import os
 import os.path
 from pathlib import Path
@@ -39,6 +40,16 @@ def _is_kept(path, keep):
         if path == k or k in path.parents:
             return True
     return False
+
+
+@functools.lru_cache(maxsize=1)
+def _collator():
+    """The Unicode collator for listing a task's files, made once.
+
+    Making one reads the Unicode collation table, ~0.2 s: for every task, that
+    was a fifth of a second per structure in a loop over many small calculations.
+    """
+    return pyuca.Collator()
 
 
 class Base(object):
@@ -304,7 +315,7 @@ class Base(object):
             os.umask(saved_umask)
 
         # capture the list of files in the directory
-        c = pyuca.Collator()
+        c = _collator()
         listing = ""
         self.now = int(time.time())
         self.recent = self.now - (6 * 30 * 24 * 60 * 60)  # 6 months ago

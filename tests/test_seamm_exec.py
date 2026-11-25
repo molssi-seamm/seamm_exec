@@ -194,3 +194,16 @@ def test_temporary_directory_returns_files_in_subdirectory(monkeypatch, tmp_path
     assert (tmp_path / "results.txt").read_text() == "results"
     assert not (tmp_path / "work").exists()
     assert result["logs/a.log"]["exception"] is None
+
+
+def test_collator_made_once():
+    """Making a collator reads the Unicode table (~0.2 s): once, not per task."""
+    import pyuca
+    from seamm_exec import base
+
+    collator = base._collator()
+    assert base._collator() is collator
+    names = ["b.txt", "A.txt", "é.txt", "a.txt", "_x"]
+    assert sorted(names, key=collator.sort_key) == sorted(
+        names, key=pyuca.Collator().sort_key
+    )
