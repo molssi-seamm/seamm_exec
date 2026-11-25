@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.hessian &#8212; SEAMM seamm-exec Plug-in 2026.11.25 documentation</title>
+    <title>seamm_exec.hessian &#8212; SEAMM seamm-exec Plug-in 2026.11.25.1 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=d2c0d6cc"></script>
+    <script src="../../_static/documentation_options.js?v=291d9058"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.25" />
+  <meta name="docsearch:version" content="2026.11.25.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1649,12 +1649,16 @@
         <span class="n">optimizer</span><span class="o">=</span><span class="s2">"ASE BFGS"</span><span class="p">,</span>
         <span class="n">optimizer_options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">cheap_level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">finite_differences</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Optionally optimize the structure (ASE BFGS, or the SEAMM optimizer, over</span>
 <span class="sd">        the warm engine), then the energy and Hessian, in one engine session. With</span>
 <span class="sd">        `continuations` an optimization that does not converge in `max_steps`</span>
 <span class="sd">        continues in the same session (see :meth:`optimize_in_blocks`), so the</span>
-<span class="sd">        Hessian is computed once, at the final structure.</span>
+<span class="sd">        Hessian is computed once, at the final structure. With</span>
+<span class="sd">        `finite_differences` the Hessian is central differences of the engine's</span>
+<span class="sd">        forces even when the engine has an analytic one (e.g. to check or replace</span>
+<span class="sd">        a broken analytic Hessian).</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1687,15 +1691,17 @@
                     <span class="n">cheap_level</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="n">E0</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">energy</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"kJ/mol"</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">session</span><span class="o">.</span><span class="n">analytic</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">session</span><span class="o">.</span><span class="n">analytic</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">finite_differences</span><span class="p">:</span>
                 <span class="n">H</span><span class="p">,</span> <span class="n">how</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">hessian</span><span class="p">()</span>
                 <span class="k">return</span> <span class="n">E0</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">how</span>
-            <span class="k">if</span> <span class="n">session</span><span class="o">.</span><span class="n">evaluator</span><span class="o">.</span><span class="n">path</span> <span class="o">!=</span> <span class="s2">"batch"</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">route</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span>
-                <span class="s2">"warm engine"</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">finite_differences</span>
+                <span class="ow">or</span> <span class="n">session</span><span class="o">.</span><span class="n">evaluator</span><span class="o">.</span><span class="n">path</span> <span class="o">!=</span> <span class="s2">"batch"</span>
+                <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">route</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"warm engine"</span><span class="p">)</span>
             <span class="p">):</span>
                 <span class="c1"># The engine was asked for: the finite differences run over it</span>
                 <span class="c1"># too (its fingerprints then describe the Hessian as well)</span>
-                <span class="n">H</span><span class="p">,</span> <span class="n">how</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">hessian</span><span class="p">(</span><span class="n">delta_bohr</span><span class="o">=</span><span class="n">delta_bohr</span><span class="p">)</span>
+                <span class="n">H</span><span class="p">,</span> <span class="n">how</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">hessian</span><span class="p">(</span><span class="n">delta_bohr</span><span class="o">=</span><span class="n">delta_bohr</span><span class="p">,</span> <span class="n">finite_differences</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                 <span class="k">return</span> <span class="n">E0</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">how</span>
             <span class="n">evaluator</span><span class="p">,</span> <span class="n">coords_ang</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">evaluator</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">coordinates</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fd_hessian_tasks</span><span class="p">(</span><span class="n">evaluator</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">coords_ang</span><span class="p">,</span> <span class="n">delta_bohr</span><span class="p">)</span></div>
