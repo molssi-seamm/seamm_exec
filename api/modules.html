@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec &#8212; SEAMM seamm-exec Plug-in 2026.11.25.3 documentation</title>
+    <title>seamm_exec &#8212; SEAMM seamm-exec Plug-in 2026.11.26 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=ba9d9e2b"></script>
+    <script src="../_static/documentation_options.js?v=e5385ca6"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.25.3" />
+  <meta name="docsearch:version" content="2026.11.26" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -538,14 +538,21 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="seamm_exec.html#module-seamm_exec.hessian">seamm_exec.hessian module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.CHECK_DISPLACEMENTS"><code class="docutils literal notranslate"><span class="pre">CHECK_DISPLACEMENTS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.CHECK_SEED"><code class="docutils literal notranslate"><span class="pre">CHECK_SEED</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.ENERGY_MARGIN"><code class="docutils literal notranslate"><span class="pre">ENERGY_MARGIN</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.EngineSession"><code class="docutils literal notranslate"><span class="pre">EngineSession</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.EngineSession.analytic"><code class="docutils literal notranslate"><span class="pre">EngineSession.analytic</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.EngineSession.check_hessian"><code class="docutils literal notranslate"><span class="pre">EngineSession.check_hessian()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.EngineSession.energy"><code class="docutils literal notranslate"><span class="pre">EngineSession.energy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.EngineSession.fd_hessian"><code class="docutils literal notranslate"><span class="pre">EngineSession.fd_hessian()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.EngineSession.fingerprints"><code class="docutils literal notranslate"><span class="pre">EngineSession.fingerprints()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.EngineSession.gradient"><code class="docutils literal notranslate"><span class="pre">EngineSession.gradient()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.EngineSession.hessian"><code class="docutils literal notranslate"><span class="pre">EngineSession.hessian()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.EngineSession.masses"><code class="docutils literal notranslate"><span class="pre">EngineSession.masses</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.EngineSession.n_atoms"><code class="docutils literal notranslate"><span class="pre">EngineSession.n_atoms</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.EngineSession.optimize"><code class="docutils literal notranslate"><span class="pre">EngineSession.optimize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.EngineSession.reference_guess"><code class="docutils literal notranslate"><span class="pre">EngineSession.reference_guess()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.EngineSession.spin"><code class="docutils literal notranslate"><span class="pre">EngineSession.spin()</span></code></a></li>
 </ul>
 </li>
@@ -569,12 +576,19 @@
 <li class="toctree-l4"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.HessianDriver.session"><code class="docutils literal notranslate"><span class="pre">HessianDriver.session()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.HessianRefused"><code class="docutils literal notranslate"><span class="pre">HessianRefused</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.SPIN_TOLERANCE"><code class="docutils literal notranslate"><span class="pre">SPIN_TOLERANCE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.check_fd_points"><code class="docutils literal notranslate"><span class="pre">check_fd_points()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.check_hessian"><code class="docutils literal notranslate"><span class="pre">check_hessian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.frequencies"><code class="docutils literal notranslate"><span class="pre">frequencies()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.masses_of"><code class="docutils literal notranslate"><span class="pre">masses_of()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.model_chemistry_for"><code class="docutils literal notranslate"><span class="pre">model_chemistry_for()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.module_environment"><code class="docutils literal notranslate"><span class="pre">module_environment()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.modules_to_load"><code class="docutils literal notranslate"><span class="pre">modules_to_load()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.parse_cpu_ids"><code class="docutils literal notranslate"><span class="pre">parse_cpu_ids()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.physical_cores_allowed"><code class="docutils literal notranslate"><span class="pre">physical_cores_allowed()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.slurm_allocated_cpus"><code class="docutils literal notranslate"><span class="pre">slurm_allocated_cpus()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="seamm_exec.html#seamm_exec.hessian.zero_modes"><code class="docutils literal notranslate"><span class="pre">zero_modes()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="seamm_exec.html#module-seamm_exec.iteration">seamm_exec.iteration module</a><ul>

@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.hessian &#8212; SEAMM seamm-exec Plug-in 2026.11.25.3 documentation</title>
+    <title>seamm_exec.hessian &#8212; SEAMM seamm-exec Plug-in 2026.11.26 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=ba9d9e2b"></script>
+    <script src="../../_static/documentation_options.js?v=e5385ca6"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.25.3" />
+  <meta name="docsearch:version" content="2026.11.26" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -748,6 +748,242 @@
         <span class="p">)</span>
 
 
+<span class="c1">#: Checks of every point of a finite-difference Hessian (2026-11-26): its &lt;S**2&gt;</span>
+<span class="c1">#: may not move from the reference structure's by more than this ...</span>
+<span class="n">SPIN_TOLERANCE</span> <span class="o">=</span> <span class="mf">0.05</span>
+<span class="c1">#: ... nor its energy fall below E0 - |g_j| delta (first order; the second order</span>
+<span class="c1">#: only raises it at a minimum) by more than this margin, hartree (0.026 kJ/mol)</span>
+<span class="n">ENERGY_MARGIN</span> <span class="o">=</span> <span class="mf">1.0e-5</span>
+<span class="c1">#: The gradient-difference check of a Hessian (Training Structures, recipe §3)</span>
+<span class="n">CHECK_DISPLACEMENTS</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">CHECK_RMS</span> <span class="o">=</span> <span class="mf">0.005</span>  <span class="c1"># Å</span>
+<span class="n">CHECK_TOLERANCE</span> <span class="o">=</span> <span class="mf">0.02</span>
+<span class="n">CHECK_MAX_FREQUENCY</span> <span class="o">=</span> <span class="mf">5000.0</span>  <span class="c1"># cm^-1</span>
+<span class="c1">#: The seed of the check's random displacements in the driver, so a rerun repeats</span>
+<span class="c1">#: the same check</span>
+<span class="n">CHECK_SEED</span> <span class="o">=</span> <span class="mi">20261126</span>
+<span class="c1">#: sqrt(hartree / (bohr^2 amu)) in cm^-1</span>
+<span class="n">_CM_PER_AU</span> <span class="o">=</span> <span class="mf">5140.4871</span>
+<span class="n">_BOHR</span> <span class="o">=</span> <span class="mf">0.529177210903</span>  <span class="c1"># Å</span>
+
+
+<div class="viewcode-block" id="masses_of">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.hessian.masses_of">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">masses_of</span><span class="p">(</span><span class="n">configuration</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The atomic masses (amu) of a configuration: its own, else the standard</span>
+<span class="sd">    atomic weights of its elements."""</span>
+    <span class="n">atoms</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">atoms</span>
+    <span class="n">masses</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="s2">"atomic_masses"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">masses</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">masses</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_util</span><span class="w"> </span><span class="kn">import</span> <span class="n">element_data</span>
+
+    <span class="n">weight</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s2">"atomic number"</span><span class="p">]):</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s2">"atomic weight"</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">element_data</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"atomic number"</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">v</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"atomic weight"</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">weight</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">z</span><span class="p">)]</span> <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">atomic_numbers</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_optional</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Call the engine's optional method ``name`` if it has one; its result, or</span>
+<span class="sd">    False."""</span>
+    <span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">method</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<div class="viewcode-block" id="HessianRefused">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.hessian.HessianRefused">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">HessianRefused</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A Hessian that failed a check: a state change at a displaced point of a</span>
+<span class="sd">    finite difference, or disagreement with differences of the gradient."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">details</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">details</span> <span class="o">=</span> <span class="n">details</span> <span class="ow">or</span> <span class="p">{}</span></div>
+
+
+
+<div class="viewcode-block" id="frequencies">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.hessian.frequencies">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">frequencies</span><span class="p">(</span><span class="n">hessian</span><span class="p">,</span> <span class="n">masses_amu</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The frequencies (cm^-1) of a Cartesian Hessian (hartree/bohr^2), from the</span>
+<span class="sd">    mass-weighted matrix without projecting out the translations and rotations;</span>
+<span class="sd">    imaginary ones are negative. Ascending."""</span>
+    <span class="n">H</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">hessian</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">masses_amu</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvalsh</span><span class="p">(</span><span class="n">H</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">w</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">values</span><span class="p">))</span> <span class="o">*</span> <span class="n">_CM_PER_AU</span></div>
+
+
+
+<div class="viewcode-block" id="zero_modes">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.hessian.zero_modes">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">zero_modes</span><span class="p">(</span><span class="n">hessian</span><span class="p">,</span> <span class="n">masses_amu</span><span class="p">,</span> <span class="n">coords_ang</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The magnitudes (cm^-1) of the modes that should be zero, the 6 (5 for a</span>
+<span class="sd">    linear molecule) smallest in magnitude, largest first; information about a</span>
+<span class="sd">    finite-difference Hessian's noise, not a test (sound ones reach 65 cm^-1 for</span>
+<span class="sd">    small radicals: SEAMM jobs 6075, 6083, 2026-11-26)."""</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coords_ang</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">masses_amu</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">n_zero</span> <span class="o">=</span> <span class="mi">6</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">n_zero</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">centre</span> <span class="o">=</span> <span class="p">(</span><span class="n">m</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">m</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">x</span> <span class="o">-</span> <span class="n">centre</span>
+        <span class="n">inertia</span> <span class="o">=</span> <span class="p">(</span><span class="n">m</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span>
+            <span class="n">m</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span><span class="p">[:,</span> <span class="p">:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:])</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvalsh</span><span class="p">(</span><span class="n">inertia</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mf">1.0e-6</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span>
+            <span class="mf">1.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvalsh</span><span class="p">(</span><span class="n">inertia</span><span class="p">))</span>
+        <span class="p">):</span>
+            <span class="n">n_zero</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">nu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">frequencies</span><span class="p">(</span><span class="n">hessian</span><span class="p">,</span> <span class="n">m</span><span class="p">))</span>
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">((</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">nu</span><span class="p">)[:</span><span class="n">n_zero</span><span class="p">]),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="check_hessian">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.hessian.check_hessian">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_hessian</span><span class="p">(</span>
+    <span class="n">hessian</span><span class="p">,</span>
+    <span class="n">gradient</span><span class="p">,</span>
+    <span class="n">coords_ang</span><span class="p">,</span>
+    <span class="n">masses_amu</span><span class="p">,</span>
+    <span class="n">rng</span><span class="p">,</span>
+    <span class="n">n_displacements</span><span class="o">=</span><span class="n">CHECK_DISPLACEMENTS</span><span class="p">,</span>
+    <span class="n">rms</span><span class="o">=</span><span class="n">CHECK_RMS</span><span class="p">,</span>
+    <span class="n">tolerance</span><span class="o">=</span><span class="n">CHECK_TOLERANCE</span><span class="p">,</span>
+    <span class="n">max_frequency</span><span class="o">=</span><span class="n">CHECK_MAX_FREQUENCY</span><span class="p">,</span>
+    <span class="n">batch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Test a Hessian against central differences of the gradient.</span>
+
+<span class="sd">    For each of ``n_displacements`` random displacements d with an RMS of ``rms``</span>
+<span class="sd">    Å, e = |H d - [g(x0 + d) - g(x0 - d)] / 2| / |H d|, with vector norms (2</span>
+<span class="sd">    gradients each). The Hessian is refused if any e exceeds ``tolerance`` or any</span>
+<span class="sd">    frequency magnitude exceeds ``max_frequency`` cm^-1.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    hessian : array (3N, 3N)</span>
+<span class="sd">        hartree/bohr^2.</span>
+<span class="sd">    gradient : callable</span>
+<span class="sd">        gradient(xyz (N, 3) Å) -&gt; (3N,) hartree/bohr. Over a warm engine, give</span>
+<span class="sd">        the gradient of :meth:`EngineSession.reference_guess`, so every gradient</span>
+<span class="sd">        starts from the reference orbitals.</span>
+<span class="sd">    batch : callable, optional</span>
+<span class="sd">        batch([xyz, ...]) -&gt; [gradient, ...], used instead of ``gradient`` to</span>
+<span class="sd">        compute all the displaced gradients together (e.g. as tasks). The</span>
+<span class="sd">        displacements drawn are the same.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        "errors": [e], "max frequency": the largest frequency magnitude,</span>
+<span class="sd">        "refused": bool and "reason": text or None.</span>
+<span class="sd">    """</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coords_ang</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">H</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">hessian</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">biggest</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">frequencies</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">masses_amu</span><span class="p">))))</span>
+    <span class="n">displacements</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_displacements</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="n">x0</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">displacements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span> <span class="o">*</span> <span class="n">rms</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">d</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span>  <span class="c1"># Å</span>
+    <span class="n">structures</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">displacements</span><span class="p">:</span>
+        <span class="n">structures</span> <span class="o">+=</span> <span class="p">[(</span><span class="n">x0</span> <span class="o">+</span> <span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="n">x0</span> <span class="o">-</span> <span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">batch</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">gradients</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">(</span><span class="n">structures</span><span class="p">)]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">gradients</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">gradient</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">structures</span><span class="p">]</span>
+    <span class="n">errors</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">displacements</span><span class="p">):</span>
+        <span class="n">Hd</span> <span class="o">=</span> <span class="n">H</span> <span class="o">@</span> <span class="p">(</span><span class="n">d</span> <span class="o">/</span> <span class="n">_BOHR</span><span class="p">)</span>
+        <span class="n">dg</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">gradients</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">gradients</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">Hd</span> <span class="o">-</span> <span class="n">dg</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">Hd</span><span class="p">)))</span>
+    <span class="n">reason</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">biggest</span> <span class="o">&gt;</span> <span class="n">max_frequency</span><span class="p">:</span>
+        <span class="n">reason</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"a frequency of </span><span class="si">{</span><span class="n">biggest</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> cm⁻¹ (&gt; </span><span class="si">{</span><span class="n">max_frequency</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">)"</span>
+    <span class="k">elif</span> <span class="nb">max</span><span class="p">(</span><span class="n">errors</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tolerance</span><span class="p">:</span>
+        <span class="n">reason</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"it disagrees with the gradients by </span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">errors</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> (&gt; </span><span class="si">{</span><span class="n">tolerance</span><span class="si">}</span><span class="s2">)"</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">"errors"</span><span class="p">:</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">errors</span><span class="p">],</span>
+        <span class="s2">"max frequency"</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">biggest</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="s2">"refused"</span><span class="p">:</span> <span class="n">reason</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">"reason"</span><span class="p">:</span> <span class="n">reason</span><span class="p">,</span>
+    <span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="check_fd_points">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.hessian.check_fd_points">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_fd_points</span><span class="p">(</span>
+    <span class="n">e0</span><span class="p">,</span>
+    <span class="n">g0</span><span class="p">,</span>
+    <span class="n">spin0</span><span class="p">,</span>
+    <span class="n">points</span><span class="p">,</span>
+    <span class="n">delta_bohr</span><span class="p">,</span>
+    <span class="n">hessian</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">spin_tolerance</span><span class="o">=</span><span class="n">SPIN_TOLERANCE</span><span class="p">,</span>
+    <span class="n">energy_margin</span><span class="o">=</span><span class="n">ENERGY_MARGIN</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">"""What is wrong with the displaced points of a finite difference: a state</span>
+<span class="sd">    change, seen as an &lt;S**2&gt; that moved from the reference's, or an energy</span>
+<span class="sd">    below what the reference's gradient allows.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    e0 : float</span>
+<span class="sd">        The reference energy, hartree.</span>
+<span class="sd">    g0 : array (3N,)</span>
+<span class="sd">        The reference gradient, hartree/bohr.</span>
+<span class="sd">    spin0 : (float, float) or None</span>
+<span class="sd">        The reference (&lt;S**2&gt;, S(S+1)); None or (None, None) for a closed shell.</span>
+<span class="sd">    points : [{"j": int, "sign": +1 or -1, "energy": float, "spin": (s2, ideal)}]</span>
+<span class="sd">        Each displaced point: coordinate j moved by sign * delta_bohr.</span>
+<span class="sd">    hessian : array (3N, 3N), optional</span>
+<span class="sd">        Lowers the bound by 1/2 H_jj delta^2 where H_jj is negative.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    [str]</span>
+<span class="sd">        The problems, empty if none.</span>
+<span class="sd">    """</span>
+    <span class="n">problems</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">g0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">g0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">s0</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">spin0</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">spin0</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">points</span><span class="p">:</span>
+        <span class="n">j</span><span class="p">,</span> <span class="n">sign</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="s2">"j"</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="s2">"sign"</span><span class="p">]</span>
+        <span class="n">where</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"coordinate </span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'+'</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">sign</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">'-'</span><span class="si">}{</span><span class="n">delta_bohr</span><span class="si">}</span><span class="s2"> bohr"</span>
+        <span class="n">bound</span> <span class="o">=</span> <span class="n">e0</span> <span class="o">-</span> <span class="nb">abs</span><span class="p">(</span><span class="n">g0</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">*</span> <span class="n">delta_bohr</span> <span class="o">-</span> <span class="n">energy_margin</span>
+        <span class="k">if</span> <span class="n">hessian</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">bound</span> <span class="o">+=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="nb">min</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">hessian</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">j</span><span class="p">]),</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">delta_bohr</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">energy</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"energy"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">energy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">energy</span> <span class="o">&lt;</span> <span class="n">bound</span><span class="p">:</span>
+            <span class="n">problems</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: the energy is </span><span class="si">{</span><span class="p">(</span><span class="n">e0</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">energy</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">2625.4996</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> kJ/mol below "</span>
+                <span class="s2">"the reference, more than its gradient allows (a different state?)"</span>
+            <span class="p">)</span>
+        <span class="n">spin</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"spin"</span><span class="p">)</span>
+        <span class="n">s2</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">spin</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">spin</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">s0</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">s2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">s2</span> <span class="o">-</span> <span class="n">s0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">spin_tolerance</span><span class="p">:</span>
+            <span class="n">problems</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: &lt;S**2&gt; </span><span class="si">{</span><span class="n">s2</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, the reference's </span><span class="si">{</span><span class="n">s0</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> (more than "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">spin_tolerance</span><span class="si">}</span><span class="s2"> apart)"</span>
+            <span class="p">)</span>
+    <span class="k">return</span> <span class="n">problems</span></div>
+
+
+
 <span class="k">class</span><span class="w"> </span><span class="nc">_RestartingEngine</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""A warm MDI engine that is started again when it dies.</span>
 
@@ -779,6 +1015,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">n_restarts</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_say</span> <span class="o">=</span> <span class="n">say</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_coordinates</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Replayed on a new engine: the tight SCF, and where the guess was saved</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tight</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_guess_at</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">make</span><span class="p">()</span><span class="o">.</span><span class="fm">__enter__</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -791,6 +1030,25 @@
         <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">set_coordinates</span><span class="p">(</span><span class="n">xyz</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">set_coordinates</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">tight_scf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tight</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""As the engine's (seamm_mdi.MDIEngine.tight_scf); False if it has none."""</span>
+        <span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">,</span> <span class="s2">"tight_scf"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">method</span><span class="p">(</span><span class="n">tight</span><span class="p">))</span> <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tight</span> <span class="o">=</span> <span class="n">tight</span> <span class="ow">and</span> <span class="n">done</span>
+        <span class="k">return</span> <span class="n">done</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""As the engine's save_guess, remembering where, so a new engine can</span>
+<span class="sd">        make the same reference guess. False if the engine cannot."""</span>
+        <span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">,</span> <span class="s2">"save_guess"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">method</span><span class="p">())</span> <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_guess_at</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coordinates</span> <span class="k">if</span> <span class="n">done</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">done</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">restore_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">,</span> <span class="s2">"restore_guess"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">method</span><span class="p">())</span> <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">False</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="n">attribute</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
@@ -823,6 +1081,17 @@
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># the old engine is gone; nothing to tidy up</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Closing the stopped MDI engine: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make</span><span class="p">()</span><span class="o">.</span><span class="fm">__enter__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tight</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">tight_scf</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guess_at</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># The reference guess again: an SCF at the reference structure</span>
+            <span class="n">xyz</span><span class="p">,</span> <span class="n">units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guess_at</span>
+            <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">set_coordinates</span><span class="p">(</span><span class="n">xyz</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">set_coordinates</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">forces</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">save_guess</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coordinates</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">xyz</span><span class="p">,</span> <span class="n">units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coordinates</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_coordinates</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
@@ -851,6 +1120,152 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coords_ang</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
         <span class="c1"># (&lt;S**2&gt;, S(S+1)) at the end of an optimization (see optimize_in_blocks)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">final_spin</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># How the last finite-difference Hessian was made: the guess, the SCF, the</span>
+        <span class="c1"># points' checks and its zero modes (see fd_hessian)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fd_info</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">masses</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The atomic masses, amu."""</span>
+        <span class="k">return</span> <span class="n">masses_of</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="p">)</span>
+
+<div class="viewcode-block" id="EngineSession.reference_guess">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.hessian.EngineSession.reference_guess">[docs]</a>
+    <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reference_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords_ang</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tight</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The engine set up for precise differences around a structure.</span>
+
+<span class="sd">        With ``tight`` the engine's SCF is tightened (if it can be). One SCF is</span>
+<span class="sd">        run at the structure (the reference's or the given) and its orbitals saved</span>
+<span class="sd">        as the guess (if the engine can), and every gradient of the yielded state</span>
+<span class="sd">        starts from them: otherwise each SCF starts from the previous one's, and a</span>
+<span class="sd">        finite difference depends on the order of its points (4-hydroxy-TEMPO,</span>
+<span class="sd">        SEAMM job 6074). Afterwards the SCF is the engine's own again and the</span>
+<span class="sd">        engine is at the session's reference coordinates.</span>
+
+<span class="sd">        Yields</span>
+<span class="sd">        ------</span>
+<span class="sd">        dict</span>
+<span class="sd">            "e0" (hartree), "g0" (3N, hartree/bohr) and "spin0" at the</span>
+<span class="sd">            structure; "guess" and "tight", whether the engine could; and</span>
+<span class="sd">            "gradient", a callable(xyz Å) -&gt; (3N,) hartree/bohr that starts each</span>
+<span class="sd">            SCF from the saved orbitals.</span>
+<span class="sd">        """</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span> <span class="k">if</span> <span class="n">coords_ang</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">coords_ang</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">done_tight</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">_optional</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="s2">"tight_scf"</span><span class="p">,</span> <span class="kc">True</span><span class="p">))</span> <span class="k">if</span> <span class="n">tight</span> <span class="k">else</span> <span class="kc">False</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">engine</span><span class="o">.</span><span class="n">set_coordinates</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"Å"</span><span class="p">)</span>
+            <span class="n">g0</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">engine</span><span class="o">.</span><span class="n">forces</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"hartree/bohr"</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                <span class="o">-</span><span class="mi">1</span>
+            <span class="p">)</span>
+            <span class="n">e0</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">engine</span><span class="o">.</span><span class="n">energy</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"hartree"</span><span class="p">))</span>
+            <span class="n">spin0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spin</span><span class="p">()</span>
+            <span class="n">guess</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">_optional</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="s2">"save_guess"</span><span class="p">))</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">gradient</span><span class="p">(</span><span class="n">xyz</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">guess</span><span class="p">:</span>
+                    <span class="n">engine</span><span class="o">.</span><span class="n">restore_guess</span><span class="p">()</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">xyz</span><span class="p">)</span>
+
+            <span class="k">yield</span> <span class="p">{</span>
+                <span class="s2">"e0"</span><span class="p">:</span> <span class="n">e0</span><span class="p">,</span>
+                <span class="s2">"g0"</span><span class="p">:</span> <span class="n">g0</span><span class="p">,</span>
+                <span class="s2">"spin0"</span><span class="p">:</span> <span class="n">spin0</span><span class="p">,</span>
+                <span class="s2">"guess"</span><span class="p">:</span> <span class="n">guess</span><span class="p">,</span>
+                <span class="s2">"tight"</span><span class="p">:</span> <span class="n">done_tight</span><span class="p">,</span>
+                <span class="s2">"gradient"</span><span class="p">:</span> <span class="n">gradient</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">done_tight</span><span class="p">:</span>
+                <span class="n">_optional</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="s2">"tight_scf"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">engine</span><span class="o">.</span><span class="n">set_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"Å"</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EngineSession.fd_hessian">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.hessian.EngineSession.fd_hessian">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fd_hessian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords_ang</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">delta_bohr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The central-difference Hessian (hartree/bohr^2) of the engine's forces,</span>
+<span class="sd">        made as reliably as the engine allows: a tight SCF, every point started</span>
+<span class="sd">        from the reference structure's orbitals, and every point checked for a</span>
+<span class="sd">        state change (its &lt;S**2&gt; and its energy; :func:`check_fd_points`).</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        HessianRefused</span>
+<span class="sd">            If a point changed state.</span>
+<span class="sd">        """</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span> <span class="k">if</span> <span class="n">coords_ang</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">coords_ang</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_guess</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">tight</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">ref</span><span class="p">:</span>
+            <span class="n">points</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">before</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">sign</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">ref</span><span class="p">[</span><span class="s2">"guess"</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">restore_guess</span><span class="p">()</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">after</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">sign</span><span class="p">):</span>
+                <span class="n">points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s2">"j"</span><span class="p">:</span> <span class="n">j</span><span class="p">,</span>
+                        <span class="s2">"sign"</span><span class="p">:</span> <span class="n">sign</span><span class="p">,</span>
+                        <span class="s2">"energy"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">energy</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"hartree"</span><span class="p">)),</span>
+                        <span class="s2">"spin"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">spin</span><span class="p">(),</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+
+            <span class="n">H</span> <span class="o">=</span> <span class="n">HessianDriver</span><span class="o">.</span><span class="n">fd_hessian_engine</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">,</span>
+                <span class="n">x</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms</span><span class="p">,</span>
+                <span class="n">delta_bohr</span><span class="p">,</span>
+                <span class="n">before_each</span><span class="o">=</span><span class="n">before</span><span class="p">,</span>
+                <span class="n">after_each</span><span class="o">=</span><span class="n">after</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="n">problems</span> <span class="o">=</span> <span class="n">check_fd_points</span><span class="p">(</span>
+            <span class="n">ref</span><span class="p">[</span><span class="s2">"e0"</span><span class="p">],</span> <span class="n">ref</span><span class="p">[</span><span class="s2">"g0"</span><span class="p">],</span> <span class="n">ref</span><span class="p">[</span><span class="s2">"spin0"</span><span class="p">],</span> <span class="n">points</span><span class="p">,</span> <span class="n">delta_bohr</span><span class="p">,</span> <span class="n">hessian</span><span class="o">=</span><span class="n">H</span>
+        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">zero</span> <span class="o">=</span> <span class="n">zero_modes</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">masses</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># pragma: no cover - information only</span>
+            <span class="n">zero</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fd_info</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"reference guess"</span><span class="p">:</span> <span class="n">ref</span><span class="p">[</span><span class="s2">"guess"</span><span class="p">],</span>
+            <span class="s2">"tight SCF"</span><span class="p">:</span> <span class="n">ref</span><span class="p">[</span><span class="s2">"tight"</span><span class="p">],</span>
+            <span class="s2">"points"</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">),</span>
+            <span class="s2">"problems"</span><span class="p">:</span> <span class="n">problems</span><span class="p">,</span>
+            <span class="s2">"zero modes"</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">zero</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">zero</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">problems</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">HessianRefused</span><span class="p">(</span>
+                <span class="s2">"The finite-difference Hessian is refused: "</span>
+                <span class="o">+</span> <span class="s2">"; "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">problems</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span>
+                <span class="o">+</span> <span class="p">(</span><span class="sa">f</span><span class="s2">" (and </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">problems</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">3</span><span class="si">}</span><span class="s2"> more)"</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">problems</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="k">else</span> <span class="s2">""</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fd_info</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">H</span></div>
+
+
+<div class="viewcode-block" id="EngineSession.check_hessian">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.hessian.EngineSession.check_hessian">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_hessian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hessian</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="n">coords_ang</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">""":func:`check_hessian` with gradients that each start from the</span>
+<span class="sd">        reference structure's orbitals, with a tight SCF. kwargs: n_displacements,</span>
+<span class="sd">        rms, tolerance, max_frequency."""</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span> <span class="k">if</span> <span class="n">coords_ang</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">coords_ang</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_guess</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">tight</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">ref</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">check_hessian</span><span class="p">(</span>
+                <span class="n">hessian</span><span class="p">,</span> <span class="n">ref</span><span class="p">[</span><span class="s2">"gradient"</span><span class="p">],</span> <span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">masses</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">"reference guess"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ref</span><span class="p">[</span><span class="s2">"guess"</span><span class="p">]</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">"tight SCF"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ref</span><span class="p">[</span><span class="s2">"tight"</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">n_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1022,10 +1437,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">set_coordinates</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"Å"</span><span class="p">)</span>
                 <span class="n">H</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">hessian</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">n</span><span class="p">,</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span>
                 <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">H</span> <span class="o">+</span> <span class="n">H</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="s2">"analytic"</span>
-            <span class="k">return</span> <span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">fd_hessian_engine</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta_bohr</span><span class="p">),</span>
-                <span class="s2">"finite differences over MDI"</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fd_hessian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">delta_bohr</span><span class="p">),</span> <span class="s2">"finite differences over MDI"</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">set_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"Å"</span><span class="p">)</span></div>
 
@@ -1128,6 +1540,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">spin</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">engine_restarts</span> <span class="o">=</span> <span class="mi">2</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">last_optimization</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># How the last finite-difference Hessian was made (EngineSession.fd_info,</span>
+        <span class="c1"># or the tasks route's), and the last gradient-difference check</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fd_info</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_check</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_spins</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">step</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">last_plan</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -1688,6 +2105,7 @@
         <span class="n">optimizer_options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">cheap_level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">finite_differences</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Optionally optimize the structure (ASE BFGS, or the SEAMM optimizer, over</span>
 <span class="sd">        the warm engine), then the energy and Hessian, in one engine session. With</span>
@@ -1698,6 +2116,14 @@
 <span class="sd">        forces even when the engine has an analytic one (e.g. to check or replace</span>
 <span class="sd">        a broken analytic Hessian).</span>
 
+<span class="sd">        A finite-difference Hessian is made with a tight SCF, each point starting</span>
+<span class="sd">        from the reference structure's orbitals, and each point checked for a</span>
+<span class="sd">        state change (see :meth:`EngineSession.fd_hessian`). With `check` it is</span>
+<span class="sd">        then tested against differences of the gradient (:func:`check_hessian`,</span>
+<span class="sd">        as for a replacement Hessian). Either failure raises</span>
+<span class="sd">        :class:`HessianRefused`; ``self.fd_info`` and ``self.last_check`` say how</span>
+<span class="sd">        it was made and checked.</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        (float, numpy.ndarray, str)</span>
@@ -1706,6 +2132,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">fingerprints</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">spin</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">last_optimization</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fd_info</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_check</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">optimize</span><span class="p">:</span>
@@ -1715,7 +2143,7 @@
                     <span class="p">)</span>
                 <span class="n">evaluator</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">coords_ang</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_plan</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fd_hessian_tasks</span><span class="p">(</span>
-                    <span class="n">evaluator</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">coords_ang</span><span class="p">,</span> <span class="n">delta_bohr</span>
+                    <span class="n">evaluator</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">coords_ang</span><span class="p">,</span> <span class="n">delta_bohr</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="n">check</span>
                 <span class="p">)</span>
             <span class="k">if</span> <span class="n">optimize</span> <span class="ow">and</span> <span class="n">session</span><span class="o">.</span><span class="n">n_atoms</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">optimize_in_blocks</span><span class="p">(</span>
@@ -1739,19 +2167,44 @@
             <span class="p">):</span>
                 <span class="c1"># The engine was asked for: the finite differences run over it</span>
                 <span class="c1"># too (its fingerprints then describe the Hessian as well)</span>
-                <span class="n">H</span><span class="p">,</span> <span class="n">how</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">hessian</span><span class="p">(</span><span class="n">delta_bohr</span><span class="o">=</span><span class="n">delta_bohr</span><span class="p">,</span> <span class="n">finite_differences</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">H</span><span class="p">,</span> <span class="n">how</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">hessian</span><span class="p">(</span>
+                        <span class="n">delta_bohr</span><span class="o">=</span><span class="n">delta_bohr</span><span class="p">,</span> <span class="n">finite_differences</span><span class="o">=</span><span class="kc">True</span>
+                    <span class="p">)</span>
+                <span class="k">finally</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">fd_info</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">fd_info</span>
+                <span class="k">if</span> <span class="n">check</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">last_check</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">check_hessian</span><span class="p">(</span>
+                        <span class="n">H</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">CHECK_SEED</span><span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_check</span><span class="p">[</span><span class="s2">"refused"</span><span class="p">]:</span>
+                        <span class="k">raise</span> <span class="n">HessianRefused</span><span class="p">(</span>
+                            <span class="s2">"The finite-difference Hessian is refused: "</span>
+                            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_check</span><span class="p">[</span><span class="s2">"reason"</span><span class="p">],</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">last_check</span><span class="p">,</span>
+                        <span class="p">)</span>
                 <span class="k">return</span> <span class="n">E0</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">how</span>
             <span class="n">evaluator</span><span class="p">,</span> <span class="n">coords_ang</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">evaluator</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">coordinates</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fd_hessian_tasks</span><span class="p">(</span><span class="n">evaluator</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">coords_ang</span><span class="p">,</span> <span class="n">delta_bohr</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fd_hessian_tasks</span><span class="p">(</span>
+            <span class="n">evaluator</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">coords_ang</span><span class="p">,</span> <span class="n">delta_bohr</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="n">check</span>
+        <span class="p">)</span></div>
 
 
     <span class="c1"># ------------------------------------------------------------------</span>
 <div class="viewcode-block" id="HessianDriver.fd_hessian_tasks">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.hessian.HessianDriver.fd_hessian_tasks">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">fd_hessian_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">evaluator</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">coords_ang</span><span class="p">,</span> <span class="n">delta_bohr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fd_hessian_tasks</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">evaluator</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">coords_ang</span><span class="p">,</span> <span class="n">delta_bohr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">"""The energy and the central-difference Hessian (hartree/bohr²) from</span>
 <span class="sd">        the gradients of the 6N displaced structures, computed together as tasks</span>
-<span class="sd">        (concurrently, or on the job's queue; a rerun keeps the finished ones)."""</span>
+<span class="sd">        (concurrently, or on the job's queue; a rerun keeps the finished ones).</span>
+
+<span class="sd">        Each task starts from its own guess. They run with</span>
+<span class="sd">        ``precision="tight"``, every point is checked for a state change (its</span>
+<span class="sd">        &lt;S**2&gt; and energy, :func:`check_fd_points`), and with `check` the Hessian</span>
+<span class="sd">        is tested against gradient differences, as tasks too. Either failure</span>
+<span class="sd">        raises :class:`HessianRefused`."""</span>
         <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coords_ang</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">delta</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">delta_bohr</span><span class="p">,</span> <span class="s2">"bohr"</span><span class="p">)</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">"Å"</span><span class="p">)</span>
         <span class="n">ndof</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">size</span>
@@ -1762,19 +2215,89 @@
                 <span class="n">x</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
                 <span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sign</span> <span class="o">*</span> <span class="n">delta</span>
                 <span class="n">geometries</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}{</span><span class="n">j</span><span class="si">:</span><span class="s2">04d</span><span class="si">}{</span><span class="n">tag</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">evaluator</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">geometries</span><span class="p">,</span> <span class="s2">"the Hessian"</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span>
+            <span class="n">evaluator</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">geometries</span><span class="p">,</span> <span class="s2">"the Hessian"</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="s2">"tight"</span>
+        <span class="p">)</span>
+        <span class="n">spins</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_spins</span>
         <span class="n">E0</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">eq"</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">H</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">ndof</span><span class="p">,</span> <span class="n">ndof</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndof</span><span class="p">):</span>
             <span class="n">gp</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}{</span><span class="n">j</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">p"</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">gm</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}{</span><span class="n">j</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">m"</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">H</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">gp</span> <span class="o">-</span> <span class="n">gm</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">delta_bohr</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">E0</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">H</span> <span class="o">+</span> <span class="n">H</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="s2">"finite differences as tasks"</span></div>
+        <span class="n">H</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">H</span> <span class="o">+</span> <span class="n">H</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">kj_per_hartree</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="s2">"hartree"</span><span class="p">)</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">"kJ/mol"</span><span class="p">)</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">"j"</span><span class="p">:</span> <span class="n">j</span><span class="p">,</span>
+                <span class="s2">"sign"</span><span class="p">:</span> <span class="n">sign</span><span class="p">,</span>
+                <span class="s2">"energy"</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}{</span><span class="n">j</span><span class="si">:</span><span class="s2">04d</span><span class="si">}{</span><span class="n">tag</span><span class="si">}</span><span class="s2">"</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">kj_per_hartree</span><span class="p">,</span>
+                <span class="s2">"spin"</span><span class="p">:</span> <span class="n">spins</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}{</span><span class="n">j</span><span class="si">:</span><span class="s2">04d</span><span class="si">}{</span><span class="n">tag</span><span class="si">}</span><span class="s2">"</span><span class="p">),</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndof</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">sign</span><span class="p">,</span> <span class="n">tag</span> <span class="ow">in</span> <span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="s2">"p"</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s2">"m"</span><span class="p">))</span>
+        <span class="p">]</span>
+        <span class="n">problems</span> <span class="o">=</span> <span class="n">check_fd_points</span><span class="p">(</span>
+            <span class="n">E0</span> <span class="o">/</span> <span class="n">kj_per_hartree</span><span class="p">,</span>
+            <span class="n">results</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">eq"</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">spins</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">eq"</span><span class="p">),</span>
+            <span class="n">points</span><span class="p">,</span>
+            <span class="n">delta_bohr</span><span class="p">,</span>
+            <span class="n">hessian</span><span class="o">=</span><span class="n">H</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">masses</span> <span class="o">=</span> <span class="n">masses_of</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">zero</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">zero_modes</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">masses</span><span class="p">,</span> <span class="n">x0</span><span class="p">)]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># pragma: no cover - information only</span>
+            <span class="n">zero</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fd_info</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"reference guess"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># each task starts from its own guess</span>
+            <span class="s2">"tight SCF"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">"points"</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">),</span>
+            <span class="s2">"problems"</span><span class="p">:</span> <span class="n">problems</span><span class="p">,</span>
+            <span class="s2">"zero modes"</span><span class="p">:</span> <span class="n">zero</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">problems</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">HessianRefused</span><span class="p">(</span>
+                <span class="s2">"The finite-difference Hessian is refused: "</span> <span class="o">+</span> <span class="s2">"; "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">problems</span><span class="p">[:</span><span class="mi">3</span><span class="p">]),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fd_info</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">check</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">batch</span><span class="p">(</span><span class="n">structures</span><span class="p">):</span>
+                <span class="n">keyed</span> <span class="o">=</span> <span class="p">{</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">chk</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">"</span><span class="p">:</span> <span class="n">x</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">structures</span><span class="p">)}</span>
+                <span class="n">done</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span>
+                    <span class="n">evaluator</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">keyed</span><span class="p">,</span> <span class="s2">"the check"</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="s2">"tight"</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">done</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keyed</span><span class="p">]</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_check</span> <span class="o">=</span> <span class="n">check_hessian</span><span class="p">(</span>
+                <span class="n">H</span><span class="p">,</span>
+                <span class="kc">None</span><span class="p">,</span>
+                <span class="n">x0</span><span class="p">,</span>
+                <span class="n">masses</span><span class="p">,</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">CHECK_SEED</span><span class="p">),</span>
+                <span class="n">batch</span><span class="o">=</span><span class="n">batch</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_check</span><span class="p">[</span><span class="s2">"refused"</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="n">HessianRefused</span><span class="p">(</span>
+                    <span class="s2">"The finite-difference Hessian is refused: "</span>
+                    <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_check</span><span class="p">[</span><span class="s2">"reason"</span><span class="p">],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">last_check</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="n">E0</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="s2">"finite differences as tasks"</span></div>
 
 
 <div class="viewcode-block" id="HessianDriver.evaluate">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.hessian.HessianDriver.evaluate">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">evaluator</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">geometries</span><span class="p">,</span> <span class="n">what</span><span class="o">=</span><span class="s2">"the calculation"</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">evaluator</span><span class="p">,</span>
+        <span class="n">configuration</span><span class="p">,</span>
+        <span class="n">geometries</span><span class="p">,</span>
+        <span class="n">what</span><span class="o">=</span><span class="s2">"the calculation"</span><span class="p">,</span>
+        <span class="n">precision</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Energies and gradients at many geometries through an Evaluator,</span>
 <span class="sd">        whatever path it chose (warm MDI engine or tasks).</span>
 
@@ -1787,18 +2310,24 @@
 <span class="sd">            Coordinates in Å. Keys must be unique strings.</span>
 <span class="sd">        what : str</span>
 <span class="sd">            For the message if one fails.</span>
+<span class="sd">        precision : str, optional</span>
+<span class="sd">            Overrides the driver's precision (e.g. "tight" for finite</span>
+<span class="sd">            differences).</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        {key: (float, numpy.ndarray)}</span>
-<span class="sd">            The energy, kJ/mol, and the gradient, E_h/bohr, (3N,).</span>
+<span class="sd">            The energy, kJ/mol, and the gradient, E_h/bohr, (3N,). The</span>
+<span class="sd">            (&lt;S**2&gt;, S(S+1)) of each, where the program gives them, are in</span>
+<span class="sd">            ``self.last_spins`` by key.</span>
 <span class="sd">        """</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_exec</span><span class="w"> </span><span class="kn">import</span> <span class="n">Geometry</span>
 
         <span class="n">elements</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">configuration</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">atomic_numbers</span><span class="p">)</span>
         <span class="c1"># The requested precision goes to the tasks too (providers that know it,</span>
         <span class="c1"># e.g. ORCA, tighten the SCF; others ignore the option)</span>
-        <span class="n">options</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"precision"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">precision</span><span class="p">}</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">precision</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">precision</span> <span class="o">=</span> <span class="n">precision</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">precision</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"precision"</span><span class="p">:</span> <span class="n">precision</span><span class="p">}</span> <span class="k">if</span> <span class="n">precision</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">geometries</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">evaluator</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
                 <span class="n">Geometry</span><span class="p">(</span>
@@ -1811,6 +2340,7 @@
                 <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">spins</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">evaluator</span><span class="o">.</span><span class="n">results</span><span class="p">():</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
@@ -1822,31 +2352,44 @@
                 <span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
             <span class="p">)</span>
             <span class="n">results</span><span class="p">[</span><span class="n">result</span><span class="o">.</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">energy</span><span class="p">),</span> <span class="n">gradient</span><span class="p">)</span>
+            <span class="n">spin</span> <span class="o">=</span> <span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s2">"data"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"spin"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spin</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">spin</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"S**2"</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">spins</span><span class="p">[</span><span class="n">result</span><span class="o">.</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">spin</span><span class="p">[</span><span class="s2">"S**2"</span><span class="p">],</span> <span class="n">spin</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"S(S+1)"</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_spins</span> <span class="o">=</span> <span class="n">spins</span>
         <span class="k">return</span> <span class="n">results</span></div>
 
 
 <div class="viewcode-block" id="HessianDriver.fd_hessian_engine">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.hessian.HessianDriver.fd_hessian_engine">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">fd_hessian_engine</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">coords_ang</span><span class="p">,</span> <span class="n">n_atoms</span><span class="p">,</span> <span class="n">delta_bohr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fd_hessian_engine</span><span class="p">(</span>
+        <span class="n">engine</span><span class="p">,</span> <span class="n">coords_ang</span><span class="p">,</span> <span class="n">n_atoms</span><span class="p">,</span> <span class="n">delta_bohr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">before_each</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">after_each</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Central-difference Hessian (hartree/bohr²) from MDI forces. The engine</span>
-<span class="sd">        is left at the undisplaced structure."""</span>
+<span class="sd">        is left at the undisplaced structure. ``before_each(j, sign)`` is called</span>
+<span class="sd">        before each displaced point's forces (e.g. to restore the reference</span>
+<span class="sd">        guess), ``after_each(j, sign)`` after them (e.g. to read its energy and</span>
+<span class="sd">        &lt;S**2&gt;)."""</span>
         <span class="n">x0</span> <span class="o">=</span> <span class="n">Q_</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coords_ang</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="s2">"Å"</span><span class="p">)</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">"bohr"</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">ndof</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">n_atoms</span>
         <span class="n">H</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">ndof</span><span class="p">,</span> <span class="n">ndof</span><span class="p">))</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">forces_at</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">sign</span><span class="p">):</span>
+            <span class="n">engine</span><span class="o">.</span><span class="n">set_coordinates</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"bohr"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">before_each</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">before_each</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">sign</span><span class="p">)</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">engine</span><span class="o">.</span><span class="n">forces</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"hartree/bohr"</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">after_each</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">after_each</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">sign</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">f</span>
+
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndof</span><span class="p">):</span>
             <span class="n">xp</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="n">xp</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+=</span> <span class="n">delta_bohr</span>
-            <span class="n">engine</span><span class="o">.</span><span class="n">set_coordinates</span><span class="p">(</span><span class="n">xp</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"bohr"</span><span class="p">)</span>
-            <span class="n">fp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">engine</span><span class="o">.</span><span class="n">forces</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"hartree/bohr"</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
-                <span class="o">-</span><span class="mi">1</span>
-            <span class="p">)</span>
+            <span class="n">fp</span> <span class="o">=</span> <span class="n">forces_at</span><span class="p">(</span><span class="n">xp</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
             <span class="n">xm</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="n">xm</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-=</span> <span class="n">delta_bohr</span>
-            <span class="n">engine</span><span class="o">.</span><span class="n">set_coordinates</span><span class="p">(</span><span class="n">xm</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"bohr"</span><span class="p">)</span>
-            <span class="n">fm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">engine</span><span class="o">.</span><span class="n">forces</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"hartree/bohr"</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
-                <span class="o">-</span><span class="mi">1</span>
-            <span class="p">)</span>
+            <span class="n">fm</span> <span class="o">=</span> <span class="n">forces_at</span><span class="p">(</span><span class="n">xm</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
             <span class="c1"># Force = -dE/dx, so d²E/dx_i dx_j = -(f_i(+) - f_i(-)) / 2 delta.</span>
             <span class="n">H</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">fp</span> <span class="o">-</span> <span class="n">fm</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">delta_bohr</span><span class="p">)</span>
         <span class="n">engine</span><span class="o">.</span><span class="n">set_coordinates</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"bohr"</span><span class="p">)</span>
