@@ -357,6 +357,59 @@ class HessianRefused(RuntimeError):
         self.details = details or {}
 
 
+#: The version of the Hessian file's layout (save_hessian / load_hessian)
+HESSIAN_FILE_VERSION = 1
+
+
+def save_hessian(path, hessian, masses_amu, xyz_ang, symbols, **info):
+    """Write a molecule's Hessian, and what it belongs to, as a compressed NumPy
+    archive (.npz) that reads back without SEAMM (``numpy.load``).
+
+    Arrays: ``hessian`` (3N, 3N) in E_h/bohr^2, Cartesian, not mass-weighted;
+    ``masses`` (N,) in amu; ``xyz`` (N, 3) in Å, the geometry the Hessian was
+    computed at; ``symbols`` (N,). ``info`` is a JSON string: the units, the
+    file version, and the caller's keywords, e.g. route ("analytic over MDI",
+    "finite differences over MDI", "finite differences as tasks"), settings
+    (the engine's settings key), model chemistry, charge, multiplicity, the
+    finite-difference details and the check.
+    """
+    import json
+
+    hessian = np.asarray(hessian, dtype=float)
+    xyz = np.asarray(xyz_ang, dtype=float).reshape(-1, 3)
+    n = xyz.shape[0]
+    if hessian.shape != (3 * n, 3 * n):
+        raise ValueError(f"A Hessian of shape {hessian.shape} for {n} atoms.")
+    meta = {
+        "version": HESSIAN_FILE_VERSION,
+        "units": {"hessian": "E_h/bohr^2", "masses": "amu", "xyz": "Å"},
+        **info,
+    }
+    np.savez_compressed(
+        path,
+        hessian=hessian,
+        masses=np.asarray(masses_amu, dtype=float),
+        xyz=xyz,
+        symbols=np.asarray([str(s) for s in symbols]),
+        info=np.asarray(json.dumps(meta, default=str)),
+    )
+
+
+def load_hessian(path):
+    """{"hessian", "masses", "xyz", "symbols", "info"} from save_hessian's file;
+    "info" as a dict."""
+    import json
+
+    with np.load(path, allow_pickle=False) as data:
+        return {
+            "hessian": data["hessian"],
+            "masses": data["masses"],
+            "xyz": data["xyz"],
+            "symbols": [str(s) for s in data["symbols"]],
+            "info": json.loads(str(data["info"])),
+        }
+
+
 def frequencies(hessian, masses_amu):
     """The frequencies (cm^-1) of a Cartesian Hessian (hartree/bohr^2), from the
     mass-weighted matrix without projecting out the translations and rotations;
