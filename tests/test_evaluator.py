@@ -594,3 +594,23 @@ def test_make_evaluator_errors_reach_the_consumer(tmp_path):
 
     with pytest.raises(ValueError, match="no gradients"):
         Evaluator(_node(tmp_path, Refuses), MC, properties=("energy", "gradients"))
+
+
+# ---- <S**2> over MDI ----------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "spin, expected",
+    [
+        ((2.012, 2.0), {"S**2": 2.012, "S(S+1)": 2.0}),  # a triplet
+        ((None, None), None),  # closed shell
+        ((float("nan"), float("nan")), None),
+        (None, None),  # an engine without <SPIN
+    ],
+)
+def test_engine_spin(spin, expected):
+    from seamm_exec.evaluator import _engine_spin
+
+    engine = types.SimpleNamespace(spin=lambda: spin)
+    assert _engine_spin(engine) == expected
+    assert _engine_spin(types.SimpleNamespace()) is None  # no spin() at all

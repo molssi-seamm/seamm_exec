@@ -1,6 +1,13 @@
 =======
 History
 =======
+2026.11.25.3 -- <S**2> of open-shell structures over MDI
+    * The Evaluator's results over a warm MDI engine now carry the expectation value
+      <S**2> and its ideal value S(S+1) (``data["spin"]``) when the engine gives them
+      (ORCA's, through its ``<SPIN`` command) and the calculation is open-shell, as the
+      separate calculations do from orca-step 2026.11.25.1. Steps such as Energy store
+      them for spin-contamination checks.
+
 2026.11.25.2 -- Bugfix: the engine's cores are reported as it uses them
     * The output said an MDI engine ran on the job's cores even when it does not
       take a core count, e.g. "The MOPAC:SQM@PM7 engine runs on 4 cores" for MOPAC's
