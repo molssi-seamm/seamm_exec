@@ -300,6 +300,224 @@ class _MDICalculator:
         )
 
 
+#: Checks of every point of a finite-difference Hessian (2026-11-26): its <S**2>
+#: may not move from the reference structure's by more than this ...
+SPIN_TOLERANCE = 0.05
+#: ... nor its energy fall below E0 - |g_j| delta (first order; the second order
+#: only raises it at a minimum) by more than this margin, hartree (0.026 kJ/mol)
+ENERGY_MARGIN = 1.0e-5
+#: The gradient-difference check of a Hessian (Training Structures, recipe §3)
+CHECK_DISPLACEMENTS = 3
+CHECK_RMS = 0.005  # Å
+CHECK_TOLERANCE = 0.02
+CHECK_MAX_FREQUENCY = 5000.0  # cm^-1
+#: The seed of the check's random displacements in the driver, so a rerun repeats
+#: the same check
+CHECK_SEED = 20261126
+#: sqrt(hartree / (bohr^2 amu)) in cm^-1
+_CM_PER_AU = 5140.4871
+_BOHR = 0.529177210903  # Å
+
+
+def masses_of(configuration):
+    """The atomic masses (amu) of a configuration: its own, else the standard
+    atomic weights of its elements."""
+    atoms = configuration.atoms
+    masses = getattr(atoms, "atomic_masses", None)
+    if masses is not None:
+        return np.asarray(masses, dtype=float)
+    from seamm_util import element_data
+
+    weight = {
+        int(v["atomic number"]): float(v["atomic weight"])
+        for v in element_data.values()
+        if v.get("atomic number") is not None and v.get("atomic weight")
+    }
+    return np.asarray([weight[int(z)] for z in atoms.atomic_numbers], dtype=float)
+
+
+def _optional(engine, name, *args):
+    """Call the engine's optional method ``name`` if it has one; its result, or
+    False."""
+    method = getattr(engine, name, None)
+    if method is None:
+        return False
+    try:
+        return method(*args)
+    except AttributeError:
+        return False
+
+
+class HessianRefused(RuntimeError):
+    """A Hessian that failed a check: a state change at a displaced point of a
+    finite difference, or disagreement with differences of the gradient."""
+
+    def __init__(self, message, details=None):
+        super().__init__(message)
+        self.details = details or {}
+
+
+def frequencies(hessian, masses_amu):
+    """The frequencies (cm^-1) of a Cartesian Hessian (hartree/bohr^2), from the
+    mass-weighted matrix without projecting out the translations and rotations;
+    imaginary ones are negative. Ascending."""
+    H = np.asarray(hessian, dtype=float)
+    w = 1.0 / np.sqrt(np.repeat(np.asarray(masses_amu, dtype=float), 3))
+    values = np.linalg.eigvalsh(H * np.outer(w, w))
+    return np.sign(values) * np.sqrt(np.abs(values)) * _CM_PER_AU
+
+
+def zero_modes(hessian, masses_amu, coords_ang):
+    """The magnitudes (cm^-1) of the modes that should be zero, the 6 (5 for a
+    linear molecule) smallest in magnitude, largest first; information about a
+    finite-difference Hessian's noise, not a test (sound ones reach 65 cm^-1 for
+    small radicals: SEAMM jobs 6075, 6083, 2026-11-26)."""
+    x = np.asarray(coords_ang, dtype=float).reshape(-1, 3)
+    m = np.asarray(masses_amu, dtype=float)
+    n_zero = 6
+    if len(m) == 1:
+        n_zero = 3
+    else:
+        centre = (m[:, None] * x).sum(0) / m.sum()
+        r = x - centre
+        inertia = (m * (r**2).sum(1)).sum() * np.eye(3) - (
+            m[:, None, None] * (r[:, :, None] * r[:, None, :])
+        ).sum(0)
+        if np.min(np.linalg.eigvalsh(inertia)) < 1.0e-6 * max(
+            1.0, np.max(np.linalg.eigvalsh(inertia))
+        ):
+            n_zero = 5
+    nu = np.abs(frequencies(hessian, m))
+    return sorted((float(v) for v in np.sort(nu)[:n_zero]), reverse=True)
+
+
+def check_hessian(
+    hessian,
+    gradient,
+    coords_ang,
+    masses_amu,
+    rng,
+    n_displacements=CHECK_DISPLACEMENTS,
+    rms=CHECK_RMS,
+    tolerance=CHECK_TOLERANCE,
+    max_frequency=CHECK_MAX_FREQUENCY,
+    batch=None,
+):
+    """Test a Hessian against central differences of the gradient.
+
+    For each of ``n_displacements`` random displacements d with an RMS of ``rms``
+    Å, e = |H d - [g(x0 + d) - g(x0 - d)] / 2| / |H d|, with vector norms (2
+    gradients each). The Hessian is refused if any e exceeds ``tolerance`` or any
+    frequency magnitude exceeds ``max_frequency`` cm^-1.
+
+    Parameters
+    ----------
+    hessian : array (3N, 3N)
+        hartree/bohr^2.
+    gradient : callable
+        gradient(xyz (N, 3) Å) -> (3N,) hartree/bohr. Over a warm engine, give
+        the gradient of :meth:`EngineSession.reference_guess`, so every gradient
+        starts from the reference orbitals.
+    batch : callable, optional
+        batch([xyz, ...]) -> [gradient, ...], used instead of ``gradient`` to
+        compute all the displaced gradients together (e.g. as tasks). The
+        displacements drawn are the same.
+
+    Returns
+    -------
+    dict
+        "errors": [e], "max frequency": the largest frequency magnitude,
+        "refused": bool and "reason": text or None.
+    """
+    x0 = np.asarray(coords_ang, dtype=float).reshape(-1)
+    H = np.asarray(hessian, dtype=float)
+    biggest = float(np.max(np.abs(frequencies(H, masses_amu))))
+    displacements = []
+    for _ in range(n_displacements):
+        d = rng.standard_normal(x0.size)
+        displacements.append(d * rms / np.sqrt(np.mean(d**2)))  # Å
+    structures = []
+    for d in displacements:
+        structures += [(x0 + d).reshape(-1, 3), (x0 - d).reshape(-1, 3)]
+    if batch is not None:
+        gradients = [np.asarray(g, dtype=float) for g in batch(structures)]
+    else:
+        gradients = [np.asarray(gradient(x), dtype=float) for x in structures]
+    errors = []
+    for i, d in enumerate(displacements):
+        Hd = H @ (d / _BOHR)
+        dg = 0.5 * (gradients[2 * i] - gradients[2 * i + 1])
+        errors.append(float(np.linalg.norm(Hd - dg) / np.linalg.norm(Hd)))
+    reason = None
+    if biggest > max_frequency:
+        reason = f"a frequency of {biggest:.0f} cm⁻¹ (> {max_frequency:.0f})"
+    elif max(errors) > tolerance:
+        reason = f"it disagrees with the gradients by {max(errors):.3f} (> {tolerance})"
+    return {
+        "errors": [round(e, 6) for e in errors],
+        "max frequency": round(biggest, 1),
+        "refused": reason is not None,
+        "reason": reason,
+    }
+
+
+def check_fd_points(
+    e0,
+    g0,
+    spin0,
+    points,
+    delta_bohr,
+    hessian=None,
+    spin_tolerance=SPIN_TOLERANCE,
+    energy_margin=ENERGY_MARGIN,
+):
+    """What is wrong with the displaced points of a finite difference: a state
+    change, seen as an <S**2> that moved from the reference's, or an energy
+    below what the reference's gradient allows.
+
+    Parameters
+    ----------
+    e0 : float
+        The reference energy, hartree.
+    g0 : array (3N,)
+        The reference gradient, hartree/bohr.
+    spin0 : (float, float) or None
+        The reference (<S**2>, S(S+1)); None or (None, None) for a closed shell.
+    points : [{"j": int, "sign": +1 or -1, "energy": float, "spin": (s2, ideal)}]
+        Each displaced point: coordinate j moved by sign * delta_bohr.
+    hessian : array (3N, 3N), optional
+        Lowers the bound by 1/2 H_jj delta^2 where H_jj is negative.
+
+    Returns
+    -------
+    [str]
+        The problems, empty if none.
+    """
+    problems = []
+    g0 = np.asarray(g0, dtype=float).reshape(-1)
+    s0 = None if spin0 is None else spin0[0]
+    for p in points:
+        j, sign = p["j"], p["sign"]
+        where = f"coordinate {j} {'+' if sign > 0 else '-'}{delta_bohr} bohr"
+        bound = e0 - abs(g0[j]) * delta_bohr - energy_margin
+        if hessian is not None:
+            bound += 0.5 * min(float(hessian[j, j]), 0.0) * delta_bohr**2
+        energy = p.get("energy")
+        if energy is not None and energy < bound:
+            problems.append(
+                f"{where}: the energy is {(e0 - energy) * 2625.4996:.3f} kJ/mol below "
+                "the reference, more than its gradient allows (a different state?)"
+            )
+        spin = p.get("spin")
+        s2 = None if spin is None else spin[0]
+        if s0 is not None and s2 is not None and abs(s2 - s0) > spin_tolerance:
+            problems.append(
+                f"{where}: <S**2> {s2:.4f}, the reference's {s0:.4f} (more than "
+                f"{spin_tolerance} apart)"
+            )
+    return problems
+
+
 class _RestartingEngine:
     """A warm MDI engine that is started again when it dies.
 
@@ -331,6 +549,9 @@ class _RestartingEngine:
         self.n_restarts = 0
         self._say = say
         self._coordinates = None
+        # Replayed on a new engine: the tight SCF, and where the guess was saved
+        self._tight = False
+        self._guess_at = None
         self.engine = make().__enter__()
 
     def close(self):
@@ -343,6 +564,25 @@ class _RestartingEngine:
         if units is None:
             return self.engine.set_coordinates(xyz)
         return self.engine.set_coordinates(xyz, units=units)
+
+    def tight_scf(self, tight=True):
+        """As the engine's (seamm_mdi.MDIEngine.tight_scf); False if it has none."""
+        method = getattr(self.engine, "tight_scf", None)
+        done = bool(method(tight)) if method is not None else False
+        self._tight = tight and done
+        return done
+
+    def save_guess(self):
+        """As the engine's save_guess, remembering where, so a new engine can
+        make the same reference guess. False if the engine cannot."""
+        method = getattr(self.engine, "save_guess", None)
+        done = bool(method()) if method is not None else False
+        self._guess_at = self._coordinates if done else None
+        return done
+
+    def restore_guess(self):
+        method = getattr(self.engine, "restore_guess", None)
+        return bool(method()) if method is not None else False
 
     def __getattr__(self, name):
         attribute = getattr(self.engine, name)
@@ -375,6 +615,17 @@ class _RestartingEngine:
         except Exception as e:  # the old engine is gone; nothing to tidy up
             logger.debug(f"Closing the stopped MDI engine: {e}")
         self.engine = self._make().__enter__()
+        if self._tight:
+            self.engine.tight_scf(True)
+        if self._guess_at is not None:
+            # The reference guess again: an SCF at the reference structure
+            xyz, units = self._guess_at
+            if units is None:
+                self.engine.set_coordinates(xyz)
+            else:
+                self.engine.set_coordinates(xyz, units=units)
+            self.engine.forces()
+            self.engine.save_guess()
         if self._coordinates is not None:
             xyz, units = self._coordinates
             self.set_coordinates(xyz, units)
@@ -401,6 +652,143 @@ class EngineSession:
         self.coordinates = np.asarray(coords_ang, dtype=float).reshape(-1, 3)
         # (<S**2>, S(S+1)) at the end of an optimization (see optimize_in_blocks)
         self.final_spin = None
+        # How the last finite-difference Hessian was made: the guess, the SCF, the
+        # points' checks and its zero modes (see fd_hessian)
+        self.fd_info = None
+
+    @property
+    def masses(self):
+        """The atomic masses, amu."""
+        return masses_of(self.configuration)
+
+    @contextlib.contextmanager
+    def reference_guess(self, coords_ang=None, tight=False):
+        """The engine set up for precise differences around a structure.
+
+        With ``tight`` the engine's SCF is tightened (if it can be). One SCF is
+        run at the structure (the reference's or the given) and its orbitals saved
+        as the guess (if the engine can), and every gradient of the yielded state
+        starts from them: otherwise each SCF starts from the previous one's, and a
+        finite difference depends on the order of its points (4-hydroxy-TEMPO,
+        SEAMM job 6074). Afterwards the SCF is the engine's own again and the
+        engine is at the session's reference coordinates.
+
+        Yields
+        ------
+        dict
+            "e0" (hartree), "g0" (3N, hartree/bohr) and "spin0" at the
+            structure; "guess" and "tight", whether the engine could; and
+            "gradient", a callable(xyz Å) -> (3N,) hartree/bohr that starts each
+            SCF from the saved orbitals.
+        """
+        engine = self.engine
+        x0 = np.asarray(
+            self.coordinates if coords_ang is None else coords_ang, dtype=float
+        ).reshape(-1, 3)
+        done_tight = bool(_optional(engine, "tight_scf", True)) if tight else False
+        try:
+            engine.set_coordinates(x0, units="Å")
+            g0 = -np.asarray(engine.forces(units="hartree/bohr"), dtype=float).reshape(
+                -1
+            )
+            e0 = float(engine.energy(units="hartree"))
+            spin0 = self.spin()
+            guess = bool(_optional(engine, "save_guess"))
+
+            def gradient(xyz):
+                if guess:
+                    engine.restore_guess()
+                return self.gradient(xyz)
+
+            yield {
+                "e0": e0,
+                "g0": g0,
+                "spin0": spin0,
+                "guess": guess,
+                "tight": done_tight,
+                "gradient": gradient,
+            }
+        finally:
+            if done_tight:
+                _optional(engine, "tight_scf", False)
+            engine.set_coordinates(self.coordinates, units="Å")
+
+    def fd_hessian(self, coords_ang=None, delta_bohr=0.01):
+        """The central-difference Hessian (hartree/bohr^2) of the engine's forces,
+        made as reliably as the engine allows: a tight SCF, every point started
+        from the reference structure's orbitals, and every point checked for a
+        state change (its <S**2> and its energy; :func:`check_fd_points`).
+
+        Raises
+        ------
+        HessianRefused
+            If a point changed state.
+        """
+        x = np.asarray(
+            self.coordinates if coords_ang is None else coords_ang, dtype=float
+        ).reshape(-1, 3)
+        with self.reference_guess(x, tight=True) as ref:
+            points = []
+
+            def before(j, sign):
+                if ref["guess"]:
+                    self.engine.restore_guess()
+
+            def after(j, sign):
+                points.append(
+                    {
+                        "j": j,
+                        "sign": sign,
+                        "energy": float(self.engine.energy(units="hartree")),
+                        "spin": self.spin(),
+                    }
+                )
+
+            H = HessianDriver.fd_hessian_engine(
+                self.engine,
+                x,
+                self.n_atoms,
+                delta_bohr,
+                before_each=before,
+                after_each=after,
+            )
+        problems = check_fd_points(
+            ref["e0"], ref["g0"], ref["spin0"], points, delta_bohr, hessian=H
+        )
+        try:
+            zero = zero_modes(H, self.masses, x)
+        except Exception:  # pragma: no cover - information only
+            zero = None
+        self.fd_info = {
+            "reference guess": ref["guess"],
+            "tight SCF": ref["tight"],
+            "points": len(points),
+            "problems": problems,
+            "zero modes": None if zero is None else [round(v, 1) for v in zero],
+        }
+        if problems:
+            raise HessianRefused(
+                "The finite-difference Hessian is refused: "
+                + "; ".join(problems[:3])
+                + (f" (and {len(problems) - 3} more)" if len(problems) > 3 else ""),
+                self.fd_info,
+            )
+        return H
+
+    def check_hessian(self, hessian, rng, coords_ang=None, **kwargs):
+        """:func:`check_hessian` with gradients that each start from the
+        reference structure's orbitals, with a tight SCF. kwargs: n_displacements,
+        rms, tolerance, max_frequency."""
+        x = np.asarray(
+            self.coordinates if coords_ang is None else coords_ang, dtype=float
+        ).reshape(-1, 3)
+        with self.reference_guess(x, tight=True) as ref:
+            result = check_hessian(
+                hessian, ref["gradient"], x, self.masses, rng, **kwargs
+            )
+        result["reference guess"] = ref["guess"]
+        result["tight SCF"] = ref["tight"]
+        return result
 
     @property
     def n_atoms(self):
@@ -561,10 +949,7 @@ class EngineSession:
                 self.engine.set_coordinates(x, units="Å")
                 H = np.asarray(self.engine.hessian(), dtype=float).reshape(3 * n, 3 * n)
                 return 0.5 * (H + H.T), "analytic"
-            return (
-                self.driver.fd_hessian_engine(self.engine, x, n, delta_bohr),
-                "finite differences over MDI",
-            )
+            return self.fd_hessian(x, delta_bohr), "finite differences over MDI"
         finally:
             self.engine.set_coordinates(self.coordinates, units="Å")
 
@@ -657,6 +1042,11 @@ class HessianDriver:
         self.spin = None
         self.engine_restarts = 2
         self.last_optimization = None
+        # How the last finite-difference Hessian was made (EngineSession.fd_info,
+        # or the tasks route's), and the last gradient-difference check
+        self.fd_info = None
+        self.last_check = None
+        self.last_spins = {}
         self.step = None
         self.last_plan = None
 
@@ -1176,6 +1566,7 @@ class HessianDriver:
         optimizer_options=None,
         cheap_level=None,
         finite_differences=False,
+        check=False,
     ):
         """Optionally optimize the structure (ASE BFGS, or the SEAMM optimizer, over
         the warm engine), then the energy and Hessian, in one engine session. With
@@ -1186,6 +1577,14 @@ class HessianDriver:
         forces even when the engine has an analytic one (e.g. to check or replace
         a broken analytic Hessian).
 
+        A finite-difference Hessian is made with a tight SCF, each point starting
+        from the reference structure's orbitals, and each point checked for a
+        state change (see :meth:`EngineSession.fd_hessian`). With `check` it is
+        then tested against differences of the gradient (:func:`check_hessian`,
+        as for a replacement Hessian). Either failure raises
+        :class:`HessianRefused`; ``self.fd_info`` and ``self.last_check`` say how
+        it was made and checked.
+
         Returns
         -------
         (float, numpy.ndarray, str)
@@ -1194,6 +1593,8 @@ class HessianDriver:
         self.fingerprints = None
         self.spin = None
         self.last_optimization = None
+        self.fd_info = None
+        self.last_check = None
         with self.session(configuration) as session:
             if session is None:
                 if optimize:
@@ -1203,7 +1604,7 @@ class HessianDriver:
                     )
                 evaluator, _, _, coords_ang = self.last_plan
                 return self.fd_hessian_tasks(
-                    evaluator, configuration, coords_ang, delta_bohr
+                    evaluator, configuration, coords_ang, delta_bohr, check=check
                 )
             if optimize and session.n_atoms > 1:
                 self.optimize_in_blocks(
@@ -1227,16 +1628,41 @@ class HessianDriver:
             ):
                 # The engine was asked for: the finite differences run over it
                 # too (its fingerprints then describe the Hessian as well)
-                H, how = session.hessian(delta_bohr=delta_bohr, finite_differences=True)
+                try:
+                    H, how = session.hessian(
+                        delta_bohr=delta_bohr, finite_differences=True
+                    )
+                finally:
+                    self.fd_info = session.fd_info
+                if check:
+                    self.last_check = session.check_hessian(
+                        H, np.random.default_rng(CHECK_SEED)
+                    )
+                    if self.last_check["refused"]:
+                        raise HessianRefused(
+                            "The finite-difference Hessian is refused: "
+                            + self.last_check["reason"],
+                            self.last_check,
+                        )
                 return E0, H, how
             evaluator, coords_ang = session.evaluator, session.coordinates
-        return self.fd_hessian_tasks(evaluator, configuration, coords_ang, delta_bohr)
+        return self.fd_hessian_tasks(
+            evaluator, configuration, coords_ang, delta_bohr, check=check
+        )
 
     # ------------------------------------------------------------------
-    def fd_hessian_tasks(self, evaluator, configuration, coords_ang, delta_bohr=0.01):
+    def fd_hessian_tasks(
+        self, evaluator, configuration, coords_ang, delta_bohr=0.01, check=False
+    ):
         """The energy and the central-difference Hessian (hartree/bohr²) from
         the gradients of the 6N displaced structures, computed together as tasks
-        (concurrently, or on the job's queue; a rerun keeps the finished ones)."""
+        (concurrently, or on the job's queue; a rerun keeps the finished ones).
+
+        Each task starts from its own guess. They run with
+        ``precision="tight"``, every point is checked for a state change (its
+        <S**2> and energy, :func:`check_fd_points`), and with `check` the Hessian
+        is tested against gradient differences, as tasks too. Either failure
+        raises :class:`HessianRefused`."""
         x0 = np.asarray(coords_ang, dtype=float).reshape(-1)
         delta = Q_(delta_bohr, "bohr").m_as("Å")
         ndof = x0.size
@@ -1247,16 +1673,86 @@ class HessianDriver:
                 x = x0.copy()
                 x[j] += sign * delta
                 geometries[f"{prefix}{j:04d}{tag}"] = x.reshape(-1, 3)
-        results = self.evaluate(evaluator, configuration, geometries, "the Hessian")
+        results = self.evaluate(
+            evaluator, configuration, geometries, "the Hessian", precision="tight"
+        )
+        spins = self.last_spins
         E0 = results[f"{prefix}eq"][0]
         H = np.zeros((ndof, ndof))
         for j in range(ndof):
             gp = results[f"{prefix}{j:04d}p"][1]
             gm = results[f"{prefix}{j:04d}m"][1]
             H[:, j] = (gp - gm) / (2.0 * delta_bohr)
-        return E0, 0.5 * (H + H.T), "finite differences as tasks"
+        H = 0.5 * (H + H.T)
+        kj_per_hartree = Q_(1.0, "hartree").m_as("kJ/mol")
+        points = [
+            {
+                "j": j,
+                "sign": sign,
+                "energy": results[f"{prefix}{j:04d}{tag}"][0] / kj_per_hartree,
+                "spin": spins.get(f"{prefix}{j:04d}{tag}"),
+            }
+            for j in range(ndof)
+            for sign, tag in ((1, "p"), (-1, "m"))
+        ]
+        problems = check_fd_points(
+            E0 / kj_per_hartree,
+            results[f"{prefix}eq"][1],
+            spins.get(f"{prefix}eq"),
+            points,
+            delta_bohr,
+            hessian=H,
+        )
+        masses = masses_of(configuration)
+        try:
+            zero = [round(v, 1) for v in zero_modes(H, masses, x0)]
+        except Exception:  # pragma: no cover - information only
+            zero = None
+        self.fd_info = {
+            "reference guess": None,  # each task starts from its own guess
+            "tight SCF": True,
+            "points": len(points),
+            "problems": problems,
+            "zero modes": zero,
+        }
+        if problems:
+            raise HessianRefused(
+                "The finite-difference Hessian is refused: " + "; ".join(problems[:3]),
+                self.fd_info,
+            )
+        if check:
 
-    def evaluate(self, evaluator, configuration, geometries, what="the calculation"):
+            def batch(structures):
+                keyed = {f"{prefix}chk{i:02d}": x for i, x in enumerate(structures)}
+                done = self.evaluate(
+                    evaluator, configuration, keyed, "the check", precision="tight"
+                )
+                return [done[k][1] for k in keyed]
+
+            self.last_check = check_hessian(
+                H,
+                None,
+                x0,
+                masses,
+                np.random.default_rng(CHECK_SEED),
+                batch=batch,
+            )
+            if self.last_check["refused"]:
+                raise HessianRefused(
+                    "The finite-difference Hessian is refused: "
+                    + self.last_check["reason"],
+                    self.last_check,
+                )
+        return E0, H, "finite differences as tasks"
+
+    def evaluate(
+        self,
+        evaluator,
+        configuration,
+        geometries,
+        what="the calculation",
+        precision=None,
+    ):
         """Energies and gradients at many geometries through an Evaluator,
         whatever path it chose (warm MDI engine or tasks).
 
@@ -1269,18 +1765,24 @@ class HessianDriver:
             Coordinates in Å. Keys must be unique strings.
         what : str
             For the message if one fails.
+        precision : str, optional
+            Overrides the driver's precision (e.g. "tight" for finite
+            differences).
 
         Returns
         -------
         {key: (float, numpy.ndarray)}
-            The energy, kJ/mol, and the gradient, E_h/bohr, (3N,).
+            The energy, kJ/mol, and the gradient, E_h/bohr, (3N,). The
+            (<S**2>, S(S+1)) of each, where the program gives them, are in
+            ``self.last_spins`` by key.
         """
         from seamm_exec import Geometry
 
         elements = list(configuration.atoms.atomic_numbers)
         # The requested precision goes to the tasks too (providers that know it,
         # e.g. ORCA, tighten the SCF; others ignore the option)
-        options = {"precision": self.precision} if self.precision else None
+        precision = precision or self.precision
+        options = {"precision": precision} if precision else None
         for key, x in geometries.items():
             evaluator.submit(
                 Geometry(
@@ -1293,6 +1795,7 @@ class HessianDriver:
                 options=options,
             )
         results = {}
+        spins = {}
         for result in evaluator.results():
             if not result.ok:
                 raise RuntimeError(
@@ -1304,28 +1807,41 @@ class HessianDriver:
                 .reshape(-1)
             )
             results[result.key] = (float(result.energy), gradient)
+            spin = (getattr(result, "data", None) or {}).get("spin")
+            if isinstance(spin, dict) and spin.get("S**2") is not None:
+                spins[result.key] = (spin["S**2"], spin.get("S(S+1)"))
+        self.last_spins = spins
         return results
 
     @staticmethod
-    def fd_hessian_engine(engine, coords_ang, n_atoms, delta_bohr=0.01):
+    def fd_hessian_engine(
+        engine, coords_ang, n_atoms, delta_bohr=0.01, before_each=None, after_each=None
+    ):
         """Central-difference Hessian (hartree/bohr²) from MDI forces. The engine
-        is left at the undisplaced structure."""
+        is left at the undisplaced structure. ``before_each(j, sign)`` is called
+        before each displaced point's forces (e.g. to restore the reference
+        guess), ``after_each(j, sign)`` after them (e.g. to read its energy and
+        <S**2>)."""
         x0 = Q_(np.asarray(coords_ang, dtype=float), "Å").m_as("bohr").reshape(-1)
         ndof = 3 * n_atoms
         H = np.zeros((ndof, ndof))
+
+        def forces_at(x, j, sign):
+            engine.set_coordinates(x, units="bohr")
+            if before_each is not None:
+                before_each(j, sign)
+            f = np.asarray(engine.forces(units="hartree/bohr"), dtype=float).reshape(-1)
+            if after_each is not None:
+                after_each(j, sign)
+            return f
+
         for j in range(ndof):
             xp = x0.copy()
             xp[j] += delta_bohr
-            engine.set_coordinates(xp, units="bohr")
-            fp = np.asarray(engine.forces(units="hartree/bohr"), dtype=float).reshape(
-                -1
-            )
+            fp = forces_at(xp, j, 1)
             xm = x0.copy()
             xm[j] -= delta_bohr
-            engine.set_coordinates(xm, units="bohr")
-            fm = np.asarray(engine.forces(units="hartree/bohr"), dtype=float).reshape(
-                -1
-            )
+            fm = forces_at(xm, j, -1)
             # Force = -dE/dx, so d²E/dx_i dx_j = -(f_i(+) - f_i(-)) / 2 delta.
             H[:, j] = -(fp - fm) / (2.0 * delta_bohr)
         engine.set_coordinates(x0, units="bohr")
