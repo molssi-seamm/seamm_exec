@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.evaluator &#8212; SEAMM seamm-exec Plug-in 2026.11.25.2 documentation</title>
+    <title>seamm_exec.evaluator &#8212; SEAMM seamm-exec Plug-in 2026.11.25.3 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=1ee51a32"></script>
+    <script src="../../_static/documentation_options.js?v=ba9d9e2b"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.25.2" />
+  <meta name="docsearch:version" content="2026.11.25.3" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -525,6 +525,26 @@
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_engine_spin</span><span class="p">(</span><span class="n">engine</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""{"S**2": &lt;S**2&gt;, "S(S+1)": ideal} of the engine's last energy/gradient when</span>
+<span class="sd">    it gives them (seamm_mdi's ``spin()``, the custom ``&lt;SPIN``; ORCA's engine),</span>
+<span class="sd">    else None; None also for a closed-shell (spin-restricted) calculation."""</span>
+    <span class="n">get</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="s2">"spin"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">get</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">get</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The engine gave no &lt;S**2&gt;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span> <span class="ow">or</span> <span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">s2</span><span class="p">,</span> <span class="n">ideal</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">s2</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">ideal</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">"S**2"</span><span class="p">:</span> <span class="n">s2</span><span class="p">,</span> <span class="s2">"S(S+1)"</span><span class="p">:</span> <span class="n">ideal</span><span class="p">}</span>
+
+
 <div class="viewcode-block" id="EvaluatorResult">
 <a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.evaluator.EvaluatorResult">[docs]</a>
 <span class="nd">@dataclass</span>
@@ -548,7 +568,8 @@
 <span class="sd">    path : str</span>
 <span class="sd">        "mdi" or "batch"</span>
 <span class="sd">    data : dict</span>
-<span class="sd">        Everything the program returned.</span>
+<span class="sd">        Everything the program returned; "spin" ({"S**2", "S(S+1)"}) for an</span>
+<span class="sd">        open-shell calculation when the program gives it.</span>
 <span class="sd">    elapsed : float</span>
 <span class="sd">        Seconds spent on it in this run (0 if restored).</span>
 <span class="sd">    """</span>
@@ -1114,6 +1135,9 @@
                             <span class="n">engine</span><span class="o">.</span><span class="n">stress</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="n">S_UNITS</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span>
                         <span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
                         <span class="n">data</span><span class="p">[</span><span class="s2">"stress"</span><span class="p">]</span> <span class="o">=</span> <span class="n">stress</span>
+                    <span class="n">spin</span> <span class="o">=</span> <span class="n">_engine_spin</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">spin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">data</span><span class="p">[</span><span class="s2">"spin"</span><span class="p">]</span> <span class="o">=</span> <span class="n">spin</span>
                     <span class="k">yield</span> <span class="n">EvaluatorResult</span><span class="p">(</span>
                         <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span>
                         <span class="n">ok</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
