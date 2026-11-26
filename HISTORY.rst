@@ -1,6 +1,23 @@
 =======
 History
 =======
+2026.11.26 -- Reliable finite-difference Hessians, and checks of them
+    * Over a warm engine, a finite-difference Hessian is made with a tight SCF and
+      every displaced point started from the reference structure's orbitals, when the
+      engine can (ORCA's, with seamm-mdi 2026.11.26); as tasks, with
+      precision="tight". The warm engine's chain of guesses made the Hessian of
+      4-hydroxy-TEMPO depend on the order of its points (SEAMM job 6074).
+    * Every displaced point is checked for a state change: its <S**2> may not move
+      more than 0.05 from the reference's, nor its energy fall below what the
+      reference's gradient allows. A failure raises HessianRefused.
+    * check_hessian(), the gradient-difference check of a Hessian (from Training
+      Structures), now here, and EngineSession.check_hessian() with gradients that
+      each start from the reference orbitals. optimize_and_hessian(check=True) applies
+      it to a finite-difference Hessian, on either route.
+    * The modes that should be zero are reported for finite-difference Hessians, as
+      information only: sound ones reach 65 cm^-1 for small radicals.
+    * A restarted engine gets the tight SCF and the reference guess again.
+
 2026.11.25.3 -- <S**2> of open-shell structures over MDI
     * The Evaluator's results over a warm MDI engine now carry the expectation value
       <S**2> and its ideal value S(S+1) (``data["spin"]``) when the engine gives them
