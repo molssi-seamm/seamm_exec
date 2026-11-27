@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.11.26 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.11.26.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=e5385ca6"></script>
+    <script src="../_static/documentation_options.js?v=bb624eb3"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.26" />
+  <meta name="docsearch:version" content="2026.11.26.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -1243,6 +1243,12 @@ closed shell, or None when the engine does not give them (seamm_mdi
 
 </dd></dl>
 
+<dl class="py data">
+<dt class="sig sig-object py" id="seamm_exec.hessian.HESSIAN_FILE_VERSION">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.hessian.</span></span><span class="sig-name descname"><span class="pre">HESSIAN_FILE_VERSION</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#seamm_exec.hessian.HESSIAN_FILE_VERSION" title="Link to this definition">#</a></dt>
+<dd><p>The version of the Hessian file’s layout (save_hessian / load_hessian)</p>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="seamm_exec.hessian.HessianDriver">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seamm_exec.hessian.</span></span><span class="sig-name descname"><span class="pre">HessianDriver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_chemistry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">route</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'automatic'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">who</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">print_to</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precision</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#HessianDriver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.HessianDriver" title="Link to this definition">#</a></dt>
@@ -1423,6 +1429,11 @@ then tested against differences of the gradient (<a class="reference internal" h
 as for a replacement Hessian). Either failure raises
 <a class="reference internal" href="#seamm_exec.hessian.HessianRefused" title="seamm_exec.hessian.HessianRefused"><code class="xref py py-class docutils literal notranslate"><span class="pre">HessianRefused</span></code></a>; <code class="docutils literal notranslate"><span class="pre">self.fd_info</span></code> and <code class="docutils literal notranslate"><span class="pre">self.last_check</span></code> say how
 it was made and checked.</p>
+<p>Over a warm engine an analytic Hessian is checked the same way when
+<cite>check</cite> is given (from the reference structure’s orbitals, with a tight
+SCF): <cite>check</cite> True refuses a failing one (HessianRefused); <cite>check</cite>
+“report” only records the result in <code class="docutils literal notranslate"><span class="pre">self.last_check</span></code>, so the caller
+can list it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>As <a class="reference internal" href="#seamm_exec.hessian.HessianDriver.energy_and_hessian" title="seamm_exec.hessian.HessianDriver.energy_and_hessian"><code class="xref py py-meth docutils literal notranslate"><span class="pre">energy_and_hessian()</span></code></a>.</p>
@@ -1562,6 +1573,13 @@ imaginary ones are negative. Ascending.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.hessian.load_hessian">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.hessian.</span></span><span class="sig-name descname"><span class="pre">load_hessian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#load_hessian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.load_hessian" title="Link to this definition">#</a></dt>
+<dd><p>{“hessian”, “masses”, “xyz”, “symbols”, “info”} from save_hessian’s file;
+“info” as a dict.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="seamm_exec.hessian.masses_of">
 <span class="sig-prename descclassname"><span class="pre">seamm_exec.hessian.</span></span><span class="sig-name descname"><span class="pre">masses_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configuration</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#masses_of"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.masses_of" title="Link to this definition">#</a></dt>
 <dd><p>The atomic masses (amu) of a configuration: its own, else the standard
@@ -1616,6 +1634,20 @@ given, otherwise <code class="docutils literal notranslate"><span class="pre">mo
 <dd><p>The number of distinct physical cores among the CPUs (hardware
 threads) this process may run on, from the kernel’s topology; None where
 that is unknown (macOS, no sysfs).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="seamm_exec.hessian.save_hessian">
+<span class="sig-prename descclassname"><span class="pre">seamm_exec.hessian.</span></span><span class="sig-name descname"><span class="pre">save_hessian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hessian</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masses_amu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xyz_ang</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbols</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">info</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/seamm_exec/hessian.html#save_hessian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seamm_exec.hessian.save_hessian" title="Link to this definition">#</a></dt>
+<dd><p>Write a molecule’s Hessian, and what it belongs to, as a compressed NumPy
+archive (.npz) that reads back without SEAMM (<code class="docutils literal notranslate"><span class="pre">numpy.load</span></code>).</p>
+<p>Arrays: <code class="docutils literal notranslate"><span class="pre">hessian</span></code> (3N, 3N) in E_h/bohr^2, Cartesian, not mass-weighted;
+<code class="docutils literal notranslate"><span class="pre">masses</span></code> (N,) in amu; <code class="docutils literal notranslate"><span class="pre">xyz</span></code> (N, 3) in Å, the geometry the Hessian was
+computed at; <code class="docutils literal notranslate"><span class="pre">symbols</span></code> (N,). <code class="docutils literal notranslate"><span class="pre">info</span></code> is a JSON string: the units, the
+file version, and the caller’s keywords, e.g. route (“analytic over MDI”,
+“finite differences over MDI”, “finite differences as tasks”), settings
+(the engine’s settings key), model chemistry, charge, multiplicity, the
+finite-difference details and the check.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -4385,6 +4417,7 @@ raises.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.EngineSession.spin"><code class="docutils literal notranslate"><span class="pre">EngineSession.spin()</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HESSIAN_FILE_VERSION"><code class="docutils literal notranslate"><span class="pre">HESSIAN_FILE_VERSION</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver"><code class="docutils literal notranslate"><span class="pre">HessianDriver</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver.cheap_session"><code class="docutils literal notranslate"><span class="pre">HessianDriver.cheap_session()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.HessianDriver.code_is_here"><code class="docutils literal notranslate"><span class="pre">HessianDriver.code_is_here()</span></code></a></li>
@@ -4410,12 +4443,14 @@ raises.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.check_fd_points"><code class="docutils literal notranslate"><span class="pre">check_fd_points()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.check_hessian"><code class="docutils literal notranslate"><span class="pre">check_hessian()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.frequencies"><code class="docutils literal notranslate"><span class="pre">frequencies()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.load_hessian"><code class="docutils literal notranslate"><span class="pre">load_hessian()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.masses_of"><code class="docutils literal notranslate"><span class="pre">masses_of()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.model_chemistry_for"><code class="docutils literal notranslate"><span class="pre">model_chemistry_for()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.module_environment"><code class="docutils literal notranslate"><span class="pre">module_environment()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.modules_to_load"><code class="docutils literal notranslate"><span class="pre">modules_to_load()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.parse_cpu_ids"><code class="docutils literal notranslate"><span class="pre">parse_cpu_ids()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.physical_cores_allowed"><code class="docutils literal notranslate"><span class="pre">physical_cores_allowed()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.save_hessian"><code class="docutils literal notranslate"><span class="pre">save_hessian()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.slurm_allocated_cpus"><code class="docutils literal notranslate"><span class="pre">slurm_allocated_cpus()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seamm_exec.hessian.zero_modes"><code class="docutils literal notranslate"><span class="pre">zero_modes()</span></code></a></li>
 </ul>

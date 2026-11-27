@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.hessian &#8212; SEAMM seamm-exec Plug-in 2026.11.26 documentation</title>
+    <title>seamm_exec.hessian &#8212; SEAMM seamm-exec Plug-in 2026.11.26.1 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=e5385ca6"></script>
+    <script src="../../_static/documentation_options.js?v=bb624eb3"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.26" />
+  <meta name="docsearch:version" content="2026.11.26.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -808,6 +808,65 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">details</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">details</span> <span class="o">=</span> <span class="n">details</span> <span class="ow">or</span> <span class="p">{}</span></div>
+
+
+
+<span class="c1">#: The version of the Hessian file's layout (save_hessian / load_hessian)</span>
+<span class="n">HESSIAN_FILE_VERSION</span> <span class="o">=</span> <span class="mi">1</span>
+
+
+<div class="viewcode-block" id="save_hessian">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.hessian.save_hessian">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">save_hessian</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">hessian</span><span class="p">,</span> <span class="n">masses_amu</span><span class="p">,</span> <span class="n">xyz_ang</span><span class="p">,</span> <span class="n">symbols</span><span class="p">,</span> <span class="o">**</span><span class="n">info</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Write a molecule's Hessian, and what it belongs to, as a compressed NumPy</span>
+<span class="sd">    archive (.npz) that reads back without SEAMM (``numpy.load``).</span>
+
+<span class="sd">    Arrays: ``hessian`` (3N, 3N) in E_h/bohr^2, Cartesian, not mass-weighted;</span>
+<span class="sd">    ``masses`` (N,) in amu; ``xyz`` (N, 3) in Å, the geometry the Hessian was</span>
+<span class="sd">    computed at; ``symbols`` (N,). ``info`` is a JSON string: the units, the</span>
+<span class="sd">    file version, and the caller's keywords, e.g. route ("analytic over MDI",</span>
+<span class="sd">    "finite differences over MDI", "finite differences as tasks"), settings</span>
+<span class="sd">    (the engine's settings key), model chemistry, charge, multiplicity, the</span>
+<span class="sd">    finite-difference details and the check.</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+    <span class="n">hessian</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">hessian</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">xyz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">xyz_ang</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">xyz</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">hessian</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">n</span><span class="p">,</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">n</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"A Hessian of shape </span><span class="si">{</span><span class="n">hessian</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> atoms."</span><span class="p">)</span>
+    <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"version"</span><span class="p">:</span> <span class="n">HESSIAN_FILE_VERSION</span><span class="p">,</span>
+        <span class="s2">"units"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"hessian"</span><span class="p">:</span> <span class="s2">"E_h/bohr^2"</span><span class="p">,</span> <span class="s2">"masses"</span><span class="p">:</span> <span class="s2">"amu"</span><span class="p">,</span> <span class="s2">"xyz"</span><span class="p">:</span> <span class="s2">"Å"</span><span class="p">},</span>
+        <span class="o">**</span><span class="n">info</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savez_compressed</span><span class="p">(</span>
+        <span class="n">path</span><span class="p">,</span>
+        <span class="n">hessian</span><span class="o">=</span><span class="n">hessian</span><span class="p">,</span>
+        <span class="n">masses</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">masses_amu</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">xyz</span><span class="o">=</span><span class="n">xyz</span><span class="p">,</span>
+        <span class="n">symbols</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">symbols</span><span class="p">]),</span>
+        <span class="n">info</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">meta</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="nb">str</span><span class="p">)),</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="load_hessian">
+<a class="viewcode-back" href="../../api/seamm_exec.html#seamm_exec.hessian.load_hessian">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_hessian</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""{"hessian", "masses", "xyz", "symbols", "info"} from save_hessian's file;</span>
+<span class="sd">    "info" as a dict."""</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">allow_pickle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">data</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">"hessian"</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s2">"hessian"</span><span class="p">],</span>
+            <span class="s2">"masses"</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s2">"masses"</span><span class="p">],</span>
+            <span class="s2">"xyz"</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s2">"xyz"</span><span class="p">],</span>
+            <span class="s2">"symbols"</span><span class="p">:</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">"symbols"</span><span class="p">]],</span>
+            <span class="s2">"info"</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">"info"</span><span class="p">])),</span>
+        <span class="p">}</span></div>
 
 
 
@@ -2124,6 +2183,12 @@
 <span class="sd">        :class:`HessianRefused`; ``self.fd_info`` and ``self.last_check`` say how</span>
 <span class="sd">        it was made and checked.</span>
 
+<span class="sd">        Over a warm engine an analytic Hessian is checked the same way when</span>
+<span class="sd">        `check` is given (from the reference structure's orbitals, with a tight</span>
+<span class="sd">        SCF): `check` True refuses a failing one (HessianRefused); `check`</span>
+<span class="sd">        "report" only records the result in ``self.last_check``, so the caller</span>
+<span class="sd">        can list it.</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        (float, numpy.ndarray, str)</span>
@@ -2159,6 +2224,16 @@
             <span class="n">E0</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">energy</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"kJ/mol"</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">session</span><span class="o">.</span><span class="n">analytic</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">finite_differences</span><span class="p">:</span>
                 <span class="n">H</span><span class="p">,</span> <span class="n">how</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">hessian</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">check</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">last_check</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">check_hessian</span><span class="p">(</span>
+                        <span class="n">H</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">CHECK_SEED</span><span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_check</span><span class="p">[</span><span class="s2">"refused"</span><span class="p">]</span> <span class="ow">and</span> <span class="n">check</span> <span class="o">!=</span> <span class="s2">"report"</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">HessianRefused</span><span class="p">(</span>
+                            <span class="s2">"The analytic Hessian is refused: "</span>
+                            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_check</span><span class="p">[</span><span class="s2">"reason"</span><span class="p">],</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">last_check</span><span class="p">,</span>
+                        <span class="p">)</span>
                 <span class="k">return</span> <span class="n">E0</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">how</span>
             <span class="k">if</span> <span class="p">(</span>
                 <span class="n">finite_differences</span>
