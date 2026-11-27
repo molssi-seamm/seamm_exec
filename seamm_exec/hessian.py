@@ -1638,6 +1638,12 @@ class HessianDriver:
         :class:`HessianRefused`; ``self.fd_info`` and ``self.last_check`` say how
         it was made and checked.
 
+        Over a warm engine an analytic Hessian is checked the same way when
+        `check` is given (from the reference structure's orbitals, with a tight
+        SCF): `check` True refuses a failing one (HessianRefused); `check`
+        "report" only records the result in ``self.last_check``, so the caller
+        can list it.
+
         Returns
         -------
         (float, numpy.ndarray, str)
@@ -1673,6 +1679,16 @@ class HessianDriver:
             E0 = session.energy(units="kJ/mol")
             if session.analytic and not finite_differences:
                 H, how = session.hessian()
+                if check:
+                    self.last_check = session.check_hessian(
+                        H, np.random.default_rng(CHECK_SEED)
+                    )
+                    if self.last_check["refused"] and check != "report":
+                        raise HessianRefused(
+                            "The analytic Hessian is refused: "
+                            + self.last_check["reason"],
+                            self.last_check,
+                        )
                 return E0, H, how
             if (
                 finite_differences
