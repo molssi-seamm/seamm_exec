@@ -264,6 +264,10 @@ class SchedulerBackend:
         directive keys: partition, account, qos, export, ...).
     setup : str, optional
         Shell lines run in the batch script before the worker (module loads).
+        In a bundle's script ``SEAMM_BUNDLE_PYTHON`` is set (the worker's
+        Python) before them; if they set ``SEAMM_VENV`` (a copy of that
+        environment staged on the node), the worker runs from
+        ``$SEAMM_VENV/bin/python`` instead.
     python : str, optional
         A Python with ``seamm_exec`` where the tasks run. Default: this one.
     root : str, optional
@@ -1084,13 +1088,26 @@ class SchedulerBackend:
             extra=self.directives,
         )
         directives.update(scheduler.log_directives(where))
-        lines = []
+        # The section's setup sees SEAMM_BUNDLE_PYTHON (only in bundle scripts, so
+        # a setup can tell a bundle from the job itself). If it puts a copy of
+        # that environment on the node and says where in SEAMM_VENV (e.g. by
+        # sourcing a staging script), the worker -- and so every task's own
+        # Python, which it finds beside its own -- runs from that copy rather
+        # than from the shared file system.
+        # (SEAMM_VENV is cleared first: one inherited from a job that staged its
+        # own copy names a path on another node.)
+        lines = [
+            "unset SEAMM_VENV",
+            f"export SEAMM_BUNDLE_PYTHON={shlex.quote(self.python)}",
+        ]
         if self.setup:
             lines.append(self.setup)
         lines.append(f"cd {shlex.quote(where)}")
+        lines.append('PYTHON="$SEAMM_BUNDLE_PYTHON"')
         lines.append(
-            f"exec {shlex.quote(self.python)} -m seamm_exec.task_worker bundle.json"
+            'if [ -n "$SEAMM_VENV" ]; then PYTHON="$SEAMM_VENV/bin/python"; fi'
         )
+        lines.append('exec "$PYTHON" -m seamm_exec.task_worker bundle.json')
         return build_script(directives, "\n".join(lines), scheduler=scheduler)
 
     def _clear_remote_markers(self, tasks, directories, markers):

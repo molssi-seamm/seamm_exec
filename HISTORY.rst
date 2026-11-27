@@ -1,6 +1,19 @@
 =======
 History
 =======
+2026.11.27 -- Task bundles can run from an environment staged on the node
+    * A bundle's batch script now exports SEAMM_BUNDLE_PYTHON (the Python of SEAMM that
+      runs its tasks) before the queue section's setup lines, and runs the task worker
+      from $SEAMM_VENV/bin/python when the setup sets SEAMM_VENV, e.g. by sourcing a
+      script that unpacks that environment onto the node's local disk. The tasks'
+      own Pythons (run_flowchart for the iterations of a parallel loop) are found
+      beside the worker's, so they run from the copy too. A SEAMM_VENV inherited from
+      the submitting job is cleared first.
+    * Without such a setup nothing changes.
+    * Why: each iteration of a parallel loop on ARC paid about 3 min of cold Python
+      imports from the shared file system (Hessian pilot, ChemAI 6093), about a third
+      of its cost.
+
 2026.11.26.1 -- A file for a molecule's Hessian; analytic Hessians can be checked
     * save_hessian() and load_hessian() write and read a molecule's Hessian as a
       compressed NumPy archive (.npz): the Cartesian Hessian in E_h/bohr^2, the masses

@@ -1804,3 +1804,51 @@ def test_a_task_out_of_time_at_the_longest_walltime_is_not_retried(job):
     results = run_all(ts)
     assert not results["big"].ok
     assert len(queue.scripts) == 1  # submitted once, not again with the same time
+
+
+def test_a_bundle_runs_from_a_staged_environment(job, tmp_path, monkeypatch):
+    """A section's setup that stages the environment on the node (sets
+    SEAMM_VENV, seeing SEAMM_BUNDLE_PYTHON) makes the worker run from the
+    staged copy; without it the worker runs from the given Python, and a
+    SEAMM_VENV inherited from the submitting job is ignored."""
+    import sys
+
+    job, root = job
+    staged = tmp_path / "staged"
+    (staged / "bin").mkdir(parents=True)
+    # the staged copy's python (a wrapper, so it keeps this environment) notes
+    # that it ran
+    used = tmp_path / "staged_used.txt"
+    wrapper = staged / "bin" / "python"
+    wrapper.write_text(
+        f'#!/bin/sh\necho staged >> {used}\nexec {sys.executable} "$@"\n'
+    )
+    wrapper.chmod(0o755)
+    log = tmp_path / "bundle_python.txt"
+    setup = f'echo "$SEAMM_BUNDLE_PYTHON" > {log}\n' f"export SEAMM_VENV={staged}"
+    # an inherited SEAMM_VENV that is not this node's
+    monkeypatch.setenv("SEAMM_VENV", "/nonexistent/elsewhere")
+    queue = FakeQueue()
+    backend = make_backend(queue, job, root, setup=setup)
+    ts = TaskSet(directory=job / "step", backend=backend, bundle_tasks=2)
+    for i in range(2):
+        ts.add(fake_task(f"t{i}", resources=Resources(ntasks=1)))
+    results = run_all(ts)
+    assert all(r.ok for r in results.values())
+    script = queue.scripts[0]
+    assert script.index("unset SEAMM_VENV") < script.index("export SEAMM_BUNDLE_PYTHON")
+    assert script.index("export SEAMM_BUNDLE_PYTHON") < script.index(
+        f"export SEAMM_VENV={staged}"
+    )
+    assert 'exec "$PYTHON" -m seamm_exec.task_worker bundle.json' in script
+    assert log.read_text().strip() == backend.python
+    assert used.read_text().split() == ["staged"]  # one bundle, one worker
+
+    # Without staging: the given Python, despite the inherited SEAMM_VENV
+    queue2 = FakeQueue()
+    backend2 = make_backend(queue2, job, root)
+    ts2 = TaskSet(directory=job / "step2", backend=backend2, bundle_tasks=2)
+    ts2.add(fake_task("u0", resources=Resources(ntasks=1)))
+    results2 = run_all(ts2)
+    assert all(r.ok for r in results2.values())
+    assert used.read_text().split() == ["staged"]  # not used again
