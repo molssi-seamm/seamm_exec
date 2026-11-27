@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>seamm_exec.scheduler_backend &#8212; SEAMM seamm-exec Plug-in 2026.11.26.1 documentation</title>
+    <title>seamm_exec.scheduler_backend &#8212; SEAMM seamm-exec Plug-in 2026.11.27 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=bb624eb3"></script>
+    <script src="../../_static/documentation_options.js?v=4140d8bf"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.26.1" />
+  <meta name="docsearch:version" content="2026.11.27" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -699,6 +699,10 @@
 <span class="sd">        directive keys: partition, account, qos, export, ...).</span>
 <span class="sd">    setup : str, optional</span>
 <span class="sd">        Shell lines run in the batch script before the worker (module loads).</span>
+<span class="sd">        In a bundle's script ``SEAMM_BUNDLE_PYTHON`` is set (the worker's</span>
+<span class="sd">        Python) before them; if they set ``SEAMM_VENV`` (a copy of that</span>
+<span class="sd">        environment staged on the node), the worker runs from</span>
+<span class="sd">        ``$SEAMM_VENV/bin/python`` instead.</span>
 <span class="sd">    python : str, optional</span>
 <span class="sd">        A Python with ``seamm_exec`` where the tasks run. Default: this one.</span>
 <span class="sd">    root : str, optional</span>
@@ -1570,13 +1574,26 @@
             <span class="n">extra</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">directives</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">directives</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">scheduler</span><span class="o">.</span><span class="n">log_directives</span><span class="p">(</span><span class="n">where</span><span class="p">))</span>
-        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># The section's setup sees SEAMM_BUNDLE_PYTHON (only in bundle scripts, so</span>
+        <span class="c1"># a setup can tell a bundle from the job itself). If it puts a copy of</span>
+        <span class="c1"># that environment on the node and says where in SEAMM_VENV (e.g. by</span>
+        <span class="c1"># sourcing a staging script), the worker -- and so every task's own</span>
+        <span class="c1"># Python, which it finds beside its own -- runs from that copy rather</span>
+        <span class="c1"># than from the shared file system.</span>
+        <span class="c1"># (SEAMM_VENV is cleared first: one inherited from a job that staged its</span>
+        <span class="c1"># own copy names a path on another node.)</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">"unset SEAMM_VENV"</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"export SEAMM_BUNDLE_PYTHON=</span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">python</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">setup</span><span class="p">:</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">setup</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cd </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">where</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">'PYTHON="$SEAMM_BUNDLE_PYTHON"'</span><span class="p">)</span>
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"exec </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">python</span><span class="p">)</span><span class="si">}</span><span class="s2"> -m seamm_exec.task_worker bundle.json"</span>
+            <span class="s1">'if [ -n "$SEAMM_VENV" ]; then PYTHON="$SEAMM_VENV/bin/python"; fi'</span>
         <span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">'exec "$PYTHON" -m seamm_exec.task_worker bundle.json'</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">build_script</span><span class="p">(</span><span class="n">directives</span><span class="p">,</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">),</span> <span class="n">scheduler</span><span class="o">=</span><span class="n">scheduler</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_clear_remote_markers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tasks</span><span class="p">,</span> <span class="n">directories</span><span class="p">,</span> <span class="n">markers</span><span class="p">):</span>

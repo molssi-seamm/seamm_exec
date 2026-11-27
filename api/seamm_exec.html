@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.11.26.1 documentation</title>
+    <title>seamm_exec package &#8212; SEAMM seamm-exec Plug-in 2026.11.27 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=bb624eb3"></script>
+    <script src="../_static/documentation_options.js?v=4140d8bf"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.11.26.1" />
+  <meta name="docsearch:version" content="2026.11.27" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -2287,7 +2287,11 @@ cluster does not share the filesystem.</p></li>
 <li><p><strong>remote_job_directory</strong> (<em>str</em><em>, </em><em>optional</em>) – Where the job directory is mirrored on the cluster, if not shared.</p></li>
 <li><p><strong>directives</strong> (<em>dict</em><em>, </em><em>optional</em>) – Site defaults, in the scheduler’s own spelling (the target section’s
 directive keys: partition, account, qos, export, …).</p></li>
-<li><p><strong>setup</strong> (<em>str</em><em>, </em><em>optional</em>) – Shell lines run in the batch script before the worker (module loads).</p></li>
+<li><p><strong>setup</strong> (<em>str</em><em>, </em><em>optional</em>) – Shell lines run in the batch script before the worker (module loads).
+In a bundle’s script <code class="docutils literal notranslate"><span class="pre">SEAMM_BUNDLE_PYTHON</span></code> is set (the worker’s
+Python) before them; if they set <code class="docutils literal notranslate"><span class="pre">SEAMM_VENV</span></code> (a copy of that
+environment staged on the node), the worker runs from
+<code class="docutils literal notranslate"><span class="pre">$SEAMM_VENV/bin/python</span></code> instead.</p></li>
 <li><p><strong>python</strong> (<em>str</em><em>, </em><em>optional</em>) – A Python with <code class="docutils literal notranslate"><span class="pre">seamm_exec</span></code> where the tasks run. Default: this one.</p></li>
 <li><p><strong>root</strong> (<em>str</em><em>, </em><em>optional</em>) – The SEAMM root with the <code class="docutils literal notranslate"><span class="pre">&lt;program&gt;.ini</span></code> files where the tasks run.</p></li>
 <li><p><strong>accepts_config</strong> (<em>bool = True</em>) – Whether <code class="docutils literal notranslate"><span class="pre">Task.config</span></code> is valid where the tasks run (local
