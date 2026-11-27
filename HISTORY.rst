@@ -1,6 +1,17 @@
 =======
 History
 =======
+2026.11.26.1 -- A file for a molecule's Hessian; analytic Hessians can be checked
+    * save_hessian() and load_hessian() write and read a molecule's Hessian as a
+      compressed NumPy archive (.npz): the Cartesian Hessian in E_h/bohr^2, the masses
+      (amu), the geometry (Å) and symbols it belongs to, and a JSON record of how it
+      was made (route, settings key, model chemistry, charge, multiplicity, ...). It
+      reads back with plain numpy.load. For the steps that keep their Hessians.
+    * HessianDriver.optimize_and_hessian(check=...) now also checks an analytic
+      Hessian from the warm engine against differences of the gradient: check=True
+      refuses a failing one (HessianRefused), check="report" only records the result
+      in last_check.
+
 2026.11.26 -- Reliable finite-difference Hessians, and checks of them
     * Over a warm engine, a finite-difference Hessian is made with a tight SCF and
       every displaced point started from the reference structure's orbitals, when the

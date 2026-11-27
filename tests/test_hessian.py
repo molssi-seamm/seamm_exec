@@ -1035,3 +1035,54 @@ def test_the_cores_are_announced_once_from_the_launch_command(monkeypatch):
         assert session is not None
     cores = [s for s in said if "engine runs on" in s]
     assert len(cores) == 1 and cores[0].endswith("runs on 1 core.")
+
+
+def test_an_analytic_hessian_is_checked_on_request(monkeypatch):
+    """check=True tests an analytic Hessian against gradient differences and
+    refuses a broken one; check="report" only records the result (Thermochemistry's
+    harmonic run lists it: hessian recompute plan Q5, 2026-11-26)."""
+    import sys
+    import types
+
+    from seamm_exec.hessian import HessianRefused
+
+    scale = {"value": 1.0}
+
+    class Eng(HarmonicEngine):
+        def __init__(self, *a, **k):
+            super().__init__(analytic=True)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+        def hessian(self):
+            return scale["value"] * K.copy()
+
+    monkeypatch.setitem(sys.modules, "seamm_mdi", types.SimpleNamespace(MDIEngine=Eng))
+    evaluator = FakeEvaluator()
+    driver = HessianDriver(make_node(MC, Provider()))
+    c = Configuration()
+    c.atoms.atomic_masses = [12.0] * 5  # realistic frequencies for the toy K
+    monkeypatch.setattr(
+        driver,
+        "plan",
+        lambda c: (evaluator, lambda h, p: ["x"], [6, 6, 6, 6, 6], np.zeros((5, 3))),
+    )
+    monkeypatch.setattr(driver, "engine_ncores", lambda: 1)
+    monkeypatch.setattr(
+        driver, "engine_environment", lambda n: contextlib.nullcontext()
+    )
+    driver.route = "warm engine over MDI"
+    _, _, how = driver.optimize_and_hessian(c, optimize=False)
+    assert how == "analytic" and driver.last_check is None  # no check by default
+    _, _, how = driver.optimize_and_hessian(c, optimize=False, check=True)
+    assert not driver.last_check["refused"] and max(driver.last_check["errors"]) < 1e-6
+    scale["value"] = 1.2  # a broken analytic Hessian
+    with pytest.raises(HessianRefused, match="analytic Hessian is refused"):
+        driver.optimize_and_hessian(c, optimize=False, check=True)
+    _, H, how = driver.optimize_and_hessian(c, optimize=False, check="report")
+    assert how == "analytic" and np.allclose(H, 1.2 * K)
+    assert driver.last_check["refused"]
